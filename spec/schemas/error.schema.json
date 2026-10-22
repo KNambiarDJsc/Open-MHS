@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openmhs:schema:0.1:error",
+  "title": "OpenMHS error",
+  "$ref": "urn:openmhs:schema:0.1:common#/$defs/error"
+}

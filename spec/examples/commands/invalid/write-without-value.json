@@ -1,0 +1,4 @@
+{
+  "target": { "device": "sim.psu-01", "capability": "power.output.voltage.setpoint" },
+  "operation": "write"
+}

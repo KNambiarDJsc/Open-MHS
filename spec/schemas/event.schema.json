@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openmhs:schema:0.1:event",
+  "title": "OpenMHS event",
+  "type": "object",
+  "required": ["event_id", "at", "type", "device"],
+  "additionalProperties": false,
+  "properties": {
+    "event_id": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "at": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/timestamp" },
+    "type": { "enum": ["telemetry", "alarm", "state_change", "command_transition", "connection", "device_event"] },
+    "device": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
+    "capability": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/capability_name" },
+    "command_id": { "type": "string", "maxLength": 64 },
+    "state": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/state_value" },
+    "data": { "type": "object" },
+    "severity": { "enum": ["info", "warning", "critical"] }
+  }
+}

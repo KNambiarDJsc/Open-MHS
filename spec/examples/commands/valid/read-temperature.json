@@ -1,0 +1,4 @@
+{
+  "target": { "device": "sim.thermo-01", "capability": "temperature.ambient" },
+  "operation": "read"
+}

@@ -1,0 +1,29 @@
+{
+  "command_id": "01JB7ZA5Y6Z7A8B9C0D1E2F3G4",
+  "principal": "agent.lab-assistant",
+  "request": {
+    "target": { "device": "sim.axis-01", "capability": "axis.move_absolute" },
+    "operation": "invoke",
+    "params": { "position": { "value": 120.5, "unit": "mm" }, "speed": { "value": 20, "unit": "mm/s" } },
+    "idempotency_key": "agent-7f3a-step-13"
+  },
+  "state": "UNKNOWN_OUTCOME",
+  "outcome": "uncertain",
+  "created_at": "2026-10-23T10:17:00.000Z",
+  "transitions": [
+    { "state": "CREATED", "at": "2026-10-23T10:17:00.000Z" },
+    { "state": "VALIDATING", "at": "2026-10-23T10:17:00.001Z" },
+    { "state": "APPROVED", "at": "2026-10-23T10:17:00.002Z" },
+    { "state": "DISPATCHED", "at": "2026-10-23T10:17:00.003Z" },
+    { "state": "TIMED_OUT", "at": "2026-10-23T10:17:15.003Z", "detail": "no acknowledgement within 15000 ms" },
+    { "state": "UNKNOWN_OUTCOME", "at": "2026-10-23T10:17:15.004Z", "detail": "awaiting readback reconciliation; not retried" }
+  ],
+  "policy": {
+    "decision": "allow",
+    "rules": [ { "rule_id": "grant.lab-assistant.axis-motion", "effect": "allow" } ]
+  },
+  "adapter_result": {
+    "acknowledged": false,
+    "error": { "code": "adapter.timeout", "message": "no response from device" }
+  }
+}

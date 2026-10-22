@@ -1,0 +1,6 @@
+{
+  "target": { "device": "sim.psu-01", "capability": "power.output.voltage.setpoint" },
+  "operation": "write",
+  "value": { "value": 5, "unit": "V" },
+  "principal": "admin"
+}

@@ -1,0 +1,13 @@
+{
+  "event_id": "01JB7ZB6Z7A8B9C0D1E2F3G4H5",
+  "at": "2026-10-23T10:18:00.000Z",
+  "type": "telemetry",
+  "device": "sim.thermo-01",
+  "capability": "temperature.ambient",
+  "state": {
+    "value": { "value": 22.4, "unit": "Cel" },
+    "timestamp": "2026-10-23T10:17:59.995Z",
+    "source": "device",
+    "quality": "GOOD"
+  }
+}

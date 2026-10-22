@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openmhs:schema:0.1:receipt",
+  "title": "OpenMHS command receipt",
+  "description": "Immutable record of a command, produced for every command including denials.",
+  "type": "object",
+  "required": ["command_id", "principal", "request", "state", "outcome", "created_at", "transitions", "policy"],
+  "additionalProperties": false,
+  "properties": {
+    "command_id": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "correlation_id": { "type": "string", "maxLength": 128 },
+    "idempotency_key": { "type": "string", "maxLength": 128 },
+    "principal": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
+    "request": { "$ref": "urn:openmhs:schema:0.1:command" },
+    "state": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/command_state" },
+    "outcome": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/outcome" },
+    "created_at": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/timestamp" },
+    "deadline_at": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/timestamp" },
+    "transitions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["state", "at"],
+        "additionalProperties": false,
+        "properties": {
+          "state": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/command_state" },
+          "at": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/timestamp" },
+          "detail": { "type": "string", "maxLength": 4096 }
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "required": ["decision", "rules"],
+      "additionalProperties": false,
+      "properties": {
+        "decision": { "enum": ["allow", "deny", "require_approval"] },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["rule_id", "effect"],
+            "additionalProperties": false,
+            "properties": {
+              "rule_id": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
+              "effect": { "enum": ["allow", "deny", "require_approval"] },
+              "reason": { "type": "string", "maxLength": 1024 }
+            }
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/error" }
+        },
+        "approved_by": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" }
+      }
+    },
+    "adapter_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "acknowledged": { "type": "boolean" },
+        "reported_applied": { "type": "boolean" },
+        "value": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/value" },
+        "error": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/error" }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": ["mode"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "enum": ["readback", "none"] },
+        "capability": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/capability_name" },
+        "expected": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/value" },
+        "observed": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/state_value" },
+        "matched": { "type": "boolean" },
+        "reason": { "type": "string", "maxLength": 1024 }
+      }
+    },
+    "audit_hash": {
+      "description": "Hash of the audit record that sealed this receipt (hex).",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

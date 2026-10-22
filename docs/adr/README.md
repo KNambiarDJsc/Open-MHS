@@ -10,6 +10,7 @@
 | [0006](0006-mcp-sdk.md) | MCP via `rmcp`, as a gateway client | Accepted |
 | [0007](0007-mhs-independence.md) | Independent of Anthropic MHS; façade later | Accepted |
 | [0008](0008-languages.md) | Rust core, Python clients and adapters | Accepted |
+| [0009](0009-descriptor-model.md) | Descriptor model choices for spec v0.1 | Accepted |
 
 Format: Context → Decision → Alternatives considered → Consequences. Supersede an
 ADR with a new one rather than rewriting history.

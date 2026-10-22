@@ -1,0 +1,8 @@
+{
+  "target": { "device": "sim.psu-01", "capability": "power.output.voltage.setpoint" },
+  "operation": "write",
+  "value": { "value": 5, "unit": "V" },
+  "idempotency_key": "agent-7f3a-step-12",
+  "correlation_id": "run-2026-10-23-001",
+  "deadline_ms": 5000
+}

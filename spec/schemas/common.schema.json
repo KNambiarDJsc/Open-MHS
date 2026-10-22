@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openmhs:schema:0.1:common",
+  "title": "OpenMHS common definitions",
+  "$defs": {
+    "spec_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "identifier": {
+      "description": "Lowercase identifier for devices, adapters, components and rules.",
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9._-]{0,126}[a-z0-9])?$"
+    },
+    "capability_name": {
+      "description": "Dotted capability name. Vendor-specific capabilities use an x-<vendor>. prefix.",
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^(?:x-[a-z0-9]+\\.)?[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)*$"
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$"
+    },
+    "unit": {
+      "description": "UCUM case-sensitive unit code. Must appear in the OpenMHS unit table (spec/units.md).",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^\\S+$"
+    },
+    "quantity_kind": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "quality": {
+      "enum": ["GOOD", "UNCERTAIN", "BAD"]
+    },
+    "quantity_value": {
+      "type": "object",
+      "required": ["value", "unit"],
+      "additionalProperties": false,
+      "properties": {
+        "value": { "type": "number" },
+        "unit": { "$ref": "#/$defs/unit" }
+      }
+    },
+    "value": {
+      "description": "A typed value: a quantity (number + unit), integer, boolean or string.",
+      "anyOf": [
+        { "$ref": "#/$defs/quantity_value" },
+        { "type": "integer" },
+        { "type": "boolean" },
+        { "type": "string", "maxLength": 4096 }
+      ]
+    },
+    "state_value": {
+      "type": "object",
+      "required": ["value", "timestamp", "source", "quality"],
+      "additionalProperties": false,
+      "properties": {
+        "value": { "$ref": "#/$defs/value" },
+        "timestamp": { "$ref": "#/$defs/timestamp" },
+        "source": { "enum": ["device", "adapter", "gateway", "simulator"] },
+        "quality": { "$ref": "#/$defs/quality" }
+      }
+    },
+    "extensions": {
+      "description": "Vendor extensions. Keys must be namespaced with x-<vendor>.",
+      "type": "object",
+      "propertyNames": { "pattern": "^x-[a-z0-9-]+(?:\\.[a-z0-9_-]+)*$" }
+    },
+    "operation": {
+      "enum": ["read", "write", "subscribe", "invoke"]
+    },
+    "command_state": {
+      "enum": [
+        "CREATED", "VALIDATING", "DENIED", "AWAITING_APPROVAL", "APPROVED",
+        "EXPIRED", "CANCELLED", "DISPATCHED", "ACCEPTED", "REJECTED", "FAILED",
+        "TIMED_OUT", "APPLIED", "VERIFIED", "VERIFICATION_FAILED", "UNVERIFIABLE",
+        "UNKNOWN_OUTCOME", "RECONCILED_APPLIED", "RECONCILED_NOT_APPLIED"
+      ]
+    },
+    "outcome": {
+      "description": "Coarse outcome class derived from the command state (spec/lifecycle.md).",
+      "enum": ["pending", "succeeded", "unverified", "failed", "denied", "not_executed", "uncertain"]
+    },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "description": "Stable dotted error code (spec/errors.md).",
+          "type": "string",
+          "pattern": "^[a-z]+(?:\\.[a-z_]+)+$"
+        },
+        "message": { "type": "string" },
+        "pointer": {
+          "description": "JSON Pointer to the offending location, when applicable.",
+          "type": "string"
+        },
+        "rule_id": { "$ref": "#/$defs/identifier" },
+        "details": { "type": "object" }
+      }
+    }
+  }
+}

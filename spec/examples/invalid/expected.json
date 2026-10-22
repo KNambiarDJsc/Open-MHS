@@ -1,0 +1,120 @@
+{
+  "action-readback-without-capability.json": {
+    "code": "descriptor.verification.capability_missing"
+  },
+  "action-readback-without-expectation.json": {
+    "code": "descriptor.verification.expectation_missing"
+  },
+  "action-with-write-operation.json": {
+    "code": "descriptor.capability.invalid_operation"
+  },
+  "bad-device-id.json": {
+    "code": "descriptor.schema",
+    "pointer": "/device/id"
+  },
+  "bad-extension-namespace.json": {
+    "code": "descriptor.schema",
+    "pointer": "/extensions"
+  },
+  "duplicate-capability.json": {
+    "code": "descriptor.capability.duplicate"
+  },
+  "duplicate-component.json": {
+    "code": "descriptor.component.duplicate"
+  },
+  "event-with-read-operation.json": {
+    "code": "descriptor.capability.invalid_operation"
+  },
+  "missing-device-id.json": {
+    "code": "descriptor.schema",
+    "pointer": "/device"
+  },
+  "number-without-unit.json": {
+    "code": "descriptor.schema",
+    "pointer": "/capabilities/1/value"
+  },
+  "precondition-duplicate-id.json": {
+    "code": "descriptor.precondition.duplicate_id"
+  },
+  "precondition-enum-value-not-allowed.json": {
+    "code": "descriptor.precondition.type_mismatch"
+  },
+  "precondition-number-without-unit.json": {
+    "code": "descriptor.precondition.type_mismatch"
+  },
+  "precondition-ordering-on-boolean.json": {
+    "code": "descriptor.precondition.type_mismatch"
+  },
+  "precondition-target-not-readable.json": {
+    "code": "descriptor.precondition.not_readable"
+  },
+  "precondition-unknown-capability.json": {
+    "code": "descriptor.precondition.unknown_capability"
+  },
+  "property-with-params.json": {
+    "code": "descriptor.capability.field_not_applicable"
+  },
+  "property-without-value.json": {
+    "code": "descriptor.capability.value_missing"
+  },
+  "range-inverted.json": {
+    "code": "descriptor.constraint.range_inverted",
+    "pointer": "/capabilities/1/value/range"
+  },
+  "range-on-boolean.json": {
+    "code": "descriptor.constraint.not_applicable"
+  },
+  "readonly-declares-side-effect.json": {
+    "code": "descriptor.capability.side_effect_mismatch"
+  },
+  "readonly-with-verification.json": {
+    "code": "descriptor.verification.not_applicable"
+  },
+  "slew-on-boolean.json": {
+    "code": "descriptor.constraint.not_applicable"
+  },
+  "unit-quantity-mismatch.json": {
+    "code": "descriptor.unit.quantity_mismatch",
+    "pointer": "/capabilities/1/value/unit"
+  },
+  "unknown-component.json": {
+    "code": "descriptor.component.unknown",
+    "pointer": "/capabilities/1/component"
+  },
+  "unknown-quantity.json": {
+    "code": "descriptor.quantity.unknown",
+    "pointer": "/capabilities/1/value/quantity"
+  },
+  "unknown-top-level-field.json": {
+    "code": "descriptor.schema"
+  },
+  "unknown-unit.json": {
+    "code": "descriptor.unit.unknown",
+    "pointer": "/capabilities/1/value/unit"
+  },
+  "unsupported-version.json": {
+    "code": "descriptor.version.unsupported",
+    "pointer": "/openmhs"
+  },
+  "verification-ambiguous-expectation.json": {
+    "code": "descriptor.verification.ambiguous_expectation"
+  },
+  "verification-param-type-mismatch.json": {
+    "code": "descriptor.verification.type_mismatch"
+  },
+  "verification-target-not-readable.json": {
+    "code": "descriptor.verification.not_readable"
+  },
+  "verification-unknown-capability.json": {
+    "code": "descriptor.verification.unknown_capability"
+  },
+  "verification-unknown-param.json": {
+    "code": "descriptor.verification.unknown_param"
+  },
+  "writable-declares-no-side-effect.json": {
+    "code": "descriptor.capability.side_effect_mismatch"
+  },
+  "writable-without-verification.json": {
+    "code": "descriptor.capability.verification_missing"
+  }
+}

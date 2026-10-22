@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openmhs:schema:0.1:command",
+  "title": "OpenMHS command request",
+  "description": "What a client submits. The principal is taken from the authenticated session, never from the request body.",
+  "type": "object",
+  "required": ["target", "operation"],
+  "additionalProperties": false,
+  "properties": {
+    "target": {
+      "type": "object",
+      "required": ["device", "capability"],
+      "additionalProperties": false,
+      "properties": {
+        "device": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
+        "capability": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/capability_name" }
+      }
+    },
+    "operation": { "enum": ["read", "write", "invoke"] },
+    "value": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/value" },
+    "params": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
+      "additionalProperties": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/value" }
+    },
+    "idempotency_key": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "correlation_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "deadline_ms": { "type": "integer", "minimum": 1, "maximum": 86400000 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "operation": { "const": "write" } } },
+      "then": { "required": ["value"], "not": { "required": ["params"] } }
+    },
+    {
+      "if": { "properties": { "operation": { "const": "invoke" } } },
+      "then": { "not": { "required": ["value"] } }
+    },
+    {
+      "if": { "properties": { "operation": { "const": "read" } } },
+      "then": { "allOf": [ { "not": { "required": ["value"] } }, { "not": { "required": ["params"] } } ] }
+    }
+  ]
+}

@@ -5,8 +5,8 @@ the milestone is marked **Done**.
 
 | # | Milestone | Status |
 |---|---|---|
-| M0 | Research, positioning, naming, ADRs | Done (pending review) |
-| M1 | Specification v0.1: JSON Schemas, lifecycle/units/errors/authorization specs, 3 dissimilar example devices, invalid fixtures | Planned |
+| M0 | Research, positioning, naming, ADRs | Done |
+| M1 | Specification v0.1: JSON Schemas, lifecycle/units/errors/authorization specs, 3 dissimilar example devices, invalid fixtures | Done (pending review) |
 | M2 | Core engine: registry, constraints, authorization, command state machine, SQLite journal with crash recovery, state store, hash-chained audit, adapter trait, virtual PSU with fault injection | Planned |
 | M3 | Gateway (`openmhsd`), local JSON-RPC API, CLI, three virtual devices, `openmhs demo`, CI on Windows/macOS/Linux | Planned |
 | M4 | MCP server (gateway client), pure-Python client SDK, mock-agent replanning example | Planned |

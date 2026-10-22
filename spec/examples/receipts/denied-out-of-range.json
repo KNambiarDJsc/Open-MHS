@@ -1,0 +1,31 @@
+{
+  "command_id": "01JB7Z9R4X5Y6Z7A8B9C0D1E2F",
+  "principal": "agent.lab-assistant",
+  "request": {
+    "target": { "device": "sim.psu-01", "capability": "power.output.voltage.setpoint" },
+    "operation": "write",
+    "value": { "value": 48, "unit": "V" }
+  },
+  "state": "DENIED",
+  "outcome": "denied",
+  "created_at": "2026-10-23T10:16:00.000Z",
+  "transitions": [
+    { "state": "CREATED", "at": "2026-10-23T10:16:00.000Z" },
+    { "state": "VALIDATING", "at": "2026-10-23T10:16:00.001Z" },
+    { "state": "DENIED", "at": "2026-10-23T10:16:00.002Z", "detail": "48 V exceeds the declared range 0..12 V" }
+  ],
+  "policy": {
+    "decision": "deny",
+    "rules": [
+      { "rule_id": "grant.lab-assistant.psu-setpoint", "effect": "allow" }
+    ],
+    "errors": [
+      {
+        "code": "command.value.out_of_range",
+        "message": "48 V is outside the allowed range 0..12 V",
+        "pointer": "/value",
+        "details": { "min": 0, "max": 12, "unit": "V" }
+      }
+    ]
+  }
+}

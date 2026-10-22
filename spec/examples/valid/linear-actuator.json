@@ -1,0 +1,109 @@
+{
+  "openmhs": "0.1",
+  "device": {
+    "id": "sim.axis-01",
+    "name": "Simulated single-axis linear stage",
+    "manufacturer": "OpenMHS Simulators",
+    "model": "VAXIS-300",
+    "serial": "SIM-AXIS-0001",
+    "firmware": "1.0.0"
+  },
+  "adapter": { "id": "openmhs.sim.axis", "version": "0.1.0", "config": { "seed": 42 } },
+  "capabilities": [
+    {
+      "name": "axis.position",
+      "kind": "property",
+      "operations": ["read", "subscribe"],
+      "value": { "type": "number", "quantity": "length", "unit": "mm", "range": { "min": 0, "max": 300 } },
+      "side_effect": "none",
+      "freshness": { "max_age_ms": 500 }
+    },
+    {
+      "name": "axis.homed",
+      "kind": "property",
+      "operations": ["read", "subscribe"],
+      "value": { "type": "boolean" },
+      "side_effect": "none"
+    },
+    {
+      "name": "axis.fault",
+      "kind": "property",
+      "operations": ["read", "subscribe"],
+      "value": { "type": "boolean" },
+      "side_effect": "none",
+      "freshness": { "max_age_ms": 500 }
+    },
+    {
+      "name": "axis.motion.state",
+      "kind": "property",
+      "operations": ["read", "subscribe"],
+      "value": { "type": "enum", "values": ["idle", "moving", "homing", "fault"] },
+      "side_effect": "none",
+      "freshness": { "max_age_ms": 500 }
+    },
+    {
+      "name": "axis.home",
+      "kind": "action",
+      "description": "Run the homing sequence to establish the zero reference.",
+      "operations": ["invoke"],
+      "params": {},
+      "side_effect": "reversible",
+      "idempotent": true,
+      "timing": { "expected_ms": 3000, "timeout_ms": 10000 },
+      "preconditions": [
+        { "id": "no-fault", "capability": "axis.fault", "op": "eq", "value": false, "max_age_ms": 500 }
+      ],
+      "verification": { "mode": "readback", "capability": "axis.homed", "expect": true, "timeout_ms": 10000 }
+    },
+    {
+      "name": "axis.move_absolute",
+      "kind": "action",
+      "description": "Move the carriage to an absolute position.",
+      "operations": ["invoke"],
+      "params": {
+        "position": { "type": "number", "quantity": "length", "unit": "mm", "range": { "min": 0, "max": 300 } },
+        "speed": { "type": "number", "quantity": "velocity", "unit": "mm/s", "range": { "min": 1, "max": 50 } }
+      },
+      "result": {
+        "final_position": { "type": "number", "quantity": "length", "unit": "mm" }
+      },
+      "side_effect": "hazardous",
+      "idempotent": true,
+      "timing": { "expected_ms": 2000, "timeout_ms": 15000 },
+      "preconditions": [
+        { "id": "homed", "description": "Absolute moves need a zero reference.", "capability": "axis.homed", "op": "eq", "value": true },
+        { "id": "no-fault", "capability": "axis.fault", "op": "eq", "value": false, "max_age_ms": 500 },
+        { "id": "idle", "capability": "axis.motion.state", "op": "in", "value": ["idle"], "max_age_ms": 500 }
+      ],
+      "verification": {
+        "mode": "readback",
+        "capability": "axis.position",
+        "expect_param": "position",
+        "tolerance": { "abs": 0.1 },
+        "settle_ms": 100,
+        "timeout_ms": 15000
+      }
+    },
+    {
+      "name": "axis.stop",
+      "kind": "action",
+      "description": "Decelerate and stop any motion.",
+      "operations": ["invoke"],
+      "params": {},
+      "side_effect": "reversible",
+      "idempotent": true,
+      "timing": { "expected_ms": 200, "timeout_ms": 2000 },
+      "verification": { "mode": "readback", "capability": "axis.motion.state", "expect": "idle", "timeout_ms": 2000 }
+    },
+    {
+      "name": "axis.limit_reached",
+      "kind": "event",
+      "operations": ["subscribe"],
+      "payload": {
+        "position": { "type": "number", "quantity": "length", "unit": "mm" },
+        "limit": { "type": "enum", "values": ["min", "max"] }
+      },
+      "side_effect": "none"
+    }
+  ]
+}

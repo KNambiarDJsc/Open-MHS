@@ -50,6 +50,20 @@ Terminal states: `DENIED`, `EXPIRED`, `CANCELLED`, `REJECTED`, `FAILED`,
 `UNVERIFIABLE` covers capabilities with no readback (e.g. a fire-and-forget
 trigger); the receipt says so instead of pretending verification happened.
 
+## Amendment (M1, 2026-10-23)
+
+Writing the full specification (`spec/lifecycle.md`) surfaced three gaps, now part of
+this decision:
+
+- `AWAITING_APPROVAL → CANCELLED`: a requester can withdraw a command that is still
+  waiting for approval.
+- `DISPATCHED → UNKNOWN_OUTCOME` and `ACCEPTED → UNKNOWN_OUTCOME`: crash recovery
+  (rule 3) needs these edges explicitly; previously they existed only in prose.
+- Outcome classes are `pending`, `succeeded`, `unverified`, `failed`, `denied`,
+  `not_executed`, `uncertain`. `unverified` keeps `UNVERIFIABLE` from being reported
+  as success; `not_executed` tells an agent that `EXPIRED`/`CANCELLED` commands never
+  reached the device.
+
 ## Alternatives considered
 
 - **Simple success/failure.** Hides the exact cases that cause duplicate physical

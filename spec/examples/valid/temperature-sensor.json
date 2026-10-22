@@ -1,0 +1,40 @@
+{
+  "openmhs": "0.1",
+  "device": {
+    "id": "sim.thermo-01",
+    "name": "Simulated ambient temperature sensor",
+    "manufacturer": "OpenMHS Simulators",
+    "model": "VTHERM-1",
+    "serial": "SIM-THERM-0001",
+    "firmware": "1.0.0"
+  },
+  "adapter": { "id": "openmhs.sim.thermo", "version": "0.1.0", "config": { "seed": 42 } },
+  "capabilities": [
+    {
+      "name": "temperature.ambient",
+      "kind": "property",
+      "description": "Ambient air temperature.",
+      "operations": ["read", "subscribe"],
+      "value": { "type": "number", "quantity": "temperature", "unit": "Cel", "range": { "min": -40, "max": 125 } },
+      "side_effect": "none",
+      "freshness": { "max_age_ms": 2000 }
+    },
+    {
+      "name": "sensor.status",
+      "kind": "property",
+      "operations": ["read", "subscribe"],
+      "value": { "type": "enum", "values": ["ok", "degraded", "fault"] },
+      "side_effect": "none"
+    },
+    {
+      "name": "sensor.overtemp",
+      "kind": "event",
+      "description": "Raised when the ambient temperature exceeds the sensor's alarm threshold.",
+      "operations": ["subscribe"],
+      "payload": {
+        "temperature": { "type": "number", "quantity": "temperature", "unit": "Cel" }
+      },
+      "side_effect": "none"
+    }
+  ]
+}

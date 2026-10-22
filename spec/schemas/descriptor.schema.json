@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openmhs:schema:0.1:descriptor",
+  "title": "OpenMHS device descriptor",
+  "description": "Structural schema. Cross-field rules (units, references, kind/operation compatibility) are specified in spec/descriptor.md and enforced by semantic validation.",
+  "type": "object",
+  "required": ["openmhs", "device", "adapter", "capabilities"],
+  "additionalProperties": false,
+  "properties": {
+    "openmhs": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/spec_version" },
+    "device": {
+      "type": "object",
+      "required": ["id", "manufacturer", "model"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
+        "name": { "type": "string", "maxLength": 256 },
+        "manufacturer": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "model": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "serial": { "type": "string", "maxLength": 256 },
+        "firmware": { "type": "string", "maxLength": 128 },
+        "description": { "type": "string", "maxLength": 4096 }
+      }
+    },
+    "adapter": {
+      "type": "object",
+      "required": ["id", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
+        "version": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/semver" },
+        "config": { "type": "object" }
+      }
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
+          "name": { "type": "string", "maxLength": 256 },
+          "description": { "type": "string", "maxLength": 4096 }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/capability" }
+    },
+    "extensions": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/extensions" }
+  },
+  "$defs": {
+    "capability": {
+      "type": "object",
+      "required": ["name", "kind", "operations", "side_effect"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/capability_name" },
+        "version": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/spec_version" },
+        "kind": { "enum": ["property", "action", "event"] },
+        "description": { "type": "string", "maxLength": 4096 },
+        "component": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
+        "operations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/operation" }
+        },
+        "value": { "$ref": "#/$defs/value_spec" },
+        "params": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
+          "additionalProperties": { "$ref": "#/$defs/value_spec" }
+        },
+        "result": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
+          "additionalProperties": { "$ref": "#/$defs/value_spec" }
+        },
+        "payload": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
+          "additionalProperties": { "$ref": "#/$defs/value_spec" }
+        },
+        "side_effect": { "enum": ["none", "reversible", "irreversible", "hazardous"] },
+        "idempotent": { "type": "boolean" },
+        "freshness": {
+          "type": "object",
+          "required": ["max_age_ms"],
+          "additionalProperties": false,
+          "properties": { "max_age_ms": { "type": "integer", "minimum": 1 } }
+        },
+        "rate_limit": {
+          "type": "object",
+          "required": ["max", "per_ms"],
+          "additionalProperties": false,
+          "properties": {
+            "max": { "type": "integer", "minimum": 1 },
+            "per_ms": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "slew": {
+          "description": "Maximum change of a numeric property per time window, in the canonical unit.",
+          "type": "object",
+          "required": ["max_change", "per_ms"],
+          "additionalProperties": false,
+          "properties": {
+            "max_change": { "type": "number", "exclusiveMinimum": 0 },
+            "per_ms": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "preconditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/precondition" }
+        },
+        "verification": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": ["mode"],
+              "additionalProperties": false,
+              "properties": {
+                "mode": { "const": "readback" },
+                "capability": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/capability_name" },
+                "tolerance": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "minProperties": 1,
+                  "properties": {
+                    "abs": { "type": "number", "minimum": 0 },
+                    "rel": { "type": "number", "minimum": 0 }
+                  }
+                },
+                "expect": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/value" },
+                "expect_param": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+                "settle_ms": { "type": "integer", "minimum": 0 },
+                "timeout_ms": { "type": "integer", "minimum": 1 }
+              }
+            },
+            {
+              "type": "object",
+              "required": ["mode", "reason"],
+              "additionalProperties": false,
+              "properties": {
+                "mode": { "const": "none" },
+                "reason": { "type": "string", "minLength": 1, "maxLength": 1024 }
+              }
+            }
+          ]
+        },
+        "timing": {
+          "type": "object",
+          "required": ["timeout_ms"],
+          "additionalProperties": false,
+          "properties": {
+            "expected_ms": { "type": "integer", "minimum": 0 },
+            "timeout_ms": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "extensions": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/extensions" }
+      }
+    },
+    "value_spec": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "enum": ["number", "integer", "boolean", "enum", "string"] },
+        "quantity": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/quantity_kind" },
+        "unit": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/unit" },
+        "range": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": false,
+          "properties": {
+            "min": { "type": "number" },
+            "max": { "type": "number" }
+          }
+        },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "max_length": { "type": "integer", "minimum": 1 },
+        "description": { "type": "string", "maxLength": 4096 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "number" } } },
+          "then": { "required": ["quantity", "unit"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "enum" } } },
+          "then": { "required": ["values"] }
+        }
+      ]
+    },
+    "precondition": {
+      "type": "object",
+      "required": ["id", "capability", "op", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
+        "description": { "type": "string", "maxLength": 1024 },
+        "capability": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/capability_name" },
+        "op": { "enum": ["eq", "ne", "lt", "le", "gt", "ge", "in"] },
+        "value": {
+          "anyOf": [
+            { "$ref": "urn:openmhs:schema:0.1:common#/$defs/value" },
+            { "type": "array", "minItems": 1, "items": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/value" } }
+          ]
+        },
+        "max_age_ms": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

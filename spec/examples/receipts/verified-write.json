@@ -1,0 +1,88 @@
+{
+  "command_id": "01JB7Z8Q3W4X5Y6Z7A8B9C0D1E",
+  "correlation_id": "run-2026-10-23-001",
+  "idempotency_key": "agent-7f3a-step-12",
+  "principal": "agent.lab-assistant",
+  "request": {
+    "target": {
+      "device": "sim.psu-01",
+      "capability": "power.output.voltage.setpoint"
+    },
+    "operation": "write",
+    "value": {
+      "value": 5,
+      "unit": "V"
+    },
+    "idempotency_key": "agent-7f3a-step-12",
+    "correlation_id": "run-2026-10-23-001",
+    "deadline_ms": 5000
+  },
+  "state": "VERIFIED",
+  "outcome": "succeeded",
+  "created_at": "2026-10-23T10:15:00.000Z",
+  "deadline_at": "2026-10-23T10:15:05.000Z",
+  "transitions": [
+    {
+      "state": "CREATED",
+      "at": "2026-10-23T10:15:00.000Z"
+    },
+    {
+      "state": "VALIDATING",
+      "at": "2026-10-23T10:15:00.001Z"
+    },
+    {
+      "state": "APPROVED",
+      "at": "2026-10-23T10:15:00.003Z"
+    },
+    {
+      "state": "DISPATCHED",
+      "at": "2026-10-23T10:15:00.004Z"
+    },
+    {
+      "state": "ACCEPTED",
+      "at": "2026-10-23T10:15:00.020Z"
+    },
+    {
+      "state": "APPLIED",
+      "at": "2026-10-23T10:15:00.021Z"
+    },
+    {
+      "state": "VERIFIED",
+      "at": "2026-10-23T10:15:00.240Z",
+      "detail": "setpoint readback 5.0 V within ±0.005 V"
+    }
+  ],
+  "policy": {
+    "decision": "allow",
+    "rules": [
+      {
+        "rule_id": "grant.lab-assistant.psu-setpoint",
+        "effect": "allow",
+        "reason": "write granted on sim.psu-01/power.output.*"
+      }
+    ]
+  },
+  "adapter_result": {
+    "acknowledged": true,
+    "reported_applied": true
+  },
+  "verification": {
+    "mode": "readback",
+    "capability": "power.output.voltage.setpoint",
+    "expected": {
+      "value": 5,
+      "unit": "V"
+    },
+    "observed": {
+      "value": {
+        "value": 5.0,
+        "unit": "V"
+      },
+      "timestamp": "2026-10-23T10:15:00.238Z",
+      "source": "device",
+      "quality": "GOOD"
+    },
+    "matched": true
+  },
+  "audit_hash": "3f2a9c1d4e5b6a7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f7"
+}

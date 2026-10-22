@@ -1,0 +1,107 @@
+{
+  "openmhs": "0.1",
+  "device": {
+    "id": "sim.psu-01",
+    "name": "Simulated single-channel programmable power supply",
+    "manufacturer": "OpenMHS Simulators",
+    "model": "VPSU-1",
+    "serial": "SIM-PSU-0001",
+    "firmware": "1.0.0"
+  },
+  "adapter": { "id": "openmhs.sim.psu", "version": "0.1.0", "config": { "seed": 42 } },
+  "components": [
+    { "id": "output", "name": "Output channel 1" },
+    { "id": "protection", "name": "Over-voltage / over-current protection" }
+  ],
+  "capabilities": [
+    {
+      "name": "power.output.voltage.setpoint",
+      "kind": "property",
+      "component": "output",
+      "operations": ["read", "write"],
+      "value": { "type": "number", "quantity": "electric_potential", "unit": "V", "range": { "min": 0, "max": 12 } },
+      "side_effect": "reversible",
+      "idempotent": true,
+      "slew": { "max_change": 2, "per_ms": 1000 },
+      "rate_limit": { "max": 5, "per_ms": 1000 },
+      "preconditions": [
+        {
+          "id": "protection-not-tripped",
+          "description": "Setpoint changes are refused while protection is tripped.",
+          "capability": "protection.tripped",
+          "op": "eq",
+          "value": false,
+          "max_age_ms": 1000
+        }
+      ],
+      "verification": {
+        "mode": "readback",
+        "tolerance": { "abs": 0.005 },
+        "settle_ms": 50,
+        "timeout_ms": 2000
+      }
+    },
+    {
+      "name": "power.output.voltage.measured",
+      "kind": "property",
+      "component": "output",
+      "operations": ["read", "subscribe"],
+      "value": { "type": "number", "quantity": "electric_potential", "unit": "V" },
+      "side_effect": "none",
+      "freshness": { "max_age_ms": 1000 }
+    },
+    {
+      "name": "power.output.current.limit",
+      "kind": "property",
+      "component": "output",
+      "operations": ["read", "write"],
+      "value": { "type": "number", "quantity": "electric_current", "unit": "A", "range": { "min": 0, "max": 3 } },
+      "side_effect": "reversible",
+      "idempotent": true,
+      "verification": { "mode": "readback", "tolerance": { "abs": 0.001 }, "timeout_ms": 1000 }
+    },
+    {
+      "name": "power.output.current.measured",
+      "kind": "property",
+      "component": "output",
+      "operations": ["read", "subscribe"],
+      "value": { "type": "number", "quantity": "electric_current", "unit": "A" },
+      "side_effect": "none",
+      "freshness": { "max_age_ms": 1000 }
+    },
+    {
+      "name": "power.output.enabled",
+      "kind": "property",
+      "component": "output",
+      "operations": ["read", "write"],
+      "value": { "type": "boolean" },
+      "side_effect": "reversible",
+      "idempotent": true,
+      "preconditions": [
+        { "id": "protection-not-tripped", "capability": "protection.tripped", "op": "eq", "value": false, "max_age_ms": 1000 }
+      ],
+      "verification": { "mode": "readback", "timeout_ms": 1000 }
+    },
+    {
+      "name": "protection.tripped",
+      "kind": "property",
+      "component": "protection",
+      "operations": ["read", "subscribe"],
+      "value": { "type": "boolean" },
+      "side_effect": "none",
+      "freshness": { "max_age_ms": 1000 }
+    },
+    {
+      "name": "protection.reset",
+      "kind": "action",
+      "component": "protection",
+      "description": "Clear a protection trip. The output stays disabled afterwards.",
+      "operations": ["invoke"],
+      "params": {},
+      "side_effect": "reversible",
+      "idempotent": true,
+      "timing": { "expected_ms": 100, "timeout_ms": 2000 },
+      "verification": { "mode": "readback", "capability": "protection.tripped", "expect": false, "timeout_ms": 2000 }
+    }
+  ]
+}

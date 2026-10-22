@@ -1,0 +1,9 @@
+{
+  "target": { "device": "sim.axis-01", "capability": "axis.move_absolute" },
+  "operation": "invoke",
+  "params": {
+    "position": { "value": 120.5, "unit": "mm" },
+    "speed": { "value": 20, "unit": "mm/s" }
+  },
+  "idempotency_key": "agent-7f3a-step-13"
+}
