@@ -1,0 +1,13 @@
+/target
+**/*.rs.bk
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+dist/
+.idea/
+.vscode/
