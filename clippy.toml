@@ -1,2 +1,5 @@
 allow-unwrap-in-tests = true
 allow-expect-in-tests = true
+# ErrorObject (the wire error type) is ~130 bytes. It is only constructed on rejection
+# paths, so boxing it would add indirection everywhere for no measurable gain.
+large-error-threshold = 256

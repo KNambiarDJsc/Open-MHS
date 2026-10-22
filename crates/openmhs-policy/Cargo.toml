@@ -1,0 +1,19 @@
+[package]
+name = "openmhs-policy"
+description = "OpenMHS deterministic policy: authorization grants and constraint validation."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+openmhs-types.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+
+[lints]
+workspace = true

@@ -56,41 +56,69 @@ enforces this in both directions.
 | `descriptor.precondition.not_readable` | Precondition target is not a readable property |
 | `descriptor.precondition.type_mismatch` | Value or operator incompatible with the target |
 
-### Commands (reserved for M2)
+### Commands
+
+Produced by the engine (M2). Errors that deny a command appear in the receipt's
+`policy.errors`; errors about the request itself are returned to the caller.
 
 | Code | Meaning |
 |---|---|
-| `command.schema` | Structural violation of the command schema |
+| `command.schema` | Structural violation of the command schema; no command is created |
+| `command.not_a_command` | A `read` was submitted as a command; reads use the read API |
+| `command.unknown` | No command with that id |
+| `command.invalid_state` | The command's state does not allow the requested action (approve, cancel, reconcile) |
+| `command.idempotency.conflict` | Idempotency key reused with a different request |
 | `command.device.unknown` | Target device not registered |
 | `command.capability.unknown` | Target capability not on the device |
 | `command.operation.unsupported` | Capability does not support the operation |
-| `command.value.type_mismatch` | Value has the wrong type |
+| `command.value.type_mismatch` | Value has the wrong type (including a bare number where a quantity is required) |
 | `command.value.unit_unknown` | Value uses an unknown unit |
 | `command.value.unit_mismatch` | Value's unit is not convertible to the capability's |
-| `command.value.out_of_range` | Value outside the declared range |
-| `command.param.missing` / `command.param.unknown` | Action parameters don't match the declaration |
+| `command.value.out_of_range` | Value outside the declared range (or string longer than `max_length`) |
+| `command.value.not_allowed` | Enum value not among the declared values |
+| `command.param.missing` | A declared action parameter was not given (all are required in v0.1) |
+| `command.param.unknown` | A parameter the action does not declare |
 | `command.rate_limited` | Rate limit exceeded |
 | `command.slew_exceeded` | Change exceeds the slew limit |
-| `command.precondition.failed` | A precondition does not hold |
-| `command.state.stale` | Required state is missing, stale, or not `GOOD` |
-| `command.deadline.expired` | Deadline passed before dispatch |
-| `command.idempotency.conflict` | Idempotency key reused with a different request |
+| `command.precondition.failed` | A precondition does not hold; `rule_id` is the precondition id |
+| `command.state.stale` | Required state is missing, stale, or not `GOOD`; `rule_id` names the precondition when there is one |
+| `command.verification.invalid` | The descriptor's verification cannot be applied to this request (indicates a descriptor defect) |
+| `command.not_reconcilable` | `UNKNOWN_OUTCOME` cannot be resolved automatically (no readback declared, or no usable reading) |
 
-### Policy (reserved for M2)
+A deadline that passes before dispatch is reported by the `EXPIRED` state, not an error code.
+
+### Policy
 
 | Code | Meaning |
 |---|---|
 | `policy.denied.no_grant` | No grant allows the operation |
 | `policy.denied.explicit` | A `deny` grant matched |
 | `policy.denied.side_effect` | Grant does not cover this side-effect class |
+| `policy.approval.not_approver` | The principal is not configured as an approver |
 | `policy.approval.self` | A principal tried to approve its own command |
+| `policy.cancel.not_allowed` | Only the requester or an approver can cancel |
 
-### Adapter (reserved for M2)
+### Adapter
+
+The class decides the lifecycle state (spec/lifecycle.md §3).
+
+| Code | Meaning | Resulting state |
+|---|---|---|
+| `adapter.timeout` | No response within the deadline | `TIMED_OUT` → `UNKNOWN_OUTCOME` |
+| `adapter.disconnected` | Connection lost | `UNKNOWN_OUTCOME` |
+| `adapter.malformed_response` | Response could not be interpreted | `UNKNOWN_OUTCOME` |
+| `adapter.internal` | Adapter fault (crash, panic, bug) | `UNKNOWN_OUTCOME` |
+| `adapter.rejected` | Device refused the command | `REJECTED` (or `FAILED` after `ACCEPTED`) |
+| `adapter.device_failure` | Device reported it could not carry out the command | `FAILED` |
+| `adapter.not_sent` | Adapter guarantees nothing reached the device | `FAILED` |
+| `adapter.unsupported` | Adapter does not implement the capability or operation | `FAILED` |
+
+### Registry and gateway
 
 | Code | Meaning |
 |---|---|
-| `adapter.timeout` | No response within the deadline |
-| `adapter.disconnected` | Device connection lost |
-| `adapter.rejected` | Device refused the command |
-| `adapter.malformed_response` | Device response could not be interpreted |
-| `adapter.internal` | Adapter fault (crash, panic, bug) |
+| `registry.invalid_descriptor` | An adapter's descriptor failed validation; details carry the descriptor validation issues |
+| `registry.adapter_mismatch` | Descriptor names a different adapter than the one serving it |
+| `registry.duplicate_device` | A device with that id is already registered |
+| `gateway.restarted` | Command denied because the gateway restarted before validation finished |
+| `gateway.journal` | The journal could not be read or written |

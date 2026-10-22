@@ -78,21 +78,51 @@ Agents usually only need the coarse class:
    repeated submission with the same key returns the existing command and receipt and
    MUST NOT dispatch again. Reusing a key with a different request body is an error
    (`command.idempotency.conflict`).
-5. **Deadlines.** `deadline_ms` bounds the whole command. If it passes before dispatch,
-   the command `EXPIRED`. If it passes after dispatch, `TIMED_OUT`.
+5. **Deadlines.** `deadline_ms` (default 60 000 ms) bounds the command up to the
+   device's report. If it passes before dispatch, the command `EXPIRED`. If it passes
+   after dispatch, `TIMED_OUT`. A capability's `timing.timeout_ms`, if shorter, bounds
+   execution instead. Verification after `APPLIED` has its own `timeout_ms`
+   (default 2 000 ms) from the descriptor.
 6. **Receipts.** Every command, including denials, produces an immutable receipt
    (`schemas/receipt.schema.json`) with the full transition history, the policy decision
    and rule IDs, adapter results and readback evidence.
+7. **Uncertain adapter failures.** A disconnect, malformed response or adapter crash
+   after dispatch moves the command straight to `UNKNOWN_OUTCOME` (the
+   `DISPATCHED`/`ACCEPTED → UNKNOWN_OUTCOME` edges). Only a timeout passes through
+   `TIMED_OUT`. See the adapter codes in [errors.md](errors.md).
+8. **Reads are not commands.** A read cannot change the device, so it does not create a
+   command or a receipt. It is still authorized (`read` operation) and recorded in the
+   audit log, including denied reads.
+9. **One state-changing command per device at a time.** The gateway serializes writes and
+   invokes per device, from the stateful checks through verification, so rate limits,
+   slew limits and preconditions are evaluated against settled state
+   ([ADR-0010](../docs/adr/0010-engine-execution-model.md)).
+
+## 3a. Validation order
+
+1. Command schema. Failure → error to the caller; no command is created (audited as
+   `request.rejected`).
+2. Device and capability exist.
+3. Authorization. Denied requests cause **no device traffic at all**.
+4. Stateless checks: operation, types, units, ranges, parameters. Failures cause no
+   device traffic.
+5. Stateful checks, under the device lock, against readings taken **now**: rate limit,
+   slew limit, preconditions and freshness. Readings that fail, are stale, or are not
+   `GOOD` count as missing, and missing state denies.
 
 ## 4. Durability and crash recovery
 
 1. `CREATED` and every transition are written to the journal before they take effect.
 2. Before calling the adapter, the gateway journals the `DISPATCHED` intent.
-3. On restart, any command whose last journaled state is `DISPATCHED` or `ACCEPTED`
-   moves to `UNKNOWN_OUTCOME` with detail `gateway restarted during execution`.
-4. Commands in `APPLIED` resume verification. Commands in `CREATED`, `VALIDATING`,
-   `APPROVED` or `AWAITING_APPROVAL` are re-evaluated against current policy, or
-   `EXPIRED` if their deadline passed.
+3. On restart, any command whose last journaled state is `DISPATCHED`, `ACCEPTED` or
+   `TIMED_OUT` moves to `UNKNOWN_OUTCOME` with detail `gateway restarted during
+   execution`.
+4. Commands in `APPLIED` resume verification once their device is registered again.
+5. Commands that never reached the device are closed, never resumed: `CREATED` and
+   `VALIDATING` become `DENIED` (`gateway.restarted`; the client may resubmit), and
+   `APPROVED` becomes `EXPIRED`. Commands in `AWAITING_APPROVAL` keep waiting until
+   approved, cancelled, or past their deadline.
+6. Rate- and slew-limit history is kept in memory and starts empty after a restart.
 
 ## 5. Reconciliation
 

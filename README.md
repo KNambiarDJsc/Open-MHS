@@ -3,9 +3,9 @@
 An open, model-agnostic, supervisory interface between AI agents and programmable
 hardware.
 
-> **Status: pre-alpha (M1 — specification).** There is no gateway, CLI or hardware
-> support yet. What exists: the v0.1 specification, its JSON Schemas, and a Rust crate
-> that validates descriptors and encodes the command lifecycle.
+> **Status: pre-alpha (M2 — core engine).** The engine runs commands end to end against
+> a simulated power supply, as a Rust library. There is no gateway process, CLI, MCP
+> server or real-hardware adapter yet, so it is not usable by an agent today.
 >
 > OpenMHS is an independent project. It is not affiliated with or endorsed by
 > Anthropic, and it does not claim compatibility with Anthropic's Model Hardware
@@ -28,11 +28,17 @@ safety systems keep final authority.
 | Specification v0.1 (descriptors, units, lifecycle, authorization, errors, conformance levels) | Draft, in [`spec/`](spec/README.md) |
 | JSON Schemas (Draft 2020-12), checked with Rust and Python validators | Implemented |
 | Descriptor validation with stable error codes (`openmhs-types`) | Implemented |
-| Command lifecycle state machine (`openmhs-types::lifecycle`) | Implemented as data + tests; no engine runs it yet |
-| Gateway, policy engine, adapters, simulators, CLI, MCP, Python SDK | Planned (M2–M4) |
+| Deterministic policy: grants, approvals, units/ranges, rate and slew limits, preconditions, freshness (`openmhs-policy`) | Implemented |
+| Command engine: full lifecycle, idempotency, timeouts → `UNKNOWN_OUTCOME`, readback verification, reconciliation, crash recovery (`openmhs-engine`) | Implemented, library only |
+| SQLite journal and hash-chained, tamper-evident audit log | Implemented |
+| Adapter contract (`openmhs-adapter`) | Implemented; may change before M5 |
+| Simulated power supply with fault injection (`openmhs-sim`) | Implemented |
+| Simulated sensor and actuator, gateway process, CLI | Planned (M3) |
+| MCP server, Python SDK | Planned (M4) |
+| Real protocol adapters (Modbus, MQTT, SCPI, …) | Planned (M6+) |
 
 ```sh
-cargo test --workspace          # Rust: schema + semantic validation, lifecycle, units
+cargo test --workspace          # spec fixtures, policy, engine invariants and scenarios
 python tools/check_schemas.py   # Python: schemas behave the same (pip install jsonschema)
 ```
 

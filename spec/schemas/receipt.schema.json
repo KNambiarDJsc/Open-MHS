@@ -63,6 +63,11 @@
         "acknowledged": { "type": "boolean" },
         "reported_applied": { "type": "boolean" },
         "value": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/value" },
+        "result": {
+          "description": "Named action results, as declared by the capability's `result`.",
+          "type": "object",
+          "additionalProperties": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/value" }
+        },
         "error": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/error" }
       }
     },

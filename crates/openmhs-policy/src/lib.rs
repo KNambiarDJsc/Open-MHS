@@ -1,0 +1,16 @@
+//! Deterministic policy for OpenMHS (spec/authorization.md, ADR-0003).
+//!
+//! - [`authz`]: who may perform which operation on which capability.
+//! - [`constraints`]: whether a request is physically acceptable right now.
+//!
+//! Everything here is a pure function of its inputs. No I/O, no clocks, no models.
+
+pub mod authz;
+pub mod constraints;
+mod glob;
+
+pub use authz::{AuthzDecision, Effect, Grant, Policy};
+pub use constraints::{
+    Expectation, Live, Mutation, Prepared, check_command, check_read, readback_matches,
+    state_needed,
+};
