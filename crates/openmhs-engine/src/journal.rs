@@ -338,6 +338,36 @@ impl Journal {
         Ok(out)
     }
 
+    /// Most recent commands first, optionally filtered by principal and state (an empty
+    /// `states` means any state).
+    pub fn list_commands(
+        &self,
+        principal: Option<&str>,
+        states: &[CommandState],
+        limit: usize,
+    ) -> Result<Vec<Receipt>, JournalError> {
+        let conn = self.lock();
+        let mut stmt = conn.prepare(
+            "SELECT receipt, state FROM commands
+             WHERE (?1 IS NULL OR principal = ?1)
+             ORDER BY created_ms DESC, command_id DESC",
+        )?;
+        let names: Vec<&str> = states.iter().map(|s| state_name(*s)).collect();
+        let mut out = Vec::new();
+        for row in stmt.query_map(params![principal], |r| {
+            Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
+        })? {
+            let (json, state) = row?;
+            if names.is_empty() || names.contains(&state.as_str()) {
+                out.push(serde_json::from_str(&json)?);
+                if out.len() >= limit {
+                    break;
+                }
+            }
+        }
+        Ok(out)
+    }
+
     pub fn audit_records(&self) -> Result<Vec<AuditRecord>, JournalError> {
         let conn = self.lock();
         let mut stmt = conn.prepare(

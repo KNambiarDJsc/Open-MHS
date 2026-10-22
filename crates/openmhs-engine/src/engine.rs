@@ -198,6 +198,16 @@ impl Engine {
         Ok(self.inner.journal.receipt(command_id)?)
     }
 
+    /// Most recent commands first; see [`Journal::list_commands`].
+    pub fn commands(
+        &self,
+        principal: Option<&str>,
+        states: &[CommandState],
+        limit: usize,
+    ) -> Result<Vec<Receipt>, EngineError> {
+        Ok(self.inner.journal.list_commands(principal, states, limit)?)
+    }
+
     pub fn verify_audit(&self) -> Result<AuditVerification, EngineError> {
         Ok(self.inner.journal.verify_audit()?)
     }
@@ -256,6 +266,23 @@ impl Engine {
         )?;
         info!(device = %id, "device registered");
         Ok(descriptor)
+    }
+
+    /// Ask every adapter to shut down. Best effort: failures are logged.
+    pub async fn shutdown_adapters(&self) {
+        let devices: Vec<Arc<Device>> = self
+            .inner
+            .devices
+            .read()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .values()
+            .cloned()
+            .collect();
+        for d in devices {
+            if let Err(e) = d.adapter.shutdown().await {
+                warn!(device = %d.descriptor.device.id, error = %e, "adapter shutdown failed");
+            }
+        }
     }
 
     // ---------------------------------------------------------------- reads
@@ -767,23 +794,23 @@ impl Engine {
         let started = self.now();
         let mut last: Option<StateValue> = None;
         loop {
-            if let Ok(v) = self.read_device(device, &capability).await {
-                if v.is_usable(self.now(), None) {
-                    if openmhs_policy::readback_matches(&expected, &v.value, tolerance) {
-                        let detail = format!("readback {} matches", describe_value(&v.value));
-                        return self.transition(id, Verified, Some(detail), |r| {
-                            r.verification = Some(VerificationRecord {
-                                mode: VerificationMode::Readback,
-                                capability: Some(capability),
-                                expected: Some(expected),
-                                observed: Some(v),
-                                matched: Some(true),
-                                reason: None,
-                            });
+            if let Ok(v) = self.read_device(device, &capability).await
+                && v.is_usable(self.now(), None)
+            {
+                if openmhs_policy::readback_matches(&expected, &v.value, tolerance) {
+                    let detail = format!("readback {} matches", describe_value(&v.value));
+                    return self.transition(id, Verified, Some(detail), |r| {
+                        r.verification = Some(VerificationRecord {
+                            mode: VerificationMode::Readback,
+                            capability: Some(capability),
+                            expected: Some(expected),
+                            observed: Some(v),
+                            matched: Some(true),
+                            reason: None,
                         });
-                    }
-                    last = Some(v);
+                    });
                 }
+                last = Some(v);
             }
             let elapsed = u64::try_from(started.ms_until(self.now())).unwrap_or(0);
             if elapsed >= timeout_ms {

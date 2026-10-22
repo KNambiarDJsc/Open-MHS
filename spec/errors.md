@@ -97,6 +97,9 @@ A deadline that passes before dispatch is reported by the `EXPIRED` state, not a
 | `policy.approval.not_approver` | The principal is not configured as an approver |
 | `policy.approval.self` | A principal tried to approve its own command |
 | `policy.cancel.not_allowed` | Only the requester or an approver can cancel |
+| `policy.grant.invalid` | A grant has an empty id, pattern or operation list |
+| `policy.grant.duplicate` | A grant with that id already exists |
+| `policy.grant.unknown` | No grant with that id |
 
 ### Adapter
 
@@ -122,3 +125,12 @@ The class decides the lifecycle state (spec/lifecycle.md §3).
 | `registry.duplicate_device` | A device with that id is already registered |
 | `gateway.restarted` | Command denied because the gateway restarted before validation finished |
 | `gateway.journal` | The journal could not be read or written |
+| `gateway.unauthorized` | Missing or unknown bearer token (HTTP 401) |
+| `gateway.forbidden` | The call needs the operator role |
+| `gateway.storage` | The policy or token file could not be written |
+| `gateway.internal` | Internal gateway fault (e.g. a panicked task) |
+| `gateway.token.unknown` | No token with that id |
+| `gateway.not_simulation` | Fault injection requested on a gateway not started with `--sim` |
+| `sim.fault.unknown` | Unknown fault name, or a fault that needs a value was given none |
+
+API-level errors and the JSON-RPC envelope are described in [api.md](api.md).

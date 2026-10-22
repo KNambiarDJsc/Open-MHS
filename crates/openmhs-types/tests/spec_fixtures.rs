@@ -105,10 +105,10 @@ fn invalid_descriptors_fail_with_exactly_the_expected_code() {
             ));
             continue;
         }
-        if let Some(ptr) = &exp.pointer {
-            if !issues.iter().any(|i| i.pointer.starts_with(ptr.as_str())) {
-                failures.push(format!("{file}: no issue at {ptr}: {issues:?}"));
-            }
+        if let Some(ptr) = &exp.pointer
+            && !issues.iter().any(|i| i.pointer.starts_with(ptr.as_str()))
+        {
+            failures.push(format!("{file}: no issue at {ptr}: {issues:?}"));
         }
     }
     assert!(failures.is_empty(), "\n{}", failures.join("\n"));

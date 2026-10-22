@@ -1,6 +1,6 @@
 # ADR-0005: Local API is JSON-RPC 2.0 over HTTP on loopback, token-authenticated
 
-- Status: Accepted
+- Status: Accepted; token model refined by [ADR-0011](0011-gateway-api-and-roles.md)
 - Date: 2026-10-23
 
 ## Context

@@ -45,3 +45,13 @@ before any public launch.
    `physgate` says what it is (a gate between agents and the physical world).
 
 Decision belongs to the project owner. Until decided, docs use "OpenMHS".
+
+## Decision (2026-10-23)
+
+The project owner chose to **keep "OpenMHS"**, knowing about the collisions above. The
+consequences:
+
+- Crates and binaries use the `openmhs` prefix.
+- Public material must say clearly that this project is independent of Anthropic and of
+  the other "OpenMHS" repositories.
+- Domain and trademark checks are still required before any public launch.

@@ -227,17 +227,21 @@ pub fn check_command(
                         .history
                         .iter()
                         .filter(|m| m.at > window_start)
-                        .map(|m| m.delta)
-                        .sum();
+                        // fold from +0.0: `sum()` of no f64s is -0.0, which prints as "-0".
+                        .fold(0.0, |acc, m| acc + m.delta);
                     if recent + delta > slew.max_change + 1e-12 {
+                        let u = spec.unit.as_deref().unwrap_or("");
+                        let earlier = if recent > 0.0 {
+                            format!(" (plus {recent} {u} already changed)")
+                        } else {
+                            String::new()
+                        };
                         errors.push(
                             ErrorObject::new(
                                 "command.slew_exceeded",
                                 format!(
-                                    "change of {delta} {u} (plus {recent} {u} in the last {} ms) exceeds {} {u}",
-                                    slew.per_ms,
-                                    slew.max_change,
-                                    u = spec.unit.as_deref().unwrap_or("")
+                                    "change of {delta} {u}{earlier} exceeds the limit of {} {u} per {} ms",
+                                    slew.max_change, slew.per_ms,
                                 ),
                             )
                             .at("/value")

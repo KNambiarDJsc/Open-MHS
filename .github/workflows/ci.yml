@@ -29,6 +29,8 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets
       - run: cargo test --workspace
+      - name: End-to-end demo (real gateway, real API, simulated devices)
+        run: cargo run -p openmhs-cli --bin openmhs -- demo
 
   spec:
     name: Spec fixtures and schema portability

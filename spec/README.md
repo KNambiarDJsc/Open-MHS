@@ -15,6 +15,7 @@ Rust reference implementation in `crates/` — follow it, and tests keep them in
 | [authorization.md](authorization.md) | Principals, grants, approval, defaults, what descriptors may not do |
 | [errors.md](errors.md) | Error object and the registry of stable error codes |
 | [conformance.md](conformance.md) | Conformance levels L0–L3 |
+| [api.md](api.md) | Local gateway API: transport, authentication, roles, methods |
 
 Machine-readable contracts (JSON Schema Draft 2020-12) live in [`schemas/`](schemas/):
 

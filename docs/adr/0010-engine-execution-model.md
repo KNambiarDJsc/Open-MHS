@@ -46,3 +46,20 @@ concurrency and failure.
   outlive a dropped future.
 - Rate-limit history is in memory and resets on restart (documented in
   `spec/lifecycle.md` §4).
+
+## Amendment (M3): stop cannot preempt a running command
+
+Found while building the linear-stage simulator. Because the device lock is held
+through execution and verification, an `axis.stop` submitted during a long
+`axis.move_absolute` waits until the move finishes. It cannot interrupt the move.
+
+This is acceptable only because the protection that matters lives elsewhere:
+
+- Safety-rated stops belong to the device's own controller and hardware, and OpenMHS
+  never replaces them (see the README).
+- The gateway is supervisory.
+
+Still, a software stop that has to wait for the motion it is meant to stop is the wrong
+behaviour. It is recorded as a known limitation. A priority "stop lane" that bypasses
+the per-device lock for capabilities declared as stops is planned with resource leases
+(M9), and needs a descriptor field to mark such capabilities.

@@ -7,14 +7,14 @@ the milestone is marked **Done**.
 |---|---|---|
 | M0 | Research, positioning, naming, ADRs | Done |
 | M1 | Specification v0.1: JSON Schemas, lifecycle/units/errors/authorization specs, 3 dissimilar example devices, invalid fixtures | Done |
-| M2 | Core engine: registry, constraints, authorization, command state machine, SQLite journal with crash recovery, state store, hash-chained audit, adapter trait, virtual PSU with fault injection | Done (pending review) |
-| M3 | Gateway (`openmhsd`), local JSON-RPC API, CLI, three virtual devices, `openmhs demo`, CI on Windows/macOS/Linux | Planned |
+| M2 | Core engine: registry, constraints, authorization, command state machine, SQLite journal with crash recovery, state store, hash-chained audit, adapter trait, virtual PSU with fault injection | Done |
+| M3 | Gateway (`openmhsd`), local JSON-RPC API, CLI, three virtual devices, `openmhs demo`, CI on Windows/macOS/Linux | Done (pending review) |
 | M4 | MCP server (gateway client), pure-Python client SDK, mock-agent replanning example | Planned |
 | M5 | Conformance suite (L0–L3), `openmhs adapter new`, adapter author guide | Planned |
 | M6 | Protocol adapters: Modbus TCP, MQTT, SCPI (TCP/serial), HTTP — each tested against in-repo protocol simulators | Planned |
 | M7 | Out-of-process adapter host, Python adapter SDK, OPC UA and ROS 2 adapters, adapter permission manifests | Planned |
 | M8 | Identity and trust: scoped credentials, approval workflows, signed descriptors/manifests, signed audit export, threat model | Planned |
-| M9 | Capability graph and multi-device orchestration: relationships, resource leases, plans with twin preflight, partial-failure handling | Planned |
+| M9 | Capability graph and multi-device orchestration: relationships, resource leases, plans with twin preflight, partial-failure handling, priority stop lane (ADR-0010 amendment) | Planned |
 | M10 | Release readiness: binaries, PyPI, docs site, adapter registry index, generated compatibility matrix, governance | Planned |
 | M11+ | Advanced track (design docs first): WASM-sandboxed adapters, OpenTelemetry, remote/federated gateways, fleet, assisted adapter generation, HIL rigs, OPC UA / ros2_control / SiLA 2 bridges, device attestation | Planned |
 

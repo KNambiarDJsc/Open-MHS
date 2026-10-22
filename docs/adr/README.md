@@ -12,6 +12,7 @@
 | [0008](0008-languages.md) | Rust core, Python clients and adapters | Accepted |
 | [0009](0009-descriptor-model.md) | Descriptor model choices for spec v0.1 | Accepted |
 | [0010](0010-engine-execution-model.md) | Engine execution model (per-device serialization, fresh reads, isolation) | Accepted |
+| [0011](0011-gateway-api-and-roles.md) | Gateway API, roles, tokens and home directory (refines 0005) | Accepted |
 
 Format: Context → Decision → Alternatives considered → Consequences. Supersede an
 ADR with a new one rather than rewriting history.

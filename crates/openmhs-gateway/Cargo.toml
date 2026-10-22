@@ -1,0 +1,31 @@
+[package]
+name = "openmhs-gateway"
+description = "OpenMHS gateway: the single trusted process that owns devices, policy and the journal."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+axum.workspace = true
+getrandom.workspace = true
+openmhs-adapter.workspace = true
+openmhs-api.workspace = true
+openmhs-engine.workspace = true
+openmhs-policy.workspace = true
+openmhs-sim.workspace = true
+openmhs-types.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["net", "signal"] }
+tracing.workspace = true
+
+[dev-dependencies]
+reqwest.workspace = true
+tempfile.workspace = true
+tokio = { workspace = true, features = ["test-util"] }
+
+[lints]
+workspace = true

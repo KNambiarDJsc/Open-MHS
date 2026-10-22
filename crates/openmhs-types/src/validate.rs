@@ -89,14 +89,14 @@ impl<'a> Checker<'a> {
                     format!("duplicate capability '{}'", cap.name),
                 );
             }
-            if let Some(comp) = &cap.component {
-                if !components.contains(comp.as_str()) {
-                    self.push(
-                        "descriptor.component.unknown",
-                        format!("{at}/component"),
-                        format!("component '{comp}' is not declared"),
-                    );
-                }
+            if let Some(comp) = &cap.component
+                && !components.contains(comp.as_str())
+            {
+                self.push(
+                    "descriptor.component.unknown",
+                    format!("{at}/component"),
+                    format!("component '{comp}' is not declared"),
+                );
             }
             self.check_capability(cap, &at);
         }
@@ -340,18 +340,18 @@ impl<'a> Checker<'a> {
                 "use either 'expect' or 'expect_param', not both",
             );
         }
-        if let Some(value) = expect {
-            if let Err(msg) = check_comparison(
+        if let Some(value) = expect
+            && let Err(msg) = check_comparison(
                 target_spec,
                 CompareOp::Eq,
                 &PreconditionValue::One(value.clone()),
-            ) {
-                self.push(
-                    "descriptor.verification.type_mismatch",
-                    format!("{at}/expect"),
-                    msg,
-                );
-            }
+            )
+        {
+            self.push(
+                "descriptor.verification.type_mismatch",
+                format!("{at}/expect"),
+                msg,
+            );
         }
         if let Some(param) = expect_param {
             match cap.params.as_ref().and_then(|p| p.get(param)) {
@@ -379,14 +379,14 @@ impl<'a> Checker<'a> {
     fn check_value_spec(&mut self, spec: &ValueSpec, at: &str) {
         let numeric = matches!(spec.ty, ValueType::Number | ValueType::Integer);
 
-        if let Some(q) = &spec.quantity {
-            if !units::is_quantity(q) {
-                self.push(
-                    "descriptor.quantity.unknown",
-                    format!("{at}/quantity"),
-                    format!("unknown quantity kind '{q}'"),
-                );
-            }
+        if let Some(q) = &spec.quantity
+            && !units::is_quantity(q)
+        {
+            self.push(
+                "descriptor.quantity.unknown",
+                format!("{at}/quantity"),
+                format!("unknown quantity kind '{q}'"),
+            );
         }
         if let Some(code) = &spec.unit {
             match units::unit(code) {
@@ -396,14 +396,15 @@ impl<'a> Checker<'a> {
                     format!("unknown unit '{code}' (see spec/units.md)"),
                 ),
                 Some(def) => {
-                    if let Some(q) = &spec.quantity {
-                        if units::is_quantity(q) && def.quantity != q {
-                            self.push(
-                                "descriptor.unit.quantity_mismatch",
-                                format!("{at}/unit"),
-                                format!("unit '{code}' measures {}, not {q}", def.quantity),
-                            );
-                        }
+                    if let Some(q) = &spec.quantity
+                        && units::is_quantity(q)
+                        && def.quantity != q
+                    {
+                        self.push(
+                            "descriptor.unit.quantity_mismatch",
+                            format!("{at}/unit"),
+                            format!("unit '{code}' measures {}, not {q}", def.quantity),
+                        );
                     }
                 }
             }
@@ -422,14 +423,14 @@ impl<'a> Checker<'a> {
                     format!("{at}/range"),
                     "range only applies to number and integer values",
                 );
-            } else if let (Some(min), Some(max)) = (r.min, r.max) {
-                if min > max {
-                    self.push(
-                        "descriptor.constraint.range_inverted",
-                        format!("{at}/range"),
-                        format!("min {min} is greater than max {max}"),
-                    );
-                }
+            } else if let (Some(min), Some(max)) = (r.min, r.max)
+                && min > max
+            {
+                self.push(
+                    "descriptor.constraint.range_inverted",
+                    format!("{at}/range"),
+                    format!("min {min} is greater than max {max}"),
+                );
             }
         }
         if spec.values.is_some() && spec.ty != ValueType::Enum {

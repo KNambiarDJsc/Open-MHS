@@ -13,13 +13,14 @@ use openmhs_adapter::{
     AdapterCommand, AdapterError, AdapterErrorKind, ExecuteReport, HardwareAdapter, Health,
     Progress,
 };
-use openmhs_types::{Clock, Quality, Quantity, Source, StateValue, Value};
+use openmhs_types::{Clock, Quantity, StateValue, Value};
 
-use crate::fault::{ExecFault, Faults};
+use crate::fault::{Faults, SimControl, after_apply, before_apply};
 use crate::rng::Rng;
 
 const DESCRIPTOR: &str = include_str!("../../../spec/examples/valid/power-supply.json");
 const ADAPTER_ID: &str = "openmhs.sim.psu";
+const DEVICE_ID: &str = "sim.psu-01";
 const LOAD_OHMS: f64 = 10.0;
 const NOISE_V: f64 = 0.002;
 const BASE_LATENCY_MS: u64 = 5;
@@ -120,17 +121,34 @@ impl VirtualPsu {
             handle,
         )
     }
+}
 
-    fn reading(&self, inner: &Inner, value: Value) -> StateValue {
-        StateValue {
-            value,
-            timestamp: self.clock.now().minus_ms(inner.faults.stale_by_ms),
-            source: Source::Simulator,
-            quality: if inner.faults.bad_quality {
-                Quality::Bad
-            } else {
-                Quality::Good
-            },
+impl SimControl for PsuHandle {
+    fn device_id(&self) -> &str {
+        DEVICE_ID
+    }
+
+    fn faults(&self) -> Faults {
+        self.lock().faults.clone()
+    }
+
+    fn set_faults(&self, faults: Faults) {
+        PsuHandle::set_faults(self, faults);
+    }
+
+    fn device_faults(&self) -> &'static [&'static str] {
+        &["trip"]
+    }
+
+    fn inject_device_fault(&self, name: &str) -> Result<(), String> {
+        match name {
+            "trip" => {
+                let mut inner = self.lock();
+                inner.truth.tripped = true;
+                inner.truth.enabled = false;
+                Ok(())
+            }
+            other => Err(format!("unknown fault '{other}'")),
         }
     }
 }
@@ -189,13 +207,7 @@ impl HardwareAdapter for VirtualPsu {
     }
 
     async fn connect(&self) -> Result<(), AdapterError> {
-        if self.handle.lock().faults.disconnected {
-            return Err(AdapterError::new(
-                AdapterErrorKind::Disconnected,
-                "simulated disconnect",
-            ));
-        }
-        Ok(())
+        self.handle.lock().faults.link()
     }
 
     async fn health(&self) -> Health {
@@ -209,12 +221,7 @@ impl HardwareAdapter for VirtualPsu {
     async fn read(&self, capability: &str) -> Result<StateValue, AdapterError> {
         self.handle.reads.fetch_add(1, Ordering::SeqCst);
         let mut inner = self.handle.lock();
-        if inner.faults.disconnected {
-            return Err(AdapterError::new(
-                AdapterErrorKind::Disconnected,
-                "simulated disconnect",
-            ));
-        }
+        inner.faults.link()?;
         let t = inner.truth.clone();
         let live = t.enabled && !t.tripped;
         let value = match capability {
@@ -236,7 +243,7 @@ impl HardwareAdapter for VirtualPsu {
                 ));
             }
         };
-        Ok(self.reading(&inner, value))
+        Ok(inner.faults.reading(self.clock.as_ref(), value))
     }
 
     async fn execute(
@@ -247,34 +254,14 @@ impl HardwareAdapter for VirtualPsu {
         self.handle.executes.fetch_add(1, Ordering::SeqCst);
         let (fault, latency) = {
             let inner = self.handle.lock();
-            if inner.faults.disconnected {
-                return Err(AdapterError::new(
-                    AdapterErrorKind::Disconnected,
-                    "simulated disconnect",
-                ));
-            }
+            inner.faults.link()?;
             (
                 inner.faults.execute,
                 BASE_LATENCY_MS + inner.faults.execute_latency_ms,
             )
         };
-        tokio::time::sleep(std::time::Duration::from_millis(latency)).await;
-
-        match fault {
-            Some(ExecFault::Hang) => std::future::pending::<()>().await,
-            Some(ExecFault::Disconnect) => {
-                return Err(AdapterError::new(
-                    AdapterErrorKind::Disconnected,
-                    "simulated disconnect",
-                ));
-            }
-            Some(ExecFault::Reject) => {
-                return Ok(ExecuteReport::Rejected {
-                    reason: "simulated rejection".into(),
-                });
-            }
-            Some(ExecFault::Crash) => panic!("simulated adapter crash"),
-            _ => {}
+        if let Some(report) = before_apply(fault, latency).await? {
+            return Ok(report);
         }
 
         progress.accepted();
@@ -308,16 +295,7 @@ impl HardwareAdapter for VirtualPsu {
             t.applied_count += 1;
         }
 
-        match fault {
-            Some(ExecFault::ApplyThenHang) => std::future::pending().await,
-            Some(ExecFault::ApplyThenMalformed) => Err(AdapterError::new(
-                AdapterErrorKind::MalformedResponse,
-                "simulated garbled response",
-            )),
-            _ => Ok(ExecuteReport::Applied {
-                result: BTreeMap::new(),
-            }),
-        }
+        after_apply(fault, BTreeMap::new()).await
     }
 
     async fn shutdown(&self) -> Result<(), AdapterError> {

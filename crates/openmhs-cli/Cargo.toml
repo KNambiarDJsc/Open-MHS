@@ -1,0 +1,37 @@
+[package]
+name = "openmhs-cli"
+description = "The openmhs command-line tool and openmhsd gateway binary."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "openmhs"
+path = "src/main.rs"
+
+[[bin]]
+name = "openmhsd"
+path = "src/bin/openmhsd.rs"
+
+[dependencies]
+clap.workspace = true
+openmhs-api.workspace = true
+openmhs-gateway.workspace = true
+openmhs-policy.workspace = true
+openmhs-sim.workspace = true
+openmhs-types.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio = { workspace = true, features = ["signal"] }
+tracing-subscriber.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[lints]
+workspace = true
