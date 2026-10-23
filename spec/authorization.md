@@ -21,6 +21,12 @@ A principal is an authenticated caller: an agent, a user, or a service. Its iden
 comes from the authenticated session, never from the request body. v0.1 principals are
 configured by the operator; credentials and rotation are specified in M8.
 
+A principal name is an optional lowercase kind and a colon, then an identifier:
+`operator:local`, `agent:lab-assistant`, or a bare `agent.lab-assistant`
+(`common.schema.json#/$defs/principal`). The gateway refuses to create a token, or start
+with an operator, whose name does not match. Grant `principal` fields are patterns over
+these names, so `agent:*` matches every `agent:` principal.
+
 ## 3. Grants
 
 A grant is an operator-written rule:

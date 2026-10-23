@@ -1,6 +1,6 @@
 # ADR-0006: MCP via the official Rust SDK (`rmcp`), as a gateway client
 
-- Status: Accepted (version to be pinned at M4)
+- Status: Accepted; version pinned in [ADR-0012](0012-mcp-server-and-sdk.md)
 - Date: 2026-10-23
 
 ## Context

@@ -22,6 +22,7 @@ path = "src/bin/openmhsd.rs"
 clap.workspace = true
 openmhs-api.workspace = true
 openmhs-gateway.workspace = true
+openmhs-mcp.workspace = true
 openmhs-policy.workspace = true
 openmhs-sim.workspace = true
 openmhs-types.workspace = true

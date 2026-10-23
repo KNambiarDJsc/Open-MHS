@@ -1,0 +1,28 @@
+# Not published. Publishing to PyPI needs the maintainer's explicit approval.
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openmhs"
+version = "0.1.0.dev0"
+description = "Python client for the OpenMHS gateway between AI agents and programmable hardware."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+dependencies = []
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Programming Language :: Python :: 3",
+    "Private :: Do Not Upload",
+]
+
+[project.optional-dependencies]
+# Only the schema tests use it; the client itself is standard library only.
+test = ["jsonschema>=4.18"]
+
+[tool.setuptools.packages.find]
+include = ["openmhs*"]
+
+[tool.setuptools.package-data]
+openmhs = ["py.typed"]

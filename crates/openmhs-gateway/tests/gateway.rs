@@ -115,3 +115,20 @@ async fn shutdown_removes_the_runtime_file_and_releases_the_home() {
     // The lock is released: a new gateway can start on the same home.
     start(home.path()).await.shutdown().await.unwrap();
 }
+
+/// The stable code travels in `data.code`; the message is for people and does not repeat
+/// it (clients that print `[code] message` would otherwise show it twice).
+#[tokio::test(flavor = "multi_thread")]
+async fn denial_messages_do_not_repeat_the_code() {
+    let home = tempfile::tempdir().unwrap();
+    let gw = start(home.path()).await;
+    let operator = Client::new(&gw.url, &gw.operator_token).unwrap();
+    // Deny by default applies to operators too: no grant, no read.
+    let err = operator
+        .read("sim.psu-01", "power.output.voltage.setpoint")
+        .await
+        .unwrap_err();
+    assert_eq!(err.code(), Some("policy.denied.no_grant"));
+    assert!(!err.to_string().contains("policy.denied"), "{err}");
+    gw.shutdown().await.unwrap();
+}

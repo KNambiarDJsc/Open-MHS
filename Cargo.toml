@@ -9,6 +9,7 @@ members = [
     "crates/openmhs-api",
     "crates/openmhs-gateway",
     "crates/openmhs-cli",
+    "crates/openmhs-mcp",
 ]
 
 [workspace.package]
@@ -22,6 +23,7 @@ authors = ["OpenMHS contributors"]
 openmhs-adapter = { path = "crates/openmhs-adapter" }
 openmhs-api = { path = "crates/openmhs-api" }
 openmhs-gateway = { path = "crates/openmhs-gateway" }
+openmhs-mcp = { path = "crates/openmhs-mcp" }
 openmhs-engine = { path = "crates/openmhs-engine" }
 openmhs-policy = { path = "crates/openmhs-policy" }
 openmhs-sim = { path = "crates/openmhs-sim" }

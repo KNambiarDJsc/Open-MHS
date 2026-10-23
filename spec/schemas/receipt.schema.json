@@ -10,7 +10,7 @@
     "command_id": { "type": "string", "minLength": 1, "maxLength": 64 },
     "correlation_id": { "type": "string", "maxLength": 128 },
     "idempotency_key": { "type": "string", "maxLength": 128 },
-    "principal": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
+    "principal": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/principal" },
     "request": { "$ref": "urn:openmhs:schema:0.1:command" },
     "state": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/command_state" },
     "outcome": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/outcome" },
@@ -53,7 +53,7 @@
           "type": "array",
           "items": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/error" }
         },
-        "approved_by": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" }
+        "approved_by": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/principal" }
       }
     },
     "adapter_result": {

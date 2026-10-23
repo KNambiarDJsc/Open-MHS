@@ -103,7 +103,11 @@ fn rpc_error(code: i64, message: impl Into<String>) -> RpcError {
 
 fn engine_error(e: EngineError) -> RpcError {
     let code = e.code().to_owned();
-    let message = e.to_string();
+    // The code travels in `data.code`; a denial's own Display would repeat it.
+    let message = match &e {
+        EngineError::Denied(error) => error.message.clone(),
+        other => other.to_string(),
+    };
     let mut command_id = None;
     let errors = match e {
         EngineError::InvalidRequest(errors) => errors,
@@ -284,6 +288,13 @@ async fn dispatch(
             ok(detached(async move { engine.submit(&principal, &p.request).await }).await?)
         }
 
+        method::COMMANDS_PREFLIGHT => {
+            let p: SubmitParams = params(raw)?;
+            let engine = engine.clone();
+            let principal = session.principal.clone();
+            ok(detached(async move { engine.preflight(&principal, &p.request).await }).await?)
+        }
+
         method::COMMANDS_GET => {
             let p: CommandIdParams = params(raw)?;
             let receipt = engine
@@ -388,10 +399,10 @@ async fn dispatch(
         method::TOKENS_CREATE => {
             require_operator("creating tokens")?;
             let p: CreateTokenParams = params(raw)?;
-            if p.principal.trim().is_empty() {
+            if !openmhs_types::is_principal(&p.principal) {
                 return Err(rpc_error(
                     rpc_code::INVALID_PARAMS,
-                    "principal must not be empty",
+                    "principal must be a lowercase name with an optional kind, e.g. agent:lab-assistant",
                 ));
             }
             let (info, token) = shared

@@ -456,3 +456,37 @@ fn no_gateway_running_is_a_clear_error() {
     assert_eq!(out.status.code(), Some(ERROR));
     assert!(String::from_utf8_lossy(&out.stderr).contains("openmhs serve"));
 }
+
+#[test]
+fn check_reports_what_a_submission_would_get_and_runs_nothing() {
+    let gw = Gateway::start();
+    gw.grant_psu("allow");
+    let agent = gw.agent_token();
+    let (code, p) = set_volts(&gw, &agent, "1V", &["--check"]);
+    assert_eq!((code, p["decision"].as_str()), (OK, Some("allow")), "{p}");
+    let (code, p) = set_volts(&gw, &agent, "9V", &["--check"]);
+    assert_eq!(code, DENIED, "{p}");
+    assert_eq!(p["errors"][0]["code"], "command.slew_exceeded");
+    let (_, list) = gw.cli(Some(&agent), &["commands", "list"]);
+    assert_eq!(
+        list.as_array().map(Vec::len),
+        Some(0),
+        "a check creates no command"
+    );
+}
+
+/// `openmhs mcp` never quietly acts as the operator.
+#[test]
+fn mcp_needs_an_agent_token() {
+    let gw = Gateway::start();
+    let out = Command::new(BIN)
+        .args(["mcp", "--home"])
+        .arg(gw.home())
+        .env_remove("OPENMHS_TOKEN")
+        .stdin(Stdio::null())
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(ERROR));
+    assert!(String::from_utf8_lossy(&out.stderr).contains("agent token"));
+    assert!(out.stdout.is_empty(), "stdout is reserved for MCP");
+}

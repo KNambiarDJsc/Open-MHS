@@ -132,5 +132,6 @@ The class decides the lifecycle state (spec/lifecycle.md §3).
 | `gateway.token.unknown` | No token with that id |
 | `gateway.not_simulation` | Fault injection requested on a gateway not started with `--sim` |
 | `sim.fault.unknown` | Unknown fault name, or a fault that needs a value was given none |
+| `mcp.operator_token` | The MCP server was given an operator token and refuses to act without `--allow-operator` (an MCP tool error, not an API error) |
 
 API-level errors and the JSON-RPC envelope are described in [api.md](api.md).

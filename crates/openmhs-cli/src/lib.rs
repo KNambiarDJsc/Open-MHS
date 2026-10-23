@@ -17,6 +17,7 @@ use openmhs_api::{Client, ClientError, Role};
 use openmhs_gateway::{DEFAULT_OPERATOR, DEFAULT_PORT, GatewayConfig};
 use openmhs_policy::{Effect, Grant};
 use openmhs_types::descriptor::{CapabilityKind, Operation, SideEffect};
+use openmhs_types::receipt::Decision;
 use openmhs_types::{CommandState, Outcome, Receipt};
 use serde::Serialize;
 
@@ -95,6 +96,19 @@ enum Cmd {
         #[command(subcommand)]
         command: SimCmd,
     },
+    /// Serve the Model Context Protocol on stdin/stdout for an AI agent (docs/mcp.md).
+    Mcp(McpArgs),
+}
+
+#[derive(Args)]
+struct McpArgs {
+    /// Gateway URL. Defaults to the one in the running gateway's runtime file.
+    #[arg(long)]
+    url: Option<String>,
+    /// Allow running with an operator token, which can approve commands and change
+    /// policy. Never give a model that power unless you understand the risk.
+    #[arg(long)]
+    allow_operator: bool,
 }
 
 #[derive(Args, Clone)]
@@ -153,6 +167,9 @@ struct ExecArgs {
     /// Command deadline in milliseconds (default 60000).
     #[arg(long)]
     deadline_ms: Option<u64>,
+    /// Only ask whether it would be allowed right now (preflight). Runs nothing.
+    #[arg(long)]
+    check: bool,
 }
 
 #[derive(Subcommand)]
@@ -379,11 +396,52 @@ fn report_error(json: bool, e: &ClientError) -> u8 {
     }
 }
 
+/// stdout is the MCP transport, so everything human-readable here goes to stderr.
+async fn mcp(home: &std::path::Path, token: Option<&str>, args: McpArgs) -> u8 {
+    let _ = tracing_subscriber::fmt()
+        .with_writer(std::io::stderr)
+        .with_target(false)
+        .try_init();
+    if token.is_none() && !args.allow_operator {
+        eprintln!(
+            "error: `openmhs mcp` needs an agent token (--token or OPENMHS_TOKEN). Create one \
+             with `openmhs tokens create agent:<name>`; without it the server would act with \
+             the operator token."
+        );
+        return exit::ERROR;
+    }
+    let client = match (&args.url, token) {
+        (Some(url), Some(t)) => Client::new(url, t),
+        (Some(_), None) => {
+            eprintln!("error: --url needs --token");
+            return exit::ERROR;
+        }
+        (None, _) => Client::from_home(home, token),
+    };
+    let client = match client {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("error: {e}");
+            return exit::ERROR;
+        }
+    };
+    match openmhs_mcp::serve_stdio(openmhs_mcp::OpenMhsServer::new(client, args.allow_operator))
+        .await
+    {
+        Ok(()) => exit::OK,
+        Err(e) => {
+            eprintln!("error: MCP session ended: {e}");
+            exit::ERROR
+        }
+    }
+}
+
 async fn run(cli: Cli) -> u8 {
     let home = cli.home.clone().unwrap_or_else(default_home);
     match cli.command {
         Cmd::Serve(args) => return serve(home, args).await,
         Cmd::Demo(args) => return demo::run(args.keep).await,
+        Cmd::Mcp(args) => return mcp(&home, cli.token.as_deref(), args).await,
         Cmd::Sim {
             command: SimCmd::Faults,
         } => {
@@ -405,7 +463,7 @@ async fn run(cli: Cli) -> u8 {
 
 async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, ClientError> {
     match cmd {
-        Cmd::Serve(_) | Cmd::Demo(_) => unreachable!("handled before connecting"),
+        Cmd::Serve(_) | Cmd::Demo(_) | Cmd::Mcp(_) => unreachable!("handled before connecting"),
         Cmd::Info => {
             let info = client.info().await?;
             show(json, &info, |i| {
@@ -440,6 +498,15 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
                     return Ok(exit::ERROR);
                 }
             };
+            if args.check {
+                let p = client.preflight(request).await?;
+                show(json, &p, output::preflight);
+                return Ok(match p.decision {
+                    Decision::Allow => exit::OK,
+                    Decision::Deny => exit::DENIED,
+                    Decision::RequireApproval => exit::PENDING,
+                });
+            }
             let receipt = client.submit(request).await?;
             show(json, &receipt, output::receipt);
             return Ok(receipt_exit(&receipt));

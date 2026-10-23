@@ -5,6 +5,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
 use openmhs_policy::Grant;
+use openmhs_types::receipt::PreflightResult;
 use openmhs_types::{CommandState, Descriptor, Receipt};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
@@ -138,6 +139,15 @@ impl Client {
 
     pub async fn submit(&self, request: serde_json::Value) -> Result<Receipt, ClientError> {
         self.call(method::COMMANDS_SUBMIT, SubmitParams { request })
+            .await
+    }
+
+    /// Would this request be allowed right now? Creates no command.
+    pub async fn preflight(
+        &self,
+        request: serde_json::Value,
+    ) -> Result<PreflightResult, ClientError> {
+        self.call(method::COMMANDS_PREFLIGHT, SubmitParams { request })
             .await
     }
 

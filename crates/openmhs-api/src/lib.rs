@@ -22,6 +22,7 @@ pub mod method {
     pub const DEVICES_DESCRIBE: &str = "devices.describe";
     pub const STATE_READ: &str = "state.read";
     pub const COMMANDS_SUBMIT: &str = "commands.submit";
+    pub const COMMANDS_PREFLIGHT: &str = "commands.preflight";
     pub const COMMANDS_GET: &str = "commands.get";
     pub const COMMANDS_LIST: &str = "commands.list";
     pub const COMMANDS_APPROVE: &str = "commands.approve";

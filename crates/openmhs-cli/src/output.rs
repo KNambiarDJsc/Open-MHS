@@ -4,6 +4,7 @@
 use openmhs_api::{AuditEntry, AuditVerifyResult, ReadResult, TokenInfo};
 use openmhs_policy::Grant;
 use openmhs_types::descriptor::Capability;
+use openmhs_types::receipt::PreflightResult;
 use openmhs_types::{Descriptor, Outcome, Receipt, StateValue, Timestamp, Value};
 use serde::Serialize;
 
@@ -110,6 +111,24 @@ fn request_summary(r: &Receipt) -> String {
         s += &format!(" ({})", p.join(", "));
     }
     s
+}
+
+pub fn preflight(p: &PreflightResult) {
+    let rules: Vec<&str> = p.rules.iter().map(|m| m.rule_id.as_str()).collect();
+    let mut line = format!("would    {}", name(&p.decision));
+    if !rules.is_empty() {
+        line += &format!("  (rules: {})", rules.join(", "));
+    }
+    println!("{line}");
+    for e in &p.errors {
+        let rule = e
+            .rule_id
+            .as_ref()
+            .map(|id| format!(" [rule {id}]"))
+            .unwrap_or_default();
+        println!("  denied {}: {}{rule}", e.code, e.message);
+    }
+    println!("(advisory: nothing was run; a real submission is checked again)");
 }
 
 pub fn receipt(r: &Receipt) {

@@ -31,6 +31,7 @@ openmhs read sim.thermo-01 temperature.ambient
 | `exec <device> <capability> --value 5V` | Write a property |
 | `exec <device> <action> --param position=120mm --param speed=50mm/s` | Invoke an action |
 | `exec … --idempotency-key K --deadline-ms N --correlation-id C` | Request options |
+| `exec … --check` | Ask whether it would be allowed now (preflight); runs nothing. Exit 0 allow, 2 deny, 5 needs approval |
 | `commands show <id>` / `commands list [--state S]… [--limit N]` | Receipts |
 | `approve <id>` (or `commands approve <id>`) | Approve a held command (operator) |
 | `commands cancel <id>` / `commands reconcile <id>` | Cancel before dispatch / resolve `UNKNOWN_OUTCOME` by readback |
@@ -38,6 +39,7 @@ openmhs read sim.thermo-01 temperature.ambient
 | `tokens create <principal> [--role agent\|operator]` / `tokens list` / `tokens revoke <id>` | API tokens (operator) |
 | `audit verify` / `audit tail [--limit N]` | Audit log (operator) |
 | `sim fault <device> <fault>` / `sim faults` | Fault injection (operator, `serve --sim` only) |
+| `mcp [--url U] [--allow-operator]` | Serve MCP on stdin/stdout for an AI agent; needs an agent `--token` ([mcp.md](mcp.md)) |
 
 ### Values
 

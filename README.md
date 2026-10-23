@@ -3,10 +3,9 @@
 An open, model-agnostic, supervisory interface between AI agents and programmable
 hardware.
 
-> **Status: pre-alpha (M3: gateway and CLI).** A local gateway serves three simulated
-> devices through an authenticated API and a CLI. There is no MCP server and no
-> real-hardware adapter yet: it controls simulators only, and an AI agent can't
-> connect to it directly until M4.
+> **Status: pre-alpha (M4: MCP server and Python SDK).** A local gateway serves three
+> simulated devices to AI agents over MCP, to scripts through a Python SDK, and to people
+> through a CLI. There is no real-hardware adapter yet: it controls simulators only.
 >
 > OpenMHS is an independent project. It is not affiliated with or endorsed by
 > Anthropic, and it does not claim compatibility with Anthropic's Model Hardware
@@ -37,7 +36,9 @@ safety systems keep final authority.
 | Virtual lab: temperature sensor, power supply, linear stage, with fault injection (`openmhs-sim`) | Implemented |
 | Gateway process with local JSON-RPC API, per-principal tokens, operator/agent roles (`openmhs-gateway`, [spec/api.md](spec/api.md)) | Implemented |
 | CLI and guided demo (`openmhs`, `openmhsd`; [docs/cli.md](docs/cli.md)) | Implemented |
-| MCP server, Python SDK | Planned (M4) |
+| MCP server (`openmhs mcp`): structured refusals with next steps, preflight checks, unattested-text marking; verified with Claude Code ([docs/mcp.md](docs/mcp.md)) | Implemented |
+| Python client SDK, standard library only, models checked against the schemas ([python/](python/README.md)) | Implemented; unpublished |
+| Agent-loop examples: scripted replanning agent, optional Claude variant ([examples/agent-loop/](examples/agent-loop/README.md)) | Implemented |
 | Real protocol adapters (Modbus, MQTT, SCPI, …) | Planned (M6+) |
 
 ## Try it
@@ -58,6 +59,15 @@ The tour runs a real gateway and drives it over its API. It shows:
 - an adapter crash contained by the gateway
 - audit-log verification
 
+Watch an agent hit a limit, read why, and replan, over MCP with no model and no key:
+
+```sh
+cargo build -p openmhs-cli
+python examples/agent-loop/mock_agent.py
+```
+
+To connect Claude Code or another MCP host, see [docs/mcp.md](docs/mcp.md).
+
 Or run the gateway yourself:
 
 ```sh
@@ -70,8 +80,9 @@ openmhs read sim.thermo-01 temperature.ambient
 ## Tests
 
 ```sh
-cargo test --workspace          # spec fixtures, policy, engine invariants, gateway, CLI end to end
-python tools/check_schemas.py   # Python: schemas behave the same (pip install jsonschema)
+cargo test --workspace                          # spec fixtures, policy, engine, gateway, CLI, MCP
+python tools/check_schemas.py                   # schemas behave the same in Python (pip install jsonschema)
+python -m unittest discover -s python/tests     # Python SDK, examples, CLI/MCP/SDK parity (cargo build first)
 ```
 
 ## Known limitations
@@ -83,11 +94,15 @@ python tools/check_schemas.py   # Python: schemas behave the same (pip install j
   emergency stops: those belong to the hardware.
 - **Rate and slew limits reset on restart.** Their history is kept in memory.
 - **Simulator state resets on restart.**
+- **MCP over stdio only.** No HTTP transport, MCP resources or approval notifications
+  yet; an agent waiting for approval polls with `get_command`.
 
 ## Documentation
 
 - [Specification](spec/README.md) and the [local API](spec/api.md)
 - [CLI reference](docs/cli.md)
+- [Connecting an agent over MCP](docs/mcp.md)
+- [Python SDK](python/README.md)
 - [Landscape research](docs/research/landscape.md)
 - [Architecture decisions](docs/adr/README.md)
 - [Roadmap](docs/roadmap.md)

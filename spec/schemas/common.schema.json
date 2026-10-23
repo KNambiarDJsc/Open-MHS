@@ -12,6 +12,11 @@
       "type": "string",
       "pattern": "^[a-z0-9](?:[a-z0-9._-]{0,126}[a-z0-9])?$"
     },
+    "principal": {
+      "description": "An authenticated caller: an optional lowercase kind and a colon, then an identifier, e.g. operator:local or agent:lab-assistant.",
+      "type": "string",
+      "pattern": "^(?:[a-z][a-z0-9_-]{0,31}:)?[a-z0-9](?:[a-z0-9._-]{0,126}[a-z0-9])?$"
+    },
     "capability_name": {
       "description": "Dotted capability name. Vendor-specific capabilities use an x-<vendor>. prefix.",
       "type": "string",

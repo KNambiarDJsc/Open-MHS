@@ -12,7 +12,8 @@ use openmhs_adapter::{
 use openmhs_policy::{Expectation, Live, Mutation, Policy, Prepared};
 use openmhs_types::descriptor::{Capability, Operation};
 use openmhs_types::receipt::{
-    AdapterResult, Decision, PolicyRecord, RuleMatch, VerificationMode, VerificationRecord,
+    AdapterResult, Decision, PolicyRecord, PreflightResult, RuleMatch, VerificationMode,
+    VerificationRecord,
 };
 use openmhs_types::schema::{self, Schema};
 use openmhs_types::{
@@ -61,7 +62,7 @@ struct Device {
     descriptor: Descriptor,
     adapter: Arc<dyn HardwareAdapter>,
     /// Serializes state-changing commands on this device, from live checks to verification.
-    lock: tokio::sync::Mutex<()>,
+    lock: Arc<tokio::sync::Mutex<()>>,
     /// Dispatched mutations per capability, for rate and slew limits.
     history: Mutex<HashMap<String, Vec<Mutation>>>,
 }
@@ -87,6 +88,24 @@ fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
 
 /// How long to keep mutation history; longer than any sensible rate/slew window.
 const HISTORY_RETENTION_MS: u64 = 3_600_000;
+
+/// Outcome of validating a request up to (not including) dispatch.
+enum Evaluation {
+    Denied {
+        errors: Vec<ErrorObject>,
+        rules: Vec<RuleMatch>,
+    },
+    /// Allowed or held for approval. The device lock is held so the live checks stay
+    /// valid until dispatch.
+    Ready {
+        device: Arc<Device>,
+        cap: Box<Capability>,
+        decision: Decision,
+        rules: Vec<RuleMatch>,
+        prepared: Prepared,
+        guard: tokio::sync::OwnedMutexGuard<()>,
+    },
+}
 
 enum ExecOutcome {
     Finished(Result<Result<ExecuteReport, AdapterError>, tokio::task::JoinError>),
@@ -248,7 +267,7 @@ impl Engine {
                 Arc::new(Device {
                     descriptor: descriptor.clone(),
                     adapter,
-                    lock: tokio::sync::Mutex::new(()),
+                    lock: Arc::new(tokio::sync::Mutex::new(())),
                     history: Mutex::new(HashMap::new()),
                 }),
             );
@@ -460,58 +479,89 @@ impl Engine {
         })
     }
 
-    async fn run(&self, receipt: Receipt) -> Result<Receipt, EngineError> {
-        let id = receipt.command_id.clone();
-        let req = receipt.request.clone();
-        self.transition(&id, Validating, None, |_| {})?;
-
+    /// Validation order of spec/lifecycle.md §3a, shared by submission and preflight so
+    /// the two can never disagree.
+    async fn evaluate(&self, principal: &str, req: &CommandRequest) -> Evaluation {
+        let denied = |e: ErrorObject| Evaluation::Denied {
+            errors: vec![e],
+            rules: vec![],
+        };
         let Some(device) = self.device(&req.target.device) else {
-            let e = ErrorObject::new(
+            return denied(ErrorObject::new(
                 "command.device.unknown",
                 format!("device '{}' is not registered", req.target.device),
-            );
-            return self.deny(&id, vec![e], vec![]);
+            ));
         };
         let Some(cap) = device
             .descriptor
             .capability(&req.target.capability)
             .cloned()
         else {
-            let e = ErrorObject::new(
+            return denied(ErrorObject::new(
                 "command.capability.unknown",
                 format!(
                     "'{}' has no capability '{}'",
                     req.target.device, req.target.capability
                 ),
-            );
-            return self.deny(&id, vec![e], vec![]);
+            ));
         };
 
-        let authz = self.policy().authorize(
-            &receipt.principal,
-            &req.target.device,
-            &cap,
-            req.operation.into(),
-        );
+        let authz =
+            self.policy()
+                .authorize(principal, &req.target.device, &cap, req.operation.into());
         if authz.decision == Decision::Deny {
             let e = authz
                 .error
                 .unwrap_or_else(|| ErrorObject::new("policy.denied.no_grant", "not allowed"));
-            return self.deny(&id, vec![e], authz.rules);
+            return Evaluation::Denied {
+                errors: vec![e],
+                rules: authz.rules,
+            };
         }
 
         // Stateless checks first: an invalid request never causes device traffic.
-        if let Err(errors) = openmhs_policy::check_command(&device.descriptor, &cap, &req, None) {
-            return self.deny(&id, errors, authz.rules);
+        if let Err(errors) = openmhs_policy::check_command(&device.descriptor, &cap, req, None) {
+            return Evaluation::Denied {
+                errors,
+                rules: authz.rules,
+            };
         }
 
-        let _guard = device.lock.lock().await;
-        let prepared = match self.check_live(&device, &cap, &req).await {
-            Ok(p) => p,
-            Err(errors) => return self.deny(&id, errors, authz.rules),
-        };
+        let guard = device.lock.clone().lock_owned().await;
+        match self.check_live(&device, &cap, req).await {
+            Ok(prepared) => Evaluation::Ready {
+                device,
+                cap: Box::new(cap),
+                decision: authz.decision,
+                rules: authz.rules,
+                prepared,
+                guard,
+            },
+            Err(errors) => Evaluation::Denied {
+                errors,
+                rules: authz.rules,
+            },
+        }
+    }
 
-        if authz.decision == Decision::RequireApproval {
+    async fn run(&self, receipt: Receipt) -> Result<Receipt, EngineError> {
+        let id = receipt.command_id.clone();
+        self.transition(&id, Validating, None, |_| {})?;
+        // `_guard` keeps the device locked from the live checks through verification.
+        let (device, cap, decision, rules, prepared, _guard) =
+            match self.evaluate(&receipt.principal, &receipt.request).await {
+                Evaluation::Denied { errors, rules } => return self.deny(&id, errors, rules),
+                Evaluation::Ready {
+                    device,
+                    cap,
+                    decision,
+                    rules,
+                    prepared,
+                    guard,
+                } => (device, *cap, decision, rules, prepared, guard),
+            };
+
+        if decision == Decision::RequireApproval {
             return self.transition(
                 &id,
                 AwaitingApproval,
@@ -519,7 +569,7 @@ impl Engine {
                 |r| {
                     r.policy = PolicyRecord {
                         decision: Decision::RequireApproval,
-                        rules: authz.rules,
+                        rules,
                         errors: vec![],
                         approved_by: None,
                     };
@@ -529,12 +579,57 @@ impl Engine {
         self.transition(&id, Approved, None, |r| {
             r.policy = PolicyRecord {
                 decision: Decision::Allow,
-                rules: authz.rules,
+                rules,
                 errors: vec![],
                 approved_by: None,
             };
         })?;
         self.dispatch(&device, &cap, &id, prepared).await
+    }
+
+    /// Run every check a submission would run, against fresh readings, without creating
+    /// a command or contacting the device beyond those reads. Audited.
+    pub async fn preflight(
+        &self,
+        principal: &str,
+        request: &serde_json::Value,
+    ) -> Result<PreflightResult, EngineError> {
+        let issues = schema::validate(Schema::Command, request);
+        if !issues.is_empty() {
+            return Err(EngineError::InvalidRequest(
+                issues.into_iter().map(Into::into).collect(),
+            ));
+        }
+        let req: CommandRequest = serde_json::from_value(request.clone()).map_err(|e| {
+            EngineError::InvalidRequest(vec![ErrorObject::new("command.schema", e.to_string())])
+        })?;
+        if req.operation == RequestOperation::Read {
+            return Err(EngineError::NotACommand);
+        }
+        let (decision, rules, errors) = match self.evaluate(principal, &req).await {
+            Evaluation::Denied { errors, rules } => (Decision::Deny, rules, errors),
+            Evaluation::Ready {
+                decision, rules, ..
+            } => (decision, rules, vec![]),
+        };
+        let result = PreflightResult {
+            decision,
+            rules,
+            errors,
+            checked_at: self.now(),
+        };
+        self.inner.journal.append_audit(
+            result.checked_at,
+            "command.preflight",
+            &req.target.device,
+            &serde_json::json!({
+                "principal": principal,
+                "request": req,
+                "decision": result.decision,
+                "errors": result.errors,
+            }),
+        )?;
+        Ok(result)
     }
 
     /// Stateful checks against fresh readings taken now. Only readings taken during this

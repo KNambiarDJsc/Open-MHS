@@ -153,3 +153,17 @@ impl Receipt {
         self.transitions.last().and_then(|t| t.detail.as_deref())
     }
 }
+
+/// What would happen if a request were submitted now (`commands.preflight`).
+///
+/// Advisory only: device state, policy and rate-limit history can change before a real
+/// submission, which is checked again from scratch.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PreflightResult {
+    pub decision: Decision,
+    pub rules: Vec<RuleMatch>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub errors: Vec<ErrorObject>,
+    pub checked_at: Timestamp,
+}

@@ -246,7 +246,8 @@ pub fn check_command(
                             )
                             .at("/value")
                             .detail("max_change", slew.max_change)
-                            .detail("per_ms", slew.per_ms),
+                            .detail("per_ms", slew.per_ms)
+                            .detail("unit", u),
                         );
                     }
                 } else {

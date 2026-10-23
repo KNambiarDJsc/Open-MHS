@@ -134,6 +134,12 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
         }
         warn!(addr = %config.listen, "listening on a non-loopback address; anyone who can reach it and holds a token can control devices");
     }
+    if !openmhs_types::is_principal(&config.operator) {
+        return Err(GatewayError::Config(format!(
+            "operator principal '{}' must be a lowercase name with an optional kind, e.g. operator:local",
+            config.operator
+        )));
+    }
     std::fs::create_dir_all(&config.home)?;
     let lock = File::create(config.home.join(LOCK_FILE))?;
     if lock.try_lock().is_err() {

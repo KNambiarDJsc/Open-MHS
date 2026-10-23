@@ -1,0 +1,28 @@
+[package]
+name = "openmhs-mcp"
+description = "OpenMHS MCP server: a client of the gateway that exposes devices to AI agents."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+openmhs-api.workspace = true
+openmhs-types.workspace = true
+rmcp = { version = "~3.5.1", default-features = false, features = ["server", "macros", "schemars", "transport-io"] }
+schemars = "1"
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+openmhs-gateway.workspace = true
+openmhs-policy.workspace = true
+rmcp = { version = "~3.5.1", default-features = false, features = ["client", "server", "macros", "schemars", "transport-io"] }
+tempfile.workspace = true
+tokio = { workspace = true, features = ["io-util"] }
