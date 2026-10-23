@@ -12,6 +12,11 @@ on is explained here, with links to the specification for detail.
 
 OpenMHS is an independent open-source project, not affiliated with Anthropic.
 
+> **Does your device speak Modbus TCP, MQTT, SCPI or plain HTTP/JSON?** Then you may not
+> need to write an adapter: describe the device in a JSON [profile](profiles.md) and use
+> the built-in protocol adapter. Write an adapter when the device speaks something else,
+> or does not fit a profile's shape.
+
 ## 1. What an adapter is
 
 OpenMHS is a gateway between AI agents (and people) and programmable hardware. Every

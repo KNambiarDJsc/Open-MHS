@@ -20,16 +20,22 @@ path = "src/bin/openmhsd.rs"
 
 [dependencies]
 clap.workspace = true
+openmhs-adapter.workspace = true
 openmhs-api.workspace = true
 openmhs-conformance.workspace = true
 openmhs-gateway.workspace = true
+openmhs-http.workspace = true
 openmhs-mcp.workspace = true
+openmhs-modbus.workspace = true
+openmhs-mqtt.workspace = true
 openmhs-policy.workspace = true
+openmhs-profile.workspace = true
+openmhs-scpi.workspace = true
 openmhs-sim.workspace = true
 openmhs-types.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-tokio = { workspace = true, features = ["signal"] }
+tokio = { workspace = true, features = ["signal", "net"] }
 tracing-subscriber.workspace = true
 
 [dev-dependencies]

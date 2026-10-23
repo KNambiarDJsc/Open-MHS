@@ -1,0 +1,47 @@
+# cargo-deny: what third-party code OpenMHS may depend on (docs/adr/0014-protocol-adapters.md).
+# Run `cargo deny check` before adding a dependency; CI runs it on every change.
+
+[graph]
+all-features = false
+
+[advisories]
+# Known vulnerabilities and unmaintained crates (RustSec) fail the check.
+yanked = "deny"
+ignore = []
+
+[licenses]
+confidence-threshold = 0.9
+# Permissive licences only, compatible with the project's Apache-2.0.
+allow = [
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "MIT",
+    "MIT-0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "Zlib",
+    "Unicode-3.0",
+]
+
+# serialport (via tokio-serial, for SCPI over serial lines) is MPL-2.0: file-level copyleft
+# that covers changes to its own files only, which OpenMHS does not modify (ADR-0014).
+[[licenses.exceptions]]
+crate = "serialport"
+allow = ["MPL-2.0"]
+
+# The same for option-ext (via dirs, which finds the per-user data directory).
+[[licenses.exceptions]]
+crate = "option-ext"
+allow = ["MPL-2.0"]
+
+[bans]
+multiple-versions = "warn"
+# The workspace's crates depend on each other by path, which cargo-deny counts as a
+# wildcard for any crate not marked `publish = false`. No crate is published yet; when
+# one is, its path dependencies need versions and this can become "deny".
+wildcards = "allow"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

@@ -1,0 +1,131 @@
+{
+  "openmhs_profile": "0.1",
+  "protocol": "modbus-tcp",
+  "descriptor": {
+    "openmhs": "0.1",
+    "device": {
+      "id": "modbus.chamber-01",
+      "name": "Climate chamber controller (Modbus TCP)",
+      "manufacturer": "OpenMHS",
+      "model": "MB-CHAMBER-1",
+      "description": "A heated test chamber with a door interlock, a three-speed fan, an alarm and a purge cycle, as a typical PLC exposes them over Modbus TCP."
+    },
+    "adapter": { "id": "openmhs.modbus", "version": "0.1.0", "conformance": "L2" },
+    "capabilities": [
+      {
+        "name": "chamber.temperature",
+        "kind": "property",
+        "description": "Air temperature inside the chamber.",
+        "operations": ["read"],
+        "value": { "type": "number", "quantity": "temperature", "unit": "Cel", "range": { "min": -40, "max": 150 } },
+        "side_effect": "none",
+        "freshness": { "max_age_ms": 1000 }
+      },
+      {
+        "name": "heater.setpoint",
+        "kind": "property",
+        "description": "Temperature the heater regulates to.",
+        "operations": ["read", "write"],
+        "value": { "type": "number", "quantity": "temperature", "unit": "Cel", "range": { "min": 0, "max": 120 } },
+        "side_effect": "reversible",
+        "idempotent": true,
+        "timing": { "expected_ms": 50, "timeout_ms": 2000 },
+        "verification": { "mode": "readback", "tolerance": { "abs": 0.05 }, "timeout_ms": 2000 }
+      },
+      {
+        "name": "heater.enabled",
+        "kind": "property",
+        "description": "Whether the heater runs.",
+        "operations": ["read", "write"],
+        "value": { "type": "boolean" },
+        "side_effect": "hazardous",
+        "idempotent": true,
+        "timing": { "expected_ms": 50, "timeout_ms": 2000 },
+        "preconditions": [
+          { "id": "door-closed", "description": "The heater only runs with the door closed.", "capability": "door.closed", "op": "eq", "value": true }
+        ],
+        "verification": { "mode": "readback", "timeout_ms": 2000 }
+      },
+      {
+        "name": "heater.power",
+        "kind": "property",
+        "description": "Electrical power the heater draws.",
+        "operations": ["read"],
+        "value": { "type": "number", "quantity": "power", "unit": "W", "range": { "min": 0 } },
+        "side_effect": "none",
+        "freshness": { "max_age_ms": 1000 }
+      },
+      {
+        "name": "fan.speed",
+        "kind": "property",
+        "description": "Circulation fan speed.",
+        "operations": ["read", "write"],
+        "value": { "type": "enum", "values": ["off", "low", "high"] },
+        "side_effect": "reversible",
+        "idempotent": true,
+        "timing": { "expected_ms": 50, "timeout_ms": 2000 },
+        "verification": { "mode": "readback", "timeout_ms": 2000 }
+      },
+      {
+        "name": "door.closed",
+        "kind": "property",
+        "description": "Whether the door is closed (interlock switch).",
+        "operations": ["read"],
+        "value": { "type": "boolean" },
+        "side_effect": "none"
+      },
+      {
+        "name": "alarm.active",
+        "kind": "property",
+        "description": "Whether an alarm is waiting to be acknowledged.",
+        "operations": ["read"],
+        "value": { "type": "boolean" },
+        "side_effect": "none"
+      },
+      {
+        "name": "alarm.acknowledge",
+        "kind": "action",
+        "description": "Acknowledge the alarm.",
+        "operations": ["invoke"],
+        "side_effect": "reversible",
+        "idempotent": true,
+        "timing": { "expected_ms": 50, "timeout_ms": 2000 },
+        "verification": { "mode": "readback", "capability": "alarm.active", "expect": false, "timeout_ms": 2000 }
+      },
+      {
+        "name": "chamber.purge",
+        "kind": "action",
+        "description": "Flush the chamber with dry air for `duration`. Not idempotent: each request runs another cycle.",
+        "operations": ["invoke"],
+        "params": {
+          "duration": { "type": "number", "quantity": "time", "unit": "s", "range": { "min": 1, "max": 600 } }
+        },
+        "side_effect": "irreversible",
+        "idempotent": false,
+        "timing": { "expected_ms": 50, "timeout_ms": 2000 },
+        "verification": { "mode": "none", "reason": "the controller reports no purge state" }
+      }
+    ]
+  },
+  "connection": { "address": "127.0.0.1:502", "unit_id": 1, "reply_timeout_ms": 500 },
+  "mapping": {
+    "chamber.temperature": { "table": "input", "address": 0, "type": "i16", "scale": 0.1 },
+    "heater.power": { "table": "input", "address": 1, "type": "f32" },
+    "heater.setpoint": { "table": "holding", "address": 0, "type": "i16", "scale": 0.1 },
+    "fan.speed": { "table": "holding", "address": 1 },
+    "chamber.purge": { "table": "holding", "address": 2, "type": "u32", "scale": 0.1, "param": "duration" },
+    "heater.enabled": { "table": "coil", "address": 0 },
+    "alarm.acknowledge": { "table": "coil", "address": 1, "write": true },
+    "door.closed": { "table": "discrete_input", "address": 0 },
+    "alarm.active": { "table": "discrete_input", "address": 1 }
+  },
+  "simulator": {
+    "initial": {
+      "chamber.temperature": { "value": 21.5, "unit": "Cel" },
+      "heater.setpoint": { "value": 25, "unit": "Cel" },
+      "heater.power": { "value": 0, "unit": "W" },
+      "door.closed": true,
+      "alarm.active": true
+    }
+  }
+}

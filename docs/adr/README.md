@@ -15,6 +15,7 @@
 | [0011](0011-gateway-api-and-roles.md) | Gateway API, roles, tokens and home directory (refines 0005) | Accepted |
 | [0012](0012-mcp-server-and-sdk.md) | MCP server design, agent guidance, unattested text, Python SDK (refines 0006) | Accepted |
 | [0013](0013-conformance-suite.md) | Conformance suite: fixtures, fault injection, evidence reports; adapter template | Accepted |
+| [0014](0014-protocol-adapters.md) | Protocol adapters driven by device profiles; MQTT acknowledgements; dependency policy | Accepted |
 
 Format: Context → Decision → Alternatives considered → Consequences. Supersede an
 ADR with a new one rather than rewriting history.

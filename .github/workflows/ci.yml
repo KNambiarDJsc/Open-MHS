@@ -33,6 +33,13 @@ jobs:
         run: cargo run -p openmhs-cli --bin openmhs -- demo
       - name: Simulators reach their declared conformance levels
         run: cargo run -p openmhs-cli --bin openmhs -- conformance
+      - name: Protocol profiles reach their declared levels against their simulators
+        run: >
+          cargo run -p openmhs-cli --bin openmhs -- conformance
+          --profile adapters/openmhs-modbus/profiles/climate-chamber.json
+          --profile adapters/openmhs-mqtt/profiles/greenhouse-node.json
+          --profile adapters/openmhs-scpi/profiles/bench-psu.json
+          --profile adapters/openmhs-http/profiles/led-controller.json
       - name: A scaffolded adapter builds and passes conformance (docs/adapters)
         if: runner.os == 'Linux'
         env:
@@ -47,6 +54,14 @@ jobs:
       - run: pip install "jsonschema>=4.18"
       - name: Python SDK, agent-loop examples, and CLI/MCP/SDK parity (invariant 10)
         run: python -m unittest discover -s python/tests -v
+
+  deny:
+    name: Dependencies (licences, advisories, sources)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      # Bundles cargo-deny 0.20.2; the policy is deny.toml (ADR-0014).
+      - uses: EmbarkStudios/cargo-deny-action@v2.1.1
 
   spec:
     name: Spec fixtures and schema portability

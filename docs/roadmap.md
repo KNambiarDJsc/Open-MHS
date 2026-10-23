@@ -10,8 +10,8 @@ the milestone is marked **Done**.
 | M2 | Core engine: registry, constraints, authorization, command state machine, SQLite journal with crash recovery, state store, hash-chained audit, adapter trait, virtual PSU with fault injection | Done |
 | M3 | Gateway (`openmhsd`), local JSON-RPC API, CLI, three virtual devices, `openmhs demo`, CI on Windows/macOS/Linux | Done |
 | M4 | MCP server (gateway client), pure-Python client SDK, mock-agent replanning example | Done |
-| M5 | Conformance suite (L0–L2 tested; L3 defined in M9), `openmhs adapter new`, adapter author guide | Done (pending review) |
-| M6 | Protocol adapters: Modbus TCP, MQTT, SCPI (TCP/serial), HTTP — each tested against in-repo protocol simulators | Planned |
+| M5 | Conformance suite (L0–L2 tested; L3 defined in M9), `openmhs adapter new`, adapter author guide | Done |
+| M6 | Protocol adapters: Modbus TCP, MQTT, SCPI (TCP/serial), HTTP — each tested against in-repo protocol simulators | Done (pending review) |
 | M7 | Out-of-process adapter host, Python adapter SDK, OPC UA and ROS 2 adapters, adapter permission manifests | Planned |
 | M8 | Identity and trust: scoped credentials, approval workflows, signed descriptors/manifests, signed audit export, threat model | Planned |
 | M9 | Capability graph and multi-device orchestration: relationships, resource leases, plans with twin preflight, partial-failure handling, priority stop lane (ADR-0010 amendment) | Planned |

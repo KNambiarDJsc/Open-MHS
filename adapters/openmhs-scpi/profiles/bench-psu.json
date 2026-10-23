@@ -1,0 +1,124 @@
+{
+  "openmhs_profile": "0.1",
+  "protocol": "scpi",
+  "descriptor": {
+    "openmhs": "0.1",
+    "device": {
+      "id": "scpi.psu-01",
+      "name": "Bench power supply (SCPI)",
+      "manufacturer": "OpenMHS",
+      "model": "SCPI-PSU-1",
+      "description": "A single-channel programmable power supply with the common SCPI source and output commands. Matches many bench supplies; check your instrument's manual for its exact command names."
+    },
+    "adapter": { "id": "openmhs.scpi", "version": "0.1.0", "conformance": "L2" },
+    "capabilities": [
+      {
+        "name": "psu.voltage.setpoint",
+        "kind": "property",
+        "description": "Output voltage setpoint.",
+        "operations": ["read", "write"],
+        "value": { "type": "number", "quantity": "electric_potential", "unit": "V", "range": { "min": 0, "max": 30 } },
+        "side_effect": "reversible",
+        "idempotent": true,
+        "timing": { "expected_ms": 50, "timeout_ms": 2000 },
+        "preconditions": [
+          { "id": "not-tripped", "description": "Setpoints are refused while protection is tripped.", "capability": "psu.protection.tripped", "op": "eq", "value": false }
+        ],
+        "verification": { "mode": "readback", "tolerance": { "abs": 0.01 }, "timeout_ms": 2000 }
+      },
+      {
+        "name": "psu.current.limit",
+        "kind": "property",
+        "description": "Output current limit.",
+        "operations": ["read", "write"],
+        "value": { "type": "number", "quantity": "electric_current", "unit": "A", "range": { "min": 0, "max": 5 } },
+        "side_effect": "reversible",
+        "idempotent": true,
+        "timing": { "expected_ms": 50, "timeout_ms": 2000 },
+        "verification": { "mode": "readback", "tolerance": { "abs": 0.001 }, "timeout_ms": 2000 }
+      },
+      {
+        "name": "psu.output.enabled",
+        "kind": "property",
+        "description": "Whether the output is on.",
+        "operations": ["read", "write"],
+        "value": { "type": "boolean" },
+        "side_effect": "reversible",
+        "idempotent": true,
+        "timing": { "expected_ms": 50, "timeout_ms": 2000 },
+        "verification": { "mode": "readback", "timeout_ms": 2000 }
+      },
+      {
+        "name": "psu.voltage.measured",
+        "kind": "property",
+        "description": "Measured output voltage.",
+        "operations": ["read"],
+        "value": { "type": "number", "quantity": "electric_potential", "unit": "V" },
+        "side_effect": "none",
+        "freshness": { "max_age_ms": 1000 }
+      },
+      {
+        "name": "psu.current.measured",
+        "kind": "property",
+        "description": "Measured output current.",
+        "operations": ["read"],
+        "value": { "type": "number", "quantity": "electric_current", "unit": "A" },
+        "side_effect": "none",
+        "freshness": { "max_age_ms": 1000 }
+      },
+      {
+        "name": "psu.protection.tripped",
+        "kind": "property",
+        "description": "Whether over-voltage protection has tripped.",
+        "operations": ["read"],
+        "value": { "type": "boolean" },
+        "side_effect": "none"
+      },
+      {
+        "name": "psu.protection.clear",
+        "kind": "action",
+        "description": "Clear a protection trip.",
+        "operations": ["invoke"],
+        "side_effect": "reversible",
+        "idempotent": true,
+        "timing": { "expected_ms": 50, "timeout_ms": 2000 },
+        "verification": { "mode": "readback", "capability": "psu.protection.tripped", "expect": false, "timeout_ms": 2000 }
+      },
+      {
+        "name": "psu.trigger",
+        "kind": "action",
+        "description": "Start the programmed output sequence. Not idempotent: each trigger runs it again.",
+        "operations": ["invoke"],
+        "side_effect": "irreversible",
+        "idempotent": false,
+        "timing": { "expected_ms": 50, "timeout_ms": 2000 },
+        "preconditions": [
+          { "id": "output-on", "description": "A sequence runs only with the output on.", "capability": "psu.output.enabled", "op": "eq", "value": true }
+        ],
+        "verification": { "mode": "none", "reason": "a sequence leaves no state the instrument reports" }
+      }
+    ]
+  },
+  "connection": {
+    "transport": { "tcp": { "address": "127.0.0.1:5025" } },
+    "reply_timeout_ms": 500
+  },
+  "mapping": {
+    "psu.voltage.setpoint": { "query": "SOUR:VOLT?", "set": "SOUR:VOLT {{value}}" },
+    "psu.current.limit": { "query": "SOUR:CURR?", "set": "SOUR:CURR {{value}}" },
+    "psu.output.enabled": { "query": "OUTP?", "set": "OUTP {{value}}", "booleans": ["ON", "OFF"] },
+    "psu.voltage.measured": { "query": "MEAS:VOLT?" },
+    "psu.current.measured": { "query": "MEAS:CURR?" },
+    "psu.protection.tripped": { "query": "VOLT:PROT:TRIP?" },
+    "psu.protection.clear": { "send": "OUTP:PROT:CLE" },
+    "psu.trigger": { "send": "*TRG" }
+  },
+  "simulator": {
+    "initial": {
+      "psu.voltage.setpoint": { "value": 5, "unit": "V" },
+      "psu.current.limit": { "value": 1, "unit": "A" },
+      "psu.voltage.measured": { "value": 0, "unit": "V" },
+      "psu.current.measured": { "value": 0, "unit": "A" }
+    }
+  }
+}

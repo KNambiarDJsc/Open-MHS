@@ -12,6 +12,11 @@ members = [
     "crates/openmhs-mcp",
     "crates/openmhs-conformance",
     "templates/adapter",
+    "adapters/openmhs-profile",
+    "adapters/openmhs-scpi",
+    "adapters/openmhs-modbus",
+    "adapters/openmhs-http",
+    "adapters/openmhs-mqtt",
 ]
 
 [workspace.package]
@@ -29,6 +34,11 @@ openmhs-gateway = { path = "crates/openmhs-gateway" }
 openmhs-mcp = { path = "crates/openmhs-mcp" }
 openmhs-engine = { path = "crates/openmhs-engine" }
 openmhs-policy = { path = "crates/openmhs-policy" }
+openmhs-profile = { path = "adapters/openmhs-profile" }
+openmhs-scpi = { path = "adapters/openmhs-scpi" }
+openmhs-modbus = { path = "adapters/openmhs-modbus" }
+openmhs-http = { path = "adapters/openmhs-http" }
+openmhs-mqtt = { path = "adapters/openmhs-mqtt" }
 openmhs-sim = { path = "crates/openmhs-sim" }
 openmhs-types = { path = "crates/openmhs-types" }
 

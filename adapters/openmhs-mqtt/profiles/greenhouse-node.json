@@ -1,0 +1,112 @@
+{
+  "openmhs_profile": "0.1",
+  "protocol": "mqtt",
+  "descriptor": {
+    "openmhs": "0.1",
+    "device": {
+      "id": "mqtt.greenhouse-01",
+      "name": "Greenhouse node (MQTT)",
+      "manufacturer": "OpenMHS",
+      "model": "MQTT-GH-1",
+      "description": "A greenhouse sensor and actuator node that publishes its state as JSON and takes commands on MQTT topics, acknowledging each one."
+    },
+    "adapter": { "id": "openmhs.mqtt", "version": "0.1.0", "conformance": "L2" },
+    "capabilities": [
+      {
+        "name": "air.temperature",
+        "kind": "property",
+        "description": "Air temperature, timestamped by the node.",
+        "operations": ["read"],
+        "value": { "type": "number", "quantity": "temperature", "unit": "Cel", "range": { "min": -20, "max": 60 } },
+        "side_effect": "none",
+        "freshness": { "max_age_ms": 2000 }
+      },
+      {
+        "name": "air.humidity",
+        "kind": "property",
+        "description": "Relative humidity.",
+        "operations": ["read"],
+        "value": { "type": "number", "quantity": "dimensionless", "unit": "%", "range": { "min": 0, "max": 100 } },
+        "side_effect": "none",
+        "freshness": { "max_age_ms": 2000 }
+      },
+      {
+        "name": "tank.level",
+        "kind": "property",
+        "description": "Water left in the irrigation tank.",
+        "operations": ["read"],
+        "value": { "type": "number", "quantity": "dimensionless", "unit": "%", "range": { "min": 0, "max": 100 } },
+        "side_effect": "none"
+      },
+      {
+        "name": "fan.on",
+        "kind": "property",
+        "description": "Whether the circulation fan runs.",
+        "operations": ["read", "write"],
+        "value": { "type": "boolean" },
+        "side_effect": "reversible",
+        "idempotent": true,
+        "timing": { "expected_ms": 50, "timeout_ms": 2000 },
+        "verification": { "mode": "readback", "timeout_ms": 2000 }
+      },
+      {
+        "name": "vent.position",
+        "kind": "property",
+        "description": "Roof vent opening.",
+        "operations": ["read", "write"],
+        "value": { "type": "number", "quantity": "dimensionless", "unit": "%", "range": { "min": 0, "max": 100 } },
+        "side_effect": "reversible",
+        "idempotent": true,
+        "timing": { "expected_ms": 50, "timeout_ms": 2000 },
+        "verification": { "mode": "readback", "tolerance": { "abs": 0.5 }, "timeout_ms": 2000 }
+      },
+      {
+        "name": "irrigation.dose",
+        "kind": "action",
+        "description": "Pump `volume` of water onto the beds. Not idempotent: each request pumps again.",
+        "operations": ["invoke"],
+        "params": {
+          "volume": { "type": "number", "quantity": "volume", "unit": "mL", "range": { "min": 10, "max": 500 } }
+        },
+        "side_effect": "irreversible",
+        "idempotent": false,
+        "timing": { "expected_ms": 100, "timeout_ms": 2000 },
+        "preconditions": [
+          { "id": "tank-not-empty", "description": "The pump must not run dry.", "capability": "tank.level", "op": "ge", "value": { "value": 10, "unit": "%" } }
+        ],
+        "verification": { "mode": "none", "reason": "the node reports no dosing state" }
+      }
+    ]
+  },
+  "connection": {
+    "host": "127.0.0.1",
+    "port": 1883,
+    "client_id": "openmhs-greenhouse-01",
+    "reply_timeout_ms": 500,
+    "ack": { "topic": "greenhouse/node-01/ack", "id_pointer": "/id", "ok_pointer": "/ok", "error_pointer": "/error" }
+  },
+  "mapping": {
+    "air.temperature": { "state": { "topic": "greenhouse/node-01/state", "pointer": "/air/temperature", "timestamp_pointer": "/time" } },
+    "air.humidity": { "state": { "topic": "greenhouse/node-01/state", "pointer": "/air/humidity", "timestamp_pointer": "/time" } },
+    "tank.level": { "state": { "topic": "greenhouse/node-01/state", "pointer": "/tank", "timestamp_pointer": "/time" } },
+    "fan.on": {
+      "state": { "topic": "greenhouse/node-01/state", "pointer": "/fan", "timestamp_pointer": "/time" },
+      "command": { "topic": "greenhouse/node-01/set", "payload": { "fan": "{{value}}", "id": "{{command_id}}" } }
+    },
+    "vent.position": {
+      "state": { "topic": "greenhouse/node-01/state", "pointer": "/vent", "timestamp_pointer": "/time" },
+      "command": { "topic": "greenhouse/node-01/set", "payload": { "vent": "{{value}}", "id": "{{command_id}}" } }
+    },
+    "irrigation.dose": {
+      "command": { "topic": "greenhouse/node-01/dose", "payload": { "ml": "{{volume}}", "id": "{{command_id}}" } }
+    }
+  },
+  "simulator": {
+    "initial": {
+      "air.temperature": { "value": 24.5, "unit": "Cel" },
+      "air.humidity": { "value": 61, "unit": "%" },
+      "tank.level": { "value": 80, "unit": "%" },
+      "vent.position": { "value": 20, "unit": "%" }
+    }
+  }
+}

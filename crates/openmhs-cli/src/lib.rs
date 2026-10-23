@@ -5,11 +5,12 @@
 
 mod demo;
 mod output;
+mod profiles;
 pub mod scaffold;
 mod values;
 
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use clap::{Args, Parser, Subcommand};
@@ -99,8 +100,14 @@ enum Cmd {
     },
     /// Serve the Model Context Protocol on stdin/stdout for an AI agent (docs/mcp.md).
     Mcp(McpArgs),
-    /// Run the conformance suite against the built-in simulators (spec/conformance.md).
+    /// Run the conformance suite against the built-in simulators, or against a protocol
+    /// profile's simulator (spec/conformance.md).
     Conformance(ConformanceArgs),
+    /// Protocol profiles: Modbus TCP, MQTT, SCPI and HTTP devices (docs/adapters/profiles.md).
+    Profile {
+        #[command(subcommand)]
+        command: ProfileCmd,
+    },
     /// Create adapters (docs/adapters/).
     Adapter {
         #[command(subcommand)]
@@ -110,15 +117,28 @@ enum Cmd {
 
 #[derive(Args)]
 struct ConformanceArgs {
-    /// Simulator to test, repeatable. Default: all of them.
+    /// Simulator to test, repeatable. Default: all of them, unless --profile is given.
     #[arg(long = "device")]
     devices: Vec<String>,
+    /// Test a protocol profile's adapter against the profile's simulator, over real
+    /// loopback sockets. Repeatable. Never touches the real device.
+    #[arg(long = "profile")]
+    profiles: Vec<PathBuf>,
     /// Write each report as <device>.json into this directory.
     #[arg(long)]
     report_dir: Option<PathBuf>,
     /// Seed for simulator noise.
     #[arg(long, default_value_t = 42)]
     seed: u64,
+}
+
+#[derive(Subcommand)]
+enum ProfileCmd {
+    /// Validate profiles without connecting to anything.
+    Check {
+        #[arg(required = true)]
+        files: Vec<PathBuf>,
+    },
 }
 
 #[derive(Subcommand)]
@@ -153,6 +173,14 @@ pub struct ServeArgs {
     /// Register the virtual lab: temperature sensor, power supply, linear stage.
     #[arg(long)]
     sim: bool,
+    /// Register the device a protocol profile describes. This connects to the real
+    /// device at the profile's address. Repeatable (docs/adapters/profiles.md).
+    #[arg(long = "profile")]
+    profiles: Vec<PathBuf>,
+    /// Register a protocol profile's simulated device instead of the real one: its
+    /// simulator runs in this process on a loopback port. Repeatable.
+    #[arg(long = "profile-sim")]
+    profile_sims: Vec<PathBuf>,
     /// Port to listen on (0 picks a free one; the runtime file records it).
     #[arg(long, default_value_t = DEFAULT_PORT)]
     port: u16,
@@ -337,6 +365,23 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
         .with_writer(std::io::stderr)
         .with_target(false)
         .try_init();
+    let clock: std::sync::Arc<dyn openmhs_types::Clock> =
+        std::sync::Arc::new(openmhs_types::SystemClock);
+    let mut opened = Vec::new();
+    let wanted = args
+        .profiles
+        .iter()
+        .map(|p| (p, false))
+        .chain(args.profile_sims.iter().map(|p| (p, true)));
+    for (path, simulate) in wanted {
+        match profiles::open(path, simulate, clock.clone()).await {
+            Ok(o) => opened.push(o),
+            Err(e) => {
+                eprintln!("error: {e}");
+                return exit::ERROR;
+            }
+        }
+    }
     let config = GatewayConfig {
         home,
         listen: SocketAddr::new(args.listen, args.port),
@@ -344,7 +389,7 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
         operator: args.operator,
         simulation: args.sim,
         seed: args.seed,
-        adapters: Vec::new(),
+        adapters: opened.iter().map(|o| o.adapter.clone()).collect(),
     };
     let gateway = match openmhs_gateway::start(config).await {
         Ok(g) => g,
@@ -357,10 +402,20 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
     println!("  home     {}", gateway.home().display());
     let devices = gateway.engine().devices();
     if devices.is_empty() {
-        println!("  devices  none (use --sim for the virtual lab; hardware adapters arrive in M6)");
+        println!("  devices  none (use --sim for the virtual lab, or --profile for a device)");
     } else {
         for d in &devices {
-            println!("  device   {} ({})", d.device.id, d.adapter.id);
+            match opened.iter().find(|o| o.device_id == d.device.id) {
+                Some(o) if o.fixture.is_some() => println!(
+                    "  device   {} ({}, simulated {} at {})",
+                    d.device.id, d.adapter.id, o.protocol, o.target
+                ),
+                Some(o) => println!(
+                    "  device   {} ({}, {} at {})",
+                    d.device.id, d.adapter.id, o.protocol, o.target
+                ),
+                None => println!("  device   {} ({})", d.device.id, d.adapter.id),
+            }
         }
     }
     let r = &gateway.recovery;
@@ -374,7 +429,9 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
     if let Err(e) = tokio::signal::ctrl_c().await {
         eprintln!("error: waiting for Ctrl+C: {e}");
     }
-    match gateway.shutdown().await {
+    let stopped = gateway.shutdown().await;
+    drop(opened);
+    match stopped {
         Ok(()) => exit::OK,
         Err(e) => {
             eprintln!("error during shutdown: {e}");
@@ -434,6 +491,47 @@ fn report_error(json: bool, e: &ClientError) -> u8 {
     }
 }
 
+/// Validate profiles; connects to nothing.
+fn profile_check(json: bool, files: &[PathBuf]) -> u8 {
+    let results: Vec<(&Path, Result<profiles::Checked, String>)> = files
+        .iter()
+        .map(|f| (f.as_path(), profiles::check(f)))
+        .collect();
+    if json {
+        let v: Vec<serde_json::Value> = results
+            .iter()
+            .map(|(f, r)| match r {
+                Ok(c) => serde_json::json!({
+                    "file": f.display().to_string(), "valid": true,
+                    "protocol": c.protocol, "device": c.device_id, "capabilities": c.capabilities,
+                }),
+                Err(e) => serde_json::json!({
+                    "file": f.display().to_string(), "valid": false, "error": e,
+                }),
+            })
+            .collect();
+        output::json(&v);
+    } else {
+        for (f, r) in &results {
+            match r {
+                Ok(c) => println!(
+                    "ok       {}: {} device {}, {} capabilities",
+                    f.display(),
+                    c.protocol,
+                    c.device_id,
+                    c.capabilities
+                ),
+                Err(e) => println!("invalid  {e}"),
+            }
+        }
+    }
+    if results.iter().all(|(_, r)| r.is_ok()) {
+        exit::OK
+    } else {
+        exit::ERROR
+    }
+}
+
 /// Run the suite against the virtual lab, in this process: no gateway needed.
 async fn conformance(json: bool, args: ConformanceArgs) -> u8 {
     let clock: std::sync::Arc<dyn openmhs_types::Clock> =
@@ -450,25 +548,44 @@ async fn conformance(json: bool, args: ConformanceArgs) -> u8 {
         );
         return exit::ERROR;
     }
+    let all = args.devices.is_empty() && args.profiles.is_empty();
     let chosen: Vec<_> = lab
         .into_iter()
-        .filter(|d| {
-            args.devices.is_empty() || args.devices.iter().any(|x| x == d.control.device_id())
-        })
+        .filter(|d| all || args.devices.iter().any(|x| x == d.control.device_id()))
         .collect();
+    let mut opened = Vec::new();
+    for path in &args.profiles {
+        match profiles::open(path, true, clock.clone()).await {
+            Ok(o) => opened.push(o),
+            Err(e) => {
+                eprintln!("error: {e}");
+                return exit::ERROR;
+            }
+        }
+    }
     if !json {
         eprintln!(
             "Testing {} simulator(s). The suite sends real commands and injects faults; this takes about 15 seconds.",
-            chosen.len()
+            chosen.len() + opened.len()
         );
     }
-    let runs: Vec<_> = chosen
+    let mut runs: Vec<_> = chosen
         .into_iter()
         .map(|device| {
             let options = openmhs_conformance::Options::new(clock.clone());
             tokio::spawn(async move { openmhs_conformance::sim::run(&device, options).await })
         })
         .collect();
+    for o in &opened {
+        let Some(fixture) = o.fixture.clone() else {
+            continue;
+        };
+        let adapter = o.adapter.clone();
+        let options = openmhs_conformance::Options::new(clock.clone());
+        runs.push(tokio::spawn(async move {
+            openmhs_conformance::run(adapter, fixture, options).await
+        }));
+    }
     let mut reports = Vec::new();
     for run in runs {
         match run.await {
@@ -597,6 +714,9 @@ async fn run(cli: Cli) -> u8 {
         Cmd::Demo(args) => return demo::run(args.keep).await,
         Cmd::Mcp(args) => return mcp(&home, cli.token.as_deref(), args).await,
         Cmd::Conformance(args) => return conformance(cli.json, args).await,
+        Cmd::Profile {
+            command: ProfileCmd::Check { files },
+        } => return profile_check(cli.json, &files),
         Cmd::Adapter {
             command:
                 AdapterCmd::New {
@@ -626,7 +746,12 @@ async fn run(cli: Cli) -> u8 {
 
 async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, ClientError> {
     match cmd {
-        Cmd::Serve(_) | Cmd::Demo(_) | Cmd::Mcp(_) | Cmd::Conformance(_) | Cmd::Adapter { .. } => {
+        Cmd::Serve(_)
+        | Cmd::Demo(_)
+        | Cmd::Mcp(_)
+        | Cmd::Conformance(_)
+        | Cmd::Profile { .. }
+        | Cmd::Adapter { .. } => {
             unreachable!("handled before connecting")
         }
         Cmd::Info => {

@@ -3,10 +3,11 @@
 An open, model-agnostic, supervisory interface between AI agents and programmable
 hardware.
 
-> **Status: pre-alpha (M5: conformance suite and adapter kit).** A local gateway serves
-> three simulated devices to AI agents over MCP, to scripts through a Python SDK, and to
-> people through a CLI. Adapter authors can scaffold an adapter and test it against a
-> fake device. The project ships no real-hardware adapter yet.
+> **Status: pre-alpha (M6: protocol adapters).** A local gateway serves devices to AI
+> agents over MCP, to scripts through a Python SDK, and to people through a CLI. Modbus
+> TCP, MQTT, SCPI and HTTP devices are described by JSON profiles. Each protocol adapter
+> reaches L2 conformance against an in-repo simulator. None has been run against
+> physical hardware by the project.
 >
 > OpenMHS is an independent project. It is not affiliated with or endorsed by
 > Anthropic, and it does not claim compatibility with Anthropic's Model Hardware
@@ -42,7 +43,10 @@ safety systems keep final authority.
 | Agent-loop examples: scripted replanning agent, optional Claude variant ([examples/agent-loop/](examples/agent-loop/README.md)) | Implemented |
 | Conformance suite L0–L2 with fault injection and JSON evidence reports (`openmhs-conformance`, [spec/conformance.md](spec/conformance.md)); L3 defined in M9 | Implemented |
 | `openmhs adapter new`: a working adapter crate with a fake device and conformance tests ([adapter guide](docs/adapters/README.md)) | Implemented |
-| Real protocol adapters (Modbus, MQTT, SCPI, …) | Planned (M6+) |
+| Protocol adapters for Modbus TCP, MQTT, SCPI (TCP/serial) and HTTP, driven by JSON device profiles, each L2 against an in-repo simulator ([profiles](docs/adapters/profiles.md)) | Implemented; untested on physical hardware |
+| `openmhs profile check`, `serve --profile` / `--profile-sim`, `conformance --profile` | Implemented |
+| Dependency policy: licences, advisories and sources checked by cargo-deny ([deny.toml](deny.toml)) | Implemented |
+| OPC UA, ROS 2, out-of-process adapters | Planned (M7) |
 
 ## Try it
 
@@ -79,6 +83,18 @@ openmhs conformance --report-dir reports         # about 15 seconds; a JSON repo
 openmhs adapter new bench-lamp --openmhs-path .  # then follow docs/adapters/README.md
 ```
 
+Serve Modbus, MQTT, SCPI and HTTP devices from their profiles, each with its simulator
+running in the gateway process:
+
+```sh
+openmhs serve --profile-sim adapters/openmhs-modbus/profiles/climate-chamber.json \
+              --profile-sim adapters/openmhs-mqtt/profiles/greenhouse-node.json
+openmhs conformance --profile adapters/openmhs-scpi/profiles/bench-psu.json
+```
+
+To connect a real device, write a profile for it and read [docs/hardware/](docs/hardware/README.md)
+first.
+
 Or run the gateway yourself:
 
 ```sh
@@ -110,6 +126,10 @@ python -m unittest discover -s python/tests     # Python SDK, examples, CLI/MCP/
   really sends commands: run it against fixtures and simulators only.
 - **MCP over stdio only.** No HTTP transport, MCP resources or approval notifications
   yet; an agent waiting for approval polls with `get_command`.
+- **Protocol adapters are tested against simulators only.** A profile that passes
+  conformance is consistent with itself, not proven against your device. There is no
+  TLS for MQTT or HTTP yet, no Modbus RTU, and serial SCPI is untested on Windows. See
+  each protocol's limits in [docs/adapters/](docs/adapters/profiles.md).
 
 ## Documentation
 
@@ -117,6 +137,9 @@ python -m unittest discover -s python/tests     # Python SDK, examples, CLI/MCP/
 - [CLI reference](docs/cli.md)
 - [Connecting an agent over MCP](docs/mcp.md)
 - [Writing an adapter](docs/adapters/README.md) and [conformance](spec/conformance.md)
+- [Device profiles](docs/adapters/profiles.md): [Modbus TCP](docs/adapters/modbus.md),
+  [MQTT](docs/adapters/mqtt.md), [SCPI](docs/adapters/scpi.md), [HTTP](docs/adapters/http.md)
+- [Trying real hardware](docs/hardware/README.md) (unverified guides)
 - [Python SDK](python/README.md)
 - [Landscape research](docs/research/landscape.md)
 - [Architecture decisions](docs/adr/README.md)

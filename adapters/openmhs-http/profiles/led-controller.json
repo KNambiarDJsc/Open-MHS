@@ -1,0 +1,91 @@
+{
+  "openmhs_profile": "0.1",
+  "protocol": "http",
+  "descriptor": {
+    "openmhs": "0.1",
+    "device": {
+      "id": "http.led-01",
+      "name": "LED controller with a temperature sensor (HTTP)",
+      "manufacturer": "OpenMHS",
+      "model": "HTTP-LED-1",
+      "description": "A dimmable LED and a temperature sensor behind a small JSON API, as an ESP32 or Arduino board can serve it (docs/hardware/esp32-led.md)."
+    },
+    "adapter": { "id": "openmhs.http", "version": "0.1.0", "conformance": "L2" },
+    "capabilities": [
+      {
+        "name": "led.on",
+        "kind": "property",
+        "description": "Whether the LED is on.",
+        "operations": ["read", "write"],
+        "value": { "type": "boolean" },
+        "side_effect": "reversible",
+        "idempotent": true,
+        "timing": { "expected_ms": 50, "timeout_ms": 2000 },
+        "verification": { "mode": "readback", "timeout_ms": 2000 }
+      },
+      {
+        "name": "led.brightness",
+        "kind": "property",
+        "description": "LED brightness.",
+        "operations": ["read", "write"],
+        "value": { "type": "number", "quantity": "dimensionless", "unit": "%", "range": { "min": 0, "max": 100 } },
+        "side_effect": "reversible",
+        "idempotent": true,
+        "timing": { "expected_ms": 50, "timeout_ms": 2000 },
+        "verification": { "mode": "readback", "tolerance": { "abs": 0.5 }, "timeout_ms": 2000 }
+      },
+      {
+        "name": "sensor.temperature",
+        "kind": "property",
+        "description": "Board temperature, timestamped by the board.",
+        "operations": ["read"],
+        "value": { "type": "number", "quantity": "temperature", "unit": "Cel", "range": { "min": -40, "max": 125 } },
+        "side_effect": "none",
+        "freshness": { "max_age_ms": 2000 }
+      },
+      {
+        "name": "led.blink",
+        "kind": "action",
+        "description": "Blink the LED `count` times. Not idempotent: each request blinks again.",
+        "operations": ["invoke"],
+        "params": {
+          "count": { "type": "integer", "range": { "min": 1, "max": 10 } }
+        },
+        "side_effect": "irreversible",
+        "idempotent": false,
+        "timing": { "expected_ms": 100, "timeout_ms": 2000 },
+        "preconditions": [
+          { "id": "on", "description": "A LED that is off cannot blink.", "capability": "led.on", "op": "eq", "value": true }
+        ],
+        "verification": { "mode": "none", "reason": "a blink leaves no state to read back" }
+      }
+    ]
+  },
+  "connection": {
+    "base_url": "http://127.0.0.1:8080",
+    "timeout_ms": 500,
+    "response": { "ok_pointer": "/ok", "error_pointer": "/error" }
+  },
+  "mapping": {
+    "led.on": {
+      "read": { "path": "/api/state", "pointer": "/led/on" },
+      "write": { "method": "PUT", "path": "/api/led", "body": { "on": "{{value}}" } }
+    },
+    "led.brightness": {
+      "read": { "path": "/api/state", "pointer": "/led/brightness" },
+      "write": { "method": "PUT", "path": "/api/led", "body": { "brightness": "{{value}}" } }
+    },
+    "sensor.temperature": {
+      "read": { "path": "/api/state", "pointer": "/sensor/temperature", "timestamp_pointer": "/time" }
+    },
+    "led.blink": {
+      "invoke": { "method": "POST", "path": "/api/blink", "body": { "count": "{{count}}", "id": "{{command_id}}" } }
+    }
+  },
+  "simulator": {
+    "initial": {
+      "led.brightness": { "value": 40, "unit": "%" },
+      "sensor.temperature": { "value": 31.2, "unit": "Cel" }
+    }
+  }
+}
