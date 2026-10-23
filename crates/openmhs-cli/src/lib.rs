@@ -5,6 +5,7 @@
 
 mod demo;
 mod output;
+pub mod scaffold;
 mod values;
 
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
@@ -98,6 +99,42 @@ enum Cmd {
     },
     /// Serve the Model Context Protocol on stdin/stdout for an AI agent (docs/mcp.md).
     Mcp(McpArgs),
+    /// Run the conformance suite against the built-in simulators (spec/conformance.md).
+    Conformance(ConformanceArgs),
+    /// Create adapters (docs/adapters/).
+    Adapter {
+        #[command(subcommand)]
+        command: AdapterCmd,
+    },
+}
+
+#[derive(Args)]
+struct ConformanceArgs {
+    /// Simulator to test, repeatable. Default: all of them.
+    #[arg(long = "device")]
+    devices: Vec<String>,
+    /// Write each report as <device>.json into this directory.
+    #[arg(long)]
+    report_dir: Option<PathBuf>,
+    /// Seed for simulator noise.
+    #[arg(long, default_value_t = 42)]
+    seed: u64,
+}
+
+#[derive(Subcommand)]
+enum AdapterCmd {
+    /// Create an adapter crate from the template: a working example to make your own.
+    New {
+        /// Crate and adapter name: lowercase letters, digits and hyphens, e.g. bench-psu.
+        name: String,
+        /// Directory to create (default: ./<name>). Must not exist, or be empty.
+        #[arg(long)]
+        path: Option<PathBuf>,
+        /// Use the OpenMHS crates from this local checkout instead of the repository's
+        /// main branch.
+        #[arg(long)]
+        openmhs_path: Option<PathBuf>,
+    },
 }
 
 #[derive(Args)]
@@ -307,6 +344,7 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
         operator: args.operator,
         simulation: args.sim,
         seed: args.seed,
+        adapters: Vec::new(),
     };
     let gateway = match openmhs_gateway::start(config).await {
         Ok(g) => g,
@@ -396,6 +434,122 @@ fn report_error(json: bool, e: &ClientError) -> u8 {
     }
 }
 
+/// Run the suite against the virtual lab, in this process: no gateway needed.
+async fn conformance(json: bool, args: ConformanceArgs) -> u8 {
+    let clock: std::sync::Arc<dyn openmhs_types::Clock> =
+        std::sync::Arc::new(openmhs_types::SystemClock);
+    let lab = openmhs_sim::virtual_lab(clock.clone(), args.seed);
+    let known: Vec<String> = lab
+        .iter()
+        .map(|d| d.control.device_id().to_owned())
+        .collect();
+    if let Some(unknown) = args.devices.iter().find(|d| !known.contains(d)) {
+        eprintln!(
+            "error: no simulator '{unknown}'; known: {}",
+            known.join(", ")
+        );
+        return exit::ERROR;
+    }
+    let chosen: Vec<_> = lab
+        .into_iter()
+        .filter(|d| {
+            args.devices.is_empty() || args.devices.iter().any(|x| x == d.control.device_id())
+        })
+        .collect();
+    if !json {
+        eprintln!(
+            "Testing {} simulator(s). The suite sends real commands and injects faults; this takes about 15 seconds.",
+            chosen.len()
+        );
+    }
+    let runs: Vec<_> = chosen
+        .into_iter()
+        .map(|device| {
+            let options = openmhs_conformance::Options::new(clock.clone());
+            tokio::spawn(async move { openmhs_conformance::sim::run(&device, options).await })
+        })
+        .collect();
+    let mut reports = Vec::new();
+    for run in runs {
+        match run.await {
+            Ok(r) => reports.push(r),
+            Err(e) => {
+                eprintln!("error: a conformance run failed: {e}");
+                return exit::ERROR;
+            }
+        }
+    }
+    if let Some(dir) = &args.report_dir {
+        if let Err(e) = std::fs::create_dir_all(dir) {
+            eprintln!("error: cannot create {}: {e}", dir.display());
+            return exit::ERROR;
+        }
+        for r in &reports {
+            let name = r
+                .subject
+                .device
+                .clone()
+                .unwrap_or_else(|| r.subject.adapter.clone());
+            let path = dir.join(format!("{name}.json"));
+            let written = serde_json::to_string_pretty(r)
+                .map_err(|e| e.to_string())
+                .and_then(|text| std::fs::write(&path, text + "\n").map_err(|e| e.to_string()));
+            if let Err(e) = written {
+                eprintln!("error: cannot write {}: {e}", path.display());
+                return exit::ERROR;
+            }
+        }
+        if !json {
+            eprintln!("Reports written to {}", dir.display());
+        }
+    }
+    if json {
+        output::json(&reports);
+    } else {
+        for r in &reports {
+            println!("{}", openmhs_conformance::render(r));
+        }
+        println!("A conformance level is not a safety certification.");
+    }
+    if reports.iter().all(|r| r.passed) {
+        exit::OK
+    } else {
+        exit::FAILED
+    }
+}
+
+fn adapter_new(name: &str, path: Option<PathBuf>, openmhs_path: Option<PathBuf>) -> u8 {
+    let dir = path.unwrap_or_else(|| PathBuf::from(name));
+    let source = match openmhs_path {
+        Some(p) => scaffold::Source::Path(std::path::absolute(&p).unwrap_or(p)),
+        None => scaffold::Source::Git,
+    };
+    match scaffold::create(&dir, name, &source) {
+        Ok(files) => {
+            println!(
+                "Created {} ({} files): an adapter for an example lamp, ready to make your own.",
+                dir.display(),
+                files.len()
+            );
+            if matches!(source, scaffold::Source::Git) {
+                println!(
+                    "It uses the OpenMHS crates from the repository's main branch; pass --openmhs-path <checkout> to use a local copy."
+                );
+            }
+            println!();
+            println!("  cd {}", dir.display());
+            println!("  cargo test     # the conformance suite, against the fake lamp");
+            println!();
+            println!("Then follow docs/adapters/README.md.");
+            exit::OK
+        }
+        Err(e) => {
+            eprintln!("error: {e}");
+            exit::ERROR
+        }
+    }
+}
+
 /// stdout is the MCP transport, so everything human-readable here goes to stderr.
 async fn mcp(home: &std::path::Path, token: Option<&str>, args: McpArgs) -> u8 {
     let _ = tracing_subscriber::fmt()
@@ -442,6 +596,15 @@ async fn run(cli: Cli) -> u8 {
         Cmd::Serve(args) => return serve(home, args).await,
         Cmd::Demo(args) => return demo::run(args.keep).await,
         Cmd::Mcp(args) => return mcp(&home, cli.token.as_deref(), args).await,
+        Cmd::Conformance(args) => return conformance(cli.json, args).await,
+        Cmd::Adapter {
+            command:
+                AdapterCmd::New {
+                    name,
+                    path,
+                    openmhs_path,
+                },
+        } => return adapter_new(&name, path, openmhs_path),
         Cmd::Sim {
             command: SimCmd::Faults,
         } => {
@@ -463,7 +626,9 @@ async fn run(cli: Cli) -> u8 {
 
 async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, ClientError> {
     match cmd {
-        Cmd::Serve(_) | Cmd::Demo(_) | Cmd::Mcp(_) => unreachable!("handled before connecting"),
+        Cmd::Serve(_) | Cmd::Demo(_) | Cmd::Mcp(_) | Cmd::Conformance(_) | Cmd::Adapter { .. } => {
+            unreachable!("handled before connecting")
+        }
         Cmd::Info => {
             let info = client.info().await?;
             show(json, &info, |i| {

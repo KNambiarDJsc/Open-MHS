@@ -13,7 +13,7 @@ permissions — see [authorization.md](authorization.md).
 |---|---|---|
 | `openmhs` | yes | Spec version, e.g. `"0.1"` |
 | `device` | yes | `id`, `manufacturer`, `model`; optional `name`, `serial`, `firmware`, `description` |
-| `adapter` | yes | `id` and `version` (semver) of the adapter that drives this device, plus adapter-specific `config` |
+| `adapter` | yes | `id` and `version` (semver) of the adapter that drives this device, plus adapter-specific `config`, and optionally the `conformance` level (`L0`–`L3`) the adapter's author claims. That level is a claim like the rest of the descriptor; the conformance report is the evidence ([conformance.md](conformance.md)) |
 | `components` | no | Named parts of the device (`id`, `name`, `description`). Capabilities may reference one. |
 | `capabilities` | yes | At least one capability |
 | `extensions` | no | Vendor data, keys namespaced `x-<vendor>` |

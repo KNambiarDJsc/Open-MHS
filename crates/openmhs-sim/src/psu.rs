@@ -151,6 +151,10 @@ impl SimControl for PsuHandle {
             other => Err(format!("unknown fault '{other}'")),
         }
     }
+
+    fn execute_calls(&self) -> Option<u64> {
+        Some(PsuHandle::execute_calls(self))
+    }
 }
 
 fn volts(v: f64) -> Value {

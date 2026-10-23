@@ -80,6 +80,10 @@ pub trait SimControl: Send + Sync {
     }
     /// Clear device-specific faults (generic faults are cleared by [`apply_fault`]).
     fn clear_device_faults(&self) {}
+    /// How many times `execute` has been called, if this simulator counts them.
+    fn execute_calls(&self) -> Option<u64> {
+        None
+    }
 }
 
 /// Generic fault names accepted by [`apply_fault`], with their argument.

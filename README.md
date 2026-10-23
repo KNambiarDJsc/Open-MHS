@@ -3,9 +3,10 @@
 An open, model-agnostic, supervisory interface between AI agents and programmable
 hardware.
 
-> **Status: pre-alpha (M4: MCP server and Python SDK).** A local gateway serves three
-> simulated devices to AI agents over MCP, to scripts through a Python SDK, and to people
-> through a CLI. There is no real-hardware adapter yet: it controls simulators only.
+> **Status: pre-alpha (M5: conformance suite and adapter kit).** A local gateway serves
+> three simulated devices to AI agents over MCP, to scripts through a Python SDK, and to
+> people through a CLI. Adapter authors can scaffold an adapter and test it against a
+> fake device. The project ships no real-hardware adapter yet.
 >
 > OpenMHS is an independent project. It is not affiliated with or endorsed by
 > Anthropic, and it does not claim compatibility with Anthropic's Model Hardware
@@ -32,13 +33,15 @@ safety systems keep final authority.
 | Deterministic policy: grants, approvals, units/ranges, rate and slew limits, preconditions, freshness (`openmhs-policy`) | Implemented |
 | Command engine: full lifecycle, idempotency, timeouts → `UNKNOWN_OUTCOME`, readback verification, reconciliation, crash recovery (`openmhs-engine`) | Implemented |
 | SQLite journal and hash-chained, tamper-evident audit log | Implemented |
-| Adapter contract (`openmhs-adapter`) | Implemented; may change before M5 |
+| Adapter contract (`openmhs-adapter`) | Implemented; may change before M7 |
 | Virtual lab: temperature sensor, power supply, linear stage, with fault injection (`openmhs-sim`) | Implemented |
 | Gateway process with local JSON-RPC API, per-principal tokens, operator/agent roles (`openmhs-gateway`, [spec/api.md](spec/api.md)) | Implemented |
 | CLI and guided demo (`openmhs`, `openmhsd`; [docs/cli.md](docs/cli.md)) | Implemented |
 | MCP server (`openmhs mcp`): structured refusals with next steps, preflight checks, unattested-text marking; verified with Claude Code ([docs/mcp.md](docs/mcp.md)) | Implemented |
 | Python client SDK, standard library only, models checked against the schemas ([python/](python/README.md)) | Implemented; unpublished |
 | Agent-loop examples: scripted replanning agent, optional Claude variant ([examples/agent-loop/](examples/agent-loop/README.md)) | Implemented |
+| Conformance suite L0–L2 with fault injection and JSON evidence reports (`openmhs-conformance`, [spec/conformance.md](spec/conformance.md)); L3 defined in M9 | Implemented |
+| `openmhs adapter new`: a working adapter crate with a fake device and conformance tests ([adapter guide](docs/adapters/README.md)) | Implemented |
 | Real protocol adapters (Modbus, MQTT, SCPI, …) | Planned (M6+) |
 
 ## Try it
@@ -68,6 +71,14 @@ python examples/agent-loop/mock_agent.py
 
 To connect Claude Code or another MCP host, see [docs/mcp.md](docs/mcp.md).
 
+Check the simulators against their declared conformance levels, or start an adapter of
+your own:
+
+```sh
+openmhs conformance --report-dir reports         # about 15 seconds; a JSON report per device
+openmhs adapter new bench-lamp --openmhs-path .  # then follow docs/adapters/README.md
+```
+
 Or run the gateway yourself:
 
 ```sh
@@ -94,6 +105,9 @@ python -m unittest discover -s python/tests     # Python SDK, examples, CLI/MCP/
   emergency stops: those belong to the hardware.
 - **Rate and slew limits reset on restart.** Their history is kept in memory.
 - **Simulator state resets on restart.**
+- **Conformance is not certification.** A level says the integration behaves as
+  specified under the tested faults, not that a device is safe to operate. The suite
+  really sends commands: run it against fixtures and simulators only.
 - **MCP over stdio only.** No HTTP transport, MCP resources or approval notifications
   yet; an agent waiting for approval polls with `get_command`.
 
@@ -102,6 +116,7 @@ python -m unittest discover -s python/tests     # Python SDK, examples, CLI/MCP/
 - [Specification](spec/README.md) and the [local API](spec/api.md)
 - [CLI reference](docs/cli.md)
 - [Connecting an agent over MCP](docs/mcp.md)
+- [Writing an adapter](docs/adapters/README.md) and [conformance](spec/conformance.md)
 - [Python SDK](python/README.md)
 - [Landscape research](docs/research/landscape.md)
 - [Architecture decisions](docs/adr/README.md)

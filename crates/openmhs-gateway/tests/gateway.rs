@@ -132,3 +132,29 @@ async fn denial_messages_do_not_repeat_the_code() {
     assert!(!err.to_string().contains("policy.denied"), "{err}");
     gw.shutdown().await.unwrap();
 }
+
+/// A program embedding the gateway registers its own adapters; they are served like any
+/// other device, and simulator fault injection stays off without `simulation`.
+#[tokio::test(flavor = "multi_thread")]
+async fn embedded_adapters_are_registered() {
+    let home = tempfile::tempdir().unwrap();
+    let clock: std::sync::Arc<dyn openmhs_types::Clock> =
+        std::sync::Arc::new(openmhs_types::SystemClock);
+    let (psu, _control) = openmhs_sim::VirtualPsu::new(clock, 7);
+    let mut config = GatewayConfig::new(home.path());
+    config.listen = SocketAddr::from((Ipv4Addr::LOCALHOST, 0));
+    config.adapters.push(std::sync::Arc::new(psu));
+    let gw = openmhs_gateway::start(config).await.unwrap();
+    let operator = Client::new(&gw.url, &gw.operator_token).unwrap();
+    let ids: Vec<String> = operator
+        .devices()
+        .await
+        .unwrap()
+        .into_iter()
+        .map(|d| d.device.id)
+        .collect();
+    assert_eq!(ids, ["sim.psu-01"]);
+    let err = operator.sim_fault("sim.psu-01", "hang").await.unwrap_err();
+    assert_eq!(err.code(), Some("gateway.not_simulation"));
+    gw.shutdown().await.unwrap();
+}

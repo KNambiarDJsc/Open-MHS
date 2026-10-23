@@ -8,7 +8,7 @@
     "serial": "SIM-THERM-0001",
     "firmware": "1.0.0"
   },
-  "adapter": { "id": "openmhs.sim.thermo", "version": "0.1.0", "config": { "seed": 42 } },
+  "adapter": { "id": "openmhs.sim.thermo", "version": "0.1.0", "config": { "seed": 42 }, "conformance": "L1" },
   "capabilities": [
     {
       "name": "temperature.ambient",

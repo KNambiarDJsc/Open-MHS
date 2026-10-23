@@ -169,6 +169,10 @@ impl SimControl for AxisHandle {
         }
     }
 
+    fn execute_calls(&self) -> Option<u64> {
+        Some(AxisHandle::execute_calls(self))
+    }
+
     fn clear_device_faults(&self) {
         self.lock().truth.fault = false;
     }

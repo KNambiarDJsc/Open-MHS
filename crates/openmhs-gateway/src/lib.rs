@@ -21,6 +21,7 @@ use std::net::{Ipv4Addr, SocketAddr};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
+use openmhs_adapter::HardwareAdapter;
 use openmhs_api::Role;
 use openmhs_api::runtime::{RuntimeInfo, runtime_path};
 use openmhs_engine::journal::sha256_hex;
@@ -55,7 +56,7 @@ pub enum GatewayError {
     Engine(#[from] EngineError),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct GatewayConfig {
     pub home: PathBuf,
     pub listen: SocketAddr,
@@ -67,6 +68,30 @@ pub struct GatewayConfig {
     /// injection.
     pub simulation: bool,
     pub seed: u64,
+    /// Adapters to register at start, for programs that embed the gateway with their own
+    /// devices (docs/adapters/). Registered after the virtual lab, if any.
+    pub adapters: Vec<Arc<dyn HardwareAdapter>>,
+}
+
+impl std::fmt::Debug for GatewayConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("GatewayConfig")
+            .field("home", &self.home)
+            .field("listen", &self.listen)
+            .field("allow_remote", &self.allow_remote)
+            .field("operator", &self.operator)
+            .field("simulation", &self.simulation)
+            .field("seed", &self.seed)
+            .field(
+                "adapters",
+                &self
+                    .adapters
+                    .iter()
+                    .map(|a| a.adapter_id())
+                    .collect::<Vec<_>>(),
+            )
+            .finish()
+    }
 }
 
 impl GatewayConfig {
@@ -78,6 +103,7 @@ impl GatewayConfig {
             operator: DEFAULT_OPERATOR.into(),
             simulation: false,
             seed: 42,
+            adapters: Vec::new(),
         }
     }
 }
@@ -170,6 +196,9 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
             let d = engine.register(sim.adapter).await?;
             sims.insert(d.device.id, sim.control);
         }
+    }
+    for adapter in &config.adapters {
+        engine.register(adapter.clone()).await?;
     }
     let recovery = engine.recover().await?;
     if !recovery.unknown_outcome.is_empty() {

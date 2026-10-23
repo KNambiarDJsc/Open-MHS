@@ -1,0 +1,26 @@
+# The adapter template. `openmhs adapter new` copies this crate, so it is built and
+# conformance-tested with the workspace and cannot rot. Keep its dependencies in step with
+# the Cargo.toml the scaffolder writes (crates/openmhs-cli/src/scaffold.rs); a test checks.
+[package]
+name = "openmhs-adapter-template"
+description = "Template for new OpenMHS adapters: an example lamp spoken to over a line protocol."
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+async-trait.workspace = true
+openmhs-adapter.workspace = true
+openmhs-conformance.workspace = true
+openmhs-types.workspace = true
+serde_json.workspace = true
+tokio = { workspace = true, features = ["net", "io-util"] }
+
+[dev-dependencies]
+openmhs-gateway.workspace = true
+tokio = { workspace = true, features = ["test-util", "signal"] }
+
+[lints]
+workspace = true

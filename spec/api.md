@@ -101,7 +101,9 @@ The principal of a command always comes from the token, never from the request b
 | `device.registered` | A device is registered at start |
 | `policy.updated`, `grant.added`, `grant.revoked` | Policy changes |
 | `token.created`, `token.revoked` | Token changes (never the secret) |
-| `read` | A read, allowed or denied |
+| `read` | An allowed read, with the reading or the adapter's error |
+| `read.denied` | A refused read: unknown device or capability, no grant, or not readable |
+| `request.rejected` | A command request that failed schema validation, before it became a command |
 | `command.preflight` | A preflight check and its decision |
 | `command.created`, `command.transition` | A command and every state change, including approvals (`APPROVED`, with the approver) |
 | `sim.fault` | A fault injected into a simulator |

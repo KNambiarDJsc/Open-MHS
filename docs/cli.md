@@ -1,6 +1,6 @@
 # `openmhs` command line
 
-All commands except `serve` and `demo` are clients of a running gateway. They find it
+All commands except `serve`, `demo`, `conformance` and `adapter new` are clients of a running gateway. They find it
 through the runtime file in the gateway home: `--home`, else `$OPENMHS_HOME`, else the
 per-user local data directory.
 
@@ -39,6 +39,8 @@ openmhs read sim.thermo-01 temperature.ambient
 | `tokens create <principal> [--role agent\|operator]` / `tokens list` / `tokens revoke <id>` | API tokens (operator) |
 | `audit verify` / `audit tail [--limit N]` | Audit log (operator) |
 | `sim fault <device> <fault>` / `sim faults` | Fault injection (operator, `serve --sim` only) |
+| `conformance [--device ID]… [--report-dir DIR] [--seed N]` | Run the conformance suite against the built-in simulators; no gateway needed. Exit 0 when each reaches its declared level ([spec/conformance.md](../spec/conformance.md)) |
+| `adapter new <name> [--path DIR] [--openmhs-path CHECKOUT]` | Create an adapter crate with a fake device and conformance tests ([adapters/README.md](adapters/README.md)) |
 | `mcp [--url U] [--allow-operator]` | Serve MCP on stdin/stdout for an AI agent; needs an agent `--token` ([mcp.md](mcp.md)) |
 
 ### Values

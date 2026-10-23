@@ -1209,6 +1209,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "openmhs-adapter-template"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "openmhs-adapter",
+ "openmhs-conformance",
+ "openmhs-gateway",
+ "openmhs-types",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "openmhs-api"
 version = "0.1.0"
 dependencies = [
@@ -1227,6 +1240,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "openmhs-api",
+ "openmhs-conformance",
  "openmhs-gateway",
  "openmhs-mcp",
  "openmhs-policy",
@@ -1237,6 +1251,21 @@ dependencies = [
  "tempfile",
  "tokio",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "openmhs-conformance"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "openmhs-adapter",
+ "openmhs-engine",
+ "openmhs-policy",
+ "openmhs-sim",
+ "openmhs-types",
+ "serde",
+ "serde_json",
+ "tokio",
 ]
 
 [[package]]

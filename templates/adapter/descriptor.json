@@ -1,0 +1,68 @@
+{
+  "openmhs": "0.1",
+  "device": {
+    "id": "example.lamp-01",
+    "name": "Example lamp",
+    "manufacturer": "Example",
+    "model": "LAMP-1",
+    "description": "A dimmable lamp that speaks a line protocol. The starting point for a new adapter: replace it with your device."
+  },
+  "adapter": { "id": "example.lamp", "version": "0.1.0", "conformance": "L2" },
+  "capabilities": [
+    {
+      "name": "lamp.brightness",
+      "kind": "property",
+      "description": "Brightness setpoint.",
+      "operations": ["read", "write"],
+      "value": { "type": "number", "quantity": "dimensionless", "unit": "%", "range": { "min": 0, "max": 100 } },
+      "side_effect": "reversible",
+      "idempotent": true,
+      "timing": { "expected_ms": 50, "timeout_ms": 1000 },
+      "verification": { "mode": "readback", "tolerance": { "abs": 0.5 }, "timeout_ms": 1000 }
+    },
+    {
+      "name": "lamp.on",
+      "kind": "property",
+      "description": "Whether the lamp is switched on.",
+      "operations": ["read", "write"],
+      "value": { "type": "boolean" },
+      "side_effect": "reversible",
+      "idempotent": true,
+      "timing": { "expected_ms": 50, "timeout_ms": 1000 },
+      "verification": { "mode": "readback", "timeout_ms": 1000 }
+    },
+    {
+      "name": "lamp.power",
+      "kind": "property",
+      "description": "Measured electrical power.",
+      "operations": ["read"],
+      "value": { "type": "number", "quantity": "power", "unit": "W", "range": { "min": 0, "max": 60 } },
+      "side_effect": "none",
+      "freshness": { "max_age_ms": 1000 }
+    },
+    {
+      "name": "lamp.flash",
+      "kind": "action",
+      "description": "Flash the lamp `count` times. Not idempotent: sending it twice flashes twice.",
+      "operations": ["invoke"],
+      "params": {
+        "count": { "type": "integer", "range": { "min": 1, "max": 10 } }
+      },
+      "side_effect": "irreversible",
+      "idempotent": false,
+      "timing": { "expected_ms": 500, "timeout_ms": 2000 },
+      "preconditions": [
+        { "id": "on", "description": "A lamp that is off cannot flash.", "capability": "lamp.on", "op": "eq", "value": true }
+      ],
+      "verification": { "mode": "none", "reason": "a flash leaves no state to read back; lamp.flash.count only shows how many happened" }
+    },
+    {
+      "name": "lamp.flash.count",
+      "kind": "property",
+      "description": "Flashes since power-on.",
+      "operations": ["read"],
+      "value": { "type": "integer", "range": { "min": 0 } },
+      "side_effect": "none"
+    }
+  ]
+}

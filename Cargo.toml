@@ -10,6 +10,8 @@ members = [
     "crates/openmhs-gateway",
     "crates/openmhs-cli",
     "crates/openmhs-mcp",
+    "crates/openmhs-conformance",
+    "templates/adapter",
 ]
 
 [workspace.package]
@@ -22,6 +24,7 @@ authors = ["OpenMHS contributors"]
 [workspace.dependencies]
 openmhs-adapter = { path = "crates/openmhs-adapter" }
 openmhs-api = { path = "crates/openmhs-api" }
+openmhs-conformance = { path = "crates/openmhs-conformance" }
 openmhs-gateway = { path = "crates/openmhs-gateway" }
 openmhs-mcp = { path = "crates/openmhs-mcp" }
 openmhs-engine = { path = "crates/openmhs-engine" }

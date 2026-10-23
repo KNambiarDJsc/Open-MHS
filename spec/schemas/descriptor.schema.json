@@ -29,7 +29,11 @@
       "properties": {
         "id": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
         "version": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/semver" },
-        "config": { "type": "object" }
+        "config": { "type": "object" },
+        "conformance": {
+          "description": "Conformance level the adapter author claims (spec/conformance.md). A claim; the conformance report is the evidence.",
+          "enum": ["L0", "L1", "L2", "L3"]
+        }
       }
     },
     "components": {

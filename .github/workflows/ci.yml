@@ -21,7 +21,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
@@ -31,8 +31,17 @@ jobs:
       - run: cargo test --workspace
       - name: End-to-end demo (real gateway, real API, simulated devices)
         run: cargo run -p openmhs-cli --bin openmhs -- demo
+      - name: Simulators reach their declared conformance levels
+        run: cargo run -p openmhs-cli --bin openmhs -- conformance
+      - name: A scaffolded adapter builds and passes conformance (docs/adapters)
+        if: runner.os == 'Linux'
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/target
+        run: |
+          cargo run -p openmhs-cli --bin openmhs -- adapter new ci-lamp --path "$RUNNER_TEMP/ci-lamp" --openmhs-path "$GITHUB_WORKSPACE"
+          cd "$RUNNER_TEMP/ci-lamp" && cargo test
       # The oldest Python the SDK supports.
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7.0.0
         with:
           python-version: "3.10"
       - run: pip install "jsonschema>=4.18"
@@ -43,8 +52,8 @@ jobs:
     name: Spec fixtures and schema portability
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.0.0
         with:
           python-version: "3.12"
       - run: python -I tools/gen_invalid_fixtures.py spec/examples/invalid

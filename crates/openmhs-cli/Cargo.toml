@@ -21,6 +21,7 @@ path = "src/bin/openmhsd.rs"
 [dependencies]
 clap.workspace = true
 openmhs-api.workspace = true
+openmhs-conformance.workspace = true
 openmhs-gateway.workspace = true
 openmhs-mcp.workspace = true
 openmhs-policy.workspace = true

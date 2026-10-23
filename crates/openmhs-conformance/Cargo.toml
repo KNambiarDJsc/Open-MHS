@@ -1,0 +1,25 @@
+[package]
+name = "openmhs-conformance"
+description = "Conformance suite for OpenMHS adapters: runs an adapter and its fixture through the engine and reports the level it reaches."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+openmhs-adapter.workspace = true
+openmhs-engine.workspace = true
+openmhs-policy.workspace = true
+openmhs-sim.workspace = true
+openmhs-types.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util"] }
+
+[lints]
+workspace = true

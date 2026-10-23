@@ -12,6 +12,8 @@ pub const COMMAND_SCHEMA: &str = include_str!("../../../spec/schemas/command.sch
 pub const RECEIPT_SCHEMA: &str = include_str!("../../../spec/schemas/receipt.schema.json");
 pub const EVENT_SCHEMA: &str = include_str!("../../../spec/schemas/event.schema.json");
 pub const ERROR_SCHEMA: &str = include_str!("../../../spec/schemas/error.schema.json");
+pub const CONFORMANCE_REPORT_SCHEMA: &str =
+    include_str!("../../../spec/schemas/conformance-report.schema.json");
 
 /// The schemas this crate can validate against.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -21,15 +23,17 @@ pub enum Schema {
     Receipt,
     Event,
     Error,
+    ConformanceReport,
 }
 
 impl Schema {
-    pub const ALL: [Schema; 5] = [
+    pub const ALL: [Schema; 6] = [
         Schema::Descriptor,
         Schema::Command,
         Schema::Receipt,
         Schema::Event,
         Schema::Error,
+        Schema::ConformanceReport,
     ];
 
     fn source(self) -> &'static str {
@@ -39,6 +43,7 @@ impl Schema {
             Schema::Receipt => RECEIPT_SCHEMA,
             Schema::Event => EVENT_SCHEMA,
             Schema::Error => ERROR_SCHEMA,
+            Schema::ConformanceReport => CONFORMANCE_REPORT_SCHEMA,
         }
     }
 
@@ -50,6 +55,7 @@ impl Schema {
             Schema::Receipt => "receipt.schema",
             Schema::Event => "event.schema",
             Schema::Error => "error.schema",
+            Schema::ConformanceReport => "conformance_report.schema",
         }
     }
 }
@@ -67,6 +73,7 @@ struct Validators {
     receipt: Validator,
     event: Validator,
     error: Validator,
+    conformance_report: Validator,
 }
 
 #[allow(clippy::expect_used)]
@@ -98,6 +105,7 @@ static VALIDATORS: LazyLock<Validators> = LazyLock::new(|| {
         receipt: build(Schema::Receipt),
         event: build(Schema::Event),
         error: build(Schema::Error),
+        conformance_report: build(Schema::ConformanceReport),
     }
 });
 
@@ -109,6 +117,7 @@ fn validator(schema: Schema) -> &'static Validator {
         Schema::Receipt => &v.receipt,
         Schema::Event => &v.event,
         Schema::Error => &v.error,
+        Schema::ConformanceReport => &v.conformance_report,
     }
 }
 

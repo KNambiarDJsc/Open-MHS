@@ -3,7 +3,7 @@
 The Rust crate is the reference implementation; this script makes sure the schemas
 themselves are portable and behave the same in another language:
 
-- every example under spec/examples/{valid,commands/valid,receipts,events} passes,
+- every example under spec/examples/{valid,commands/valid,receipts,events,conformance} passes,
 - every command under spec/examples/commands/invalid fails,
 - invalid descriptors expected to fail with `descriptor.schema` fail structurally,
   and all other invalid descriptors pass structurally (their errors are semantic).
@@ -60,6 +60,8 @@ for p in sorted((ex / "receipts").glob("*.json")):
     expect("receipt", p, True)
 for p in sorted((ex / "events").glob("*.json")):
     expect("event", p, True)
+for p in sorted((ex / "conformance").glob("*.json")):
+    expect("conformance-report", p, True)
 
 expected = load(ex / "invalid" / "expected.json")
 for name, exp in sorted(expected.items()):

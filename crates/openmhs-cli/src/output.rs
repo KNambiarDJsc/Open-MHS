@@ -43,10 +43,16 @@ fn trim_float(f: f64) -> String {
     if s == "-0" { "0".into() } else { s.into() }
 }
 
-/// `HH:MM:SS.mmm` in UTC.
+/// `HH:MM:SS.mmm` in UTC. Computed, not cut from RFC 3339, which drops trailing zeros.
 pub fn clock_time(t: Timestamp) -> String {
-    let s = t.to_rfc3339();
-    s.get(11..23).unwrap_or(&s).to_owned()
+    let ms = t.millis().rem_euclid(86_400_000);
+    format!(
+        "{:02}:{:02}:{:02}.{:03}",
+        ms / 3_600_000,
+        ms / 60_000 % 60,
+        ms / 1000 % 60,
+        ms % 1000
+    )
 }
 
 fn reading(s: &StateValue, now_age_ms: Option<i64>) -> String {
@@ -396,5 +402,20 @@ pub fn audit_entries(entries: &[AuditEntry]) {
             e.kind,
             e.subject
         );
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn clock_time_keeps_three_digits() {
+        let at = |s: &str| clock_time(Timestamp::parse_rfc3339(s).unwrap());
+        assert_eq!(at("2026-10-23T17:00:09.62Z"), "17:00:09.620");
+        assert_eq!(at("2026-10-23T17:00:09.9Z"), "17:00:09.900");
+        assert_eq!(at("2026-10-23T17:00:09Z"), "17:00:09.000");
+        assert_eq!(at("2026-10-23T00:00:00.001Z"), "00:00:00.001");
+        assert_eq!(at("1969-12-31T23:59:59.999Z"), "23:59:59.999");
     }
 }

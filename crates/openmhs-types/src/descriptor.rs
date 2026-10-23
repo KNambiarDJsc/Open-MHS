@@ -48,6 +48,43 @@ pub struct AdapterBinding {
     pub version: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub config: Option<serde_json::Map<String, serde_json::Value>>,
+    /// The conformance level the adapter's author claims (spec/conformance.md). A claim,
+    /// not evidence: the conformance suite's report is the evidence.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub conformance: Option<ConformanceLevel>,
+}
+
+/// Cumulative conformance levels (spec/conformance.md).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub enum ConformanceLevel {
+    L0,
+    L1,
+    L2,
+    L3,
+}
+
+impl ConformanceLevel {
+    pub const ALL: [ConformanceLevel; 4] = [Self::L0, Self::L1, Self::L2, Self::L3];
+
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::L0 => "Discoverable",
+            Self::L1 => "Observable",
+            Self::L2 => "Controllable",
+            Self::L3 => "Coordinated",
+        }
+    }
+}
+
+impl std::fmt::Display for ConformanceLevel {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
+            Self::L0 => "L0",
+            Self::L1 => "L1",
+            Self::L2 => "L2",
+            Self::L3 => "L3",
+        })
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

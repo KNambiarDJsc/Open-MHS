@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openmhs:schema:0.1:conformance-report",
+  "title": "OpenMHS conformance report",
+  "description": "What the conformance suite observed for one adapter and its descriptor (spec/conformance.md). Evidence, not a safety certification.",
+  "type": "object",
+  "required": ["openmhs_conformance", "suite_version", "subject", "fixture", "passed", "started_at", "duration_ms", "summary", "checks"],
+  "additionalProperties": false,
+  "properties": {
+    "openmhs_conformance": { "const": "0.1" },
+    "suite_version": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/semver" },
+    "subject": {
+      "type": "object",
+      "required": ["adapter", "sources"],
+      "additionalProperties": false,
+      "properties": {
+        "adapter": { "description": "What the adapter calls itself. Not necessarily valid: the suite reports broken adapters too.", "type": "string", "maxLength": 256 },
+        "adapter_version": { "type": "string", "maxLength": 64 },
+        "device": { "type": "string", "maxLength": 256 },
+        "descriptor_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "sources": {
+          "description": "Sources the readings named. `simulator` means a simulator was tested, not hardware.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["device", "adapter", "gateway", "simulator"] }
+        }
+      }
+    },
+    "fixture": {
+      "type": "object",
+      "required": ["faults", "counts_deliveries"],
+      "additionalProperties": false,
+      "properties": {
+        "faults": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/fault" } },
+        "counts_deliveries": { "type": "boolean" }
+      }
+    },
+    "declared": { "$ref": "#/$defs/level" },
+    "achieved": { "$ref": "#/$defs/level" },
+    "passed": { "type": "boolean" },
+    "started_at": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/timestamp" },
+    "duration_ms": { "type": "integer", "minimum": 0 },
+    "summary": {
+      "type": "object",
+      "required": ["pass", "fail", "untested", "not_applicable"],
+      "additionalProperties": false,
+      "properties": {
+        "pass": { "type": "integer", "minimum": 0 },
+        "fail": { "type": "integer", "minimum": 0 },
+        "untested": { "type": "integer", "minimum": 0 },
+        "not_applicable": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "checks": { "type": "array", "items": { "$ref": "#/$defs/check" } }
+  },
+  "$defs": {
+    "level": { "enum": ["L0", "L1", "L2", "L3"] },
+    "fault": { "enum": ["link_down", "no_response", "lost_ack", "garbled", "refuse"] },
+    "check": {
+      "type": "object",
+      "required": ["id", "level", "status", "message", "duration_ms"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "description": "Requirement id from spec/conformance.md.", "type": "string", "pattern": "^L[0-3]\\.[a-z_]+(\\.[a-z_]+)*$" },
+        "level": { "$ref": "#/$defs/level" },
+        "capability": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/capability_name" },
+        "status": { "enum": ["pass", "fail", "untested", "not_applicable"] },
+        "message": { "type": "string" },
+        "evidence": { "description": "Observations backing the result: receipts, readings, delivery counts." },
+        "duration_ms": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}
