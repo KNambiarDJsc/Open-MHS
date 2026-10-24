@@ -83,6 +83,8 @@
 - [Roadmap](docs/roadmap.md)
 - [Experiment 01: virtual 3D printer](docs/experiments/01-octoprint/README.md)
   - [Results](docs/experiments/01-octoprint/REPORT.md)
+- [Experiment 02: simulated ESP32 over MQTT](docs/experiments/02-esp32-qemu-mqtt/README.md)
+  - [Results](docs/experiments/02-esp32-qemu-mqtt/REPORT.md)
 - [Landscape research](docs/research/landscape.md)
 - [Naming](docs/research/naming.md)
 - [Governance](GOVERNANCE.md)

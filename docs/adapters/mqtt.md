@@ -113,3 +113,8 @@ for tests, not a broker to deploy.
 - No support for the device's last-will (online/offline) topic yet. A device that dies
   shows up as stale readings and commands that are not acknowledged.
 - Payloads are JSON.
+
+## Tested against
+
+The in-repo simulator, and a node running real ESP32 firmware in QEMU (simulated, not a physical
+board): [Experiment 02](../experiments/02-esp32-qemu-mqtt/README.md).

@@ -1,0 +1,223 @@
+Adding SPI flash device
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x12 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+I (727) boot: ESP-IDF v5.5.5 2nd stage bootloader
+I (729) boot: compile time Oct 25 2026 03:22:23
+I (729) boot: Multicore bootloader
+I (788) boot: chip revision: v0.0
+I (791) boot.esp32: SPI Speed      : 40MHz
+I (792) boot.esp32: SPI Mode       : DIO
+I (799) boot.esp32: SPI Flash Size : 4MB
+I (813) boot: Enabling RNG early entropy source...
+I (831) boot: Partition Table:
+I (831) boot: ## Label            Usage          Type ST Offset   Length
+I (832) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (832) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (832) boot:  2 factory          factory app      00 00 00010000 00100000
+I (842) boot: End of partition table
+I (904) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=1a5dch (107996) map
+I (994) esp_image: segment 1: paddr=0002a604 vaddr=3ffb0000 size=02a5ch ( 10844) load
+I (1026) esp_image: segment 2: paddr=0002d068 vaddr=40080000 size=02fb0h ( 12208) load
+I (1061) esp_image: segment 3: paddr=00030020 vaddr=400d0020 size=6532ch (414508) map
+I (1179) esp_image: segment 4: paddr=00095354 vaddr=40082fb0 size=0b77ch ( 46972) load
+I (1218) esp_image: segment 5: paddr=000a0ad8 vaddr=50000000 size=00020h (    32) load
+I (1336) boot: Loaded app from partition at offset 0x10000
+I (1336) boot: Disabling RNG early entropy source...
+I (1371) cpu_start: Multicore app
+I (2426) cpu_start: GPIO 3 and 1 are used as console UART I/O pins
+I (2431) cpu_start: Pro cpu start user code
+I (2432) cpu_start: cpu freq: 160000000 Hz
+I (2432) app_init: Application information:
+I (2432) app_init: Project name:     openmhs_esp32_mqtt_node
+I (2433) app_init: App version:      ecfb3b7
+I (2433) app_init: Compile time:     Oct 25 2026 03:28:09
+I (2434) app_init: ELF file SHA256:  8334c8249...
+I (2434) app_init: ESP-IDF:          v5.5.5
+I (2434) efuse_init: Min chip rev:     v0.0
+I (2435) efuse_init: Max chip rev:     v3.99 
+I (2435) efuse_init: Chip rev:         v0.0
+I (2437) heap_init: Initializing. RAM available for dynamic allocation:
+I (2439) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM
+I (2440) heap_init: At 3FFB43D0 len 0002BC30 (175 KiB): DRAM
+I (2441) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM
+I (2441) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM
+I (2442) heap_init: At 4008E72C len 000118D4 (70 KiB): IRAM
+I (2504) spi_flash: detected chip: gd
+I (2520) spi_flash: flash io: dio
+I (2549) main_task: Started on CPU0
+I (2549) main_task: Calling app_main()
+I (2559) node: OpenMHS ESP32 MQTT node, topics under esp32/node-01
+I (3449) esp_eth.netif.netif_glue: 52:54:00:12:34:56
+I (3449) esp_eth.netif.netif_glue: ethernet attached to netif
+I (3549) ethernet_connect: Waiting for IP(s).
+I (4579) esp_netif_handlers: example_netif_eth ip: 10.0.2.15, mask: 255.255.255.0, gw: 10.0.2.2
+I (4579) ethernet_connect: Got IPv4 event: Interface "example_netif_eth" address: 10.0.2.15
+I (4579) example_common: Connected to example_netif_eth
+I (4579) example_common: - IPv4 address: 10.0.2.15,
+I (4609) main_task: Returned from app_main()
+I (4659) node: connected to the broker
+I (4799) node: clock set from the broker
+I (10989) node: led -> on (command 01a17011-8f41-74e4-ba18-068f29e1895c)
+I (11189) node: led -> off (command 01a17011-900d-752d-bdde-f405c9d0316c)
+I (14619) node: pulses += 2 (command 01a17011-9d6c-775b-9a06-257f064fb06e)
+Adding SPI flash device
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x12 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+I (742) boot: ESP-IDF v5.5.5 2nd stage bootloader
+I (744) boot: compile time Oct 25 2026 03:22:23
+I (744) boot: Multicore bootloader
+I (827) boot: chip revision: v0.0
+I (830) boot.esp32: SPI Speed      : 40MHz
+I (831) boot.esp32: SPI Mode       : DIO
+I (831) boot.esp32: SPI Flash Size : 4MB
+I (845) boot: Enabling RNG early entropy source...
+I (863) boot: Partition Table:
+I (864) boot: ## Label            Usage          Type ST Offset   Length
+I (864) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (865) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (865) boot:  2 factory          factory app      00 00 00010000 00100000
+I (874) boot: End of partition table
+I (940) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=1a5dch (107996) map
+I (1033) esp_image: segment 1: paddr=0002a604 vaddr=3ffb0000 size=02a5ch ( 10844) load
+I (1065) esp_image: segment 2: paddr=0002d068 vaddr=40080000 size=02fb0h ( 12208) load
+I (1100) esp_image: segment 3: paddr=00030020 vaddr=400d0020 size=6532ch (414508) map
+I (1291) esp_image: segment 4: paddr=00095354 vaddr=40082fb0 size=0b77ch ( 46972) load
+I (1354) esp_image: segment 5: paddr=000a0ad8 vaddr=50000000 size=00020h (    32) load
+I (1493) boot: Loaded app from partition at offset 0x10000
+I (1494) boot: Disabling RNG early entropy source...
+I (1524) cpu_start: Multicore app
+I (2717) cpu_start: GPIO 3 and 1 are used as console UART I/O pins
+I (2722) cpu_start: Pro cpu start user code
+I (2723) cpu_start: cpu freq: 160000000 Hz
+I (2723) app_init: Application information:
+I (2723) app_init: Project name:     openmhs_esp32_mqtt_node
+I (2723) app_init: App version:      ecfb3b7
+I (2724) app_init: Compile time:     Oct 25 2026 03:28:09
+I (2724) app_init: ELF file SHA256:  8334c8249...
+I (2724) app_init: ESP-IDF:          v5.5.5
+I (2724) efuse_init: Min chip rev:     v0.0
+I (2725) efuse_init: Max chip rev:     v3.99 
+I (2725) efuse_init: Chip rev:         v0.0
+I (2726) heap_init: Initializing. RAM available for dynamic allocation:
+I (2727) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM
+I (2728) heap_init: At 3FFB43D0 len 0002BC30 (175 KiB): DRAM
+I (2728) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM
+I (2728) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM
+I (2729) heap_init: At 4008E72C len 000118D4 (70 KiB): IRAM
+I (2778) spi_flash: detected chip: gd
+I (2790) spi_flash: flash io: dio
+I (2810) main_task: Started on CPU0
+I (2810) main_task: Calling app_main()
+I (2810) node: OpenMHS ESP32 MQTT node, topics under esp32/node-01
+I (3580) esp_eth.netif.netif_glue: 52:54:00:12:34:56
+I (3580) esp_eth.netif.netif_glue: ethernet attached to netif
+I (3680) ethernet_connect: Waiting for IP(s).
+I (4700) esp_netif_handlers: example_netif_eth ip: 10.0.2.15, mask: 255.255.255.0, gw: 10.0.2.2
+I (4700) ethernet_connect: Got IPv4 event: Interface "example_netif_eth" address: 10.0.2.15
+I (4700) example_common: Connected to example_netif_eth
+I (4700) example_common: - IPv4 address: 10.0.2.15,
+I (4750) main_task: Returned from app_main()
+I (4780) node: connected to the broker
+I (4900) node: clock set from the broker
+I (7460) node: clock set from the broker
+I (7520) node: led -> on (command 01a17011-ea3e-72d9-ae60-3d4e52eaaabf)
+I (7860) node: clock set from the broker
+I (11020) node: led -> off (command 01a17012-03c2-72db-bdc8-114d1a1da7e7)
+I (11190) node: pulses += 1 (command 01a17012-07a7-7784-93bb-609eddfc40c1)
+I (11630) node: clock set from the broker
+E (14720) transport_base: tcp_read error, errno=Connection reset by peer
+E (14720) mqtt_client: esp_mqtt_handle_transport_read_error: transport_read() error: errno=104
+E (14720) mqtt_client: mqtt_process_receive: mqtt_message_receive() returned -2
+W (14720) node: disconnected from the broker
+E (26260) esp-tls: [sock=54] select() timeout
+E (26260) transport_base: Failed to open a new connection: 32774
+E (26260) mqtt_client: Error transport connect
+W (26260) node: disconnected from the broker
+I (27280) node: connected to the broker
+I (28650) node: pulses += 1 (command 01a17012-5cc1-75b9-a5d6-326855697257)
+Adding SPI flash device
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x12 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6280
+load:0x40078000,len:15836
+ho 0 tail 12 room 4
+load:0x40080400,len:3920
+entry 0x40080644
+I (725) boot: ESP-IDF v5.5.5 2nd stage bootloader
+I (727) boot: compile time Oct 25 2026 03:22:23
+I (727) boot: Multicore bootloader
+I (785) boot: chip revision: v0.0
+I (789) boot.esp32: SPI Speed      : 40MHz
+I (789) boot.esp32: SPI Mode       : DIO
+I (790) boot.esp32: SPI Flash Size : 4MB
+I (803) boot: Enabling RNG early entropy source...
+I (817) boot: Partition Table:
+I (818) boot: ## Label            Usage          Type ST Offset   Length
+I (818) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (818) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (819) boot:  2 factory          factory app      00 00 00010000 00100000
+I (829) boot: End of partition table
+I (890) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=1a5dch (107996) map
+I (987) esp_image: segment 1: paddr=0002a604 vaddr=3ffb0000 size=02a5ch ( 10844) load
+I (1019) esp_image: segment 2: paddr=0002d068 vaddr=40080000 size=02fb0h ( 12208) load
+I (1053) esp_image: segment 3: paddr=00030020 vaddr=400d0020 size=6532ch (414508) map
+I (1164) esp_image: segment 4: paddr=00095354 vaddr=40082fb0 size=0b77ch ( 46972) load
+I (1204) esp_image: segment 5: paddr=000a0ad8 vaddr=50000000 size=00020h (    32) load
+I (1291) boot: Loaded app from partition at offset 0x10000
+I (1291) boot: Disabling RNG early entropy source...
+I (1317) cpu_start: Multicore app
+I (2311) cpu_start: GPIO 3 and 1 are used as console UART I/O pins
+I (2316) cpu_start: Pro cpu start user code
+I (2317) cpu_start: cpu freq: 160000000 Hz
+I (2317) app_init: Application information:
+I (2317) app_init: Project name:     openmhs_esp32_mqtt_node
+I (2317) app_init: App version:      ecfb3b7
+I (2318) app_init: Compile time:     Oct 25 2026 03:28:09
+I (2318) app_init: ELF file SHA256:  8334c8249...
+I (2318) app_init: ESP-IDF:          v5.5.5
+I (2318) efuse_init: Min chip rev:     v0.0
+I (2319) efuse_init: Max chip rev:     v3.99 
+I (2319) efuse_init: Chip rev:         v0.0
+I (2320) heap_init: Initializing. RAM available for dynamic allocation:
+I (2321) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM
+I (2322) heap_init: At 3FFB43D0 len 0002BC30 (175 KiB): DRAM
+I (2322) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM
+I (2322) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM
+I (2323) heap_init: At 4008E72C len 000118D4 (70 KiB): IRAM
+I (2369) spi_flash: detected chip: gd
+I (2377) spi_flash: flash io: dio
+I (2400) main_task: Started on CPU0
+I (2400) main_task: Calling app_main()
+I (2400) node: OpenMHS ESP32 MQTT node, topics under esp32/node-01
+I (3000) esp_eth.netif.netif_glue: 52:54:00:12:34:56
+I (3000) esp_eth.netif.netif_glue: ethernet attached to netif
+I (3100) ethernet_connect: Waiting for IP(s).
+I (4110) esp_netif_handlers: example_netif_eth ip: 10.0.2.15, mask: 255.255.255.0, gw: 10.0.2.2
+I (4110) ethernet_connect: Got IPv4 event: Interface "example_netif_eth" address: 10.0.2.15
+I (4110) example_common: Connected to example_netif_eth
+I (4110) example_common: - IPv4 address: 10.0.2.15,
+I (4130) main_task: Returned from app_main()
+I (4160) node: connected to the broker
+I (4220) node: clock set from the broker

@@ -31,6 +31,10 @@ Work towards the first public release (0.1.0). Milestones M0–M9 are described 
 - Experiment 01: a read-only OctoPrint adapter tested against OctoPrint's Virtual Printer, with
   a harness, fault-injecting proxy, demo and L1 conformance report. Simulated peer only; no
   physical printer has been tested ([docs/experiments/01-octoprint](docs/experiments/01-octoprint/README.md)).
+- Experiment 02: ESP32 firmware for the MQTT profile run in Espressif's QEMU beside Mosquitto, with
+  a harness, 18 tests and a demo covering state-changing commands, acknowledgements, late
+  application, reconciliation and failures. Simulated only; no physical ESP32 has been tested
+  ([docs/experiments/02-esp32-qemu-mqtt](docs/experiments/02-esp32-qemu-mqtt/README.md)).
 - Leases, plans with twin preflight, compensation and a stop lane.
 - Release engineering: cargo-dist configuration, Python packaging, a documentation site,
   an adapter registry, a generated compatibility matrix, and governance files.

@@ -1,0 +1,28 @@
+menu "OpenMHS node"
+
+    config NODE_BROKER_URI
+        string "MQTT broker URI"
+        default "mqtt://10.0.2.2:18830"
+        help
+            10.0.2.2 is the host as seen from QEMU's user-mode network.
+
+    config NODE_SNTP_SERVER
+        string "SNTP server"
+        default "10.0.2.2"
+
+    config NODE_CLOCK_FROM_MQTT
+        bool "Take the time from an MQTT message instead of SNTP"
+        default n
+        help
+            For QEMU, where the host's UDP port 123 is often in use. The node publishes
+            <prefix>/hello after connecting and waits for <prefix>/clock.
+
+    config NODE_TOPIC_PREFIX
+        string "Topic prefix"
+        default "esp32/node-01"
+
+    config NODE_LED_GPIO
+        int "GPIO driven by led.on"
+        default 2
+
+endmenu

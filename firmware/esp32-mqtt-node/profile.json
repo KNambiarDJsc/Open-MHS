@@ -1,0 +1,164 @@
+{
+  "openmhs_profile": "0.1",
+  "protocol": "mqtt",
+  "descriptor": {
+    "openmhs": "0.1",
+    "device": {
+      "id": "esp32.node-01",
+      "name": "ESP32 node (MQTT, firmware under QEMU)",
+      "manufacturer": "OpenMHS",
+      "model": "ESP32-MQTT-NODE",
+      "description": "An ESP32 running firmware/esp32-mqtt-node: an LED output and a pulse counter, with retained state and an acknowledgement for every command. In the experiment the ESP32 is Espressif's QEMU."
+    },
+    "adapter": {
+      "id": "openmhs.mqtt",
+      "version": "0.1.0",
+      "conformance": "L2"
+    },
+    "capabilities": [
+      {
+        "name": "led.on",
+        "kind": "property",
+        "description": "The LED output level.",
+        "operations": [
+          "read",
+          "write"
+        ],
+        "value": {
+          "type": "boolean"
+        },
+        "side_effect": "reversible",
+        "idempotent": true,
+        "timing": {
+          "expected_ms": 100,
+          "timeout_ms": 3000
+        },
+        "verification": {
+          "mode": "readback",
+          "timeout_ms": 3000
+        },
+        "freshness": {
+          "max_age_ms": 4000
+        }
+      },
+      {
+        "name": "node.uptime",
+        "kind": "property",
+        "description": "Seconds since the node booted, stamped by the node.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "time",
+          "unit": "s",
+          "range": {
+            "min": 0,
+            "max": 31536000
+          }
+        },
+        "side_effect": "none",
+        "freshness": {
+          "max_age_ms": 4000
+        }
+      },
+      {
+        "name": "led.pulses",
+        "kind": "property",
+        "description": "Pulses counted since boot.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 4294967295
+          }
+        },
+        "side_effect": "none",
+        "freshness": {
+          "max_age_ms": 4000
+        }
+      },
+      {
+        "name": "led.pulse",
+        "kind": "action",
+        "description": "Count n pulses. Not idempotent: each request counts again.",
+        "operations": [
+          "invoke"
+        ],
+        "params": {
+          "n": {
+            "type": "integer",
+            "range": {
+              "min": 1,
+              "max": 10
+            }
+          }
+        },
+        "side_effect": "irreversible",
+        "idempotent": false,
+        "timing": {
+          "expected_ms": 100,
+          "timeout_ms": 3000
+        },
+        "verification": {
+          "mode": "none",
+          "reason": "the pulse counter is readable (led.pulses) but a request is not tied to a counter value"
+        }
+      }
+    ]
+  },
+  "connection": {
+    "host": "127.0.0.1",
+    "port": 18830,
+    "client_id": "openmhs-gateway-esp32-01",
+    "reply_timeout_ms": 3000,
+    "ack": {
+      "topic": "esp32/node-01/ack",
+      "id_pointer": "/id",
+      "ok_pointer": "/ok",
+      "error_pointer": "/error"
+    }
+  },
+  "mapping": {
+    "led.on": {
+      "state": {
+        "topic": "esp32/node-01/state",
+        "pointer": "/led",
+        "timestamp_pointer": "/time"
+      },
+      "command": {
+        "topic": "esp32/node-01/set",
+        "payload": {
+          "led": "{{value}}",
+          "id": "{{command_id}}"
+        }
+      }
+    },
+    "node.uptime": {
+      "state": {
+        "topic": "esp32/node-01/state",
+        "pointer": "/uptime_s",
+        "timestamp_pointer": "/time"
+      }
+    },
+    "led.pulses": {
+      "state": {
+        "topic": "esp32/node-01/state",
+        "pointer": "/pulses",
+        "timestamp_pointer": "/time"
+      }
+    },
+    "led.pulse": {
+      "command": {
+        "topic": "esp32/node-01/pulse",
+        "payload": {
+          "n": "{{n}}",
+          "id": "{{command_id}}"
+        }
+      }
+    }
+  }
+}

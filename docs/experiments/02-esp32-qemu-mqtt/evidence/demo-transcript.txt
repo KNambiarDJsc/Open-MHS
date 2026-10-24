@@ -1,0 +1,125 @@
+OpenMHS Experiment 02: an agent and an ESP32 over MQTT
+The ESP32 is firmware/esp32-mqtt-node running in Espressif's QEMU. Nothing physical is involved.
+Peer: Mosquitto on 127.0.0.1:18830; ESP-IDF firmware in QEMU; clock supplied by the harness
+
+## 1. The node boots, joins the network and publishes retained state with its own clock
+  node> I (2394) node: OpenMHS ESP32 MQTT node, topics under esp32/node-01
+  node> I (4084) ethernet_connect: Got IPv4 event: Interface "example_netif_eth" address: 10.0.2.15
+  node> I (4114) node: connected to the broker
+  node> I (4284) node: clock set from the broker
+  retained state on esp32/node-01/state: {"led": false, "pulses": 0, "uptime_s": 2.0, "time": "2026-10-24T22:43:53.975Z"}
+
+## 2. The gateway discovered it from the profile
+$ openmhs devices list   # as operator
+  esp32.node-01    ESP32 node (MQTT, firmware under QEMU)       openmhs.mqtt           4 capabilities
+
+## 3. Nothing is allowed until the operator allows it
+$ openmhs read esp32.node-01 led.on   # as operator
+  error [policy.denied.no_grant]: no grant allows 'operator:local' to read 'led.on' on 'esp32.node-01'
+$ openmhs exec esp32.node-01 led.on --value true   # as operator
+  command  01a17015-bd37-773c-9e56-0c89c3ad7a72  by operator:local
+  target   esp32.node-01 / led.on  write true
+  state    DENIED  -> denied (nothing sent to the device)
+  policy   deny
+    denied policy.denied.no_grant: no grant allows 'operator:local' to write 'led.on' on 'esp32.node-01'
+  history  22:43:55.319  CREATED
+           22:43:55.320  VALIDATING
+           22:43:55.321  DENIED  no grant allows 'operator:local' to write 'led.on' on 'esp32.node-01'
+  (messages the node was sent meanwhile: 0)
+
+## 4. Grant an agent read access; it reads the node's own timestamped values
+$ openmhs grants add --id agent-read --principal agent:demo --device esp32.node-01 --capability * --ops read --effect allow   # as operator
+  added agent-read           allow            agent:demo read on esp32.node-01 / *
+$ openmhs read esp32.node-01 led.on   # as agent
+  esp32.node-01 led.on = false  (GOOD, device, 953 ms old)
+$ openmhs read esp32.node-01 node.uptime   # as agent
+  esp32.node-01 node.uptime = 2.8 s  (GOOD, device, 977 ms old)
+$ openmhs read esp32.node-01 led.pulses   # as agent
+  esp32.node-01 led.pulses = 0  (GOOD, device, 1007 ms old)
+
+## 5. Grant write: the agent switches the LED, the node acknowledges, the gateway reads it back
+$ openmhs grants add --id agent-act --principal agent:demo --device esp32.node-01 --capability * --ops write,invoke --effect allow   # as operator
+  added agent-act            allow            agent:demo write,invoke on esp32.node-01 / *
+$ openmhs exec esp32.node-01 led.on --value true   # as agent
+  command  01a17015-bf38-768a-9610-c2d313e5efd9  by agent:demo
+  target   esp32.node-01 / led.on  write true
+  state    VERIFIED  -> succeeded (confirmed by readback)
+  policy   allow  (rules: agent-act)
+  device   acknowledged; reported applied
+  verify   readback led.on  expected true  observed true  (GOOD, device)  MATCH
+  history  22:43:55.831  CREATED
+           22:43:55.833  VALIDATING
+           22:43:55.834  APPROVED
+  node> I (5994) node: led -> on (command 01a17015-bf38-768a-9610-c2d313e5efd9)
+$ openmhs exec esp32.node-01 led.on --value false   # as agent
+  command  01a17015-bfb7-75bc-aff5-ce0e3e408311  by agent:demo
+  target   esp32.node-01 / led.on  write false
+  state    VERIFIED  -> succeeded (confirmed by readback)
+  policy   allow  (rules: agent-act)
+  device   acknowledged; reported applied
+
+## 6. A pulse count outside the declared 1..10 never leaves the gateway
+$ openmhs exec esp32.node-01 led.pulse --param n=11   # as agent
+  command  01a17015-c1ef-77e8-bf73-8cb4055da1d6  by agent:demo
+  target   esp32.node-01 / led.pulse  invoke (n=11)
+  state    DENIED  -> denied (nothing sent to the device)
+  policy   deny  (rules: agent-act)
+    denied command.value.out_of_range: 11  is outside the allowed range 1..10 
+  (messages the node was sent meanwhile: 0)
+
+## 7. An action runs once; there is no readback for it, so it is reported as unverifiable
+$ openmhs exec esp32.node-01 led.pulse --param n=2   # as agent
+  command  01a17015-c365-7724-9571-23bdf38b154c  by agent:demo
+  target   esp32.node-01 / led.pulse  invoke (n=2)
+  state    UNVERIFIABLE  -> unverified (device says applied; not confirmed)
+  policy   allow  (rules: agent-act)
+  device   acknowledged; reported applied
+  node pulse counter: 0 -> 2
+
+## 8. The node hangs (the whole machine is frozen); a write times out
+$ openmhs exec esp32.node-01 led.on --value true   # as agent
+  command  01a17015-cb3a-70b4-9d74-f8f559174c9b  by agent:demo
+  target   esp32.node-01 / led.on  write true
+  state    UNKNOWN_OUTCOME  -> UNCERTAIN (may or may not have taken effect; reconcile by readback)
+  policy   allow  (rules: agent-act)
+  device   error adapter.timeout: no result within 3000 ms
+  history  22:43:58.906  CREATED
+           22:43:58.907  VALIDATING
+           22:43:58.908  APPROVED
+$ openmhs read esp32.node-01 led.on   # as agent
+  esp32.node-01 led.on = false  (GOOD, device, 9179 ms old)  STALE: older than 4000 ms; not usable for decisions
+  ...the node is released (and its clock re-synchronised)
+  retained state now: {"led": true, "pulses": 2, "uptime_s": 11.9, "time": "2026-10-24T22:44:12.408Z"}  (the frozen node did apply the write, late)
+  the write has a readback, so the operator can reconcile it against the node:
+$ openmhs commands reconcile 01a17015-cb3a-70b4-9d74-f8f559174c9b   # as operator
+  command  01a17015-cb3a-70b4-9d74-f8f559174c9b  by agent:demo
+  target   esp32.node-01 / led.on  write true
+  state    RECONCILED_APPLIED  -> succeeded (confirmed by readback)
+  policy   allow  (rules: agent-act)
+  device   error adapter.timeout: no result within 3000 ms
+  verify   readback led.on  expected true  observed true  (GOOD, device)  MATCH
+  history  22:43:58.906  CREATED
+           22:43:58.907  VALIDATING
+
+## 9. The node is powered off; an action goes nowhere and is not retried
+$ openmhs exec esp32.node-01 led.pulse --param n=1   # as agent
+  command  01a17016-0669-737e-be11-e94433364eb6  by agent:demo
+  target   esp32.node-01 / led.pulse  invoke (n=1)
+  state    UNKNOWN_OUTCOME  -> UNCERTAIN (may or may not have taken effect; reconcile by readback)
+  policy   allow  (rules: agent-act)
+  device   error adapter.timeout: no result within 3000 ms
+  history  22:44:14.057  CREATED
+           22:44:14.058  VALIDATING
+           22:44:14.060  APPROVED
+           22:44:14.062  DISPATCHED  intent journaled
+  (pulse messages the gateway published: 1; it does not retry)
+$ openmhs commands reconcile 01a17016-0669-737e-be11-e94433364eb6   # as operator
+  error [command.not_reconcilable]: cannot reconcile: no readback is declared for this capability; an operator must resolve it
+  after power-on: {"led": false, "pulses": 0, "uptime_s": 5.9, "time": "2026-10-24T22:44:24.227Z"}  (the counter restarted; nothing was applied late)
+
+## 10. The audit log is intact
+$ openmhs audit verify   # as operator
+  audit log intact: 53 records, hash chain verified
+
+Simulated: real ESP-IDF firmware on an emulated ESP32 (QEMU), a real Mosquitto broker.
+Not verified: a physical ESP32, Wi-Fi, a real board's timing, power, GPIO wiring or any actuator.

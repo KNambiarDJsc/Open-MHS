@@ -33,6 +33,11 @@ Also added after the brief, at the maintainer's request: [Experiment 01](../expe
 a read-only OctoPrint adapter tested against OctoPrint's Virtual Printer
 ([results](../experiments/01-octoprint/REPORT.md)). Simulated peer only.
 
+And [Experiment 02](../experiments/02-esp32-qemu-mqtt/README.md): real ESP32 firmware run in
+Espressif's QEMU beside Mosquitto, driven through the stock MQTT adapter with state-changing
+commands ([results](../experiments/02-esp32-qemu-mqtt/REPORT.md)). Simulated only; Wokwi was not
+used (its cloud ESP32 reaches a local broker only through a paid gateway).
+
 ## Gate results
 
 Full gate run on this branch at commit 257ef6c (before Experiment 01 and this report), Windows:
@@ -62,10 +67,12 @@ After Experiment 01 (no Rust, schema or spec file changed; `git status` for `cra
 | Python SDK tests (`python/tests`) | pass |
 | OctoPrint adapter tests, real OctoPrint and gateway | 42 run, 41 passed, 1 skipped (abstract base), 0 failed |
 | Conformance of the OctoPrint adapter | L1 reached, declared L1, 34 pass, 0 fail, 0 untested |
+| ESP32 node tests (`firmware/esp32-mqtt-node/test_node.py`, QEMU + Mosquitto + gateway) | 18 run, 18 passed, 0 failed, 102.5 s |
+| ESP32 demo (`demo.py`) | 10 steps, exit 0, audit chain intact (53 records) |
 
 Documentation build (`python tools/build_docs.py --check-links`, mdBook + lychee offline) after the
-last change: 78 pages staged, 2186 links, 0 errors. The earlier "75 pages" figure was before the
-OctoPrint and report pages.
+last change: 80 pages staged, 2247 links, 0 errors. Earlier figures (75, then 78 pages) were before
+the OctoPrint and ESP32 experiment pages.
 
 ## Release blockers
 
@@ -94,6 +101,10 @@ known today; all are things not yet done or not possible from this machine.
   OctoPrint's Virtual Printer.
 * OPC UA and ROS 2 have no committed reports; the matrix says "Not verified" for them.
 * The OctoPrint adapter is read-only and was run against one OctoPrint version on one platform.
+* The ESP32 node ran only in QEMU: no Wi-Fi, no real GPIO, no link-flap test (QEMU's link toggle
+  did not recover reliably), and the clock came over MQTT, not SNTP. The firmware is a test
+  fixture. The ESP32 LED guide in `docs/hardware` has still never been run on a board. The
+  ESP32 tests are not in CI.
 * The compatibility matrix reflects Windows x86_64 runs of 2026-10-24.
 * Mermaid diagrams appear as source in the built site.
 * Dependency choices follow the two-week rule; the pinned OctoPrint set was resolved by hand
