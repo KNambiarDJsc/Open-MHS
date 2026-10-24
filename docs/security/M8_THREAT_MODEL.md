@@ -6,11 +6,9 @@ cover. Transport security for adapters is in [transport-security.md](transport-s
 the adapter containment model is in
 [adapter-host.md](../architecture/adapter-host.md).
 
-> **Status of the tests.** The tests named below are written and compile (`cargo check
-> --workspace --all-targets`). At the time of writing they have **not been run**; see
-> [IMPLEMENTATION_STATUS.md](../IMPLEMENTATION_STATUS.md) for what has and has not been
-> executed. A threat marked "Tested by" is covered by a test that exists, not by one that
-> has passed.
+> **Status of the tests.** Every test named below passed on Windows on 2026-10-24
+> ([IMPLEMENTATION_STATUS.md](../IMPLEMENTATION_STATUS.md) has the full gate). Linux and
+> macOS runs are left to CI.
 
 OpenMHS does not claim safety certification, and a signed or approved command is not a
 safe command. These controls decide *who may ask* and *what code may run*; whether the

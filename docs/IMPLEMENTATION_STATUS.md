@@ -12,35 +12,54 @@ Last updated: 2026-10-24, on branch `m8` (not pushed, not merged).
 |---|---|---|
 | M0–M6 | Done, on `main` | Yes, at their milestones |
 | M7 | Done on branch `m7` (`a30aa63`), awaiting review and a push decision | Full gate run at the milestone, except the ROS 2 conformance (Docker was unavailable) |
-| M8 | **Built on branch `m8`; tests written; not run** | **No.** See below |
+| M8 | Built on branch `m8`; full gate run on Windows except ROS 2 | Yes, see below |
 
 ## M8: identity and trust
 
-| Component | Built | Tests written | Tests run |
-|---|---|---|---|
-| A. Scoped credentials (`openmhs-policy::auth`, gateway token store) | Yes | Yes | Credential store unit tests and the credentials integration tests were run once, partway through the milestone (workspace: 238 passed, 0 failed, with `OPENMHS_PYTHON` set). Not rerun since the approvals and manifest work |
-| B. Approval workflow (`openmhs-types::approval`, engine, journal) | Yes | Yes | **No** |
-| C. Signed adapter manifests (`openmhs-host::trust`) | Yes | Yes | **No** |
-| D. Shared authenticated execution context (`Caller` through engine, gateway, CLI, MCP, SDK) | Yes | Yes | **No** |
-| E. Threat model ([M8_THREAT_MODEL.md](security/M8_THREAT_MODEL.md)) | Yes | n/a | n/a |
+| Component | Built | Tests |
+|---|---|---|
+| A. Scoped credentials (`openmhs-policy::auth`, gateway token store) | Yes | Pass |
+| B. Approval workflow (`openmhs-types::approval`, engine, journal) | Yes | Pass |
+| C. Signed adapter manifests (`openmhs-host::trust`) | Yes | Pass |
+| D. Shared authenticated execution context (`Caller` through engine, gateway, CLI, MCP, Python SDK) | Yes | Pass |
+| E. Threat model ([M8_THREAT_MODEL.md](security/M8_THREAT_MODEL.md)) | Yes | n/a |
 
 Also written: [ADR-0017](adr/0017-identity-and-trust.md); updates to
 `spec/authorization.md` (sections 5 and 7), `spec/permission-manifest.md` (Signatures),
-`docs/cli.md`, `docs/adapters/python-sdk.md`, `docs/mcp.md`.
+`docs/cli.md`, `docs/adapters/python-sdk.md`, `docs/mcp.md`. The Python SDK gained
+scoped `create_token`, `rotate_token`, the approvals methods and `submit(approval_id=)`.
 
-### Not run since the M8 changes
+### Gate results (Windows 11, 2026-10-24)
 
-- `cargo test --workspace` (the approvals, manifest-signing, impersonation and gateway
-  bypass tests have therefore not passed or failed; they compile)
-- `cargo fmt --all -- --check`
-- `cargo clippy --workspace --all-targets -- -D warnings`
-- `cargo deny` (licences and advisories for `ed25519-dalek` 3 and its dependencies)
-- `tools/check_schemas.py` (the manifest schema gained a `signature` property)
-- The Python unit suites, `openmhs demo`, and the conformance suite, including ROS 2
+| Check | Result |
+|---|---|
+| `cargo fmt --all -- --check` | Pass |
+| `cargo clippy --workspace --all-targets -- -D warnings` | Pass |
+| `cargo test --workspace` | 294 passed, 0 failed (after two test fixes, below) |
+| `cargo deny check` | advisories, bans, licences, sources ok |
+| `tools/check_schemas.py` | 57 documents against 8 schemas ok |
+| Python SDK, examples and CLI/MCP/SDK parity (`python/tests`) | 38 passed, 0 skipped (Python 3.11) |
+| OPC UA adapter unit tests | 11 passed |
+| `openmhs demo` | every step behaved as expected |
+| Conformance: built-in simulators, four protocol profiles, Python PSU, OPC UA | all reached their declared levels |
+| ROS 2 conformance | **Not run**: Docker Desktop not running on this machine (also not rerun at M7) |
+| Python 3.10, Linux, macOS | **Not run** locally; CI covers them once the branch is pushed |
 
-Until these run, M8 cannot be called complete, and its security properties are design
-intent backed by tests that exist, not by tests that have passed. A failure in an
-authorization test should be treated as a possible vulnerability, not as a test to adjust.
+Failures found by the first run and how they were resolved:
+
+- `a_modified_command_is_rejected` (test bug). It sent `params` on a write, which the
+  command schema forbids, so the request was refused before approvals were consulted. The
+  test now asserts that refusal and checks directly that the fingerprint covers `params`.
+- `inv08_core_has_no_device_specific_code` (test bug, caused by M8). It read
+  `src/engine/` as a file. It now walks subdirectories, so the new approvals module is
+  checked too.
+- Python suites: 8 failures and 2 errors, from the documented breaking change. The SDK's
+  `create_token` could not send scopes, so every credential it made authorized nothing
+  (`auth.scope.denied`, the intended default). Fixed in the SDK; tests issue
+  `any_scope=True` credentials, as the Rust tests do. The parity test's credential-id
+  normalizer was updated for M8's random 16-digit ids.
+
+No security test was weakened, and no security failure was found.
 
 ### Required end-to-end tests and where they are
 
@@ -64,7 +83,7 @@ authorization test should be treated as a possible vulnerability, not as a test 
 | Modified executable rejected | `a_modified_executable_is_rejected` |
 | Unknown or revoked signer rejected | `unknown_revoked_and_out_of_scope_signers_are_rejected` |
 | Adapter IPC cannot bypass the gateway | `an_adapter_cannot_submit_commands_or_name_a_principal` |
-| M1–M7 behavior still works | The existing suites, updated for `&Caller`; **not rerun** |
+| M1–M7 behavior still works | The existing Rust, Python, demo and conformance suites; pass |
 
 ### Known limitations
 
@@ -79,7 +98,8 @@ of a signed adapter are not covered by its signature.
   `--any-scope`.
 - Engine entry points take `&Caller`. `Journal::insert_command` takes an origin.
   `Resolved` has a `dir` field.
-- `Client::create_token` takes `CreateTokenParams`.
+- `Client::create_token` takes `CreateTokenParams`. The Python `Client.create_token`
+  requires `scopes=[...]` or `any_scope=True`.
 - `serve --adapter-manifest` refuses unsigned manifests unless `--allow-unsigned-adapters`.
   `HostOptions::default()` requires signatures.
 
