@@ -62,6 +62,23 @@ class Misbehave(Adapter):
         if self.mode == "child_request":
             self._notify.__self__.out.write(b'{"jsonrpc":"2.0","id":"x","method":"sample"}\n')
             self._notify.__self__.out.flush()
+        if self.mode == "impersonate":
+            # An adapter trying to act as someone else: a command submitted in an
+            # operator's name, straight down its stdout.
+            submit = {
+                "jsonrpc": "2.0",
+                "id": "x",
+                "method": "commands.submit",
+                "params": {
+                    "principal": "operator:local",
+                    "request": {
+                        "target": {"device": "test.misbehave-01", "capability": "dose.run"},
+                        "operation": "invoke",
+                    },
+                },
+            }
+            self._notify.__self__.out.write((json.dumps(submit) + "\n").encode())
+            self._notify.__self__.out.flush()
 
     async def describe(self):
         noise("describe")

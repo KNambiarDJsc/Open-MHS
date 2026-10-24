@@ -250,6 +250,15 @@ impl Engine {
             .approval(id)?
             .ok_or_else(|| denied("approval.unknown", format!("unknown approval {id}")))?;
         self.check_can_decide(caller, &a)?;
+        if a.status.is_final() {
+            let (code, why) = match a.status {
+                ApprovalStatus::Denied => ("approval.denied", "was denied"),
+                ApprovalStatus::Expired => ("approval.expired", "has expired"),
+                ApprovalStatus::Revoked => ("approval.revoked", "was revoked"),
+                _ => ("approval.consumed", "was already used"),
+            };
+            return Err(denied(code, format!("approval {id} {why}")));
+        }
         if let Some(command_id) = a.command_id.as_deref() {
             self.approve(caller, command_id).await?;
         } else {

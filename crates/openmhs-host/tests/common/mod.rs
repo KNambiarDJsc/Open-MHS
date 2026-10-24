@@ -50,6 +50,12 @@ fn merge(base: &mut Value, extra: Value) {
 /// A manifest for tests/adapters/misbehave.py in `mode`, with `extra` merged in.
 pub fn misbehave(mode: &str, extra: Value) -> Resolved {
     let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/adapters");
+    let manifest = Manifest::parse(&misbehave_json(mode, extra).to_string()).expect("test manifest");
+    Resolved::new(manifest, &dir)
+}
+
+/// The same manifest as JSON, for tests that sign or alter it.
+pub fn misbehave_json(mode: &str, extra: Value) -> Value {
     let mut m = json!({
         "openmhs_manifest": "0.1",
         "adapter": {"id": "test.misbehave", "version": "0.1.0"},
@@ -66,8 +72,7 @@ pub fn misbehave(mode: &str, extra: Value) -> Resolved {
         "restart": {"max_restarts": 3, "window_s": 60, "initial_backoff_ms": 20, "max_backoff_ms": 200},
     });
     merge(&mut m, extra);
-    let manifest = Manifest::parse(&m.to_string()).expect("test manifest");
-    Resolved::new(manifest, &dir)
+    m
 }
 
 /// The Python PSU simulator's manifest, run with the interpreter found here.

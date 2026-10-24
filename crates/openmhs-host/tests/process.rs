@@ -171,11 +171,38 @@ async fn requests_from_the_adapter_are_refused_without_harm() {
     adapter.shutdown().await.unwrap();
 }
 
+/// M8: an adapter has no way to speak as a principal. The protocol carries no principal,
+/// the host treats anything an adapter initiates as a violation of its own, and the
+/// engine only ever submits what its callers submit. Nothing the adapter writes becomes
+/// a command.
+#[tokio::test(flavor = "multi_thread")]
+async fn an_adapter_cannot_submit_commands_or_name_a_principal() {
+    let adapter = std::sync::Arc::new(start("impersonate", json!({})).await);
+    let engine = openmhs_engine::Engine::in_memory(
+        std::sync::Arc::new(openmhs_types::SystemClock),
+        openmhs_policy::Policy::default(),
+    )
+    .unwrap();
+    engine.register(adapter.clone()).await.unwrap();
+    adapter.read("level.measured").await.unwrap();
+    assert_eq!(adapter.status(), Status::Running { generation: 1 });
+    assert!(engine.commands(None, &[], 10).unwrap().is_empty());
+    let created = engine
+        .journal()
+        .audit_records()
+        .unwrap()
+        .into_iter()
+        .filter(|a| a.kind == "command.created")
+        .count();
+    assert_eq!(created, 0, "no command was created on the adapter's say-so");
+    adapter.shutdown().await.unwrap();
+}
+
 #[tokio::test(flavor = "multi_thread")]
 async fn an_unsupported_protocol_version_is_refused() {
     let mut resolved = common::misbehave("normal", json!({}));
     resolved.args.extend(["--versions".into(), "9.9".into()]);
-    let err = ProcessAdapter::start(resolved, HostOptions::default())
+    let err = ProcessAdapter::start(resolved, HostOptions::unsigned())
         .await
         .err()
         .expect("must not start");
@@ -192,7 +219,7 @@ async fn a_descriptor_beyond_the_manifest_is_refused() {
         "normal",
         json!({"capabilities": {"allow": [{"name": "level.*", "operations": ["read"]}]}}),
     );
-    let err = ProcessAdapter::start(resolved, HostOptions::default())
+    let err = ProcessAdapter::start(resolved, HostOptions::unsigned())
         .await
         .err()
         .expect("must not start");
@@ -279,7 +306,7 @@ async fn a_missing_credential_refuses_to_start() {
         "normal",
         json!({"credentials": ["OPENMHS_TEST_CREDENTIAL_THAT_IS_NOT_SET"]}),
     );
-    let err = ProcessAdapter::start(resolved, HostOptions::default())
+    let err = ProcessAdapter::start(resolved, HostOptions::unsigned())
         .await
         .err()
         .expect("must not start");
