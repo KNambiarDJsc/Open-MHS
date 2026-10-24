@@ -152,3 +152,37 @@ automatically after a restart. The plan keeps its lease until the lease's deadli
 - The submitter or an approver can cancel. A running plan stops at the next step boundary,
   after the step in progress finishes. Cancelling withdraws a held command and releases
   the lease.
+
+## 8. Twin preflight
+
+`plans.preflight` dry-runs a plan without changing anything real. The gateway builds a
+separate, in-memory engine. Every registered device is replaced by a twin built from its
+descriptor. The twins of the devices the plan touches are seeded with fresh readings of
+the real devices: the engine's own reads, the same ones a real submission's live checks
+make. A reading that is stale or of bad quality stays that way in the twin, and a
+capability that could not be read has no value there, so checks that need it fail closed.
+The twin engine has the same policy, topology and rate and slew history as the real one,
+and the plan runs there as the same caller.
+
+The result:
+
+| Field | Meaning |
+|---|---|
+| `ok` | The lease is free now and every step would run (some after approval) |
+| `lease` | `available`, the `claim` it would take, and the `error` if not (`lease.conflict` against the real gateway's live leases, or the lease's own refusal) |
+| `outcome` | How the plan would end in the twin (`SUCCEEDED`, `HALTED`, `COMPENSATED`, `AWAITING_DECISION`, …) |
+| `steps[]` | Per step: `verdict` (`allowed`, `needs_approval`, `refused`, `not_reached`), the `errors` behind a refusal, and the `compensation` verdict if the twin had to compensate |
+
+A step held for approval is reported as `needs_approval` and then approved inside the twin,
+so the steps after it are checked too. No approval request is created on the real gateway.
+
+A twin carries its state from step to step: a write sets the property, and a write or
+invoke makes its declared readback true. So a step that depends on an earlier one is
+judged against what the earlier step would have done. Preflight checks what the contract
+can check: scopes, policy, the lease, units, ranges, rate and slew limits, descriptor and
+step preconditions, ordering, and declared verification.
+
+**It has no physics.** A twin does what it is told. It cannot know that a motor will
+stall, a heater is slow, a device will refuse, or a link will drop. `ok: true` means the
+plan is consistent with the contract and the current readings. It does not mean the plan
+will succeed. Preflight is audited (`plan.preflight`) and creates no command, lease or plan.

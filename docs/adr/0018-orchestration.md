@@ -86,8 +86,13 @@ compensating request.
 
 `plans.preflight` dry-runs the whole plan in a separate, in-memory engine. Each device
 in the plan is replaced by a virtual device built from its descriptor and seeded with
-fresh readings taken through the real engine as the caller, under the same policy and
-the same caller. The result has one entry per step: whether it would be allowed, held for
+fresh readings of the real device. As built (M9 step 5), those are the engine's own reads,
+the ones a real submission's live checks would make, rather than reads authorized as the
+caller: descriptor preconditions are checked from engine reads in a real run, so seeding
+through the caller's read grants would refuse plans that would in fact run. Step
+preconditions are still read as the caller inside the twin, as in a real run. The twin
+engine has the same policy, topology and rate and slew history, and the plan runs there
+as the same caller. The result has one entry per step: whether it would be allowed, held for
 approval, or refused and why, plus whether the lease could be taken now. A step held for
 approval is reported and then assumed approved, so that later problems are found too.
 Nothing reaches a real device apart from those reads.

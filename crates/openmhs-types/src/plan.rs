@@ -228,6 +228,53 @@ impl Plan {
     }
 }
 
+/// What a twin preflight expects of one step (spec/plans.md §8).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum StepVerdict {
+    /// Would be allowed and would pass every check the twin can make.
+    Allowed,
+    /// Would be held for approval; the twin assumed it approved to check what follows.
+    NeedsApproval,
+    /// Would be refused or would fail; `errors` say why.
+    Refused,
+    /// An earlier step stops the plan before this one.
+    NotReached,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct StepPreflight {
+    pub id: String,
+    pub verdict: StepVerdict,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub errors: Vec<ErrorObject>,
+    /// The step's compensation, if the twin had to run it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub compensation: Option<StepVerdict>,
+}
+
+/// Whether the plan's lease could be taken now, against the real gateway's leases.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LeaseCheck {
+    pub available: bool,
+    pub claim: crate::graph::Claim,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub error: Option<ErrorObject>,
+}
+
+/// The result of dry-running a plan against a twin of its devices.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PlanPreflight {
+    /// The lease is free now, and every step would run (some after approval).
+    pub ok: bool,
+    pub lease: LeaseCheck,
+    /// How the plan would end in the twin.
+    pub outcome: PlanState,
+    pub order: Vec<String>,
+    pub steps: Vec<StepPreflight>,
+    pub checked_at: Timestamp,
+}
+
 fn valid_step_id(id: &str) -> bool {
     !id.is_empty()
         && id.len() <= 64

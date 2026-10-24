@@ -1010,3 +1010,171 @@ async fn a_crash_mid_plan_comes_back_awaiting_a_decision() {
     assert_eq!(aborted.state, PlanState::Aborted);
     assert!(no_live_leases(&engine));
 }
+
+// ------------------------------------------------------------------ twin preflight
+
+use openmhs_types::plan::StepVerdict;
+
+fn verdicts(p: &openmhs_types::plan::PlanPreflight) -> Vec<StepVerdict> {
+    p.steps.iter().map(|s| s.verdict).collect()
+}
+
+/// The dry run touches nothing real but reads: no command, no lease, no plan.
+#[tokio::test(start_paused = true)]
+async fn preflight_dry_runs_the_plan_and_touches_nothing() {
+    let (engine, script) = lab(policy()).await;
+    let a = Caller::in_process(A);
+    let report = engine
+        .preflight_plan(&a, workcell(OnFailure::Halt))
+        .await
+        .unwrap();
+    assert!(report.ok, "{report:#?}");
+    assert_eq!(report.outcome, PlanState::Succeeded);
+    assert!(verdicts(&report).iter().all(|v| *v == StepVerdict::Allowed));
+    assert!(report.lease.available);
+    assert!(report.lease.claim.devices.contains("sim.thermo-01"));
+
+    assert_eq!(script.executes(), 0, "nothing was sent to a real device");
+    assert_eq!(read(&engine, AXIS, "axis.homed").await, Value::Bool(false));
+    assert!(engine.commands(None, &[], 10).unwrap().is_empty());
+    assert!(engine.leases(false, 10).unwrap().is_empty());
+    assert!(
+        engine
+            .plans(&Caller::in_process(OPERATOR), 10)
+            .unwrap()
+            .is_empty()
+    );
+    assert!(audit_kinds(&engine).iter().any(|k| k == "plan.preflight"));
+}
+
+/// The twin carries state from step to step, so a step that depends on an earlier one is
+/// judged against what the earlier one would have done.
+#[tokio::test(start_paused = true)]
+async fn preflight_finds_the_step_that_would_fail() {
+    let (engine, script) = lab(policy()).await;
+    let mut spec = workcell(OnFailure::Halt);
+    spec.steps.remove(2); // no homing: the move's precondition cannot hold
+    spec.steps[2].after = vec!["output-on".into()];
+    spec.steps[3].after = vec!["move".into()];
+    let report = engine
+        .preflight_plan(&Caller::in_process(A), spec)
+        .await
+        .unwrap();
+    assert!(!report.ok);
+    assert_eq!(report.outcome, PlanState::Halted);
+    assert_eq!(
+        verdicts(&report),
+        [
+            StepVerdict::Allowed,
+            StepVerdict::Allowed,
+            StepVerdict::Refused,
+            StepVerdict::NotReached
+        ]
+    );
+    assert_eq!(report.steps[2].errors[0].code, "plan.precondition.failed");
+    assert_eq!(script.executes(), 0);
+}
+
+/// A step policy holds for approval is reported, then assumed approved so the steps after
+/// it are checked as well.
+#[tokio::test(start_paused = true)]
+async fn preflight_looks_past_approvals() {
+    let mut p = policy();
+    p.grants.insert(
+        0,
+        Grant {
+            id: "a.moves.ask".into(),
+            principal: A.into(),
+            device: AXIS.into(),
+            capability: "axis.move_absolute".into(),
+            operations: vec![Operation::Invoke],
+            effect: Effect::RequireApproval,
+            max_side_effect: None,
+            reason: None,
+        },
+    );
+    let (engine, _script) = lab(p).await;
+    let mut spec = workcell(OnFailure::Halt);
+    spec.steps[4].request = psu_write(SETPOINT, volts(99.0)); // out of range, after the move
+    let report = engine
+        .preflight_plan(&Caller::in_process(A), spec)
+        .await
+        .unwrap();
+    assert_eq!(
+        report.steps[3].verdict,
+        StepVerdict::NeedsApproval,
+        "{report:#?}"
+    );
+    assert_eq!(report.steps[4].verdict, StepVerdict::Refused);
+    assert!(report.steps[4].errors[0].code.starts_with("command."));
+    assert!(!report.ok);
+    // No approval request was left behind on the real gateway.
+    assert!(
+        engine
+            .approvals(&Caller::in_process(OPERATOR), &[], 10)
+            .unwrap()
+            .is_empty()
+    );
+}
+
+#[tokio::test(start_paused = true)]
+async fn preflight_reports_a_busy_lease_and_policy_refusals() {
+    let (engine, _script) = lab(policy()).await;
+    engine
+        .acquire_lease(
+            &Caller::in_process(B),
+            openmhs_engine::LeaseRequest {
+                devices: vec![PSU.into()],
+                ttl_ms: 60_000,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    let report = engine
+        .preflight_plan(&Caller::in_process(A), workcell(OnFailure::Halt))
+        .await
+        .unwrap();
+    assert!(!report.lease.available);
+    assert_eq!(report.lease.error.as_ref().unwrap().code, "lease.conflict");
+    assert!(!report.ok);
+
+    let mut p = policy();
+    p.grants.insert(
+        0,
+        Grant {
+            id: "a.no-output".into(),
+            principal: A.into(),
+            device: PSU.into(),
+            capability: ENABLED.into(),
+            operations: vec![Operation::Write],
+            effect: Effect::Deny,
+            max_side_effect: None,
+            reason: None,
+        },
+    );
+    let (engine, _script) = lab(p).await;
+    let report = engine
+        .preflight_plan(&Caller::in_process(A), workcell(OnFailure::Halt))
+        .await
+        .unwrap();
+    assert_eq!(report.steps[1].verdict, StepVerdict::Refused);
+    assert!(report.steps[1].errors[0].code.starts_with("policy."));
+}
+
+/// What the twin cannot know: a device that will refuse or stall. The contract checks pass,
+/// so preflight says yes; only the real run finds out.
+#[tokio::test(start_paused = true)]
+async fn preflight_has_no_physics() {
+    let (engine, script) = lab(policy()).await;
+    script.fail_at(1, Fault::Reject);
+    let report = engine
+        .preflight_plan(&Caller::in_process(A), workcell(OnFailure::Halt))
+        .await
+        .unwrap();
+    assert!(report.ok);
+    let plan = engine
+        .submit_plan(&Caller::in_process(A), workcell(OnFailure::Halt))
+        .await
+        .unwrap();
+    assert_eq!(plan.state, PlanState::Halted);
+}

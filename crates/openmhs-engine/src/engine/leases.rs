@@ -50,6 +50,30 @@ impl Engine {
     /// Take a lease. All or nothing: refused if any part of its claim is held by a live
     /// lease (`lease.conflict`).
     pub fn acquire_lease(&self, caller: &Caller, req: LeaseRequest) -> Result<Lease, EngineError> {
+        let lease = self.prepare_lease(caller, req)?;
+        self.inner.journal.acquire_lease(&lease)?;
+        Ok(lease)
+    }
+
+    /// Whether a lease could be taken now, without taking it: the same checks, and the
+    /// live lease that would conflict, if any.
+    pub(super) fn lease_would_conflict(
+        &self,
+        caller: &Caller,
+        req: LeaseRequest,
+    ) -> Result<(Lease, Option<Lease>), EngineError> {
+        let lease = self.prepare_lease(caller, req)?;
+        let other = self
+            .inner
+            .journal
+            .active_leases(self.now())?
+            .into_iter()
+            .find(|l| l.claim.overlaps(&lease.claim));
+        Ok((lease, other))
+    }
+
+    /// Check a lease request and build the lease it would be.
+    fn prepare_lease(&self, caller: &Caller, req: LeaseRequest) -> Result<Lease, EngineError> {
         if req.ttl_ms == 0 || req.ttl_ms > MAX_LEASE_TTL_MS {
             return Err(denied(
                 "lease.ttl.invalid",
@@ -117,7 +141,6 @@ impl Engine {
             released_at: None,
             released_by: None,
         };
-        self.inner.journal.acquire_lease(&lease)?;
         Ok(lease)
     }
 

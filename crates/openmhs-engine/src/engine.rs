@@ -26,6 +26,7 @@ use tracing::{info, warn};
 mod approvals;
 mod leases;
 mod plans;
+mod twin;
 
 pub use approvals::{DEFAULT_APPROVAL_TTL_MS, MAX_APPROVAL_TTL_MS, fingerprint};
 pub use leases::LeaseRequest;

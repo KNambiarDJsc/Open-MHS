@@ -8,6 +8,7 @@ license.workspace = true
 authors.workspace = true
 
 [dependencies]
+async-trait.workspace = true
 openmhs-adapter.workspace = true
 openmhs-policy.workspace = true
 openmhs-types.workspace = true
@@ -21,7 +22,6 @@ tracing.workspace = true
 uuid.workspace = true
 
 [dev-dependencies]
-async-trait.workspace = true
 openmhs-sim.workspace = true
 tempfile.workspace = true
 tokio = { workspace = true, features = ["test-util"] }

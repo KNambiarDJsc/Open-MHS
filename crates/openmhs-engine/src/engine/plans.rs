@@ -128,7 +128,7 @@ fn undo_key(plan: &str, step: &str, attempt: usize) -> String {
 }
 
 /// Every device a plan's steps and compensations act on.
-fn plan_devices(spec: &PlanSpec) -> Vec<String> {
+pub(super) fn plan_devices(spec: &PlanSpec) -> Vec<String> {
     let mut out = BTreeSet::new();
     for s in &spec.steps {
         for v in std::iter::once(&s.request).chain(s.compensate.as_ref()) {
@@ -142,7 +142,7 @@ fn plan_devices(spec: &PlanSpec) -> Vec<String> {
 
 impl Engine {
     /// Check a plan's structure, its requests and its preconditions' targets, all at once.
-    fn check_plan(&self, spec: &PlanSpec) -> Result<Vec<String>, Vec<ErrorObject>> {
+    pub(super) fn check_plan(&self, spec: &PlanSpec) -> Result<Vec<String>, Vec<ErrorObject>> {
         let order = execution_order(spec)?;
         let mut errors = Vec::new();
         for s in &spec.steps {
@@ -257,7 +257,7 @@ impl Engine {
         Ok(plans)
     }
 
-    fn load_plan(&self, id: &str) -> Result<Plan, EngineError> {
+    pub(super) fn load_plan(&self, id: &str) -> Result<Plan, EngineError> {
         self.inner
             .journal
             .plan(id)?
