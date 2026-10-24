@@ -1,0 +1,30 @@
+{
+  "status": 200,
+  "body": {
+    "temperature": {
+      "bed": {
+        "actual": 21.3,
+        "offset": 0,
+        "target": 0.0
+      },
+      "history": [
+        {
+          "bed": {
+            "actual": 21.3,
+            "target": 0.0
+          },
+          "time": 1792876545,
+          "tool0": {
+            "actual": 21.3,
+            "target": 0.0
+          }
+        }
+      ],
+      "tool0": {
+        "actual": 21.3,
+        "offset": 0,
+        "target": 0.0
+      }
+    }
+  }
+}

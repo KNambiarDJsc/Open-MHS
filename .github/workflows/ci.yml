@@ -79,6 +79,29 @@ jobs:
           cargo run -p openmhs-cli --bin openmhs -- conformance
           --adapter-manifest adapters/python/opcua/manifest.sim.json
 
+  octoprint:
+    name: OctoPrint adapter (Python, OctoPrint Virtual Printer)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.11"
+      # Pinned; every release at least two weeks old (adapters/python/octoprint/requirements.txt).
+      - run: python -m venv "$RUNNER_TEMP/octo" && "$RUNNER_TEMP/octo/bin/pip" install -r adapters/python/octoprint/requirements.txt
+      - run: cargo build -p openmhs-cli --bin openmhs
+      - name: Adapter tests against replayed answers, then against a real OctoPrint and through a gateway
+        env:
+          OPENMHS_OCTOPRINT: ${{ runner.temp }}/octo/bin/octoprint
+          OPENMHS_BIN: ${{ github.workspace }}/target/debug/openmhs
+        run: python -m unittest discover -s adapters/python/octoprint -v
+      - name: The end-to-end demo
+        run: >
+          python adapters/python/octoprint/demo.py
+          --octoprint "$RUNNER_TEMP/octo/bin/octoprint" --bin "$GITHUB_WORKSPACE/target/debug/openmhs"
+
   ros2:
     name: ROS 2 adapter (Jazzy container, simulated publisher)
     runs-on: ubuntu-latest

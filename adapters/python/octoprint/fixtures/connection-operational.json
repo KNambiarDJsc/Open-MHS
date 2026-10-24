@@ -1,0 +1,34 @@
+{
+  "status": 200,
+  "body": {
+    "current": {
+      "baudrate": 115200,
+      "port": "VIRTUAL",
+      "printerProfile": "_default",
+      "state": "Operational"
+    },
+    "options": {
+      "baudratePreference": 115200,
+      "baudrates": [
+        250000,
+        230400,
+        115200,
+        57600,
+        38400,
+        19200,
+        9600
+      ],
+      "portPreference": "VIRTUAL",
+      "ports": [
+        "VIRTUAL"
+      ],
+      "printerProfilePreference": "_default",
+      "printerProfiles": [
+        {
+          "id": "_default",
+          "name": "Default"
+        }
+      ]
+    }
+  }
+}

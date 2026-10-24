@@ -28,6 +28,9 @@ Work towards the first public release (0.1.0). Milestones M0–M9 are described 
 - Protocol adapters driven by JSON profiles (Modbus TCP, MQTT, SCPI, HTTP), an
   out-of-process adapter host with permission manifests and signed manifests, a Python
   adapter SDK, and read-only OPC UA and observation-only ROS 2 adapters.
+- Experiment 01: a read-only OctoPrint adapter tested against OctoPrint's Virtual Printer, with
+  a harness, fault-injecting proxy, demo and L1 conformance report. Simulated peer only; no
+  physical printer has been tested ([docs/experiments/01-octoprint](docs/experiments/01-octoprint/README.md)).
 - Leases, plans with twin preflight, compensation and a stop lane.
 - Release engineering: cargo-dist configuration, Python packaging, a documentation site,
   an adapter registry, a generated compatibility matrix, and governance files.

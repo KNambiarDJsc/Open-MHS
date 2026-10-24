@@ -1,0 +1,50 @@
+test_accepts_a_loopback_url (test_octoprint.ConfigTests.test_accepts_a_loopback_url) ... ok
+test_refuses_a_capability_it_cannot_read (test_octoprint.ConfigTests.test_refuses_a_capability_it_cannot_read) ... ok
+test_refuses_a_descriptor_that_writes (test_octoprint.ConfigTests.test_refuses_a_descriptor_that_writes) ... ok
+test_refuses_an_endpoint_the_manifest_does_not_declare (test_octoprint.ConfigTests.test_refuses_an_endpoint_the_manifest_does_not_declare) ... ok
+test_refuses_plain_http_off_loopback (test_octoprint.ConfigTests.test_refuses_plain_http_off_loopback) ... ok
+test_refuses_to_start_without_its_credential (test_octoprint.ConfigTests.test_refuses_to_start_without_its_credential) ... ok
+test_refuses_unknown_keys (test_octoprint.ConfigTests.test_refuses_unknown_keys) ... ok
+setUpClass (test_octoprint.FaultClassification) ... skipped 'abstract'
+test_a_wrong_key_is_a_device_failure_not_a_disconnect (test_octoprint.FaultsAgainstReplay.test_a_wrong_key_is_a_device_failure_not_a_disconnect) ... ok
+test_each_fault_has_one_class_on_every_path (test_octoprint.FaultsAgainstReplay.test_each_fault_has_one_class_on_every_path) ... ok
+test_fixture_link_down_is_reported_and_cleared (test_octoprint.FaultsAgainstReplay.test_fixture_link_down_is_reported_and_cleared) ... ok
+test_health_under_faults (test_octoprint.FaultsAgainstReplay.test_health_under_faults) ... ok
+test_no_fault_ever_causes_a_write (test_octoprint.FaultsAgainstReplay.test_no_fault_ever_causes_a_write)
+The adapter has no outcome that is uncertain: whatever the link does, the only ... ok
+test_recovery_when_the_fault_clears (test_octoprint.FaultsAgainstReplay.test_recovery_when_the_fault_clears) ... ok
+test_replayed_closed_printer (test_octoprint.FaultsAgainstReplay.test_replayed_closed_printer) ... ok
+test_unreachable_server (test_octoprint.FaultsAgainstReplay.test_unreachable_server) ... ok
+test_a_temperature_that_is_not_reported_yet_is_a_device_failure (test_octoprint.MappingTests.test_a_temperature_that_is_not_reported_yet_is_a_device_failure)
+Seen from a real OctoPrint right after the printer connects: ``actual`` is null. ... ok
+test_closed_connection_is_offline_and_still_a_simulator (test_octoprint.MappingTests.test_closed_connection_is_offline_and_still_a_simulator) ... ok
+test_every_capability_is_read_only_and_known (test_octoprint.MappingTests.test_every_capability_is_read_only_and_known) ... ok
+test_malformed_bodies (test_octoprint.MappingTests.test_malformed_bodies) ... ok
+test_null_temperature_is_not_yet_reported_not_malformed (test_octoprint.MappingTests.test_null_temperature_is_not_yet_reported_not_malformed) ... ok
+test_recorded_answers_map_to_capabilities (test_octoprint.MappingTests.test_recorded_answers_map_to_capabilities) ... ok
+test_states (test_octoprint.MappingTests.test_states) ... ok
+test_execute_is_unsupported (test_octoprint.ReadOnlyByConstruction.test_execute_is_unsupported) ... ok
+test_the_client_requests_only_the_two_read_paths (test_octoprint.ReadOnlyByConstruction.test_the_client_requests_only_the_two_read_paths) ... ok
+test_the_source_has_no_way_to_write (test_octoprint.ReadOnlyByConstruction.test_the_source_has_no_way_to_write) ... ok
+test_a_wrong_key_is_refused_by_octoprint (test_octoprint.RealOctoPrint.test_a_wrong_key_is_refused_by_octoprint) ... ok
+test_disconnect_and_recovery (test_octoprint.RealOctoPrint.test_disconnect_and_recovery) ... ok
+test_discovery_and_health (test_octoprint.RealOctoPrint.test_discovery_and_health) ... ok
+test_every_capability_reads_a_typed_value (test_octoprint.RealOctoPrint.test_every_capability_reads_a_typed_value) ... ok
+test_faults_against_the_real_server_never_change_the_printer (test_octoprint.RealOctoPrint.test_faults_against_the_real_server_never_change_the_printer) ... ok
+test_the_api_key_is_not_in_the_results (test_octoprint.RealOctoPrint.test_the_api_key_is_not_in_the_results) ... ok
+test_the_wire_shows_only_reads (test_octoprint.RealOctoPrint.test_the_wire_shows_only_reads) ... ok
+test_unreadable_capability_is_unsupported (test_octoprint.RealOctoPrint.test_unreadable_capability_is_unsupported) ... ok
+test_version_is_the_one_the_fixtures_were_recorded_from (test_octoprint.RealOctoPrint.test_version_is_the_one_the_fixtures_were_recorded_from) ... ok
+test_1_the_device_is_discovered_with_its_capabilities (test_octoprint.ThroughTheGateway.test_1_the_device_is_discovered_with_its_capabilities) ... ok
+test_2_no_grant_means_no_request_reaches_octoprint (test_octoprint.ThroughTheGateway.test_2_no_grant_means_no_request_reaches_octoprint) ... ok
+test_3_a_granted_read_returns_octoprints_value (test_octoprint.ThroughTheGateway.test_3_a_granted_read_returns_octoprints_value) ... ok
+test_4_a_write_is_refused_and_nothing_is_sent (test_octoprint.ThroughTheGateway.test_4_a_write_is_refused_and_nothing_is_sent) ... ok
+test_5_even_a_write_grant_cannot_make_a_read_only_device_writable (test_octoprint.ThroughTheGateway.test_5_even_a_write_grant_cannot_make_a_read_only_device_writable) ... ok
+test_6_a_disconnected_printer_is_an_error_not_a_stale_value (test_octoprint.ThroughTheGateway.test_6_a_disconnected_printer_is_an_error_not_a_stale_value) ... ok
+test_7_octoprint_unreachable_is_an_error (test_octoprint.ThroughTheGateway.test_7_octoprint_unreachable_is_an_error) ... ok
+test_8_audit_chain_verifies_and_holds_no_secret (test_octoprint.ThroughTheGateway.test_8_audit_chain_verifies_and_holds_no_secret) ... ok
+
+----------------------------------------------------------------------
+Ran 42 tests in 32.423s
+
+OK (skipped=1)

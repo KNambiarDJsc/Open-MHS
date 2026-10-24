@@ -1,0 +1,446 @@
+{
+  "openmhs_conformance": "0.1",
+  "suite_version": "0.1.0",
+  "subject": {
+    "adapter": "openmhs.py.octoprint",
+    "adapter_version": "0.1.0",
+    "device": "octoprint.virtual-01",
+    "descriptor_sha256": "d0ddd81585e98cc173bfba2a51b44843ce9e4d29d97958d5cc927801ead2acf7",
+    "sources": [
+      "simulator"
+    ]
+  },
+  "fixture": {
+    "faults": [
+      "link_down"
+    ],
+    "counts_deliveries": false
+  },
+  "environment": {
+    "runtime_version": "0.1.0",
+    "os": "windows",
+    "arch": "x86_64"
+  },
+  "declared": "L1",
+  "achieved": "L1",
+  "passed": true,
+  "started_at": "2026-10-24T21:17:55.99Z",
+  "duration_ms": 378,
+  "summary": {
+    "pass": 34,
+    "fail": 0,
+    "untested": 0,
+    "not_applicable": 6
+  },
+  "checks": [
+    {
+      "id": "L0.describe",
+      "level": "L0",
+      "status": "pass",
+      "message": "returned a descriptor",
+      "duration_ms": 1
+    },
+    {
+      "id": "L0.descriptor",
+      "level": "L0",
+      "status": "pass",
+      "message": "valid: device 'octoprint.virtual-01', 5 capabilities",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.adapter_id",
+      "level": "L0",
+      "status": "pass",
+      "message": "'openmhs.py.octoprint'",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.describe_stable",
+      "level": "L0",
+      "status": "pass",
+      "message": "same descriptor both times",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.connect",
+      "level": "L0",
+      "status": "pass",
+      "message": "connected and registered",
+      "duration_ms": 47
+    },
+    {
+      "id": "L0.health",
+      "level": "L0",
+      "status": "pass",
+      "message": "healthy",
+      "duration_ms": 7
+    },
+    {
+      "id": "L0.shutdown",
+      "level": "L0",
+      "status": "pass",
+      "message": "shut down cleanly",
+      "duration_ms": 18
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "printer.state",
+      "status": "pass",
+      "message": "read 'operational'",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T21:17:56.057Z",
+          "value": "operational"
+        }
+      },
+      "duration_ms": 8
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "printer.state",
+      "status": "pass",
+      "message": "'operational' matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "printer.state",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T21:17:56.057Z",
+          "value": "operational"
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "printer.state",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "hotend.temperature",
+      "status": "pass",
+      "message": "read 21.3 Cel",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T21:17:55Z",
+          "value": {
+            "unit": "Cel",
+            "value": 21.3
+          }
+        }
+      },
+      "duration_ms": 33
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "hotend.temperature",
+      "status": "pass",
+      "message": "21.3 Cel matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "hotend.temperature",
+      "status": "pass",
+      "message": "1090 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T21:17:55Z",
+          "value": {
+            "unit": "Cel",
+            "value": 21.3
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "hotend.temperature",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "hotend.target",
+      "status": "pass",
+      "message": "read 0 Cel",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T21:17:55Z",
+          "value": {
+            "unit": "Cel",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 22
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "hotend.target",
+      "status": "pass",
+      "message": "0 Cel matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "hotend.target",
+      "status": "pass",
+      "message": "1113 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T21:17:55Z",
+          "value": {
+            "unit": "Cel",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "hotend.target",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "bed.temperature",
+      "status": "pass",
+      "message": "read 21.3 Cel",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T21:17:55Z",
+          "value": {
+            "unit": "Cel",
+            "value": 21.3
+          }
+        }
+      },
+      "duration_ms": 46
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "bed.temperature",
+      "status": "pass",
+      "message": "21.3 Cel matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "bed.temperature",
+      "status": "pass",
+      "message": "1159 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T21:17:55Z",
+          "value": {
+            "unit": "Cel",
+            "value": 21.3
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "bed.temperature",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "bed.target",
+      "status": "pass",
+      "message": "read 0 Cel",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T21:17:55Z",
+          "value": {
+            "unit": "Cel",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 48
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "bed.target",
+      "status": "pass",
+      "message": "0 Cel matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "bed.target",
+      "status": "pass",
+      "message": "1207 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T21:17:55Z",
+          "value": {
+            "unit": "Cel",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "bed.target",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.subscribe",
+      "level": "L1",
+      "status": "not_applicable",
+      "message": "deferred: the adapter contract (v0.1) has no subscription API, so there is nothing to test yet (ADR-0013)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "printer.state",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "hotend.temperature",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "hotend.target",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "bed.temperature",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "bed.target",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.health",
+      "level": "L1",
+      "status": "pass",
+      "message": "disconnected: cannot reach http://127.0.0.1:55665: network link is down (fixture)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.reconnect",
+      "level": "L1",
+      "status": "pass",
+      "message": "back after 138 ms",
+      "duration_ms": 138
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "status": "not_applicable",
+      "message": "the descriptor declares no writable property or action",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.recovery",
+      "level": "L2",
+      "status": "not_applicable",
+      "message": "the descriptor declares no writable property or action",
+      "duration_ms": 0
+    },
+    {
+      "id": "L3.leases",
+      "level": "L3",
+      "status": "not_applicable",
+      "message": "the descriptor declares no writable property or action",
+      "duration_ms": 0
+    },
+    {
+      "id": "L3.plan",
+      "level": "L3",
+      "status": "not_applicable",
+      "message": "the descriptor declares no writable property or action",
+      "duration_ms": 0
+    },
+    {
+      "id": "L3.stop",
+      "level": "L3",
+      "status": "not_applicable",
+      "message": "the descriptor declares no stop action",
+      "duration_ms": 0
+    }
+  ]
+}

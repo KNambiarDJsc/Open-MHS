@@ -1,0 +1,178 @@
+{
+  "openmhs_manifest": "0.1",
+  "adapter": {
+    "id": "openmhs.py.octoprint",
+    "version": "0.1.0"
+  },
+  "runtime": {
+    "command": [
+      "python",
+      "{manifest_dir}/octoprint_adapter.py"
+    ],
+    "env": {
+      "PYTHONPATH": "{manifest_dir}/../../../python"
+    },
+    "protocol": [
+      "0.1"
+    ]
+  },
+  "capabilities": {
+    "allow": [
+      {
+        "name": "printer.*",
+        "operations": [
+          "read",
+          "subscribe"
+        ]
+      },
+      {
+        "name": "hotend.*",
+        "operations": [
+          "read",
+          "subscribe"
+        ]
+      },
+      {
+        "name": "bed.*",
+        "operations": [
+          "read",
+          "subscribe"
+        ]
+      }
+    ]
+  },
+  "endpoints": {
+    "network": [
+      "http://127.0.0.1:5000"
+    ]
+  },
+  "credentials": [
+    "OCTOPRINT_API_KEY"
+  ],
+  "config": {
+    "url": "http://127.0.0.1:5000",
+    "api_key_env": "OCTOPRINT_API_KEY",
+    "timeout_ms": 2000,
+    "descriptor": {
+      "openmhs": "0.1",
+      "device": {
+        "id": "octoprint.virtual-01",
+        "name": "3D printer (OctoPrint, Virtual Printer plugin)",
+        "manufacturer": "OpenMHS",
+        "model": "OCTOPRINT-VIRTUAL",
+        "description": "A printer driven by an OctoPrint server. Read-only: state and temperatures. Against OctoPrint's bundled Virtual Printer plugin no hardware is involved."
+      },
+      "adapter": {
+        "id": "openmhs.py.octoprint",
+        "version": "0.1.0",
+        "conformance": "L1"
+      },
+      "capabilities": [
+        {
+          "name": "printer.state",
+          "kind": "property",
+          "description": "What OctoPrint reports the printer connection is doing.",
+          "operations": [
+            "read"
+          ],
+          "value": {
+            "type": "enum",
+            "values": [
+              "offline",
+              "connecting",
+              "operational",
+              "printing",
+              "paused",
+              "error"
+            ]
+          },
+          "side_effect": "none"
+        },
+        {
+          "name": "hotend.temperature",
+          "kind": "property",
+          "description": "Measured hotend (tool0) temperature.",
+          "operations": [
+            "read"
+          ],
+          "value": {
+            "type": "number",
+            "quantity": "temperature",
+            "unit": "Cel",
+            "range": {
+              "min": -20,
+              "max": 400
+            }
+          },
+          "side_effect": "none",
+          "freshness": {
+            "max_age_ms": 10000
+          }
+        },
+        {
+          "name": "hotend.target",
+          "kind": "property",
+          "description": "The hotend target temperature OctoPrint last set. Read-only here.",
+          "operations": [
+            "read"
+          ],
+          "value": {
+            "type": "number",
+            "quantity": "temperature",
+            "unit": "Cel",
+            "range": {
+              "min": 0,
+              "max": 400
+            }
+          },
+          "side_effect": "none",
+          "freshness": {
+            "max_age_ms": 10000
+          }
+        },
+        {
+          "name": "bed.temperature",
+          "kind": "property",
+          "description": "Measured heated-bed temperature.",
+          "operations": [
+            "read"
+          ],
+          "value": {
+            "type": "number",
+            "quantity": "temperature",
+            "unit": "Cel",
+            "range": {
+              "min": -20,
+              "max": 200
+            }
+          },
+          "side_effect": "none",
+          "freshness": {
+            "max_age_ms": 10000
+          }
+        },
+        {
+          "name": "bed.target",
+          "kind": "property",
+          "description": "The bed target temperature OctoPrint last set. Read-only here.",
+          "operations": [
+            "read"
+          ],
+          "value": {
+            "type": "number",
+            "quantity": "temperature",
+            "unit": "Cel",
+            "range": {
+              "min": 0,
+              "max": 200
+            }
+          },
+          "side_effect": "none",
+          "freshness": {
+            "max_age_ms": 10000
+          }
+        }
+      ]
+    }
+  }
+}

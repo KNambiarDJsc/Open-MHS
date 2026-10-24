@@ -38,6 +38,7 @@ evidence). See [registry/README.md](../registry/README.md).
 | [openmhs.sim.axis](../crates/openmhs-sim) | built-in | official | Simulated | L3 (declares L3) | Pass | 51 pass, 0 fail, 0 skipped, 4 n/a | 0.1.0 | windows x86_64 | 2026-10-24 | [report](../conformance/reports/sim.axis-01/2026-10-24-v0.1.0-windows-x86_64.json) |
 | [openmhs.sim.psu](../crates/openmhs-sim) | built-in | official | Simulated | L3 (declares L3) | Pass | 66 pass, 0 fail, 0 skipped, 6 n/a | 0.1.0 | windows x86_64 | 2026-10-24 | [report](../conformance/reports/sim.psu-01/2026-10-24-v0.1.0-windows-x86_64.json) |
 | [openmhs.sim.thermo](../crates/openmhs-sim) | built-in | official | Simulated | L1 (declares L1) | Pass | 19 pass, 0 fail, 0 skipped, 6 n/a | 0.1.0 | windows x86_64 | 2026-10-24 | [report](../conformance/reports/sim.thermo-01/2026-10-24-v0.1.0-windows-x86_64.json) |
+| [openmhs.py.octoprint](../adapters/python/octoprint) | HTTP | experimental | Integration-tested (simulated peer) | L1 (declares L1) | Pass | 34 pass, 0 fail, 0 skipped, 6 n/a | 0.1.0 | windows x86_64 | 2026-10-24 | [report](../conformance/reports/octoprint.virtual-01/2026-10-24-v0.1.0-windows-x86_64.json) |
 | [openmhs.py.opcua](../adapters/python/opcua) | OPC UA | experimental | Not verified | declares L1; none reached on file | Not verified | - | - | - | - | none |
 | [openmhs.py.ros2](../adapters/python/ros2) | ROS 2 | experimental | Not verified | declares L1; none reached on file | Not verified | - | - | - | - | none |
 
@@ -51,6 +52,7 @@ at the one it stands on (pinned by SHA-256).
 | [2026-10-24-v0.1.0-windows-x86_64.json](../conformance/reports/http.led-01/2026-10-24-v0.1.0-windows-x86_64.json) | openmhs.http | http.led-01 | 0.1.0 | 0.1.0 | windows x86_64 | 2026-10-24 | L2 | L3 | simulator |
 | [2026-10-24-v0.1.0-windows-x86_64.json](../conformance/reports/modbus.chamber-01/2026-10-24-v0.1.0-windows-x86_64.json) | openmhs.modbus | modbus.chamber-01 | 0.1.0 | 0.1.0 | windows x86_64 | 2026-10-24 | L2 | L3 | simulator |
 | [2026-10-24-v0.1.0-windows-x86_64.json](../conformance/reports/mqtt.greenhouse-01/2026-10-24-v0.1.0-windows-x86_64.json) | openmhs.mqtt | mqtt.greenhouse-01 | 0.1.0 | 0.1.0 | windows x86_64 | 2026-10-24 | L2 | L3 | simulator |
+| [2026-10-24-v0.1.0-windows-x86_64.json](../conformance/reports/octoprint.virtual-01/2026-10-24-v0.1.0-windows-x86_64.json) | openmhs.py.octoprint | octoprint.virtual-01 | 0.1.0 | 0.1.0 | windows x86_64 | 2026-10-24 | L1 | L1 | simulator |
 | [2026-10-24-v0.1.0-windows-x86_64.json](../conformance/reports/py.psu-01/2026-10-24-v0.1.0-windows-x86_64.json) | openmhs.py.psu-sim | py.psu-01 | 0.1.0 | 0.1.0 | windows x86_64 | 2026-10-24 | L3 | L3 | simulator |
 | [2026-10-24-v0.1.0-windows-x86_64.json](../conformance/reports/scpi.psu-01/2026-10-24-v0.1.0-windows-x86_64.json) | openmhs.scpi | scpi.psu-01 | 0.1.0 | 0.1.0 | windows x86_64 | 2026-10-24 | L2 | L3 | simulator |
 | [2026-10-24-v0.1.0-windows-x86_64.json](../conformance/reports/sim.axis-01/2026-10-24-v0.1.0-windows-x86_64.json) | openmhs.sim.axis | sim.axis-01 | 0.1.0 | 0.1.0 | windows x86_64 | 2026-10-24 | L3 | L3 | simulator |

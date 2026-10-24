@@ -1,0 +1,97 @@
+OpenMHS Experiment 01: an agent and a virtual 3D printer
+OctoPrint's Virtual Printer plugin stands in for the printer. Nothing physical is involved.
+Peer: OctoPrint 1.11.8 on http://127.0.0.1:55579 (virtual printer, port VIRTUAL)
+
+## 1. The gateway discovered the printer through its adapter
+$ openmhs devices list   # as operator
+  octoprint.virtual-01 3D printer (OctoPrint, Virtual Printer plugin) openmhs.py.octoprint   5 capabilities
+$ openmhs devices inspect octoprint.virtual-01   # as operator
+  octoprint.virtual-01  3D printer (OctoPrint, Virtual Printer plugin)
+    manufacturer OpenMHS
+    model        OCTOPRINT-VIRTUAL
+    adapter      openmhs.py.octoprint 0.1.0
+  
+    printer.state                    property read               side effect: none
+        value     enum {offline|connecting|operational|printing|paused|error}
+    hotend.temperature               property read               side effect: none
+        value     number [Cel] -20.0..400.0
+        fresh     within 10000 ms
+    hotend.target                    property read               side effect: none
+        value     number [Cel] 0.0..400.0
+
+## 2. Nothing is allowed until the operator allows it
+$ openmhs read octoprint.virtual-01 hotend.temperature   # as operator
+  error [policy.denied.no_grant]: no grant allows 'operator:local' to read 'hotend.temperature' on 'octoprint.virtual-01'
+  (requests that reached OctoPrint meanwhile: 0)
+
+## 3. Grant an agent read access, and nothing else
+$ openmhs grants add --id agent-printer-read --principal agent:demo --device octoprint.virtual-01 --capability * --ops read --effect allow   # as operator
+  added agent-printer-read   allow            agent:demo read on octoprint.virtual-01 / *
+  (token issued to agent:demo)
+
+## 4. The agent reads the printer; the values come from OctoPrint
+$ openmhs read octoprint.virtual-01 printer.state   # as agent
+  octoprint.virtual-01 printer.state = operational  (GOOD, simulator, 2 ms old)
+$ openmhs read octoprint.virtual-01 hotend.temperature   # as agent
+  octoprint.virtual-01 hotend.temperature = 21.3 Cel  (GOOD, simulator, 1849 ms old)
+$ openmhs read octoprint.virtual-01 hotend.target   # as agent
+  octoprint.virtual-01 hotend.target = 0 Cel  (GOOD, simulator, 1893 ms old)
+$ openmhs read octoprint.virtual-01 bed.temperature   # as agent
+  octoprint.virtual-01 bed.temperature = 21.3 Cel  (GOOD, simulator, 1953 ms old)
+$ openmhs read octoprint.virtual-01 bed.target   # as agent
+  octoprint.virtual-01 bed.target = 0 Cel  (GOOD, simulator, 2068 ms old)
+
+## 5. The agent tries to heat the nozzle
+$ openmhs exec octoprint.virtual-01 hotend.target --value 200Cel   # as agent
+  command  01a16fc6-e0d8-7562-b9ab-b0bdb576b22d  by agent:demo
+  target   octoprint.virtual-01 / hotend.target  write 200 Cel
+  state    DENIED  -> denied (nothing sent to the device)
+  policy   deny
+    denied policy.denied.no_grant: no grant allows 'agent:demo' to write 'hotend.target' on 'octoprint.virtual-01'
+  history  21:17:47.095  CREATED
+           21:17:47.097  VALIDATING
+           21:17:47.098  DENIED  no grant allows 'agent:demo' to write 'hotend.target' on 'octoprint.virtual-01'
+  (requests that reached OctoPrint meanwhile: 0)
+
+## 6. The operator even grants write; the device still has no write capability
+$ openmhs grants add --id agent-printer-write --principal agent:demo --device octoprint.virtual-01 --capability * --ops write --effect allow   # as operator
+  added agent-printer-write  allow            agent:demo write on octoprint.virtual-01 / *
+$ openmhs exec octoprint.virtual-01 hotend.target --value 200Cel   # as agent
+  command  01a16fc6-e11a-7152-906f-34a2743e8c61  by agent:demo
+  target   octoprint.virtual-01 / hotend.target  write 200 Cel
+  state    DENIED  -> denied (nothing sent to the device)
+  policy   deny  (rules: agent-printer-write)
+    denied command.operation.unsupported: 'hotend.target' does not support 'write'
+  history  21:17:47.162  CREATED
+           21:17:47.163  VALIDATING
+           21:17:47.164  DENIED  'hotend.target' does not support 'write'
+  (requests that reached OctoPrint meanwhile: 0)
+  OctoPrint's own view afterwards: hotend target 0.0 C (unchanged)
+
+## 7. The printer is unplugged (OctoPrint debug command !!DEBUG:action_disconnect)
+  OctoPrint connection state: Closed
+$ openmhs read octoprint.virtual-01 hotend.temperature   # as agent
+  error [adapter.disconnected]: adapter: [adapter.disconnected] OctoPrint is reachable, but its printer connection is closed
+$ openmhs read octoprint.virtual-01 printer.state   # as agent
+  octoprint.virtual-01 printer.state = offline  (GOOD, simulator, 1 ms old)
+
+## 8. It is plugged back in; reads recover without restarting anything
+$ openmhs read octoprint.virtual-01 hotend.temperature   # as agent
+  octoprint.virtual-01 hotend.temperature = 21.3 Cel  (GOOD, simulator, 512 ms old)
+
+## 9. OctoPrint itself goes away (the proxy drops every connection)
+$ openmhs read octoprint.virtual-01 hotend.temperature   # as agent
+  error [adapter.disconnected]: adapter: [adapter.disconnected] connection to OctoPrint at http://127.0.0.1:55593 failed: Remote end closed connection without response
+$ openmhs read octoprint.virtual-01 hotend.temperature   # as agent
+  octoprint.virtual-01 hotend.temperature = 21.3 Cel  (GOOD, simulator, 638 ms old)
+
+## 10. The audit log is intact
+$ openmhs audit verify   # as operator
+  audit log intact: 25 records, hash chain verified
+
+## 11. What the adapter actually sent to OctoPrint
+  requests: 17   methods: ['GET']   paths: ['/api/connection', '/api/printer']
+  read-only on the wire: yes
+
+Simulated: OctoPrint is real software, the printer behind it is its Virtual Printer plugin.
+Not verified: any physical printer, serial link, firmware or heater.

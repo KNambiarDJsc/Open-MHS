@@ -1,0 +1,22 @@
+{
+  "openmhs_registry": "0.1",
+  "id": "openmhs.py.octoprint",
+  "name": "OctoPrint adapter (read-only)",
+  "protocol": "http",
+  "maintainer": "KNambiarDJsc",
+  "source": "adapters/python/octoprint",
+  "profiles": [
+    "adapters/python/octoprint/manifest.json"
+  ],
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "conformance_profile": "L1",
+  "category": "experimental",
+  "peer": "protocol-simulator",
+  "report": {
+    "path": "conformance/reports/octoprint.virtual-01/2026-10-24-v0.1.0-windows-x86_64.json",
+    "sha256": "0608e94fbd5fb20915096109a02f88b5b94c1da8d025f6dacd0bd5c293eaf5c2",
+    "verified_at": "2026-10-24"
+  },
+  "notes": "Experiment 01. Reads state and temperatures from an OctoPrint server over its HTTP API; the printer behind it was OctoPrint's Virtual Printer plugin. The report's link_down fault is injected inside the adapter; a real printer disconnect is covered by the integration tests. No physical printer has been tested."
+}

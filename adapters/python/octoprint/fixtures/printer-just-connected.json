@@ -1,0 +1,12 @@
+{
+  "status": 200,
+  "body": {
+    "temperature": {
+      "history": [
+        {
+          "time": 1792876547
+        }
+      ]
+    }
+  }
+}

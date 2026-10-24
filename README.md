@@ -164,6 +164,7 @@ device; it does not mean any real device works. A level is not a safety certific
 | [openmhs.sim.axis](crates/openmhs-sim) | built-in | Simulated | L3 (declares L3) | Pass | [report](conformance/reports/sim.axis-01/2026-10-24-v0.1.0-windows-x86_64.json) |
 | [openmhs.sim.psu](crates/openmhs-sim) | built-in | Simulated | L3 (declares L3) | Pass | [report](conformance/reports/sim.psu-01/2026-10-24-v0.1.0-windows-x86_64.json) |
 | [openmhs.sim.thermo](crates/openmhs-sim) | built-in | Simulated | L1 (declares L1) | Pass | [report](conformance/reports/sim.thermo-01/2026-10-24-v0.1.0-windows-x86_64.json) |
+| [openmhs.py.octoprint](adapters/python/octoprint) | HTTP | Integration-tested (simulated peer) | L1 (declares L1) | Pass | [report](conformance/reports/octoprint.virtual-01/2026-10-24-v0.1.0-windows-x86_64.json) |
 | [openmhs.py.opcua](adapters/python/opcua) | OPC UA | Not verified | declares L1; none reached on file | Not verified | none |
 | [openmhs.py.ros2](adapters/python/ros2) | ROS 2 | Not verified | declares L1; none reached on file | Not verified | none |
 <!-- matrix:end -->
