@@ -92,7 +92,7 @@ class Gateway:
         op = self.operator()
         for g in grants if grants is not None else default_grants():
             op.add_grant(g)
-        token = op.create_token(principal).token
+        token = op.create_token(principal, any_scope=True).token
         return Client(self.url, token), token
 
 

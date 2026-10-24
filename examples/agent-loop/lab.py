@@ -71,7 +71,7 @@ class Lab:
         self.operator = Client.from_home(self.home)
         for g in self.grants:
             self.operator.add_grant(g)
-        self.agent_token = self.operator.create_token(self.principal).token
+        self.agent_token = self.operator.create_token(self.principal, any_scope=True).token
         return self
 
     def __exit__(self, *exc: object) -> None:

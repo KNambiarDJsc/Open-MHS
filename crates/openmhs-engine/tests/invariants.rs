@@ -302,8 +302,20 @@ fn inv08_core_has_no_device_specific_code() {
         "openmhs-adapter",
         "openmhs-types",
     ] {
-        for entry in std::fs::read_dir(root.join(krate).join("src")).unwrap() {
-            let path = entry.unwrap().path();
+        // Walk subdirectories too: modules can live in `src/<name>/`.
+        let mut dirs = vec![root.join(krate).join("src")];
+        let mut files = Vec::new();
+        while let Some(dir) = dirs.pop() {
+            for entry in std::fs::read_dir(dir).unwrap() {
+                let path = entry.unwrap().path();
+                if path.is_dir() {
+                    dirs.push(path);
+                } else {
+                    files.push(path);
+                }
+            }
+        }
+        for path in files {
             let text = std::fs::read_to_string(&path).unwrap();
             let code = text.split("#[cfg(test)]").next().unwrap().to_lowercase();
             for word in banned {

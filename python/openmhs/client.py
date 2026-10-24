@@ -22,6 +22,8 @@ from .errors import (
     UnauthorizedError,
 )
 from .models import (
+    Approval,
+    ApprovalStatus,
     AuditEntry,
     AuditVerifyResult,
     CommandState,
@@ -40,6 +42,21 @@ from .models import (
 from .runtime import RuntimeInfo, default_home
 
 RPC_PATH = "/rpc"
+
+
+#: A scope that reaches everything; grants still decide (``create_token(any_scope=True)``).
+ANY_SCOPE: Mapping[str, Any] = {
+    "device": "*",
+    "capability": "*",
+    "operations": ["read", "write", "subscribe", "invoke"],
+}
+
+
+def _with_reason(approval_id: str, reason: str | None) -> dict[str, Any]:
+    params: dict[str, Any] = {"id": approval_id}
+    if reason is not None:
+        params["reason"] = reason
+    return params
 
 
 class Client:
@@ -145,10 +162,14 @@ class Client:
 
     # -------------------------------------------------------------- commands
 
-    def submit(self, request: Mapping[str, Any]) -> Receipt:
+    def submit(self, request: Mapping[str, Any], approval_id: str | None = None) -> Receipt:
         """Submit a raw command request (command.schema.json) and wait for its receipt:
-        terminal, ``UNKNOWN_OUTCOME`` or ``AWAITING_APPROVAL``."""
-        return Receipt.from_dict(self.call("commands.submit", {"request": dict(request)}))
+        terminal, ``UNKNOWN_OUTCOME`` or ``AWAITING_APPROVAL``. With ``approval_id``, spend
+        an approved request for exactly this command (see ``request_approval``)."""
+        params: dict[str, Any] = {"request": dict(request)}
+        if approval_id is not None:
+            params["approval_id"] = approval_id
+        return Receipt.from_dict(self.call("commands.submit", params))
 
     def write(
         self,
@@ -214,17 +235,78 @@ class Client:
     def revoke_grant(self, grant_id: str) -> dict[str, Any]:
         return dict(self.call("grants.revoke", {"id": grant_id}))
 
-    def create_token(self, principal: str, role: Role | str = Role.AGENT) -> CreatedToken:
+    def create_token(
+        self,
+        principal: str,
+        role: Role | str = Role.AGENT,
+        *,
+        scopes: Iterable[Mapping[str, Any]] | None = None,
+        any_scope: bool = False,
+        ttl_ms: int | None = None,
+    ) -> CreatedToken:
+        """Issue a credential (operator). It reaches only its ``scopes`` (each
+        ``{"device", "capability", "operations"}``, patterns allowed), and only what grants
+        also allow. ``any_scope=True`` leaves the limit to the grants. One of the two is
+        required: a credential without scopes could do nothing."""
+        if any_scope == (scopes is not None):
+            raise ValueError("pass scopes=[...] or any_scope=True, not both or neither")
+        listed = [dict(ANY_SCOPE)] if any_scope else [dict(s) for s in scopes or ()]
+        if not listed:
+            raise ValueError("scopes is empty: the credential could do nothing")
         role = role.value if isinstance(role, Role) else role
-        return CreatedToken.from_dict(
-            self.call("tokens.create", {"principal": principal, "role": role})
-        )
+        params: dict[str, Any] = {"principal": principal, "role": role, "scopes": listed}
+        if ttl_ms is not None:
+            params["ttl_ms"] = ttl_ms
+        return CreatedToken.from_dict(self.call("tokens.create", params))
+
+    def rotate_token(self, token_id: str, ttl_ms: int | None = None) -> CreatedToken:
+        """Replace a credential's secret, keeping principal and scopes; the old one is
+        revoked."""
+        params: dict[str, Any] = {"id": token_id}
+        if ttl_ms is not None:
+            params["ttl_ms"] = ttl_ms
+        return CreatedToken.from_dict(self.call("tokens.rotate", params))
 
     def tokens(self) -> list[TokenInfo]:
         return [TokenInfo.from_dict(t) for t in self.call("tokens.list")]
 
     def revoke_token(self, token_id: str) -> TokenInfo:
         return TokenInfo.from_dict(self.call("tokens.revoke", {"id": token_id}))
+
+    # -------------------------------------------------------------- approvals
+
+    def request_approval(self, request: Mapping[str, Any], ttl_ms: int | None = None) -> Approval:
+        """Ask for approval of a command before submitting it. Only for commands that
+        policy holds for approval. Once approved, ``submit(request, approval_id=...)``."""
+        params: dict[str, Any] = {"request": dict(request)}
+        if ttl_ms is not None:
+            params["ttl_ms"] = ttl_ms
+        return Approval.from_dict(self.call("approvals.request", params))
+
+    def approval(self, approval_id: str) -> Approval:
+        return Approval.from_dict(self.call("approvals.get", {"id": approval_id}))
+
+    def approvals(
+        self, statuses: Iterable[ApprovalStatus | str] = (), limit: int | None = None
+    ) -> list[Approval]:
+        """Requesters see their own; approvers see all."""
+        params: dict[str, Any] = {
+            "statuses": [s.value if isinstance(s, ApprovalStatus) else s for s in statuses]
+        }
+        if limit is not None:
+            params["limit"] = limit
+        return [Approval.from_dict(a) for a in self.call("approvals.list", params)]
+
+    def approve_approval(self, approval_id: str) -> Approval:
+        """Approve (an approver who is not the requester). A held command runs."""
+        return Approval.from_dict(self.call("approvals.approve", {"id": approval_id}))
+
+    def deny_approval(self, approval_id: str, reason: str | None = None) -> Approval:
+        return Approval.from_dict(self.call("approvals.deny", _with_reason(approval_id, reason)))
+
+    def revoke_approval(self, approval_id: str, reason: str | None = None) -> Approval:
+        """Withdraw an approval that has not been used."""
+        return Approval.from_dict(self.call("approvals.revoke", _with_reason(approval_id, reason)))
 
     def audit_verify(self) -> AuditVerifyResult:
         return AuditVerifyResult.from_dict(self.call("audit.verify"))

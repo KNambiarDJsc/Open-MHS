@@ -14,7 +14,7 @@ use common::*;
 use openmhs_engine::Engine;
 use openmhs_policy::{Caller, Effect, Policy};
 use openmhs_types::descriptor::Operation;
-use openmhs_types::{ApprovalStatus, CommandState};
+use openmhs_types::{ApprovalStatus, CommandRequest, CommandState};
 use serde_json::json;
 
 use CommandState::*;
@@ -238,20 +238,28 @@ async fn a_modified_command_is_rejected() {
         .unwrap();
     assert_eq!(flipped.state, Denied);
     assert_eq!(codes(&flipped), vec!["approval.mismatch"]);
-    // An added parameter changes what is being asked, so it is refused as well.
-    let padded = engine
-        .submit_approved(
-            &requester(),
-            &with(
-                enable(true),
-                "params",
-                json!({ "extra": { "value": 1, "unit": "V" } }),
-            ),
-            &a.id,
-        )
+    // A write cannot carry parameters at all: the schema refuses the padded command before
+    // the approval is looked at.
+    let padded = with(
+        enable(true),
+        "params",
+        json!({ "extra": { "value": 1, "unit": "V" } }),
+    );
+    let refused = engine
+        .submit_approved(&requester(), &padded, &a.id)
         .await
-        .unwrap();
-    assert_eq!(padded.state, Denied);
+        .unwrap_err();
+    assert!(
+        matches!(refused, openmhs_engine::EngineError::InvalidRequest(_)),
+        "{refused:?}"
+    );
+    // And for commands that do take parameters, the fingerprint covers them.
+    let plain: CommandRequest = serde_json::from_value(enable(true)).unwrap();
+    let extra: CommandRequest = serde_json::from_value(padded).unwrap();
+    assert_ne!(
+        openmhs_engine::fingerprint(REQUESTER, &plain),
+        openmhs_engine::fingerprint(REQUESTER, &extra)
+    );
     assert_eq!(psu.execute_calls(), 0);
     // The approval is still there for the command it was given for.
     let still = engine.journal().approval(&a.id).unwrap().unwrap();
