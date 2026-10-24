@@ -12,8 +12,10 @@ import os
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 from pathlib import Path
+from typing import Any
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "python"))
@@ -52,11 +54,16 @@ class Gateway:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.PIPE,
         )
+        # Drain the log as it comes: a full pipe would block the gateway mid-request.
+        self._log = bytearray()
+        self._drainer = threading.Thread(target=self._drain, args=(self.proc.stderr,), daemon=True)
+        self._drainer.start()
         runtime = self.home / "gateway.json"
         deadline = time.monotonic() + 30
         while time.monotonic() < deadline:
             if self.proc.poll() is not None:
-                err = self.proc.stderr.read().decode("utf-8", "replace") if self.proc.stderr else ""
+                self._drainer.join(timeout=5)
+                err = bytes(self._log).decode("utf-8", "replace")
                 raise RuntimeError(f"gateway exited with {self.proc.returncode}: {err}")
             if runtime.exists():
                 try:
@@ -71,6 +78,10 @@ class Gateway:
             raise RuntimeError("gateway did not start within 30 s")
         return self
 
+    def _drain(self, pipe: Any) -> None:
+        for line in iter(pipe.readline, b""):
+            self._log.extend(line)
+
     def __exit__(self, *exc: object) -> None:
         if self.proc is not None and self.proc.poll() is None:
             self.proc.terminate()
@@ -79,8 +90,6 @@ class Gateway:
             except subprocess.TimeoutExpired:
                 self.proc.kill()
                 self.proc.wait()
-        if self.proc is not None and self.proc.stderr:
-            self.proc.stderr.close()
         self._dir.cleanup()
 
     def operator(self) -> Client:

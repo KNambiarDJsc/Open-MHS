@@ -31,6 +31,10 @@ from .models import (
     Descriptor,
     ErrorObject,
     GatewayInfo,
+    Lease,
+    Plan,
+    PlanDecision,
+    PlanPreflight,
     PreflightResult,
     Quantity,
     ReadResult,
@@ -272,6 +276,69 @@ class Client:
 
     def revoke_token(self, token_id: str) -> TokenInfo:
         return TokenInfo.from_dict(self.call("tokens.revoke", {"id": token_id}))
+
+    # -------------------------------------------------------------- leases
+
+    def acquire_lease(
+        self,
+        ttl_ms: int,
+        devices: Iterable[str] = (),
+        resources: Iterable[str] = (),
+        reason: str | None = None,
+    ) -> Lease:
+        """Exclusive use of devices (and what they contain or share) until released or due."""
+        params: dict[str, Any] = {
+            "devices": list(devices),
+            "resources": list(resources),
+            "ttl_ms": ttl_ms,
+        }
+        if reason is not None:
+            params["reason"] = reason
+        return Lease.from_dict(self.call("leases.acquire", params))
+
+    def lease(self, lease_id: str) -> Lease:
+        return Lease.from_dict(self.call("leases.get", {"id": lease_id}))
+
+    def leases(self, active: bool = False, limit: int | None = None) -> list[Lease]:
+        params: dict[str, Any] = {"active": active}
+        if limit is not None:
+            params["limit"] = limit
+        return [Lease.from_dict(x) for x in self.call("leases.list", params)]
+
+    def renew_lease(self, lease_id: str, ttl_ms: int) -> Lease:
+        return Lease.from_dict(self.call("leases.renew", {"id": lease_id, "ttl_ms": ttl_ms}))
+
+    def release_lease(self, lease_id: str, reason: str | None = None) -> Lease:
+        return Lease.from_dict(self.call("leases.release", _with_reason(lease_id, reason)))
+
+    # -------------------------------------------------------------- plans
+
+    def submit_plan(self, plan: Mapping[str, Any]) -> Plan:
+        """Run a plan (spec/plans.md). Returns when it ends or waits."""
+        return Plan.from_dict(self.call("plans.submit", {"plan": dict(plan)}))
+
+    def preflight_plan(self, plan: Mapping[str, Any]) -> PlanPreflight:
+        """Dry-run a plan against twins of its devices; changes nothing real."""
+        return PlanPreflight.from_dict(self.call("plans.preflight", {"plan": dict(plan)}))
+
+    def plan(self, plan_id: str) -> Plan:
+        return Plan.from_dict(self.call("plans.get", {"id": plan_id}))
+
+    def plans(self, limit: int | None = None) -> list[Plan]:
+        """Plans, newest first. Agents see only their own."""
+        params = {} if limit is None else {"limit": limit}
+        return [Plan.from_dict(p) for p in self.call("plans.list", params)]
+
+    def decide_plan(
+        self, plan_id: str, decision: PlanDecision | str, reason: str | None = None
+    ) -> Plan:
+        """A human approver's decision on a waiting plan: resume, retry, compensate, abort."""
+        params = _with_reason(plan_id, reason)
+        params["decision"] = decision.value if isinstance(decision, PlanDecision) else decision
+        return Plan.from_dict(self.call("plans.decide", params))
+
+    def cancel_plan(self, plan_id: str, reason: str | None = None) -> Plan:
+        return Plan.from_dict(self.call("plans.cancel", _with_reason(plan_id, reason)))
 
     # -------------------------------------------------------------- approvals
 

@@ -178,6 +178,16 @@ pub fn steps_for_reason(r: &Reason) -> Vec<String> {
         "command.device.unknown" | "command.capability.unknown" => {
             step("Use list_devices and describe_device to find valid targets.".into())
         }
+        "lease.held" | "lease.conflict" => step(
+            "Another holder has leased this device (or something it shares). Wait until the \
+             lease ends or ask the operator; never try to work around a lease."
+                .into(),
+        ),
+        "lease.not_authorized" => step(
+            "You may lease only devices you could operate. Leave the others out, or tell the \
+             operator which permission is missing."
+                .into(),
+        ),
         "gateway.restarted" => step(
             "The gateway restarted before this command was checked; nothing was sent. \
              Submit it again if it is still needed."
@@ -220,7 +230,7 @@ fn steps_for_state(state: CommandState) -> Vec<String> {
     }
 }
 
-fn dedup(steps: Vec<String>) -> Vec<String> {
+pub(crate) fn dedup(steps: Vec<String>) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
     for s in steps {
         if !out.contains(&s) {

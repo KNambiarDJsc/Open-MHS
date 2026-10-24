@@ -35,6 +35,11 @@ openmhs read sim.thermo-01 temperature.ambient
 | `leases acquire --device D [--resource R] --ttl 10m [--reason …]` | Exclusive use of devices (and what they contain or share) until released or due; others' writes and invokes are refused meanwhile |
 | `leases list [--active]` / `leases show <id>` | Every lease, or one: holder, claim, deadline |
 | `leases renew <id> --ttl 10m` / `leases release <id> [--reason …]` | Move your lease's deadline / end it (an approver can end anyone's) |
+| `plans preflight FILE` | Dry-run a plan (JSON, [spec/plans.md](../spec/plans.md)) against twins of its devices; changes nothing real. Exit 0 every step would run, 5 some need approval, 2 otherwise |
+| `plans submit FILE` | Run a plan. Exit 0 `SUCCEEDED`, 3 `HALTED` or `COMPENSATED`, 4 `AWAITING_DECISION`, 5 waiting for approval, 7 `ABORTED` or `CANCELLED` |
+| `plans show <id>` / `plans list [--limit N]` | A plan's steps, commands and decisions / recent plans (agents see their own) |
+| `plans decide <id> --decision resume\|retry\|compensate\|abort [--reason …]` | Decide how a waiting plan continues (operator; a human approver) |
+| `plans cancel <id> [--reason …]` | Stop a plan at the next step boundary: its submitter or an approver |
 | `read <device> <capability>` | Read from the device; flags stale or bad-quality readings |
 | `exec <device> <capability> --value 5V` | Write a property |
 | `exec <device> <action> --param position=120mm --param speed=50mm/s` | Invoke an action |

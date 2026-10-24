@@ -258,6 +258,12 @@ async fn every_method_requires_authentication() {
         method::AUDIT_VERIFY,
         method::AUDIT_TAIL,
         method::SIM_FAULT,
+        method::PLANS_SUBMIT,
+        method::PLANS_PREFLIGHT,
+        method::PLANS_GET,
+        method::PLANS_LIST,
+        method::PLANS_DECIDE,
+        method::PLANS_CANCEL,
     ];
     for m in methods {
         let body = json!({ "jsonrpc": "2.0", "id": 1, "method": m, "params": {} });

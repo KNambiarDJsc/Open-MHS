@@ -59,6 +59,11 @@ apply to everyone. A role never bypasses authorization for device access.
 | `leases.get` / `leases.list` | any | `id` / `active?`, `limit?` | lease / leases, newest first |
 | `leases.renew` | holder | `id`, `ttl_ms` | lease with the new deadline |
 | `leases.release` | holder or a human approver | `id`, `reason?` | lease, released |
+| `plans.submit` | any | `plan` ([plans.md](plans.md) §1) | plan; returns when it ends or waits. Each step is an ordinary command of the caller |
+| `plans.preflight` | any | `plan` | `ok`, `lease`, `outcome`, `order`, `steps` (verdicts): a dry run against twins ([plans.md](plans.md) §8). Creates no command, lease or plan |
+| `plans.get` / `plans.list` | any¹ | `id` / `limit?` | plan / plans, newest first |
+| `plans.decide` | op⁶ | `id`, `decision` (`resume`, `retry`, `compensate`, `abort`), `reason?` | plan |
+| `plans.cancel` | any² | `id`, `reason?` | plan |
 | `state.read` | any | `device`, `capability` | `state` (value, timestamp, source, quality), `age_ms`, `max_age_ms`, `usable` |
 | `commands.submit` | any | `request` (`command.schema.json`), `approval_id?` | receipt (waits until terminal, `UNKNOWN_OUTCOME`, or `AWAITING_APPROVAL`). With `approval_id`, spends an approved request for exactly this command |
 | `commands.preflight` | any | `request` | `decision`, `rules`, `errors?`, `checked_at`: what a submission would get now. Creates no command and runs nothing |
@@ -88,6 +93,8 @@ reach the command.
 
 ⁵ Only for devices the caller could operate: within its credential's scopes and with a
 grant short of `deny` for some write or invoke on each claimed device.
+
+⁶ And a human approver configured in policy ([plans.md](plans.md) §5).
 
 The principal of a command always comes from the token, never from the request body.
 

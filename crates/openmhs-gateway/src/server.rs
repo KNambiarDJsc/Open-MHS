@@ -11,8 +11,9 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use openmhs_api::{
     AcquireLeaseParams, ApprovalActionParams, ApprovalRequestParams, AuditEntry, AuditTailParams,
-    AuditVerifyResult, CommandIdParams, CreateTokenParams, CreatedToken, DeviceParams, ErrorData,
-    GatewayInfo, GrantParams, IdParams, ListApprovalsParams, ListCommandsParams, ListLeasesParams,
+    AuditVerifyResult, CancelPlanParams, CommandIdParams, CreateTokenParams, CreatedToken,
+    DecidePlanParams, DeviceParams, ErrorData, GatewayInfo, GrantParams, IdParams,
+    ListApprovalsParams, ListCommandsParams, ListLeasesParams, ListPlansParams, PlanParams,
     RPC_PATH, ReadParams, ReadResult, ReleaseLeaseParams, RenewLeaseParams, Role,
     RotateTokenParams, RpcError, RpcRequest, RpcResponse, SimFaultParams, SimFaultResult,
     SubmitParams, method, rpc_code,
@@ -379,6 +380,53 @@ async fn dispatch(
             ok(engine
                 .release_lease(&session.caller, &p.id, p.reason.as_deref())
                 .map_err(engine_error)?)
+        }
+
+        // Plans (spec/plans.md). Each step goes through the single-command path as the
+        // plan's caller, so these add no permission of their own.
+        method::PLANS_SUBMIT => {
+            let p: PlanParams = params(raw)?;
+            let engine = engine.clone();
+            let caller = session.caller.clone();
+            ok(detached(async move { engine.submit_plan(&caller, p.plan).await }).await?)
+        }
+
+        method::PLANS_PREFLIGHT => {
+            let p: PlanParams = params(raw)?;
+            let engine = engine.clone();
+            let caller = session.caller.clone();
+            ok(detached(async move { engine.preflight_plan(&caller, p.plan).await }).await?)
+        }
+
+        method::PLANS_GET => {
+            let p: IdParams = params(raw)?;
+            ok(engine.plan(&session.caller, &p.id).map_err(engine_error)?)
+        }
+
+        method::PLANS_LIST => {
+            let p: ListPlansParams = params(raw)?;
+            let limit = p.limit.unwrap_or(DEFAULT_LIST_LIMIT).min(MAX_LIST_LIMIT);
+            ok(engine.plans(&session.caller, limit).map_err(engine_error)?)
+        }
+
+        method::PLANS_DECIDE => {
+            require_operator("deciding how a plan continues")?;
+            let p: DecidePlanParams = params(raw)?;
+            let engine = engine.clone();
+            let caller = session.caller.clone();
+            ok(detached(async move {
+                engine
+                    .decide_plan(&caller, &p.id, p.decision, p.reason)
+                    .await
+            })
+            .await?)
+        }
+
+        method::PLANS_CANCEL => {
+            let p: CancelPlanParams = params(raw)?;
+            let engine = engine.clone();
+            let caller = session.caller.clone();
+            ok(detached(async move { engine.cancel_plan(&caller, &p.id, p.reason).await }).await?)
         }
 
         method::DEVICES_DESCRIBE => {

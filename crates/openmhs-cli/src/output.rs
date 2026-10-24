@@ -565,6 +565,97 @@ pub fn audit_entries(entries: &[AuditEntry]) {
     }
 }
 
+pub fn plan(p: &openmhs_types::plan::Plan) {
+    println!("plan       {}", p.id);
+    println!("state      {}", p.state.name());
+    println!("principal  {}", p.principal);
+    if let Some(d) = &p.spec.description {
+        println!("about      {d}");
+    }
+    if let Some(r) = &p.reason {
+        println!("reason     {r}");
+    }
+    if let Some(l) = &p.lease_id {
+        println!("lease      {l}");
+    }
+    println!("steps");
+    for s in &p.steps {
+        let mark = if p.current.as_deref() == Some(&s.id) {
+            ">"
+        } else {
+            " "
+        };
+        let command = s.last_command().unwrap_or("-");
+        println!("  {mark} {:<24} {:<24} {command}", s.id, name(&s.status));
+        if let Some(e) = &s.error {
+            println!("      {}: {}", e.code, e.message);
+        }
+    }
+    for d in &p.decisions {
+        let reason = d
+            .reason
+            .as_deref()
+            .map(|r| format!(": {r}"))
+            .unwrap_or_default();
+        println!(
+            "decision   {} by {} at {}{reason}",
+            d.decision.name(),
+            d.by,
+            d.at
+        );
+    }
+}
+
+pub fn plans(list: &[openmhs_types::plan::Plan]) {
+    if list.is_empty() {
+        println!("no plans");
+        return;
+    }
+    for p in list {
+        let done = p
+            .steps
+            .iter()
+            .filter(|s| s.status == openmhs_types::plan::StepStatus::Succeeded)
+            .count();
+        println!(
+            "{:<37} {:<18} {:<24} {done}/{} steps",
+            p.id,
+            p.state.name(),
+            p.principal,
+            p.steps.len()
+        );
+    }
+}
+
+pub fn plan_preflight(p: &openmhs_types::plan::PlanPreflight) {
+    println!("ok         {}", p.ok);
+    println!(
+        "outcome    {} (in the twin; it has no physics)",
+        p.outcome.name()
+    );
+    let devices: Vec<&str> = p.lease.claim.devices.iter().map(String::as_str).collect();
+    let lease = if p.lease.available {
+        "available"
+    } else {
+        "unavailable"
+    };
+    println!("lease      {lease}: {}", devices.join(", "));
+    if let Some(e) = &p.lease.error {
+        println!("           {}: {}", e.code, e.message);
+    }
+    println!("steps");
+    for s in &p.steps {
+        let undo = s
+            .compensation
+            .map(|c| format!(" (compensation: {})", name(&c)))
+            .unwrap_or_default();
+        println!("  {:<24} {}{undo}", s.id, name(&s.verdict));
+        for e in &s.errors {
+            println!("      {}: {}", e.code, e.message);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

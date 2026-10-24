@@ -186,3 +186,5 @@ step preconditions, ordering, and declared verification.
 stall, a heater is slow, a device will refuse, or a link will drop. `ok: true` means the
 plan is consistent with the contract and the current readings. It does not mean the plan
 will succeed. Preflight is audited (`plan.preflight`) and creates no command, lease or plan.
+The twin engine's log lines are inside a `twin` span, so its registrations and command
+transitions are never mistaken for real ones.

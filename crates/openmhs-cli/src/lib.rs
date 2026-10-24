@@ -76,6 +76,12 @@ enum Cmd {
         #[command(subcommand)]
         command: LeasesCmd,
     },
+    /// Run several commands as one plan: in order, under one lease, with a declared
+    /// response to failure (spec/plans.md).
+    Plans {
+        #[command(subcommand)]
+        command: PlansCmd,
+    },
     /// Read a property from the device (authorized and audited).
     Read { device: String, capability: String },
     /// Submit a write (properties) or invoke (actions) and wait for its receipt.
@@ -404,6 +410,36 @@ enum ApprovalsCmd {
     },
     /// Withdraw an approval that has not been used: the requester's own, or any as approver.
     Revoke {
+        id: String,
+        #[arg(long)]
+        reason: Option<String>,
+    },
+}
+
+#[derive(Subcommand)]
+enum PlansCmd {
+    /// Submit a plan (a JSON file); returns when it ends or waits.
+    Submit { file: PathBuf },
+    /// Dry-run a plan against twins of its devices; changes nothing real.
+    Preflight { file: PathBuf },
+    /// Show one plan.
+    Show { id: String },
+    /// List plans, newest first.
+    List {
+        #[arg(long)]
+        limit: Option<usize>,
+    },
+    /// Decide how a waiting plan continues (a human approver).
+    Decide {
+        id: String,
+        /// `resume`, `retry`, `compensate` or `abort`.
+        #[arg(long, value_parser = parse_decision)]
+        decision: openmhs_types::plan::PlanDecision,
+        #[arg(long)]
+        reason: Option<String>,
+    },
+    /// Cancel a plan: its submitter, or an approver.
+    Cancel {
         id: String,
         #[arg(long)]
         reason: Option<String>,
@@ -757,6 +793,44 @@ fn report_error(json: bool, e: &ClientError) -> u8 {
     match e.code() {
         Some(c) if c.starts_with("policy.") || c == "gateway.forbidden" => exit::DENIED,
         _ => exit::ERROR,
+    }
+}
+
+fn parse_decision(s: &str) -> Result<openmhs_types::plan::PlanDecision, String> {
+    serde_json::from_value(serde_json::Value::String(s.into()))
+        .map_err(|_| format!("'{s}' is not resume, retry, compensate or abort"))
+}
+
+fn read_plan(path: &Path) -> Result<openmhs_types::plan::PlanSpec, String> {
+    let text = std::fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    serde_json::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))
+}
+
+/// How a plan's state maps onto the command exit codes.
+pub fn plan_exit(p: &openmhs_types::plan::Plan) -> u8 {
+    use openmhs_types::plan::PlanState;
+    match p.state {
+        PlanState::Succeeded => exit::OK,
+        PlanState::Halted | PlanState::Compensated => exit::FAILED,
+        PlanState::AwaitingDecision => exit::UNCERTAIN,
+        PlanState::Running | PlanState::WaitingApproval | PlanState::Compensating => exit::PENDING,
+        PlanState::Aborted | PlanState::Cancelled => exit::NOT_EXECUTED,
+    }
+}
+
+/// Preflight: 0 when every step would run, 5 when some need approval, 2 otherwise.
+fn plan_preflight_exit(p: &openmhs_types::plan::PlanPreflight) -> u8 {
+    use openmhs_types::plan::StepVerdict;
+    if !p.ok {
+        exit::DENIED
+    } else if p
+        .steps
+        .iter()
+        .any(|s| s.verdict == StepVerdict::NeedsApproval)
+    {
+        exit::PENDING
+    } else {
+        exit::OK
     }
 }
 
@@ -1329,6 +1403,48 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
                     &client.release_lease(&id, reason).await?,
                     output::lease,
                 );
+            }
+        },
+        Cmd::Plans { command } => match command {
+            PlansCmd::Submit { file } => {
+                let spec = match read_plan(&file) {
+                    Ok(s) => s,
+                    Err(m) => {
+                        eprintln!("error: {m}");
+                        return Ok(exit::ERROR);
+                    }
+                };
+                let p = client.submit_plan(spec).await?;
+                show(json, &p, output::plan);
+                return Ok(plan_exit(&p));
+            }
+            PlansCmd::Preflight { file } => {
+                let spec = match read_plan(&file) {
+                    Ok(s) => s,
+                    Err(m) => {
+                        eprintln!("error: {m}");
+                        return Ok(exit::ERROR);
+                    }
+                };
+                let p = client.preflight_plan(spec).await?;
+                show(json, &p, output::plan_preflight);
+                return Ok(plan_preflight_exit(&p));
+            }
+            PlansCmd::Show { id } => show(json, &client.plan(&id).await?, output::plan),
+            PlansCmd::List { limit } => {
+                show(json, &client.plans(limit).await?, |l| output::plans(l));
+            }
+            PlansCmd::Decide {
+                id,
+                decision,
+                reason,
+            } => {
+                let p = client.decide_plan(&id, decision, reason).await?;
+                show(json, &p, output::plan);
+                return Ok(plan_exit(&p));
+            }
+            PlansCmd::Cancel { id, reason } => {
+                show(json, &client.cancel_plan(&id, reason).await?, output::plan);
             }
         },
         Cmd::Read { device, capability } => {

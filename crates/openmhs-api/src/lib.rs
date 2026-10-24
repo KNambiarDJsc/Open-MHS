@@ -50,6 +50,12 @@ pub mod method {
     pub const AUDIT_VERIFY: &str = "audit.verify";
     pub const AUDIT_TAIL: &str = "audit.tail";
     pub const SIM_FAULT: &str = "sim.fault";
+    pub const PLANS_SUBMIT: &str = "plans.submit";
+    pub const PLANS_PREFLIGHT: &str = "plans.preflight";
+    pub const PLANS_GET: &str = "plans.get";
+    pub const PLANS_LIST: &str = "plans.list";
+    pub const PLANS_DECIDE: &str = "plans.decide";
+    pub const PLANS_CANCEL: &str = "plans.cancel";
 }
 
 /// JSON-RPC error codes. OpenMHS errors use [`rpc_code::GATEWAY`] and carry the stable
@@ -245,6 +251,33 @@ pub struct GrantParams {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IdParams {
     pub id: String,
+}
+
+/// `plans.submit` and `plans.preflight` (spec/plans.md).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlanParams {
+    pub plan: openmhs_types::plan::PlanSpec,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ListPlansParams {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub limit: Option<usize>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DecidePlanParams {
+    pub id: String,
+    pub decision: openmhs_types::plan::PlanDecision,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CancelPlanParams {
+    pub id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -31,5 +31,6 @@ python examples/agent-loop/llm_agent.py --print-tools        # what Claude is gi
 ANTHROPIC_API_KEY=... python examples/agent-loop/llm_agent.py --confirm
 ```
 
-`--confirm` asks you at the terminal before each `submit_command` is sent. Without a
+`--confirm` asks you at the terminal before each call that changes the physical world
+(`submit_command`, `submit_plan`) is sent. Without a
 key, `llm_agent.py` explains what it needs and runs nothing. Tests never call the API.

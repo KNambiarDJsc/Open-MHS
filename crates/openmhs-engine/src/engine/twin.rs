@@ -154,8 +154,20 @@ fn verdict(status: StepStatus, held: bool) -> StepVerdict {
 
 impl Engine {
     /// Dry-run a plan against twins of its devices (ADR-0018). Only reads reach real
-    /// devices. Audited.
+    /// devices. Audited. Everything the twin engine logs is inside a `twin` span, so its
+    /// registrations and command transitions are never mistaken for real ones.
     pub async fn preflight_plan(
+        &self,
+        caller: &Caller,
+        spec: PlanSpec,
+    ) -> Result<PlanPreflight, EngineError> {
+        use tracing::Instrument;
+        self.preflight_in_twin(caller, spec)
+            .instrument(tracing::info_span!("twin"))
+            .await
+    }
+
+    async fn preflight_in_twin(
         &self,
         caller: &Caller,
         spec: PlanSpec,

@@ -85,7 +85,10 @@ def run(task: str, confirm: bool, effort: str) -> int:
     with Lab() as lab:
         cmd, env = lab.mcp_command()
         with McpStdioClient(cmd, env) as mcp:
-            tools = claude_tools(mcp.list_tools())
+            listed = mcp.list_tools()
+            tools = claude_tools(listed)
+            # Everything that changes the physical world: submit_command and submit_plan.
+            physical = {t["name"] for t in listed if (t.get("annotations") or {}).get("destructiveHint")}
             system = SYSTEM + mcp.instructions
             messages: list[dict[str, Any]] = [{"role": "user", "content": task}]
             print(f"task: {task}\nmodel: {MODEL}  tools: {', '.join(t['name'] for t in tools)}")
@@ -138,7 +141,7 @@ def run(task: str, confirm: bool, effort: str) -> int:
 
                 results = []
                 for call in calls:
-                    if confirm and call.name == "submit_command" and not ask_human(call.name, call.input):
+                    if confirm and call.name in physical and not ask_human(call.name, call.input):
                         results.append({"type": "tool_result", "tool_use_id": call.id, "is_error": True,
                                         "content": "The human operator declined this command. "
                                                    "Do not retry it; ask them what they want instead."})

@@ -74,6 +74,38 @@ class ApprovalStatus(str, Enum):
     REVOKED = "REVOKED"
 
 
+class PlanState(str, Enum):
+    """Plan states (spec/plans.md section 4). The last five are final."""
+
+    RUNNING = "RUNNING"
+    WAITING_APPROVAL = "WAITING_APPROVAL"
+    AWAITING_DECISION = "AWAITING_DECISION"
+    COMPENSATING = "COMPENSATING"
+    SUCCEEDED = "SUCCEEDED"
+    HALTED = "HALTED"
+    COMPENSATED = "COMPENSATED"
+    ABORTED = "ABORTED"
+    CANCELLED = "CANCELLED"
+
+    @property
+    def terminal(self) -> bool:
+        return self in _FINAL_PLAN_STATES
+
+
+_FINAL_PLAN_STATES = frozenset(
+    {"SUCCEEDED", "HALTED", "COMPENSATED", "ABORTED", "CANCELLED"}
+)
+
+
+class PlanDecision(str, Enum):
+    """How an approver continues a plan that waits for a decision (spec/plans.md section 5)."""
+
+    RESUME = "resume"
+    RETRY = "retry"
+    COMPENSATE = "compensate"
+    ABORT = "abort"
+
+
 # ------------------------------------------------------------------ values
 
 
@@ -487,3 +519,123 @@ class AuditVerifyResult(Model):
     valid: bool
     first_invalid: int | None = None
     extra: dict[str, Any] = _extra()
+
+
+# ------------------------------------------------------------------ leases and plans
+
+
+@dataclass
+class Claim(Model):
+    """What a lease holds: devices and shared resources (spec/topology.md)."""
+
+    devices: list[str]
+    resources: list[str]
+    extra: dict[str, Any] = _extra()
+
+
+@dataclass
+class Lease(Model):
+    """Exclusive use of devices until ``expires_at`` or release (spec/topology.md)."""
+
+    id: str
+    holder: str
+    devices: list[str]
+    claim: Claim
+    created_at: str
+    expires_at: str
+    holder_credential: str | None = None
+    resources: list[str] = field(default_factory=list)
+    reason: str | None = None
+    plan_id: str | None = None
+    released_at: str | None = None
+    released_by: str | None = None
+    extra: dict[str, Any] = _extra()
+    _nested = {"claim": Claim}
+    _omit_empty = frozenset({"resources"})
+
+
+@dataclass
+class StepRecord(Model):
+    id: str
+    status: str
+    #: Command ids of each attempt, oldest first.
+    commands: list[str] = field(default_factory=list)
+    compensations: list[str] = field(default_factory=list)
+    error: ErrorObject | None = None
+    extra: dict[str, Any] = _extra()
+    _nested = {"error": ErrorObject}
+    _omit_empty = frozenset({"commands", "compensations"})
+
+
+@dataclass
+class DecisionRecord(Model):
+    decision: PlanDecision | str
+    by: str
+    at: str
+    reason: str | None = None
+    extra: dict[str, Any] = _extra()
+    _enums = {"decision": PlanDecision}
+
+
+@dataclass
+class Plan(Model):
+    """A plan and how far it got (spec/plans.md). Each step is an ordinary command."""
+
+    id: str
+    principal: str
+    state: PlanState | str
+    #: The plan as submitted.
+    spec: dict[str, Any]
+    order: list[str]
+    steps: list[StepRecord]
+    created_at: str
+    updated_at: str
+    credential_id: str | None = None
+    current: str | None = None
+    lease_id: str | None = None
+    compensating: bool = False
+    reason: str | None = None
+    decisions: list[DecisionRecord] = field(default_factory=list)
+    extra: dict[str, Any] = _extra()
+    _nested = {"steps": StepRecord, "decisions": DecisionRecord}
+    _enums = {"state": PlanState}
+    _omit_empty = frozenset({"decisions"})
+
+    def step(self, step_id: str) -> StepRecord | None:
+        return next((s for s in self.steps if s.id == step_id), None)
+
+
+@dataclass
+class LeaseCheck(Model):
+    available: bool
+    claim: Claim
+    error: ErrorObject | None = None
+    extra: dict[str, Any] = _extra()
+    _nested = {"claim": Claim, "error": ErrorObject}
+
+
+@dataclass
+class StepPreflight(Model):
+    id: str
+    #: ``allowed``, ``needs_approval``, ``refused`` or ``not_reached``.
+    verdict: str
+    errors: list[ErrorObject] = field(default_factory=list)
+    compensation: str | None = None
+    extra: dict[str, Any] = _extra()
+    _nested = {"errors": ErrorObject}
+    _omit_empty = frozenset({"errors"})
+
+
+@dataclass
+class PlanPreflight(Model):
+    """A dry run against twins (spec/plans.md section 8). Twins have no physics."""
+
+    ok: bool
+    lease: LeaseCheck
+    outcome: PlanState | str
+    order: list[str]
+    steps: list[StepPreflight]
+    checked_at: str
+    extra: dict[str, Any] = _extra()
+    _nested = {"lease": LeaseCheck, "steps": StepPreflight}
+    _enums = {"outcome": PlanState}

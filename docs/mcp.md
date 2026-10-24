@@ -86,6 +86,14 @@ Tools (all return `structuredContent` with an `outputSchema`):
 | `list_pending_approvals` | No | Your commands waiting for a human |
 | `reconcile_command` | Reads the device | Settle `UNKNOWN_OUTCOME` without re-sending |
 | `cancel_command` | Withdraws | Cancel before dispatch |
+| `check_plan` | No (reads the devices) | Dry-run a plan against twins ([spec/plans.md](../spec/plans.md) §8); advisory, no physics |
+| `submit_plan` | **Yes** | Run several commands in order under one lease; each step is an ordinary command |
+| `get_plan` | No | Fetch a plan; `wait_ms` waits until it ends or stops for a human |
+| `cancel_plan` | Withdraws | Stop your plan at the next step boundary; completed steps stay |
+
+There is no tool to decide how a waiting plan continues (`resume`, `retry`,
+`compensate`, `abort`). That is a human approver's decision, made with
+`openmhs plans decide`.
 
 A refused command is a normal result with `isError: true`. It names the reason code
 and rule, the numbers that bound it, and `next_steps`:

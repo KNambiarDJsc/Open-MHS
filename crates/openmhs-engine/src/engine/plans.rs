@@ -732,7 +732,10 @@ impl Engine {
                 at: self.now(),
                 reason: reason.clone(),
             });
+            // Every decision is audited as one; an abort then ends the plan.
+            let detail = serde_json::json!({ "decision": decision, "by": caller.principal(), "reason": reason });
             if decision == PlanDecision::Abort {
+                self.save_plan(&mut plan, "plan.decision", detail)?;
                 self.cancel_held(&plan, caller.principal())?;
                 self.finish(
                     &mut plan,
@@ -741,11 +744,7 @@ impl Engine {
                 )?;
             } else {
                 plan.reason = None;
-                self.save_plan(
-                    &mut plan,
-                    "plan.decision",
-                    serde_json::json!({ "decision": decision, "by": caller.principal(), "reason": reason }),
-                )?;
+                self.save_plan(&mut plan, "plan.decision", detail)?;
             }
             plan
         };

@@ -191,6 +191,69 @@ impl Client {
         .await
     }
 
+    /// Submit a plan; returns when it ends or waits (spec/plans.md §2).
+    pub async fn submit_plan(
+        &self,
+        plan: openmhs_types::plan::PlanSpec,
+    ) -> Result<openmhs_types::plan::Plan, ClientError> {
+        self.call(method::PLANS_SUBMIT, crate::PlanParams { plan })
+            .await
+    }
+
+    /// Dry-run a plan against twins of its devices (spec/plans.md §8).
+    pub async fn preflight_plan(
+        &self,
+        plan: openmhs_types::plan::PlanSpec,
+    ) -> Result<openmhs_types::plan::PlanPreflight, ClientError> {
+        self.call(method::PLANS_PREFLIGHT, crate::PlanParams { plan })
+            .await
+    }
+
+    pub async fn plan(&self, id: &str) -> Result<openmhs_types::plan::Plan, ClientError> {
+        self.call(method::PLANS_GET, crate::IdParams { id: id.into() })
+            .await
+    }
+
+    pub async fn plans(
+        &self,
+        limit: Option<usize>,
+    ) -> Result<Vec<openmhs_types::plan::Plan>, ClientError> {
+        self.call(method::PLANS_LIST, crate::ListPlansParams { limit })
+            .await
+    }
+
+    pub async fn decide_plan(
+        &self,
+        id: &str,
+        decision: openmhs_types::plan::PlanDecision,
+        reason: Option<String>,
+    ) -> Result<openmhs_types::plan::Plan, ClientError> {
+        self.call(
+            method::PLANS_DECIDE,
+            crate::DecidePlanParams {
+                id: id.into(),
+                decision,
+                reason,
+            },
+        )
+        .await
+    }
+
+    pub async fn cancel_plan(
+        &self,
+        id: &str,
+        reason: Option<String>,
+    ) -> Result<openmhs_types::plan::Plan, ClientError> {
+        self.call(
+            method::PLANS_CANCEL,
+            crate::CancelPlanParams {
+                id: id.into(),
+                reason,
+            },
+        )
+        .await
+    }
+
     pub async fn describe(&self, device: &str) -> Result<Descriptor, ClientError> {
         self.call(
             method::DEVICES_DESCRIBE,

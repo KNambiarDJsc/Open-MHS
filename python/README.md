@@ -27,6 +27,9 @@ elif r.denied:                                     # a refusal is a receipt, not
   Tests check their fields and required fields against the schemas, and check that the
   spec's examples and live gateway responses round-trip unchanged. Fields from a newer
   gateway are kept in `.extra`.
+- Leases (`acquire_lease`, `renew_lease`, `release_lease`) and plans (`preflight_plan`,
+  `submit_plan`, `plan`, `plans`, `cancel_plan`, and `decide_plan` for a human approver)
+  follow [spec/topology.md](../spec/topology.md) and [spec/plans.md](../spec/plans.md).
 - `Client` never prints its token, and is safe to share between threads.
 
 Tests run a real gateway binary:

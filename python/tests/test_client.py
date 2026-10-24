@@ -19,6 +19,8 @@ from openmhs import (
     GatewayUnreachableError,
     NotRunningError,
     Outcome,
+    PlanDecision,
+    PlanState,
     Quantity,
     Role,
     UnauthorizedError,
@@ -237,6 +239,65 @@ class Credentials(unittest.TestCase):
             listed = {t.id: t for t in op.tokens()}
             self.assertIsNotNone(listed[created.id].revoked_at)
             self.assertEqual(listed[rotated.id].kind, "agent")
+
+
+def _set(volts: float) -> dict:
+    return {
+        "target": {"device": PSU, "capability": SETPOINT},
+        "operation": "write",
+        "value": {"value": volts, "unit": "V"},
+    }
+
+
+class LeasesAndPlans(unittest.TestCase):
+    def test_a_lease_keeps_others_off_until_released(self) -> None:
+        with Gateway() as gw:
+            a, _ = gw.agent("agent:holder")
+            b, _ = gw.agent("agent:other", [])
+            lease = a.acquire_lease(600_000, devices=[PSU], reason="calibration")
+            self.assertEqual(lease.extra, {})
+            self.assertIn(PSU, lease.claim.devices)
+            refused = b.write(PSU, SETPOINT, Quantity(1, "V"))
+            self.assertEqual(refused.reasons[0].code, "lease.held")
+            self.assertEqual([x.id for x in b.leases(active=True)], [lease.id])
+            released = a.release_lease(lease.id, reason="done")
+            self.assertEqual(released.released_by, "agent:holder")
+            self.assertTrue(b.write(PSU, SETPOINT, Quantity(1, "V")).confirmed)
+
+    def test_a_plan_runs_and_its_preflight_changes_nothing(self) -> None:
+        with Gateway() as gw:
+            agent, _ = gw.agent("agent:planner")
+            spec = {"steps": [
+                {"id": "low", "request": _set(1.0)},
+                {"id": "high", "after": ["low"], "request": _set(2.0)},
+            ]}
+            check = agent.preflight_plan(spec)
+            self.assertTrue(check.ok)
+            self.assertIs(check.outcome, PlanState.SUCCEEDED)
+            self.assertEqual([s.verdict for s in check.steps], ["allowed", "allowed"])
+            self.assertEqual(agent.plans(), [])
+            plan = agent.submit_plan(spec)
+            self.assertEqual(plan.extra, {})
+            self.assertIs(plan.state, PlanState.SUCCEEDED)
+            self.assertTrue(plan.state.terminal)
+            receipt = agent.command(plan.step("high").commands[-1])
+            self.assertTrue(receipt.confirmed)
+            self.assertEqual([p.id for p in agent.plans()], [plan.id])
+
+    def test_an_operator_decides_a_waiting_plan(self) -> None:
+        grants = [grant("psu-approve", PSU, SETPOINT, ["write"], effect="require_approval")]
+        with Gateway() as gw:
+            agent, _ = gw.agent("agent:waits", grants)
+            plan = agent.submit_plan({"steps": [{"id": "set", "request": _set(1.0)}]})
+            self.assertIs(plan.state, PlanState.WAITING_APPROVAL)
+            with self.assertRaises(GatewayError) as e:
+                agent.decide_plan(plan.id, PlanDecision.ABORT)
+            self.assertEqual(e.exception.code, "gateway.forbidden")
+            ended = gw.operator().decide_plan(plan.id, "abort", reason="not now")
+            self.assertIs(ended.state, PlanState.ABORTED)
+            self.assertIs(ended.decisions[0].decision, PlanDecision.ABORT)
+            held = agent.command(plan.step("set").commands[-1])
+            self.assertIs(held.state, CommandState.CANCELLED)
 
 
 class Discovery(unittest.TestCase):

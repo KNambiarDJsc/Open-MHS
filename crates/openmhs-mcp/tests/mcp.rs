@@ -140,6 +140,10 @@ async fn tools_declare_their_risk_and_output_schemas() {
         "list_pending_approvals",
         "reconcile_command",
         "cancel_command",
+        "check_plan",
+        "submit_plan",
+        "get_plan",
+        "cancel_plan",
     ] {
         assert!(names.contains(&expected), "missing {expected}: {names:?}");
     }
@@ -148,7 +152,13 @@ async fn tools_declare_their_risk_and_output_schemas() {
         assert!(t.description.is_some(), "{} has no description", t.name);
         let a = t.annotations.as_ref().unwrap();
         let read_only = a.read_only_hint == Some(true);
-        let mutating = ["submit_command", "reconcile_command", "cancel_command"];
+        let mutating = [
+            "submit_command",
+            "reconcile_command",
+            "cancel_command",
+            "submit_plan",
+            "cancel_plan",
+        ];
         assert_eq!(
             read_only,
             !mutating.contains(&t.name.as_ref()),
@@ -170,6 +180,13 @@ async fn tools_declare_their_risk_and_output_schemas() {
     let a = submit.annotations.as_ref().unwrap();
     assert_eq!(a.destructive_hint, Some(true));
     assert_eq!(a.open_world_hint, Some(true));
+    let plan = tools.iter().find(|t| t.name == "submit_plan").unwrap();
+    assert_eq!(
+        plan.annotations.as_ref().unwrap().destructive_hint,
+        Some(true)
+    );
+    // Deciding how a plan continues is a human's job.
+    assert!(!names.iter().any(|n| n.contains("decide")), "{names:?}");
     client.cancel().await.unwrap();
     lab.gw.shutdown().await.unwrap();
 }
@@ -488,6 +505,77 @@ async fn malformed_arguments_are_correctable_tool_errors() {
     assert!(text(&r).contains("unknown field `voltage`"), "{}", text(&r));
     let r = call(&client, "list_devices", json!({})).await;
     assert!(!is_error(&r));
+    client.cancel().await.unwrap();
+    lab.gw.shutdown().await.unwrap();
+}
+
+fn write_req(v: f64) -> Value {
+    json!({
+        "target": { "device": PSU, "capability": SETPOINT },
+        "operation": "write",
+        "value": volts(v)
+    })
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn plans_check_run_and_explain_a_failure() {
+    let lab = lab(psu_grants()).await;
+    let client = connect(&lab.gw.url, &lab.agent_token, false).await;
+    let good = json!({ "plan": { "steps": [
+        { "id": "one", "request": write_req(1.0), "compensate": write_req(0.0) }
+    ] } });
+
+    let r = call(&client, "check_plan", good.clone()).await;
+    assert!(!is_error(&r), "{}", text(&r));
+    let v = structured(&r);
+    assert_eq!(v["ok"], true);
+    assert_eq!(v["advisory"], true);
+    assert_eq!(v["steps"][0]["verdict"], "allowed");
+
+    let r = call(&client, "submit_plan", good).await;
+    assert!(!is_error(&r), "{}", text(&r));
+    let v = structured(&r).clone();
+    assert_eq!(v["state"], "SUCCEEDED");
+    assert_eq!(v["finished"], true);
+    let r = call(&client, "get_plan", json!({ "plan_id": v["plan_id"] })).await;
+    assert_eq!(structured(&r)["state"], "SUCCEEDED");
+
+    // The second step is out of range: the first is undone, and the agent learns why.
+    let bad = json!({ "plan": { "steps": [
+        { "id": "one", "request": write_req(1.5), "compensate": write_req(1.0) },
+        { "id": "two", "after": ["one"], "request": write_req(48.0), "on_failure": "compensate" }
+    ] } });
+    let r = call(&client, "check_plan", bad.clone()).await;
+    let v = structured(&r);
+    assert_eq!(v["ok"], false);
+    assert_eq!(v["steps"][1]["verdict"], "refused");
+    assert_eq!(
+        v["steps"][1]["reasons"][0]["code"],
+        "command.value.out_of_range"
+    );
+    let r = call(&client, "submit_plan", bad).await;
+    assert!(is_error(&r), "a compensated plan did not do what was asked");
+    let v = structured(&r);
+    assert_eq!(v["state"], "COMPENSATED");
+    assert_eq!(v["steps"][0]["status"], "COMPENSATED");
+    assert_eq!(
+        v["steps"][1]["reasons"][0]["code"],
+        "command.value.out_of_range"
+    );
+    let steps = v["next_steps"].to_string();
+    assert!(steps.contains("declared range"), "{steps}");
+
+    // A malformed plan is caught with a reason the model can fix.
+    let r = call(
+        &client,
+        "submit_plan",
+        json!({ "plan": { "steps": [
+            { "id": "one", "request": write_req(1.0), "on_failure": "explode" }
+        ] } }),
+    )
+    .await;
+    assert!(is_error(&r));
+    assert!(text(&r).contains("plan.invalid"), "{}", text(&r));
     client.cancel().await.unwrap();
     lab.gw.shutdown().await.unwrap();
 }
