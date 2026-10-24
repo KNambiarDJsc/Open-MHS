@@ -3,6 +3,7 @@
 mod common;
 
 use common::*;
+use openmhs_policy::Caller;
 use openmhs_policy::{Effect, Policy};
 use openmhs_types::descriptor::Operation;
 use openmhs_types::receipt::Decision;
@@ -11,7 +12,7 @@ use openmhs_types::receipt::Decision;
 async fn preflight_reports_denials_without_creating_or_executing_anything() {
     let (engine, psu) = setup(allow_all()).await;
     let p = engine
-        .preflight(AGENT, &write(SETPOINT, volts(48.0)))
+        .preflight(&Caller::in_process(AGENT), &write(SETPOINT, volts(48.0)))
         .await
         .unwrap();
     assert_eq!(p.decision, Decision::Deny);
@@ -19,7 +20,7 @@ async fn preflight_reports_denials_without_creating_or_executing_anything() {
     assert_eq!(p.rules[0].rule_id, "grant.agent.psu");
 
     let ok = engine
-        .preflight(AGENT, &write(SETPOINT, volts(1.0)))
+        .preflight(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
         .await
         .unwrap();
     assert_eq!(ok.decision, Decision::Allow);
@@ -51,9 +52,15 @@ async fn preflight_agrees_with_submission() {
         (write(ENABLED, serde_json::json!(true)), Decision::Deny), // no grant
     ];
     for (req, expected) in cases {
-        let p = engine.preflight(AGENT, &req).await.unwrap();
+        let p = engine
+            .preflight(&Caller::in_process(AGENT), &req)
+            .await
+            .unwrap();
         assert_eq!(p.decision, expected);
-        let r = engine.submit(AGENT, &req).await.unwrap();
+        let r = engine
+            .submit(&Caller::in_process(AGENT), &req)
+            .await
+            .unwrap();
         assert_eq!(
             codes(&r),
             p.errors.iter().map(|e| e.code.clone()).collect::<Vec<_>>()
@@ -63,10 +70,17 @@ async fn preflight_agrees_with_submission() {
     psu.set_truth(|t| t.tripped = false);
     let req = write(SETPOINT, volts(1.0));
     assert_eq!(
-        engine.preflight(AGENT, &req).await.unwrap().decision,
+        engine
+            .preflight(&Caller::in_process(AGENT), &req)
+            .await
+            .unwrap()
+            .decision,
         Decision::RequireApproval
     );
-    let r = engine.submit(AGENT, &req).await.unwrap();
+    let r = engine
+        .submit(&Caller::in_process(AGENT), &req)
+        .await
+        .unwrap();
     assert_eq!(r.state, openmhs_types::CommandState::AwaitingApproval);
 }
 
@@ -74,7 +88,7 @@ async fn preflight_agrees_with_submission() {
 async fn preflight_is_audited_and_rejects_reads() {
     let (engine, _psu) = setup(allow_all()).await;
     engine
-        .preflight(AGENT, &write(SETPOINT, volts(1.0)))
+        .preflight(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
         .await
         .unwrap();
     let records = engine.journal().audit_records().unwrap();
@@ -84,7 +98,7 @@ async fn preflight_is_audited_and_rejects_reads() {
         "target": { "device": PSU, "capability": SETPOINT }, "operation": "read"
     });
     assert!(matches!(
-        engine.preflight(AGENT, &read).await,
+        engine.preflight(&Caller::in_process(AGENT), &read).await,
         Err(openmhs_engine::EngineError::NotACommand)
     ));
 }

@@ -5,10 +5,12 @@
 //!
 //! Everything here is a pure function of its inputs. No I/O, no clocks, no models.
 
+pub mod auth;
 pub mod authz;
 pub mod constraints;
 mod glob;
 
+pub use auth::{AuthMethod, Caller, PrincipalKind, Scope};
 pub use authz::{AuthzDecision, Effect, Grant, Policy};
 pub use constraints::{
     Expectation, Live, Mutation, Prepared, check_command, check_read, readback_matches,

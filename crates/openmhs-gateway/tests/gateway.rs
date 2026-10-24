@@ -6,7 +6,7 @@
 use std::net::{Ipv4Addr, SocketAddr};
 use std::time::Duration;
 
-use openmhs_api::{Client, Role};
+use openmhs_api::{Client, CreateTokenParams, Role};
 use openmhs_gateway::GatewayConfig;
 use openmhs_policy::{Effect, Grant};
 use openmhs_types::CommandState;
@@ -42,7 +42,10 @@ async fn client_disconnect_does_not_abandon_the_command() {
     let gw = start(home.path()).await;
     let operator = Client::new(&gw.url, &gw.operator_token).unwrap();
     operator.add_grant(psu_write_grant()).await.unwrap();
-    let agent = operator.create_token("agent:t", Role::Agent).await.unwrap();
+    let agent = operator
+        .create_token(CreateTokenParams::unrestricted("agent:t", Role::Agent))
+        .await
+        .unwrap();
     operator.sim_fault("sim.psu-01", "hang").await.unwrap();
 
     let impatient = reqwest::Client::builder()
@@ -75,6 +78,8 @@ async fn client_disconnect_does_not_abandon_the_command() {
 async fn requests_need_a_token_and_json() {
     let home = tempfile::tempdir().unwrap();
     let gw = start(home.path()).await;
+    // reqwest needs a rustls provider to build a client (openmhs_api::Client installs it).
+    let _ = rustls::crypto::ring::default_provider().install_default();
     let http = reqwest::Client::new();
     let url = format!("{}/rpc", gw.url);
     let body = json!({ "jsonrpc": "2.0", "id": 1, "method": "gateway.info" });

@@ -11,9 +11,9 @@ the milestone is marked **Done**.
 | M3 | Gateway (`openmhsd`), local JSON-RPC API, CLI, three virtual devices, `openmhs demo`, CI on Windows/macOS/Linux | Done |
 | M4 | MCP server (gateway client), pure-Python client SDK, mock-agent replanning example | Done |
 | M5 | Conformance suite (L0–L2 tested; L3 defined in M9), `openmhs adapter new`, adapter author guide | Done |
-| M6 | Protocol adapters: Modbus TCP, MQTT, SCPI (TCP/serial), HTTP — each tested against in-repo protocol simulators | Done (pending review) |
-| M7 | Out-of-process adapter host, Python adapter SDK, OPC UA and ROS 2 adapters, adapter permission manifests | Planned |
-| M8 | Identity and trust: scoped credentials, approval workflows, signed descriptors/manifests, signed audit export, threat model | Planned |
+| M6 | Protocol adapters: Modbus TCP, MQTT, SCPI (TCP/serial), HTTP — each tested against in-repo protocol simulators | Done |
+| M7 | Out-of-process adapter host, Python adapter SDK, read-only OPC UA and ROS 2 adapters, adapter permission manifests, verified TLS for MQTT and HTTP | Done (pending review) |
+| M8 | Identity and trust: scoped credentials, single-use approval records, signed adapter manifests, shared authenticated execution context, threat model. Signed descriptors and signed audit export were not built | Done on branch `m8` (pending review; [status](IMPLEMENTATION_STATUS.md)) |
 | M9 | Capability graph and multi-device orchestration: relationships, resource leases, plans with twin preflight, partial-failure handling, priority stop lane (ADR-0010 amendment) | Planned |
 | M10 | Release readiness: binaries, PyPI, docs site, adapter registry index, generated compatibility matrix, governance | Planned |
 | M11+ | Advanced track (design docs first): WASM-sandboxed adapters, OpenTelemetry, remote/federated gateways, fleet, assisted adapter generation, HIL rigs, OPC UA / ros2_control / SiLA 2 bridges, device attestation | Planned |

@@ -251,6 +251,45 @@ pub fn devices(devices: &[Descriptor]) {
     }
 }
 
+pub fn graph(g: &openmhs_types::graph::Graph) {
+    if g.relationships.is_empty() {
+        println!("{} devices, no relationships declared", g.devices.len());
+    }
+    for e in &g.relationships {
+        let r = &e.relationship;
+        let from = match &r.component {
+            Some(c) => format!("{}/{c}", e.from),
+            None => e.from.clone(),
+        };
+        let object = r
+            .target
+            .as_deref()
+            .or(r.resource.as_deref())
+            .or(r.frame.as_deref())
+            .unwrap_or("");
+        let caps = if r.capabilities.is_empty() {
+            String::new()
+        } else {
+            format!(" ({})", r.capabilities.join(", "))
+        };
+        let origin = match e.origin {
+            openmhs_types::graph::Origin::Descriptor => "descriptor",
+            openmhs_types::graph::Origin::Topology => "topology",
+        };
+        println!(
+            "{from:<24} {:<16} {object}{caps}  [{origin}]",
+            r.kind.name()
+        );
+    }
+    for (resource, devices) in &g.resources {
+        let devices: Vec<&str> = devices.iter().map(String::as_str).collect();
+        println!("resource {resource}: {}", devices.join(", "));
+    }
+    for issue in &g.issues {
+        println!("issue: [{}] {}", issue.code, issue.message);
+    }
+}
+
 fn value_spec(cap: &Capability) -> String {
     let spec = cap
         .value
@@ -364,14 +403,135 @@ pub fn tokens(tokens: &[TokenInfo]) {
         return;
     }
     for t in tokens {
+        let status = if t.revoked_at.is_some() {
+            "revoked".to_owned()
+        } else {
+            t.expires_at
+                .map_or_else(|| "no expiry".to_owned(), |e| format!("expires {e}"))
+        };
         println!(
-            "{:<18} {:<9} {:<24} created {}",
+            "{:<21} {:<9} {:<24} {} scope(s), {status}",
             t.id,
             name(&t.role),
             t.principal,
-            t.created_at
+            t.scopes.len(),
         );
     }
+}
+
+pub fn approval(a: &openmhs_types::Approval) {
+    println!("approval   {}", a.id);
+    println!("status     {}", a.status.name());
+    println!(
+        "for        {} / {} ({}) by {}",
+        a.device,
+        a.capability,
+        name(&a.operation),
+        a.requester
+    );
+    println!("fingerprint {}", a.fingerprint);
+    if let Some(c) = &a.command_id {
+        println!("command    {c}");
+    }
+    if let Some(by) = &a.decided_by {
+        println!("decided by {by}");
+    }
+    if let Some(r) = &a.reason {
+        println!("reason     {r}");
+    }
+    println!("expires    {}", a.expires_at);
+}
+
+pub fn approvals(list: &[openmhs_types::Approval]) {
+    if list.is_empty() {
+        println!("no approvals");
+        return;
+    }
+    for a in list {
+        println!(
+            "{:<37} {:<9} {:<24} {} / {}",
+            a.id,
+            a.status.name(),
+            a.requester,
+            a.device,
+            a.capability
+        );
+    }
+}
+
+fn lease_status(l: &openmhs_types::lease::Lease) -> &'static str {
+    use openmhs_types::Clock;
+    match l.status_at(openmhs_types::SystemClock.now()) {
+        openmhs_types::lease::LeaseStatus::Active => "ACTIVE",
+        openmhs_types::lease::LeaseStatus::Released => "RELEASED",
+        openmhs_types::lease::LeaseStatus::Expired => "EXPIRED",
+    }
+}
+
+pub fn lease(l: &openmhs_types::lease::Lease) {
+    let join = |set: &std::collections::BTreeSet<String>| {
+        set.iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>()
+            .join(", ")
+    };
+    println!("lease      {}", l.id);
+    println!("status     {}", lease_status(l));
+    println!("holder     {}", l.holder);
+    println!("devices    {}", join(&l.claim.devices));
+    if !l.claim.resources.is_empty() {
+        println!("resources  {}", join(&l.claim.resources));
+    }
+    if let Some(r) = &l.reason {
+        println!("reason     {r}");
+    }
+    if let Some(p) = &l.plan_id {
+        println!("plan       {p}");
+    }
+    println!("expires    {}", l.expires_at);
+    if let (Some(at), Some(by)) = (&l.released_at, &l.released_by) {
+        println!("released   {at} by {by}");
+    }
+}
+
+pub fn leases(list: &[openmhs_types::lease::Lease]) {
+    if list.is_empty() {
+        println!("no leases");
+        return;
+    }
+    for l in list {
+        let devices: Vec<&str> = l.claim.devices.iter().map(String::as_str).collect();
+        println!(
+            "{:<37} {:<8} {:<24} {}",
+            l.id,
+            lease_status(l),
+            l.holder,
+            devices.join(", ")
+        );
+    }
+}
+
+pub fn created_token(t: &openmhs_api::CreatedToken) {
+    println!(
+        "created {} for {} ({})",
+        t.info.id,
+        t.info.principal,
+        name(&t.info.role)
+    );
+    for s in &t.info.scopes {
+        let ops: Vec<String> = s.operations.iter().map(|o| name(o).to_owned()).collect();
+        println!(
+            "scope: {} / {} [{}]",
+            s.device,
+            s.capability,
+            ops.join(", ")
+        );
+    }
+    if let Some(e) = t.info.expires_at {
+        println!("expires: {e}");
+    }
+    println!("token: {}", t.token);
+    println!("This is shown once. Pass it with --token or OPENMHS_TOKEN.");
 }
 
 pub fn audit_verify(v: &AuditVerifyResult) {

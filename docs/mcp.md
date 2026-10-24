@@ -23,11 +23,13 @@ In a second terminal, as the operator:
 openmhs grants add --id agent-read --principal 'agent:*' --device '*' --capability '*' --ops read --effect allow
 openmhs grants add --id agent-psu  --principal 'agent:*' --device sim.psu-01 --capability '*' --ops write --effect allow
 
-openmhs tokens create agent:claude          # prints the token once
+# The credential is limited to the same devices and operations (a scope is a ceiling:
+# the grants above must also allow the call). It prints the token once.
+openmhs tokens create agent:claude --scope 'sim.*:*:read' --scope 'sim.psu-01:*:write' --ttl 7d
 ```
 
 Keep the token secret: it is the agent's identity. Revoke it with
-`openmhs tokens revoke <id>` (`openmhs tokens list` shows ids, never secrets).
+`openmhs tokens revoke <id>` (or replace it with `openmhs tokens rotate <id>`) (`openmhs tokens list` shows ids, never secrets).
 
 ## 2. Register the server with your MCP host
 

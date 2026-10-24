@@ -10,29 +10,59 @@ use axum::http::{HeaderMap, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use openmhs_api::{
-    AuditEntry, AuditTailParams, AuditVerifyResult, CommandIdParams, CreateTokenParams,
-    CreatedToken, DeviceParams, ErrorData, GatewayInfo, GrantParams, IdParams, ListCommandsParams,
-    RPC_PATH, ReadParams, ReadResult, Role, RpcError, RpcRequest, RpcResponse, SimFaultParams,
-    SimFaultResult, SubmitParams, method, rpc_code,
+    AcquireLeaseParams, ApprovalActionParams, ApprovalRequestParams, AuditEntry, AuditTailParams,
+    AuditVerifyResult, CommandIdParams, CreateTokenParams, CreatedToken, DeviceParams, ErrorData,
+    GatewayInfo, GrantParams, IdParams, ListApprovalsParams, ListCommandsParams, ListLeasesParams,
+    RPC_PATH, ReadParams, ReadResult, ReleaseLeaseParams, RenewLeaseParams, Role,
+    RotateTokenParams, RpcError, RpcRequest, RpcResponse, SimFaultParams, SimFaultResult,
+    SubmitParams, method, rpc_code,
 };
 use openmhs_engine::journal::sha256_hex;
 use openmhs_engine::{Engine, EngineError};
-use openmhs_policy::Policy;
+use openmhs_policy::{AuthMethod, Caller, Policy, Scope};
 use openmhs_sim::SimControl;
 use openmhs_types::{Clock, ErrorObject};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use serde_json::{Value, json};
+use subtle::ConstantTimeEq;
 
-use crate::store::{PolicyStore, TokenStore, validate_grant};
+use crate::store::{Lookup, NewToken, PolicyStore, TokenError, TokenStore, validate_grant};
 
 const DEFAULT_LIST_LIMIT: usize = 50;
 const MAX_LIST_LIMIT: usize = 500;
 
+/// A verified request: who is calling, how, and with what ceiling. Built only by
+/// [`Shared::authenticate`]; nothing in a request body can set any of it.
 #[derive(Debug, Clone)]
 pub(crate) struct Session {
     pub principal: String,
     pub role: Role,
+    pub caller: Caller,
+}
+
+impl Session {
+    /// The gateway's own operator, authenticated by the runtime-file token.
+    pub fn operator(principal: &str) -> Self {
+        Self {
+            principal: principal.to_owned(),
+            role: Role::Operator,
+            caller: Caller::authenticated(
+                principal,
+                "operator-runtime",
+                AuthMethod::OperatorRuntime,
+                vec![Scope::any()],
+            ),
+        }
+    }
+}
+
+/// Why a bearer token was not accepted.
+enum Rejection {
+    /// Missing, malformed or unknown. Nothing is said about which.
+    Unknown,
+    Expired(String),
+    Revoked(String),
 }
 
 pub(crate) struct Shared {
@@ -42,6 +72,9 @@ pub(crate) struct Shared {
     pub operator: Session,
     pub operator_token_sha256: String,
     pub tokens: Mutex<TokenStore>,
+    /// Credentials already reported as used after expiry or revocation, so a client that
+    /// keeps retrying cannot fill the audit log.
+    pub reported: Mutex<std::collections::HashSet<(String, &'static str)>>,
     /// Serializes policy edits so concurrent grant changes can't lose each other.
     pub policy_store: tokio::sync::Mutex<PolicyStore>,
     pub sims: BTreeMap<String, Arc<dyn SimControl>>,
@@ -54,14 +87,44 @@ impl Shared {
             .unwrap_or_else(std::sync::PoisonError::into_inner)
     }
 
-    fn authenticate(&self, token: &str) -> Option<Session> {
-        if sha256_hex(token) == self.operator_token_sha256 {
-            return Some(self.operator.clone());
+    /// Verify a bearer token against the clock, at every request: a credential revoked or
+    /// expired a moment ago cannot start another call.
+    fn authenticate(&self, token: &str) -> Result<Session, Rejection> {
+        let presented = sha256_hex(token);
+        if bool::from(
+            presented
+                .as_bytes()
+                .ct_eq(self.operator_token_sha256.as_bytes()),
+        ) {
+            return Ok(self.operator.clone());
         }
-        self.tokens().lookup(token).map(|t| Session {
-            principal: t.principal.clone(),
-            role: t.role,
-        })
+        match self.tokens().lookup(token, self.clock.now()) {
+            Lookup::Valid(t) => Ok(Session {
+                principal: t.principal.clone(),
+                role: t.role,
+                caller: Caller::authenticated(
+                    t.principal.clone(),
+                    t.id.clone(),
+                    AuthMethod::Credential,
+                    t.scopes.clone(),
+                ),
+            }),
+            Lookup::Expired(t) => Err(Rejection::Expired(t.id.clone())),
+            Lookup::Revoked(t) => Err(Rejection::Revoked(t.id.clone())),
+            Lookup::Unknown => Err(Rejection::Unknown),
+        }
+    }
+
+    /// Record, once per credential and reason, that a known credential was refused.
+    fn report_rejection(&self, id: &str, reason: &'static str) {
+        let first = self
+            .reported
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .insert((id.to_owned(), reason));
+        if first {
+            let _ = self.audit("credential.rejected", id, json!({ "reason": reason }));
+        }
     }
 
     fn audit(&self, kind: &str, subject: &str, data: Value) -> Result<(), RpcError> {
@@ -170,16 +233,35 @@ async fn handle(State(shared): State<Arc<Shared>>, headers: HeaderMap, body: Byt
     if !is_json {
         return StatusCode::UNSUPPORTED_MEDIA_TYPE.into_response();
     }
-    let Some(session) = bearer(&headers).and_then(|t| shared.authenticate(t)) else {
-        let body = reply(
-            Value::Null,
-            Err(gateway_error(
-                "gateway.unauthorized",
-                "missing or invalid bearer token",
-                vec![],
-            )),
-        );
-        return (StatusCode::UNAUTHORIZED, axum::Json(body)).into_response();
+    let rejection = match bearer(&headers) {
+        Some(token) => match shared.authenticate(token) {
+            Ok(session) => Ok(session),
+            Err(r) => Err(r),
+        },
+        None => Err(Rejection::Unknown),
+    };
+    let session = match rejection {
+        Ok(session) => session,
+        Err(r) => {
+            // Expired and revoked are only distinguishable to someone holding the secret.
+            let err = match r {
+                Rejection::Unknown => gateway_error(
+                    "gateway.unauthorized",
+                    "missing or invalid bearer token",
+                    vec![],
+                ),
+                Rejection::Expired(id) => {
+                    shared.report_rejection(&id, "expired");
+                    gateway_error("credential.expired", "this credential has expired", vec![])
+                }
+                Rejection::Revoked(id) => {
+                    shared.report_rejection(&id, "revoked");
+                    gateway_error("credential.revoked", "this credential was revoked", vec![])
+                }
+            };
+            let body = reply(Value::Null, Err(err));
+            return (StatusCode::UNAUTHORIZED, axum::Json(body)).into_response();
+        }
     };
     let request: RpcRequest = match serde_json::from_slice(&body) {
         Ok(r) => r,
@@ -245,11 +327,59 @@ async fn dispatch(
             spec_version: "0.1".into(),
             principal: session.principal.clone(),
             role: session.role,
+            credential_id: session.caller.credential_id().map(str::to_owned),
+            scopes: session.caller.scopes().to_vec(),
             simulation: shared.simulation,
             devices: engine.devices().len(),
         }),
 
         method::DEVICES_LIST => ok(engine.devices()),
+
+        // Visible to every caller, like the device list it is built from.
+        method::GRAPH_GET => ok(engine.graph()),
+
+        method::LEASES_ACQUIRE => {
+            let p: AcquireLeaseParams = params(raw)?;
+            ok(engine
+                .acquire_lease(
+                    &session.caller,
+                    openmhs_engine::LeaseRequest {
+                        devices: p.devices,
+                        resources: p.resources,
+                        ttl_ms: p.ttl_ms,
+                        reason: p.reason,
+                        plan_id: None,
+                    },
+                )
+                .map_err(engine_error)?)
+        }
+
+        // Every caller sees every lease: who holds a device is how callers coordinate.
+        method::LEASES_GET => {
+            let p: IdParams = params(raw)?;
+            ok(engine.lease(&p.id).map_err(engine_error)?)
+        }
+
+        method::LEASES_LIST => {
+            let p: ListLeasesParams = params(raw)?;
+            let limit = p.limit.unwrap_or(DEFAULT_LIST_LIMIT).min(MAX_LIST_LIMIT);
+            ok(engine.leases(p.active, limit).map_err(engine_error)?)
+        }
+
+        method::LEASES_RENEW => {
+            let p: RenewLeaseParams = params(raw)?;
+            ok(engine
+                .renew_lease(&session.caller, &p.id, p.ttl_ms)
+                .map_err(engine_error)?)
+        }
+
+        // The holder, or an approver freeing devices a holder left leased.
+        method::LEASES_RELEASE => {
+            let p: ReleaseLeaseParams = params(raw)?;
+            ok(engine
+                .release_lease(&session.caller, &p.id, p.reason.as_deref())
+                .map_err(engine_error)?)
+        }
 
         method::DEVICES_DESCRIBE => {
             let p: DeviceParams = params(raw)?;
@@ -262,7 +392,7 @@ async fn dispatch(
         method::STATE_READ => {
             let p: ReadParams = params(raw)?;
             let state = engine
-                .read(&session.principal, &p.device, &p.capability)
+                .read(&session.caller, &p.device, &p.capability)
                 .await
                 .map_err(engine_error)?;
             let now = shared.clock.now();
@@ -284,15 +414,21 @@ async fn dispatch(
         method::COMMANDS_SUBMIT => {
             let p: SubmitParams = params(raw)?;
             let engine = engine.clone();
-            let principal = session.principal.clone();
-            ok(detached(async move { engine.submit(&principal, &p.request).await }).await?)
+            let caller = session.caller.clone();
+            ok(detached(async move {
+                match p.approval_id {
+                    Some(approval) => engine.submit_approved(&caller, &p.request, &approval).await,
+                    None => engine.submit(&caller, &p.request).await,
+                }
+            })
+            .await?)
         }
 
         method::COMMANDS_PREFLIGHT => {
             let p: SubmitParams = params(raw)?;
             let engine = engine.clone();
-            let principal = session.principal.clone();
-            ok(detached(async move { engine.preflight(&principal, &p.request).await }).await?)
+            let caller = session.caller.clone();
+            ok(detached(async move { engine.preflight(&caller, &p.request).await }).await?)
         }
 
         method::COMMANDS_GET => {
@@ -318,14 +454,63 @@ async fn dispatch(
             require_operator("approving commands")?;
             let p: CommandIdParams = params(raw)?;
             let engine = engine.clone();
-            let approver = session.principal.clone();
+            let approver = session.caller.clone();
             ok(detached(async move { engine.approve(&approver, &p.command_id).await }).await?)
+        }
+
+        method::APPROVALS_REQUEST => {
+            let p: ApprovalRequestParams = params(raw)?;
+            let engine = engine.clone();
+            let caller = session.caller.clone();
+            ok(detached(
+                async move { engine.request_approval(&caller, &p.request, p.ttl_ms).await },
+            )
+            .await?)
+        }
+
+        method::APPROVALS_GET => {
+            let p: IdParams = params(raw)?;
+            ok(engine
+                .approval(&session.caller, &p.id)
+                .map_err(engine_error)?)
+        }
+
+        method::APPROVALS_LIST => {
+            let p: ListApprovalsParams = params(raw)?;
+            let limit = p.limit.unwrap_or(DEFAULT_LIST_LIMIT).min(MAX_LIST_LIMIT);
+            ok(engine
+                .approvals(&session.caller, &p.statuses, limit)
+                .map_err(engine_error)?)
+        }
+
+        method::APPROVALS_APPROVE => {
+            require_operator("approving")?;
+            let p: ApprovalActionParams = params(raw)?;
+            let engine = engine.clone();
+            let caller = session.caller.clone();
+            ok(detached(async move { engine.approve_approval(&caller, &p.id).await }).await?)
+        }
+
+        method::APPROVALS_DENY => {
+            require_operator("denying approvals")?;
+            let p: ApprovalActionParams = params(raw)?;
+            ok(engine
+                .deny_approval(&session.caller, &p.id, p.reason)
+                .map_err(engine_error)?)
+        }
+
+        // The requester may withdraw their own; the engine lets approvers revoke any.
+        method::APPROVALS_REVOKE => {
+            let p: ApprovalActionParams = params(raw)?;
+            ok(engine
+                .revoke_approval(&session.caller, &p.id, p.reason)
+                .map_err(engine_error)?)
         }
 
         method::COMMANDS_CANCEL => {
             let p: CommandIdParams = params(raw)?;
             ok(engine
-                .cancel(&session.principal, &p.command_id)
+                .cancel(&session.caller, &p.command_id)
                 .map_err(engine_error)?)
         }
 
@@ -399,20 +584,25 @@ async fn dispatch(
         method::TOKENS_CREATE => {
             require_operator("creating tokens")?;
             let p: CreateTokenParams = params(raw)?;
-            if !openmhs_types::is_principal(&p.principal) {
-                return Err(rpc_error(
-                    rpc_code::INVALID_PARAMS,
-                    "principal must be a lowercase name with an optional kind, e.g. agent:lab-assistant",
-                ));
-            }
             let (info, token) = shared
                 .tokens()
-                .create(&p.principal, p.role, shared.clock.now())
-                .map_err(io_error)?;
+                .create(
+                    NewToken {
+                        principal: &p.principal,
+                        role: p.role,
+                        scopes: p.scopes,
+                        ttl_ms: p.ttl_ms,
+                    },
+                    shared.clock.now(),
+                )
+                .map_err(token_error)?;
             shared.audit(
                 "token.created",
                 &info.id,
-                json!({ "by": session.principal, "principal": info.principal, "role": info.role }),
+                json!({
+                    "by": session.principal, "principal": info.principal, "role": info.role,
+                    "scopes": info.scopes, "expires_at": info.expires_at,
+                }),
             )?;
             ok(CreatedToken { info, token })
         }
@@ -425,20 +615,60 @@ async fn dispatch(
         method::TOKENS_REVOKE => {
             require_operator("revoking tokens")?;
             let p: IdParams = params(raw)?;
-            let removed = shared.tokens().revoke(&p.id).map_err(io_error)?;
-            let Some(info) = removed else {
+            let revoked = shared
+                .tokens()
+                .revoke(&p.id, shared.clock.now())
+                .map_err(io_error)?;
+            let Some((info, newly)) = revoked else {
                 return Err(gateway_error(
                     "gateway.token.unknown",
                     format!("no token with id '{}'", p.id),
                     vec![],
                 ));
             };
-            shared.audit(
-                "token.revoked",
-                &info.id,
-                json!({ "by": session.principal, "principal": info.principal }),
-            )?;
+            if newly {
+                // What the credential asked for and nobody has yet approved or used is
+                // withdrawn with it. Commands already dispatched are not recalled.
+                let withdrawn = engine
+                    .revoke_credential_approvals(&info.id, &session.principal)
+                    .map_err(engine_error)?;
+                let released = engine
+                    .release_credential_leases(&info.id, &session.principal)
+                    .map_err(engine_error)?;
+                shared.audit(
+                    "token.revoked",
+                    &info.id,
+                    json!({
+                        "by": session.principal, "principal": info.principal,
+                        "approvals_revoked": withdrawn, "leases_released": released,
+                    }),
+                )?;
+            }
             ok(info)
+        }
+
+        method::TOKENS_ROTATE => {
+            require_operator("rotating tokens")?;
+            let p: RotateTokenParams = params(raw)?;
+            let (info, token, old) = shared
+                .tokens()
+                .rotate(&p.id, p.ttl_ms, shared.clock.now())
+                .map_err(token_error)?;
+            let withdrawn = engine
+                .revoke_credential_approvals(&old.id, &session.principal)
+                .map_err(engine_error)?;
+            let released = engine
+                .release_credential_leases(&old.id, &session.principal)
+                .map_err(engine_error)?;
+            shared.audit(
+                "token.rotated",
+                &info.id,
+                json!({
+                    "by": session.principal, "replaces": old.id, "principal": info.principal,
+                    "approvals_revoked": withdrawn, "leases_released": released,
+                }),
+            )?;
+            ok(CreatedToken { info, token })
         }
 
         method::AUDIT_VERIFY => {
@@ -515,6 +745,15 @@ fn unknown_device(device: &str) -> RpcError {
 /// Also used for commands the caller may not see, so their existence isn't revealed.
 fn unknown_command(id: &str) -> RpcError {
     gateway_error("command.unknown", format!("unknown command {id}"), vec![])
+}
+
+fn token_error(e: TokenError) -> RpcError {
+    match e {
+        TokenError::Rejected(error) => {
+            gateway_error(&error.code.clone(), error.message.clone(), vec![error])
+        }
+        TokenError::Storage(e) => io_error(e),
+    }
 }
 
 fn io_error(e: crate::GatewayError) -> RpcError {

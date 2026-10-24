@@ -11,6 +11,7 @@ members = [
     "crates/openmhs-cli",
     "crates/openmhs-mcp",
     "crates/openmhs-conformance",
+    "crates/openmhs-host",
     "templates/adapter",
     "adapters/openmhs-profile",
     "adapters/openmhs-scpi",
@@ -27,33 +28,51 @@ license = "Apache-2.0"
 authors = ["OpenMHS contributors"]
 
 [workspace.dependencies]
-openmhs-adapter = { path = "crates/openmhs-adapter" }
+# Publishing (ADR-0014). Nothing is published yet. Crates that may one day go to
+# crates.io, because third-party adapters depend on them, carry a version on their path
+# dependency: openmhs-types, openmhs-adapter, openmhs-conformance, and what conformance
+# needs (openmhs-policy, openmhs-engine, openmhs-sim). Every other crate sets
+# `publish = false`. A publishable crate may depend only on publishable crates.
+openmhs-adapter = { path = "crates/openmhs-adapter", version = "0.1.0" }
 openmhs-api = { path = "crates/openmhs-api" }
-openmhs-conformance = { path = "crates/openmhs-conformance" }
+openmhs-conformance = { path = "crates/openmhs-conformance", version = "0.1.0" }
 openmhs-gateway = { path = "crates/openmhs-gateway" }
+openmhs-host = { path = "crates/openmhs-host" }
 openmhs-mcp = { path = "crates/openmhs-mcp" }
-openmhs-engine = { path = "crates/openmhs-engine" }
-openmhs-policy = { path = "crates/openmhs-policy" }
+openmhs-engine = { path = "crates/openmhs-engine", version = "0.1.0" }
+openmhs-policy = { path = "crates/openmhs-policy", version = "0.1.0" }
 openmhs-profile = { path = "adapters/openmhs-profile" }
 openmhs-scpi = { path = "adapters/openmhs-scpi" }
 openmhs-modbus = { path = "adapters/openmhs-modbus" }
 openmhs-http = { path = "adapters/openmhs-http" }
 openmhs-mqtt = { path = "adapters/openmhs-mqtt" }
-openmhs-sim = { path = "crates/openmhs-sim" }
-openmhs-types = { path = "crates/openmhs-types" }
+openmhs-sim = { path = "crates/openmhs-sim", version = "0.1.0" }
+openmhs-types = { path = "crates/openmhs-types", version = "0.1.0" }
 
 async-trait = "0.1"
 axum = { version = "0.8", default-features = false, features = ["http1", "json", "tokio"] }
 clap = { version = "4.6", features = ["derive", "env"] }
 dirs = "7"
+# Ed25519 signatures on adapter manifests (docs/security/M8_THREAT_MODEL.md). Verification
+# and signing only; no key derivation or encryption.
+ed25519-dalek = { version = "3", default-features = false, features = ["zeroize"] }
 getrandom = "0.4"
 jsonschema = { version = "0.60", default-features = false }
 proptest = "1"
-reqwest = { version = "0.13", default-features = false, features = ["json"] }
+# TLS through rustls with the ring provider (no C toolchain beyond cc, unlike aws-lc-rs);
+# OpenMHS builds the rustls configuration itself (docs/security/transport-security.md).
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls-no-provider"] }
+rcgen = { version = "0.14", default-features = false, features = ["ring", "pem"] }
+rustls = { version = "0.23", default-features = false, features = ["std", "tls12", "ring"] }
+rustls-native-certs = "0.8"
+rustls-pki-types = { version = "1.9", features = ["std"] }
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
 rusqlite = { version = "0.40", features = ["bundled"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.11"
+# Constant-time comparison of credential verifiers.
+subtle = "2.6"
 tempfile = "3"
 thiserror = "2"
 time = { version = "0.3", features = ["formatting", "parsing"] }

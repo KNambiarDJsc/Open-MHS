@@ -63,6 +63,17 @@ class Role(str, Enum):
     AGENT = "agent"
 
 
+class ApprovalStatus(str, Enum):
+    """Approval states (spec/authorization.md section 5). The last four are final."""
+
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    CONSUMED = "CONSUMED"
+    DENIED = "DENIED"
+    EXPIRED = "EXPIRED"
+    REVOKED = "REVOKED"
+
+
 # ------------------------------------------------------------------ values
 
 
@@ -349,6 +360,10 @@ class GatewayInfo(Model):
     role: Role | str
     simulation: bool
     devices: int
+    #: The credential this client authenticated with.
+    credential_id: str | None = None
+    #: What that credential may reach: ``{"device", "capability", "operations"}`` each.
+    scopes: list[dict[str, Any]] = field(default_factory=list)
     extra: dict[str, Any] = _extra()
     _enums = {"role": Role}
 
@@ -399,6 +414,11 @@ class TokenInfo(Model):
     principal: str
     role: Role | str
     created_at: str
+    #: ``human``, ``agent`` or ``service``, from the principal id.
+    kind: str | None = None
+    expires_at: str | None = None
+    scopes: list[dict[str, Any]] = field(default_factory=list)
+    revoked_at: str | None = None
     extra: dict[str, Any] = _extra()
     _enums = {"role": Role}
 
@@ -412,8 +432,40 @@ class CreatedToken(Model):
     role: Role | str
     created_at: str
     token: str = field(repr=False)
+    kind: str | None = None
+    expires_at: str | None = None
+    scopes: list[dict[str, Any]] = field(default_factory=list)
+    revoked_at: str | None = None
     extra: dict[str, Any] = _extra()
     _enums = {"role": Role}
+
+
+@dataclass
+class Approval(Model):
+    """One approval: bound to one exact command, valid until ``expires_at``, spent once."""
+
+    id: str
+    status: ApprovalStatus | str
+    requester: str
+    device: str
+    capability: str
+    operation: str
+    fingerprint: str
+    created_at: str
+    expires_at: str
+    requester_credential: str | None = None
+    decided_by: str | None = None
+    command_id: str | None = None
+    reason: str | None = None
+    decided_at: str | None = None
+    consumed_at: str | None = None
+    extra: dict[str, Any] = _extra()
+    _enums = {"status": ApprovalStatus}
+
+    @property
+    def usable(self) -> bool:
+        """Approved and not yet spent: submit the command with this approval id."""
+        return self.status is ApprovalStatus.APPROVED
 
 
 @dataclass

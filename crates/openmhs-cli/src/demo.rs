@@ -7,7 +7,7 @@
 use std::net::{Ipv4Addr, SocketAddr};
 use std::path::PathBuf;
 
-use openmhs_api::{Client, ClientError, Role};
+use openmhs_api::{Client, ClientError, CreateTokenParams, Role};
 use openmhs_gateway::GatewayConfig;
 use openmhs_policy::{Effect, Grant};
 use openmhs_types::descriptor::{Operation, SideEffect};
@@ -198,7 +198,9 @@ async fn scenario(t: &mut Tour, url: &str, operator_token: &str) -> Result<(), C
     t.check(devices.len() == 3, "three devices registered");
 
     t.step("The operator issues a token for the agent principal 'agent:demo'");
-    let token = operator.create_token(AGENT, Role::Agent).await?;
+    let token = operator
+        .create_token(CreateTokenParams::unrestricted(AGENT, Role::Agent))
+        .await?;
     let agent = Client::new(url, &token.token)?;
     let me = agent.info().await?;
     t.check(

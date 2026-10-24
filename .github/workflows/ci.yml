@@ -26,6 +26,11 @@ jobs:
         with:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
+      # The oldest Python the SDKs support. Before `cargo test`: the adapter-host tests run
+      # Python adapters as child processes (docs/architecture/adapter-host.md).
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.10"
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets
       - run: cargo test --workspace
@@ -40,6 +45,10 @@ jobs:
           --profile adapters/openmhs-mqtt/profiles/greenhouse-node.json
           --profile adapters/openmhs-scpi/profiles/bench-psu.json
           --profile adapters/openmhs-http/profiles/led-controller.json
+      - name: A Python adapter reaches its declared level through the adapter host
+        run: >
+          cargo run -p openmhs-cli --bin openmhs -- conformance
+          --adapter-manifest adapters/python/psu-sim/manifest.json
       - name: A scaffolded adapter builds and passes conformance (docs/adapters)
         if: runner.os == 'Linux'
         env:
@@ -47,13 +56,50 @@ jobs:
         run: |
           cargo run -p openmhs-cli --bin openmhs -- adapter new ci-lamp --path "$RUNNER_TEMP/ci-lamp" --openmhs-path "$GITHUB_WORKSPACE"
           cd "$RUNNER_TEMP/ci-lamp" && cargo test
-      # The oldest Python the SDK supports.
-      - uses: actions/setup-python@v7.0.0
-        with:
-          python-version: "3.10"
       - run: pip install "jsonschema>=4.18"
       - name: Python SDK, agent-loop examples, and CLI/MCP/SDK parity (invariant 10)
         run: python -m unittest discover -s python/tests -v
+
+  opcua:
+    name: OPC UA adapter (Python, simulated server)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.10"
+      # Pinned; every release at least two weeks old (adapters/python/opcua/requirements.txt).
+      - run: pip install -r adapters/python/opcua/requirements.txt
+      - name: Certificate checks, refusals and readings against simulated servers
+        run: python -m unittest discover -s adapters/python/opcua -v
+      - name: Reaches its declared level through the adapter host
+        run: >
+          cargo run -p openmhs-cli --bin openmhs -- conformance
+          --adapter-manifest adapters/python/opcua/manifest.sim.json
+
+  ros2:
+    name: ROS 2 adapter (Jazzy container, simulated publisher)
+    runs-on: ubuntu-latest
+    env:
+      # ros:jazzy-ros-base as built on 2026-10-02 (docs/adapters/ros2.md).
+      ROS_IMAGE: ros@sha256:066420e07f60aa18262f2479981def87ebcfcec42eefb0c0c57c4a46098348ca
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: docker pull "$ROS_IMAGE"
+      - name: Refusals and conversions (in the image)
+        run: >
+          docker run --rm --network none
+          -v "$PWD/adapters/python/ros2:/openmhs/adapters/python/ros2:ro"
+          -v "$PWD/python:/openmhs/python:ro"
+          "$ROS_IMAGE" python3 -m unittest discover -s /openmhs/adapters/python/ros2 -v
+      - name: Reaches its declared level through the adapter host
+        run: >
+          cargo run -p openmhs-cli --bin openmhs -- conformance
+          --adapter-manifest adapters/python/ros2/manifest.sim.json
 
   deny:
     name: Dependencies (licences, advisories, sources)

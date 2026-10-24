@@ -154,8 +154,38 @@ No file in `openmhs-types`, `openmhs-adapter`, `openmhs-engine`, `openmhs-policy
   - HTTP: a JSON API.
 
   Anything else needs an adapter.
-- Not supported yet: TLS (MQTT, HTTP), Modbus RTU, MQTT 5 and last-will availability,
-  SCPI binary blocks. Serial SCPI is tested over a pseudo-terminal on Unix only; Windows
-  serial ports are untested.
+- Not supported yet: TLS (MQTT, HTTP; added in M7, see below), Modbus RTU, MQTT 5 and
+  last-will availability, SCPI binary blocks. Serial SCPI is tested over a pseudo-terminal
+  on Unix only; Windows serial ports are untested.
 - Each read is a round trip, also for MQTT. That is fine for supervisory rates, not
   for high-rate telemetry; subscriptions (deferred in ADR-0013) are the place for that.
+
+## Amendment (M7): publishing
+
+Nothing is published, and publishing needs explicit approval for each action. M7 made two
+facts concrete:
+
+- **Candidates are listed, not inferred.** The crates that may become public SDKs are
+  `openmhs-types`, `openmhs-adapter`, `openmhs-conformance`, `openmhs-policy`,
+  `openmhs-engine` and `openmhs-sim` (conformance depends on the last three). Every other
+  crate, including the new `openmhs-host`, sets `publish = false`. A publishable crate may
+  depend only on publishable crates. `cargo test --workspace` or a wildcard lint passing
+  says nothing about whether a package can be published.
+- **`openmhs-types` cannot be packaged yet.** `cargo package -p openmhs-types` fails
+  verification: `crates/openmhs-types/src/schema.rs` uses
+  `include_str!("../../../spec/schemas/….json")`, which reaches outside the crate
+  directory, so the files are missing from the tarball. The same pattern is in
+  `openmhs-host` (`publish = false`, so not a blocker there). Fixes to decide before any
+  publication: copy the schemas into the crate and test that the copies equal `spec/`, or
+  generate them from `build.rs`. This blocks the five dependent candidates too.
+
+## Amendment (M7): TLS dependencies
+
+TLS adds rustls 0.23 (ring provider), `rustls-native-certs`, `tokio-rustls` and, for
+tests only, `rcgen` ([ADR-0016](0016-transport-security.md)). Three security-fix
+releases are under two weeks old and were taken deliberately over the two-week rule:
+rustls 0.23.46, rustls-webpki 0.103.16, webpki-root-certs 1.0.10. Licences added to
+`deny.toml`: ISC, and CDLA-Permissive-2.0 for webpki-root-certs only. rumqttc 0.25.1
+links a vulnerable webpki 0.102 and rustls-pemfile only for code paths OpenMHS never
+reaches (it is given its own `rustls::ClientConfig`); the advisories are ignored with
+that reason written beside them.

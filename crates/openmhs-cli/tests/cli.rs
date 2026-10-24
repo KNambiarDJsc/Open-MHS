@@ -91,7 +91,7 @@ impl Gateway {
     }
 
     fn agent_token(&self) -> String {
-        let (code, t) = self.op(&["tokens", "create", "agent:test"]);
+        let (code, t) = self.op(&["tokens", "create", "agent:test", "--any-scope"]);
         assert_eq!(code, OK, "{t}");
         t["token"].as_str().unwrap().to_owned()
     }
@@ -388,7 +388,7 @@ fn tokens_and_roles_are_enforced() {
 
     for args in [
         vec!["grants", "list"],
-        vec!["tokens", "create", "agent:other"],
+        vec!["tokens", "create", "agent:other", "--any-scope"],
         vec!["audit", "verify"],
         vec!["sim", "fault", PSU, "crash"],
     ] {

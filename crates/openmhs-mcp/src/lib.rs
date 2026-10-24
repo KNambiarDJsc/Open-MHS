@@ -326,7 +326,7 @@ impl OpenMhsServer {
         match self.identity.get() {
             Some(i) if i.role == Role::Operator && !self.allow_operator => Err(text_error(
                 "[mcp.operator_token] This MCP server was given an operator token. Refusing to act: \
-                 models must use an agent token (openmhs tokens create agent:<name>). Start the \
+                 models must use an agent token (openmhs tokens create agent:<name> --scope ...). Start the \
                  server with --allow-operator only if you understand the risk.",
             )),
             _ => Ok(()),

@@ -14,10 +14,11 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use clap::{Args, Parser, Subcommand};
+use openmhs_adapter::HardwareAdapter;
 use openmhs_api::runtime::default_home;
-use openmhs_api::{Client, ClientError, Role};
+use openmhs_api::{Client, ClientError, CreateTokenParams, Role};
 use openmhs_gateway::{DEFAULT_OPERATOR, DEFAULT_PORT, GatewayConfig};
-use openmhs_policy::{Effect, Grant};
+use openmhs_policy::{Effect, Grant, Scope};
 use openmhs_types::descriptor::{CapabilityKind, Operation, SideEffect};
 use openmhs_types::receipt::Decision;
 use openmhs_types::{CommandState, Outcome, Receipt};
@@ -67,6 +68,14 @@ enum Cmd {
         #[command(subcommand)]
         command: DevicesCmd,
     },
+    /// Show the capability graph: relationships, shared resources and frames
+    /// (spec/topology.md).
+    Graph,
+    /// Take, inspect, renew and release leases: exclusive use of devices for a while.
+    Leases {
+        #[command(subcommand)]
+        command: LeasesCmd,
+    },
     /// Read a property from the device (authorized and audited).
     Read { device: String, capability: String },
     /// Submit a write (properties) or invoke (actions) and wait for its receipt.
@@ -78,6 +87,11 @@ enum Cmd {
     },
     /// Approve a command waiting in AWAITING_APPROVAL (operator).
     Approve { command_id: String },
+    /// Request, inspect, approve, deny and revoke approvals.
+    Approvals {
+        #[command(subcommand)]
+        command: ApprovalsCmd,
+    },
     /// Manage authorization grants (operator).
     Grants {
         #[command(subcommand)]
@@ -113,17 +127,48 @@ enum Cmd {
         #[command(subcommand)]
         command: AdapterCmd,
     },
+    /// Choose which signing keys may vouch for adapters (a file in the gateway home).
+    Trust {
+        #[command(subcommand)]
+        command: TrustCmd,
+    },
+}
+
+#[derive(Subcommand)]
+enum TrustCmd {
+    /// Trust a public key to sign adapter manifests.
+    Add {
+        /// The key: a `.pub` file written by `adapter keygen`, or 64 hex digits.
+        key: String,
+        /// Whose key this is, so you can tell later.
+        #[arg(long)]
+        name: String,
+        /// Adapter ids this key may sign (`*` patterns). Default: any.
+        #[arg(long = "adapter")]
+        adapters: Vec<String>,
+    },
+    List,
+    /// Stop trusting a key. Adapters already running keep running until the gateway restarts.
+    Revoke {
+        key_id: String,
+    },
 }
 
 #[derive(Args)]
 struct ConformanceArgs {
-    /// Simulator to test, repeatable. Default: all of them, unless --profile is given.
+    /// Simulator to test, repeatable. Default: all of them, unless --profile or
+    /// --adapter-manifest is given.
     #[arg(long = "device")]
     devices: Vec<String>,
     /// Test a protocol profile's adapter against the profile's simulator, over real
     /// loopback sockets. Repeatable. Never touches the real device.
     #[arg(long = "profile")]
     profiles: Vec<PathBuf>,
+    /// Test an out-of-process adapter from its permission manifest, in fixture mode:
+    /// the adapter drives its own simulator. Refused if the adapter offers no fixture.
+    /// Repeatable (docs/architecture/adapter-host.md).
+    #[arg(long = "adapter-manifest")]
+    manifests: Vec<PathBuf>,
     /// Write each report as <device>.json into this directory.
     #[arg(long)]
     report_dir: Option<PathBuf>,
@@ -155,6 +200,28 @@ enum AdapterCmd {
         #[arg(long)]
         openmhs_path: Option<PathBuf>,
     },
+    /// Validate adapter permission manifests without starting anything
+    /// (spec/permission-manifest.md).
+    Check {
+        #[arg(required = true)]
+        files: Vec<PathBuf>,
+    },
+    /// Make a signing key: writes <OUT>.key (secret, keep it private) and <OUT>.pub.
+    Keygen { out: PathBuf },
+    /// Sign a manifest, binding it to the files that make up the adapter.
+    Sign {
+        manifest: PathBuf,
+        /// The secret key file from `adapter keygen`.
+        #[arg(long)]
+        key: PathBuf,
+        /// A file or directory of the adapter, relative to the manifest. Repeatable. Every
+        /// file the launch command runs must be covered.
+        #[arg(long = "artifact", required = true)]
+        artifacts: Vec<String>,
+        /// Write here instead of overwriting the manifest.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
 }
 
 #[derive(Args)]
@@ -181,6 +248,19 @@ pub struct ServeArgs {
     /// simulator runs in this process on a loopback port. Repeatable.
     #[arg(long = "profile-sim")]
     profile_sims: Vec<PathBuf>,
+    /// Run an adapter as a separate process from its permission manifest. It connects
+    /// to whatever its manifest configures. Repeatable (docs/architecture/adapter-host.md).
+    /// The manifest must be signed by a key added with `openmhs trust add`.
+    #[arg(long = "adapter-manifest")]
+    manifests: Vec<PathBuf>,
+    /// Development only: launch adapters whose manifests are unsigned or unverified.
+    #[arg(long)]
+    allow_unsigned_adapters: bool,
+    /// The installation's topology: how registered devices relate (spec/topology.md).
+    /// Applied after every device is registered; a topology naming an unknown device
+    /// stops the start.
+    #[arg(long)]
+    topology: Option<PathBuf>,
     /// Port to listen on (0 picks a free one; the runtime file records it).
     #[arg(long, default_value_t = DEFAULT_PORT)]
     port: u16,
@@ -235,6 +315,9 @@ struct ExecArgs {
     /// Only ask whether it would be allowed right now (preflight). Runs nothing.
     #[arg(long)]
     check: bool,
+    /// Spend an approval that was requested and approved ahead of this exact command.
+    #[arg(long)]
+    approval: Option<String>,
 }
 
 #[derive(Subcommand)]
@@ -291,16 +374,114 @@ struct GrantArgs {
 }
 
 #[derive(Subcommand)]
+enum ApprovalsCmd {
+    /// Ask for approval of a command before submitting it (same arguments as `exec`).
+    /// Prints the approval id; once approved, `exec ... --approval <id>` spends it.
+    Request {
+        #[command(flatten)]
+        exec: ExecArgs,
+        /// How long the approval stays valid once approved, e.g. `15m`, `2h`.
+        #[arg(long, value_parser = parse_duration_ms)]
+        ttl: Option<u64>,
+    },
+    /// Show one approval.
+    Show { id: String },
+    /// List approvals (requesters see their own; approvers see all).
+    List {
+        /// Only these statuses: pending, approved, denied, expired, revoked, consumed.
+        #[arg(long = "status", value_parser = parse_enum::<openmhs_types::ApprovalStatus>)]
+        statuses: Vec<openmhs_types::ApprovalStatus>,
+        #[arg(long)]
+        limit: Option<usize>,
+    },
+    /// Approve (operator who is an approver). Not the requester.
+    Approve { id: String },
+    /// Deny a pending approval.
+    Deny {
+        id: String,
+        #[arg(long)]
+        reason: Option<String>,
+    },
+    /// Withdraw an approval that has not been used: the requester's own, or any as approver.
+    Revoke {
+        id: String,
+        #[arg(long)]
+        reason: Option<String>,
+    },
+}
+
+#[derive(Subcommand)]
+enum LeasesCmd {
+    /// Lease devices (and what they contain or share, spec/topology.md). Others' writes
+    /// and invokes on them are refused until the lease ends; stops never are.
+    Acquire {
+        #[arg(long = "device")]
+        devices: Vec<String>,
+        /// A shared resource: claims every device that uses it.
+        #[arg(long = "resource")]
+        resources: Vec<String>,
+        /// How long, e.g. `10m`, `2h` (at most 24h).
+        #[arg(long, value_parser = parse_duration_ms)]
+        ttl: u64,
+        #[arg(long)]
+        reason: Option<String>,
+    },
+    /// Show one lease.
+    Show { id: String },
+    /// List leases, newest first.
+    List {
+        /// Only leases that hold something now.
+        #[arg(long)]
+        active: bool,
+        #[arg(long)]
+        limit: Option<usize>,
+    },
+    /// Move a lease's deadline to `--ttl` from now (holder only).
+    Renew {
+        id: String,
+        #[arg(long, value_parser = parse_duration_ms)]
+        ttl: u64,
+    },
+    /// End a lease: yours, or any as an approver.
+    Release {
+        id: String,
+        #[arg(long)]
+        reason: Option<String>,
+    },
+}
+
+#[derive(Subcommand)]
 enum TokensCmd {
-    /// Create a token for a principal. The secret is shown once.
+    /// Create a credential for a principal. The secret is shown once.
+    ///
+    /// A credential can do nothing outside its scopes, and a scope only lets it reach
+    /// what the policy grants also allow. Give at least one `--scope`, or `--any-scope`.
     Create {
         principal: String,
         #[arg(long, default_value = "agent", value_parser = parse_enum::<Role>)]
         role: Role,
+        /// `DEVICE:CAPABILITY:OPS`, e.g. `sim.psu-01:power.output.*:read,write`. `*`
+        /// matches any run of characters. Repeat for several scopes.
+        #[arg(long = "scope", value_parser = parse_scope)]
+        scopes: Vec<Scope>,
+        /// No limit beyond the policy's grants. Use sparingly.
+        #[arg(long)]
+        any_scope: bool,
+        /// Lifetime, e.g. `30m`, `12h`, `7d`. Without it the credential does not expire.
+        #[arg(long, value_parser = parse_duration_ms)]
+        ttl: Option<u64>,
     },
     List,
+    /// Revoke a credential now. It stays on record, marked revoked.
     Revoke {
         id: String,
+    },
+    /// Replace a credential: a new secret, same principal and scopes; the old one stops.
+    Rotate {
+        id: String,
+        /// Lifetime of the replacement; default is the old credential's lifetime.
+        #[arg(long, value_parser = parse_duration_ms)]
+        ttl: Option<u64>,
     },
 }
 
@@ -321,6 +502,46 @@ enum SimCmd {
     Fault { device: String, fault: String },
     /// List the fault names.
     Faults,
+}
+
+/// `DEVICE:CAPABILITY:read,write`.
+fn parse_scope(s: &str) -> Result<Scope, String> {
+    let parts: Vec<&str> = s.split(':').collect();
+    let [device, capability, ops] = parts.as_slice() else {
+        return Err("expected DEVICE:CAPABILITY:OPS, e.g. sim.psu-01:power.*:read".into());
+    };
+    let operations = ops
+        .split(',')
+        .map(parse_enum::<Operation>)
+        .collect::<Result<Vec<_>, _>>()?;
+    let scope = Scope {
+        device: (*device).into(),
+        capability: (*capability).into(),
+        operations,
+    };
+    if scope.device.is_empty() || scope.capability.is_empty() {
+        return Err("device and capability must not be empty".into());
+    }
+    Ok(scope)
+}
+
+/// `30m`, `12h`, `7d`, `90s`, in milliseconds.
+fn parse_duration_ms(s: &str) -> Result<u64, String> {
+    let s = s.trim();
+    let split = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
+    let (digits, unit) = s.split_at(split);
+    let n: u64 = digits
+        .parse()
+        .map_err(|_| format!("'{s}' is not a duration like 30m, 12h or 7d"))?;
+    let unit_ms: u64 = match unit {
+        "s" => 1_000,
+        "m" => 60_000,
+        "h" => 3_600_000,
+        "d" => 86_400_000,
+        _ => return Err(format!("'{s}' needs a unit: s, m, h or d")),
+    };
+    n.checked_mul(unit_ms)
+        .ok_or_else(|| format!("'{s}' is too long"))
 }
 
 fn parse_enum<T: serde::de::DeserializeOwned>(s: &str) -> Result<T, String> {
@@ -382,6 +603,46 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
             }
         }
     }
+    let mut hosted = Vec::new();
+    let trust = if args.allow_unsigned_adapters {
+        if !args.manifests.is_empty() {
+            eprintln!(
+                "warning: --allow-unsigned-adapters: adapter manifests are NOT verified. Use this for development only."
+            );
+        }
+        openmhs_host::Trust::AllowUnsigned
+    } else {
+        match openmhs_host::TrustStore::load(&home.join(openmhs_host::trust::TRUSTED_KEYS_FILE)) {
+            Ok(store) => openmhs_host::Trust::Require(store),
+            Err(e) => {
+                eprintln!("error: {e}");
+                return exit::ERROR;
+            }
+        }
+    };
+    for path in &args.manifests {
+        match start_hosted(path, false, trust.clone()).await {
+            Ok(a) => hosted.push(a),
+            Err(e) => {
+                eprintln!("error: {e}");
+                return exit::ERROR;
+            }
+        }
+    }
+    let mut adapters: Vec<std::sync::Arc<dyn HardwareAdapter>> =
+        opened.iter().map(|o| o.adapter.clone()).collect();
+    adapters.extend(
+        hosted
+            .iter()
+            .map(|a| a.clone() as std::sync::Arc<dyn HardwareAdapter>),
+    );
+    let topology = match args.topology.as_deref().map(read_topology).transpose() {
+        Ok(t) => t,
+        Err(e) => {
+            eprintln!("error: {e}");
+            return exit::ERROR;
+        }
+    };
     let config = GatewayConfig {
         home,
         listen: SocketAddr::new(args.listen, args.port),
@@ -389,7 +650,8 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
         operator: args.operator,
         simulation: args.sim,
         seed: args.seed,
-        adapters: opened.iter().map(|o| o.adapter.clone()).collect(),
+        adapters,
+        topology,
     };
     let gateway = match openmhs_gateway::start(config).await {
         Ok(g) => g,
@@ -402,7 +664,9 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
     println!("  home     {}", gateway.home().display());
     let devices = gateway.engine().devices();
     if devices.is_empty() {
-        println!("  devices  none (use --sim for the virtual lab, or --profile for a device)");
+        println!(
+            "  devices  none (use --sim for the virtual lab, --profile or --adapter-manifest for a device)"
+        );
     } else {
         for d in &devices {
             match opened.iter().find(|o| o.device_id == d.device.id) {
@@ -413,6 +677,10 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
                 Some(o) => println!(
                     "  device   {} ({}, {} at {})",
                     d.device.id, d.adapter.id, o.protocol, o.target
+                ),
+                None if hosted.iter().any(|a| a.adapter_id() == d.adapter.id) => println!(
+                    "  device   {} ({}, adapter process)",
+                    d.device.id, d.adapter.id
                 ),
                 None => println!("  device   {} ({})", d.device.id, d.adapter.id),
             }
@@ -431,6 +699,7 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
     }
     let stopped = gateway.shutdown().await;
     drop(opened);
+    drop(hosted);
     match stopped {
         Ok(()) => exit::OK,
         Err(e) => {
@@ -491,6 +760,11 @@ fn report_error(json: bool, e: &ClientError) -> u8 {
     }
 }
 
+fn read_topology(path: &Path) -> Result<openmhs_types::Topology, String> {
+    let text = std::fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    openmhs_types::Topology::parse(&text).map_err(|e| format!("{}: {e}", path.display()))
+}
+
 /// Validate profiles; connects to nothing.
 fn profile_check(json: bool, files: &[PathBuf]) -> u8 {
     let results: Vec<(&Path, Result<profiles::Checked, String>)> = files
@@ -532,6 +806,211 @@ fn profile_check(json: bool, files: &[PathBuf]) -> u8 {
     }
 }
 
+/// Start an adapter process from its manifest. With `fixture`, for the conformance suite:
+/// refused unless the adapter offers a fixture, so test commands never reach a device.
+async fn start_hosted(
+    path: &Path,
+    fixture: bool,
+    trust: openmhs_host::Trust,
+) -> Result<std::sync::Arc<openmhs_host::ProcessAdapter>, String> {
+    let resolved = openmhs_host::Resolved::load(path)?;
+    let adapter =
+        openmhs_host::ProcessAdapter::start(resolved, openmhs_host::HostOptions { fixture, trust })
+            .await
+            .map_err(|e| format!("{}: {e}", path.display()))?;
+    if fixture && adapter.fixture().is_none() {
+        let _ = adapter.shutdown().await;
+        return Err(format!(
+            "{}: the adapter offers no conformance fixture; refusing to send test commands to whatever it is connected to",
+            path.display()
+        ));
+    }
+    Ok(std::sync::Arc::new(adapter))
+}
+
+/// Validate adapter manifests; starts nothing.
+fn adapter_keygen(out: &Path) -> u8 {
+    let (key_path, pub_path) = (out.with_extension("key"), out.with_extension("pub"));
+    for p in [&key_path, &pub_path] {
+        if p.exists() {
+            eprintln!(
+                "error: {} already exists; refusing to overwrite a key",
+                p.display()
+            );
+            return exit::ERROR;
+        }
+    }
+    let pair = match openmhs_host::trust::generate_keypair() {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("error: {e}");
+            return exit::ERROR;
+        }
+    };
+    let mut options = std::fs::OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let written = options.open(&key_path).and_then(|mut f| {
+        use std::io::Write;
+        writeln!(f, "{}", pair.seed)
+    });
+    if let Err(e) =
+        written.and_then(|()| std::fs::write(&pub_path, format!("{}\n", pair.public_key)))
+    {
+        eprintln!("error: {e}");
+        return exit::ERROR;
+    }
+    println!(
+        "secret key  {} (keep private; anyone with it can sign as you)",
+        key_path.display()
+    );
+    println!("public key  {}", pub_path.display());
+    println!("key id      {}", pair.key_id);
+    println!(
+        "Next: openmhs trust add {} --name <who>",
+        pub_path.display()
+    );
+    exit::OK
+}
+
+fn adapter_sign(manifest: &Path, key: &Path, artifacts: &[String], out: Option<&Path>) -> u8 {
+    let run = || -> Result<(), String> {
+        let text = std::fs::read_to_string(manifest)
+            .map_err(|e| format!("{}: {e}", manifest.display()))?;
+        let seed = std::fs::read_to_string(key).map_err(|e| format!("{}: {e}", key.display()))?;
+        let dir = manifest
+            .parent()
+            .filter(|p| !p.as_os_str().is_empty())
+            .unwrap_or(Path::new("."));
+        let signed = openmhs_host::trust::sign_manifest(&text, dir, &seed, artifacts)?;
+        let target = out.unwrap_or(manifest);
+        std::fs::write(target, signed).map_err(|e| format!("{}: {e}", target.display()))?;
+        println!("signed {}", target.display());
+        Ok(())
+    };
+    match run() {
+        Ok(()) => exit::OK,
+        Err(e) => {
+            eprintln!("error: {e}");
+            exit::ERROR
+        }
+    }
+}
+
+fn trust_cmd(json: bool, home: &Path, command: TrustCmd) -> u8 {
+    let path = home.join(openmhs_host::trust::TRUSTED_KEYS_FILE);
+    let now = openmhs_types::Clock::now(&openmhs_types::SystemClock).millis();
+    let run = || -> Result<(), String> {
+        let mut store = openmhs_host::TrustStore::load(&path)?;
+        match command {
+            TrustCmd::Add {
+                key,
+                name,
+                adapters,
+            } => {
+                let hex = std::fs::read_to_string(&key)
+                    .unwrap_or(key)
+                    .trim()
+                    .to_owned();
+                std::fs::create_dir_all(home).map_err(|e| e.to_string())?;
+                let added = store.add(&hex, &name, adapters, now)?;
+                store.save(&path)?;
+                println!(
+                    "trusting {} ({}) to sign {}",
+                    added.key_id,
+                    added.name,
+                    added.adapters.join(", ")
+                );
+            }
+            TrustCmd::Revoke { key_id } => {
+                if store.revoke(&key_id, now)? {
+                    store.save(&path)?;
+                    println!("revoked {key_id}; adapters it signed are refused at the next start");
+                } else {
+                    println!("{key_id} was already revoked");
+                }
+            }
+            TrustCmd::List => {
+                if json {
+                    println!(
+                        "{}",
+                        serde_json::to_string_pretty(store.keys()).map_err(|e| e.to_string())?
+                    );
+                } else if store.keys().is_empty() {
+                    println!("no trusted signing keys; signed adapters will be refused");
+                }
+                if !json {
+                    for k in store.keys() {
+                        let status = if k.revoked_at_ms.is_some() {
+                            "revoked"
+                        } else {
+                            "trusted"
+                        };
+                        println!(
+                            "{}  {:<8} {:<20} signs {}",
+                            k.key_id,
+                            status,
+                            k.name,
+                            k.adapters.join(", ")
+                        );
+                    }
+                }
+            }
+        }
+        Ok(())
+    };
+    match run() {
+        Ok(()) => exit::OK,
+        Err(e) => {
+            eprintln!("error: {e}");
+            exit::ERROR
+        }
+    }
+}
+
+fn manifest_check(json: bool, files: &[PathBuf]) -> u8 {
+    let results: Vec<(&Path, Result<openmhs_host::Resolved, String>)> = files
+        .iter()
+        .map(|f| (f.as_path(), openmhs_host::Resolved::load(f)))
+        .collect();
+    if json {
+        let v: Vec<serde_json::Value> = results
+            .iter()
+            .map(|(f, r)| match r {
+                Ok(r) => serde_json::json!({
+                    "file": f.display().to_string(), "valid": true,
+                    "adapter": r.manifest.adapter.id, "command": r.manifest.runtime.command,
+                }),
+                Err(e) => serde_json::json!({
+                    "file": f.display().to_string(), "valid": false, "error": e,
+                }),
+            })
+            .collect();
+        output::json(&v);
+    } else {
+        for (f, r) in &results {
+            match r {
+                Ok(r) => println!(
+                    "ok       {}: adapter {}, runs {}",
+                    f.display(),
+                    r.manifest.adapter.id,
+                    r.manifest.runtime.command.join(" ")
+                ),
+                Err(e) => println!("invalid  {e}"),
+            }
+        }
+    }
+    if results.iter().all(|(_, r)| r.is_ok()) {
+        exit::OK
+    } else {
+        exit::ERROR
+    }
+}
+
 /// Run the suite against the virtual lab, in this process: no gateway needed.
 async fn conformance(json: bool, args: ConformanceArgs) -> u8 {
     let clock: std::sync::Arc<dyn openmhs_types::Clock> =
@@ -548,7 +1027,7 @@ async fn conformance(json: bool, args: ConformanceArgs) -> u8 {
         );
         return exit::ERROR;
     }
-    let all = args.devices.is_empty() && args.profiles.is_empty();
+    let all = args.devices.is_empty() && args.profiles.is_empty() && args.manifests.is_empty();
     let chosen: Vec<_> = lab
         .into_iter()
         .filter(|d| all || args.devices.iter().any(|x| x == d.control.device_id()))
@@ -563,10 +1042,22 @@ async fn conformance(json: bool, args: ConformanceArgs) -> u8 {
             }
         }
     }
+    let mut hosted = Vec::new();
+    for path in &args.manifests {
+        // Fixture mode talks only to the adapter's own simulator, so a signature is not
+        // required here; `serve` is where it is.
+        match start_hosted(path, true, openmhs_host::Trust::AllowUnsigned).await {
+            Ok(a) => hosted.push(a),
+            Err(e) => {
+                eprintln!("error: {e}");
+                return exit::ERROR;
+            }
+        }
+    }
     if !json {
         eprintln!(
             "Testing {} simulator(s). The suite sends real commands and injects faults; this takes about 15 seconds.",
-            chosen.len() + opened.len()
+            chosen.len() + opened.len() + hosted.len()
         );
     }
     let mut runs: Vec<_> = chosen
@@ -584,6 +1075,20 @@ async fn conformance(json: bool, args: ConformanceArgs) -> u8 {
         let options = openmhs_conformance::Options::new(clock.clone());
         runs.push(tokio::spawn(async move {
             openmhs_conformance::run(adapter, fixture, options).await
+        }));
+    }
+    for adapter in &hosted {
+        let Some(fixture) = adapter.fixture() else {
+            continue;
+        };
+        let adapter = adapter.clone();
+        let options = openmhs_conformance::Options::new(clock.clone());
+        runs.push(tokio::spawn(async move {
+            let report =
+                openmhs_conformance::run(adapter.clone(), std::sync::Arc::new(fixture), options)
+                    .await;
+            let _ = adapter.shutdown().await;
+            report
         }));
     }
     let mut reports = Vec::new();
@@ -676,7 +1181,7 @@ async fn mcp(home: &std::path::Path, token: Option<&str>, args: McpArgs) -> u8 {
     if token.is_none() && !args.allow_operator {
         eprintln!(
             "error: `openmhs mcp` needs an agent token (--token or OPENMHS_TOKEN). Create one \
-             with `openmhs tokens create agent:<name>`; without it the server would act with \
+             with `openmhs tokens create agent:<name> --scope DEVICE:CAPABILITY:OPS`; without it the server would act with \
              the operator token."
         );
         return exit::ERROR;
@@ -725,6 +1230,22 @@ async fn run(cli: Cli) -> u8 {
                     openmhs_path,
                 },
         } => return adapter_new(&name, path, openmhs_path),
+        Cmd::Adapter {
+            command: AdapterCmd::Check { files },
+        } => return manifest_check(cli.json, &files),
+        Cmd::Adapter {
+            command: AdapterCmd::Keygen { out },
+        } => return adapter_keygen(&out),
+        Cmd::Adapter {
+            command:
+                AdapterCmd::Sign {
+                    manifest,
+                    key,
+                    artifacts,
+                    out,
+                },
+        } => return adapter_sign(&manifest, &key, &artifacts, out.as_deref()),
+        Cmd::Trust { command } => return trust_cmd(cli.json, &home, command),
         Cmd::Sim {
             command: SimCmd::Faults,
         } => {
@@ -751,7 +1272,8 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
         | Cmd::Mcp(_)
         | Cmd::Conformance(_)
         | Cmd::Profile { .. }
-        | Cmd::Adapter { .. } => {
+        | Cmd::Adapter { .. }
+        | Cmd::Trust { .. } => {
             unreachable!("handled before connecting")
         }
         Cmd::Info => {
@@ -776,6 +1298,39 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
                 show(json, &client.describe(&device).await?, output::descriptor);
             }
         },
+        Cmd::Graph => show(json, &client.graph().await?, output::graph),
+        Cmd::Leases { command } => match command {
+            LeasesCmd::Acquire {
+                devices,
+                resources,
+                ttl,
+                reason,
+            } => {
+                let params = openmhs_api::AcquireLeaseParams {
+                    devices,
+                    resources,
+                    ttl_ms: ttl,
+                    reason,
+                };
+                show(json, &client.acquire_lease(params).await?, output::lease);
+            }
+            LeasesCmd::Show { id } => show(json, &client.lease(&id).await?, output::lease),
+            LeasesCmd::List { active, limit } => {
+                show(json, &client.leases(active, limit).await?, |l| {
+                    output::leases(l)
+                });
+            }
+            LeasesCmd::Renew { id, ttl } => {
+                show(json, &client.renew_lease(&id, ttl).await?, output::lease);
+            }
+            LeasesCmd::Release { id, reason } => {
+                show(
+                    json,
+                    &client.release_lease(&id, reason).await?,
+                    output::lease,
+                );
+            }
+        },
         Cmd::Read { device, capability } => {
             let r = client.read(&device, &capability).await?;
             show(json, &r, output::read_result);
@@ -797,10 +1352,48 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
                     Decision::RequireApproval => exit::PENDING,
                 });
             }
-            let receipt = client.submit(request).await?;
+            let receipt = match &args.approval {
+                Some(id) => client.submit_approved(request, id).await?,
+                None => client.submit(request).await?,
+            };
             show(json, &receipt, output::receipt);
             return Ok(receipt_exit(&receipt));
         }
+        Cmd::Approvals { command } => match command {
+            ApprovalsCmd::Request { exec, ttl } => {
+                let request = match build_request(client, &exec).await {
+                    Ok(r) => r,
+                    Err(m) => {
+                        eprintln!("error: {m}");
+                        return Ok(exit::ERROR);
+                    }
+                };
+                let a = client.request_approval(request, ttl).await?;
+                show(json, &a, output::approval);
+            }
+            ApprovalsCmd::Show { id } => show(json, &client.approval(&id).await?, output::approval),
+            ApprovalsCmd::List { statuses, limit } => {
+                let list = client.approvals(statuses, limit).await?;
+                show(json, &list, |l| output::approvals(l));
+            }
+            ApprovalsCmd::Approve { id } => {
+                show(json, &client.approve_approval(&id).await?, output::approval);
+            }
+            ApprovalsCmd::Deny { id, reason } => {
+                show(
+                    json,
+                    &client.deny_approval(&id, reason).await?,
+                    output::approval,
+                );
+            }
+            ApprovalsCmd::Revoke { id, reason } => {
+                show(
+                    json,
+                    &client.revoke_approval(&id, reason).await?,
+                    output::approval,
+                );
+            }
+        },
         Cmd::Commands { command } => match command {
             CommandsCmd::Show { command_id } => {
                 let r = client.command(&command_id).await?;
@@ -864,23 +1457,42 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
             }
         },
         Cmd::Tokens { command } => match command {
-            TokensCmd::Create { principal, role } => {
-                let t = client.create_token(&principal, role).await?;
-                show(json, &t, |t| {
-                    println!(
-                        "created {} for {} ({})",
-                        t.info.id,
-                        t.info.principal,
-                        output::name(&t.info.role)
+            TokensCmd::Create {
+                principal,
+                role,
+                mut scopes,
+                any_scope,
+                ttl,
+            } => {
+                if any_scope {
+                    scopes.push(Scope::any());
+                }
+                if scopes.is_empty() {
+                    eprintln!(
+                        "error: a credential with no scope can do nothing; give --scope DEVICE:CAPABILITY:OPS (repeatable) or --any-scope"
                     );
-                    println!("token: {}", t.token);
-                    println!("This is shown once. Pass it with --token or OPENMHS_TOKEN.");
-                });
+                    return Ok(exit::ERROR);
+                }
+                let params = CreateTokenParams {
+                    principal,
+                    role,
+                    scopes,
+                    ttl_ms: ttl,
+                };
+                let t = client.create_token(params).await?;
+                show(json, &t, output::created_token);
             }
             TokensCmd::List => show(json, &client.tokens().await?, |t| output::tokens(t)),
             TokensCmd::Revoke { id } => {
                 let t = client.revoke_token(&id).await?;
                 show(json, &t, |t| println!("revoked {} ({})", t.id, t.principal));
+            }
+            TokensCmd::Rotate { id, ttl } => {
+                let t = client.rotate_token(&id, ttl).await?;
+                show(json, &t, |t| {
+                    println!("{id} is revoked and replaced:");
+                    output::created_token(t);
+                });
             }
         },
         Cmd::Audit { command } => match command {

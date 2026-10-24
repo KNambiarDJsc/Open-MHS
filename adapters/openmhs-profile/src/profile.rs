@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::path::{Path, PathBuf};
 
 use openmhs_types::Descriptor;
 use openmhs_types::descriptor::{Capability, Operation};
@@ -48,9 +49,19 @@ pub struct Loaded<C, M> {
     pub connection: C,
     pub mapping: BTreeMap<String, M>,
     pub simulator: SimSettings,
+    /// The directory relative file names in the profile (TLS certificates) are relative
+    /// to: the profile's own. Empty, meaning the working directory, until [`Loaded::in_dir`].
+    pub dir: PathBuf,
 }
 
 impl<C, M> Loaded<C, M> {
+    /// Resolve the profile's relative file names against `dir`.
+    #[must_use]
+    pub fn in_dir(mut self, dir: &Path) -> Self {
+        self.dir = dir.to_path_buf();
+        self
+    }
+
     /// The mapping and capability for `name`, if both exist.
     pub fn get(&self, name: &str) -> Option<(&Capability, &M)> {
         Some((self.descriptor.capability(name)?, self.mapping.get(name)?))
@@ -183,5 +194,6 @@ where
         connection: raw.connection,
         mapping: raw.mapping,
         simulator: raw.simulator,
+        dir: PathBuf::new(),
     })
 }

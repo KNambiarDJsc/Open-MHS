@@ -22,7 +22,6 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use openmhs_adapter::HardwareAdapter;
-use openmhs_api::Role;
 use openmhs_api::runtime::{RuntimeInfo, runtime_path};
 use openmhs_engine::journal::sha256_hex;
 use openmhs_engine::{Engine, EngineError, RecoveryReport};
@@ -71,6 +70,9 @@ pub struct GatewayConfig {
     /// Adapters to register at start, for programs that embed the gateway with their own
     /// devices (docs/adapters/). Registered after the virtual lab, if any.
     pub adapters: Vec<Arc<dyn HardwareAdapter>>,
+    /// The operator's topology (spec/topology.md), applied once every device is
+    /// registered. A topology naming a device that is not registered stops the start.
+    pub topology: Option<openmhs_types::Topology>,
 }
 
 impl std::fmt::Debug for GatewayConfig {
@@ -104,6 +106,7 @@ impl GatewayConfig {
             simulation: false,
             seed: 42,
             adapters: Vec::new(),
+            topology: None,
         }
     }
 }
@@ -174,7 +177,7 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
 
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let (policy_store, policy) = PolicyStore::open(&config.home, &config.operator)?;
-    let tokens = TokenStore::open(&config.home)?;
+    let tokens = TokenStore::open(&config.home, &config.operator)?;
     let engine = Engine::open(&config.home.join(JOURNAL_FILE), clock.clone(), policy)?;
     engine
         .journal()
@@ -200,6 +203,19 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
     for adapter in &config.adapters {
         engine.register(adapter.clone()).await?;
     }
+    if let Some(topology) = config.topology.clone() {
+        engine.set_topology(topology).map_err(|e| match e {
+            EngineError::InvalidRequest(issues) => GatewayError::Config(format!(
+                "topology: {}",
+                issues
+                    .iter()
+                    .map(|i| format!("[{}] {}", i.code, i.message))
+                    .collect::<Vec<_>>()
+                    .join("; ")
+            )),
+            other => other.into(),
+        })?;
+    }
     let recovery = engine.recover().await?;
     if !recovery.unknown_outcome.is_empty() {
         warn!(commands = ?recovery.unknown_outcome, "commands were in flight when the gateway stopped; they are UNKNOWN_OUTCOME and need reconciliation");
@@ -213,12 +229,10 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
         engine: engine.clone(),
         clock: clock.clone(),
         simulation: config.simulation,
-        operator: Session {
-            principal: config.operator.clone(),
-            role: Role::Operator,
-        },
+        operator: Session::operator(&config.operator),
         operator_token_sha256: sha256_hex(&operator_token),
         tokens: Mutex::new(tokens),
+        reported: Mutex::new(std::collections::HashSet::new()),
         policy_store: tokio::sync::Mutex::new(policy_store),
         sims,
     });

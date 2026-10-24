@@ -104,7 +104,8 @@ def via_mcp(gw: Gateway, token: str) -> list[str]:
 
 TIMESTAMP = re.compile(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?(?:Z|[+-]\d\d:\d\d)")
 HASH = re.compile(r"\b[0-9a-f]{64}\b")
-TOKEN_ID = re.compile(r"\btok_[0-9a-f]{12}\b")
+#: Credential ids: 16 random hex digits since M8 (12 before, derived from the hash).
+TOKEN_ID = re.compile(r"\btok_[0-9a-f]{12,16}\b")
 #: Measured durations: real, and never equal across runs.
 VOLATILE_KEYS = {"age_ms", "elapsed_ms", "duration_ms"}
 
@@ -139,7 +140,7 @@ def scenario(path: Callable[[Gateway, str], list[str]]) -> tuple[list[str], list
                       "capability": "*", "operations": ["read"], "effect": "allow"})
         op.add_grant({"id": "psu-write", "principal": "agent:*", "device": PSU,
                       "capability": "*", "operations": ["write"], "effect": "allow"})
-        token = op.create_token(PRINCIPAL).token
+        token = op.create_token(PRINCIPAL, any_scope=True).token
         seen = path(gw, token)
         receipts, audit = normalize(gw)
         # The tokens themselves never appear in anything the gateway recorded.

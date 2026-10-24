@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openmhs:schema:0.1:adapter-manifest",
+  "title": "OpenMHS adapter permission manifest",
+  "description": "How to start an out-of-process adapter and what it may touch (spec/permission-manifest.md). Capabilities, environment and restarts are enforced by the host; endpoints and filesystem paths are declared and checked only by the adapter SDK.",
+  "type": "object",
+  "required": ["openmhs_manifest", "adapter", "runtime", "capabilities"],
+  "additionalProperties": false,
+  "properties": {
+    "openmhs_manifest": { "const": "0.1" },
+    "adapter": {
+      "type": "object",
+      "required": ["id", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["command"],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "description": "Program and arguments. {manifest_dir} expands to the manifest's directory.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" },
+          "prefixItems": [{ "type": "string", "minLength": 1 }]
+        },
+        "cwd": { "type": "string" },
+        "env": {
+          "description": "Non-secret variables. Secrets go in credentials.",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/env_name" },
+          "additionalProperties": { "type": "string" }
+        },
+        "protocol": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+$" }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "required": ["allow"],
+      "additionalProperties": false,
+      "properties": {
+        "allow": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "operations"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string", "minLength": 1, "description": "* matches any run of characters." },
+              "operations": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": { "enum": ["read", "write", "subscribe", "invoke"] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "endpoints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "network": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9+.-]*://" }
+        },
+        "serial": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "filesystem": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "read": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "write": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "credentials": {
+      "description": "Names of host environment variables passed to the adapter; their values are redacted from its logs.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/env_name" }
+    },
+    "config": { "type": "object" },
+    "signature": {
+      "description": "Who vouches for this manifest and the files it launches (spec/permission-manifest.md, Signatures). Checked before launch; never widens the permissions above.",
+      "type": "object",
+      "required": ["algorithm", "key_id", "artifacts", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": { "const": "ed25519" },
+        "key_id": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of the signer's 32-byte public key." },
+        "artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["path", "sha256"],
+            "additionalProperties": false,
+            "properties": {
+              "path": { "type": "string", "minLength": 1, "description": "Relative to the manifest's directory; no '..'." },
+              "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+            }
+          }
+        },
+        "value": { "type": "string", "pattern": "^[0-9a-f]{128}$", "description": "Ed25519 signature, hex." }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_message_bytes": { "type": "integer", "minimum": 1024 },
+        "start_timeout_ms": { "type": "integer", "minimum": 1 },
+        "call_timeout_ms": { "type": "integer", "minimum": 1 },
+        "heartbeat_ms": { "type": "integer", "minimum": 1 },
+        "missed_heartbeats": { "type": "integer", "minimum": 1 },
+        "shutdown_grace_ms": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "restart": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_restarts": { "type": "integer", "minimum": 0 },
+        "window_s": { "type": "integer", "minimum": 1 },
+        "initial_backoff_ms": { "type": "integer", "minimum": 1 },
+        "max_backoff_ms": { "type": "integer", "minimum": 1 }
+      }
+    }
+  },
+  "$defs": {
+    "env_name": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" }
+  }
+}

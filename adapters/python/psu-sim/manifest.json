@@ -1,0 +1,17 @@
+{
+  "openmhs_manifest": "0.1",
+  "adapter": { "id": "openmhs.py.psu-sim", "version": "0.1.0" },
+  "runtime": {
+    "command": ["python", "{manifest_dir}/psu_sim.py"],
+    "env": { "PYTHONPATH": "{manifest_dir}/../../../python" },
+    "protocol": ["0.1"]
+  },
+  "capabilities": {
+    "allow": [
+      { "name": "power.output.*", "operations": ["read", "write", "subscribe"] },
+      { "name": "protection.tripped", "operations": ["read", "subscribe"] },
+      { "name": "protection.reset", "operations": ["invoke"] }
+    ]
+  },
+  "config": { "seed": 42 }
+}

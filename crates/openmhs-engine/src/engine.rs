@@ -9,8 +9,9 @@ use openmhs_adapter::{
     AdapterCommand, AdapterError, AdapterErrorKind, ExecuteReport, HardwareAdapter, Progress,
     ProgressEvent,
 };
-use openmhs_policy::{Expectation, Live, Mutation, Policy, Prepared};
+use openmhs_policy::{Caller, Expectation, Live, Mutation, Policy, Prepared, PrincipalKind};
 use openmhs_types::descriptor::{Capability, Operation};
+use openmhs_types::graph::{Graph, check_topology};
 use openmhs_types::receipt::{
     AdapterResult, Decision, PolicyRecord, PreflightResult, RuleMatch, VerificationMode,
     VerificationRecord,
@@ -18,12 +19,18 @@ use openmhs_types::receipt::{
 use openmhs_types::schema::{self, Schema};
 use openmhs_types::{
     Clock, CommandRequest, CommandState, Descriptor, ErrorObject, Issue, Receipt, RequestOperation,
-    StateValue, Timestamp,
+    StateValue, Timestamp, Topology, TopologyRelationship,
 };
 use tracing::{info, warn};
 
+mod approvals;
+mod leases;
+
+pub use approvals::{DEFAULT_APPROVAL_TTL_MS, MAX_APPROVAL_TTL_MS, fingerprint};
+pub use leases::LeaseRequest;
+
 use crate::error::EngineError;
-use crate::journal::{AuditVerification, Inserted, Journal, sha256_hex};
+use crate::journal::{AuditVerification, Inserted, Journal, JournalError, sha256_hex};
 
 use CommandState::*;
 
@@ -72,6 +79,8 @@ struct Inner {
     journal: Journal,
     policy: RwLock<Policy>,
     devices: RwLock<HashMap<String, Arc<Device>>>,
+    /// The operator's installation-specific relationships (spec/topology.md).
+    topology: RwLock<Vec<TopologyRelationship>>,
     state: Mutex<HashMap<(String, String), StateValue>>,
     options: EngineOptions,
 }
@@ -143,6 +152,7 @@ impl Engine {
                 journal,
                 policy: RwLock::new(policy),
                 devices: RwLock::new(HashMap::new()),
+                topology: RwLock::new(Vec::new()),
                 state: Mutex::new(HashMap::new()),
                 options,
             }),
@@ -204,6 +214,41 @@ impl Engine {
 
     pub fn descriptor(&self, device: &str) -> Option<Descriptor> {
         self.device(device).map(|d| d.descriptor.clone())
+    }
+
+    /// The capability graph of what is registered now, with the operator's topology.
+    pub fn graph(&self) -> Graph {
+        let topology = self
+            .inner
+            .topology
+            .read()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .clone();
+        Graph::build(&self.devices(), &topology)
+    }
+
+    /// Install the operator's topology. Refused, whole, if any relationship names a device
+    /// that is not registered or breaks a relationship rule: register devices first.
+    pub fn set_topology(&self, topology: Topology) -> Result<(), EngineError> {
+        let issues = check_topology(&self.devices(), &topology.relationships);
+        if !issues.is_empty() {
+            return Err(EngineError::InvalidRequest(
+                issues.into_iter().map(Into::into).collect(),
+            ));
+        }
+        let count = topology.relationships.len();
+        *self
+            .inner
+            .topology
+            .write()
+            .unwrap_or_else(std::sync::PoisonError::into_inner) = topology.relationships;
+        self.inner.journal.append_audit(
+            self.now(),
+            "topology.set",
+            "topology",
+            &serde_json::json!({ "relationships": count }),
+        )?;
+        Ok(())
     }
 
     /// Last reading the engine observed, without contacting the device.
@@ -306,22 +351,32 @@ impl Engine {
 
     // ---------------------------------------------------------------- reads
 
-    /// Authorized, audited read straight from the device.
+    /// Authorized, audited read straight from the device. The caller's credential must
+    /// scope the read and a grant must allow it.
     pub async fn read(
         &self,
-        principal: &str,
+        caller: &Caller,
         device_id: &str,
         capability: &str,
     ) -> Result<StateValue, EngineError> {
         let now = self.now();
+        let principal = caller.principal();
         let audit_denied = |e: &ErrorObject| {
             self.inner.journal.append_audit(
                 now,
                 "read.denied",
                 device_id,
-                &serde_json::json!({ "principal": principal, "capability": capability, "error": e }),
+                &serde_json::json!({
+                    "principal": principal, "credential_id": caller.credential_id(), "capability": capability, "error": e,
+                }),
             )
         };
+        // Before any lookup, so a credential cannot probe which devices exist.
+        if !caller.in_scope(device_id, capability, Operation::Read) {
+            let e = scope_denied(caller, device_id, capability, Operation::Read);
+            audit_denied(&e)?;
+            return Err(EngineError::Denied(e));
+        }
         let Some(device) = self.device(device_id) else {
             let e = ErrorObject::new(
                 "command.device.unknown",
@@ -358,8 +413,8 @@ impl Engine {
             "read",
             device_id,
             &match &result {
-                Ok(v) => serde_json::json!({ "principal": principal, "capability": capability, "state": v }),
-                Err(e) => serde_json::json!({ "principal": principal, "capability": capability, "error": e.kind.code(), "message": e.message }),
+                Ok(v) => serde_json::json!({ "principal": principal, "credential_id": caller.credential_id(), "capability": capability, "state": v }),
+                Err(e) => serde_json::json!({ "principal": principal, "credential_id": caller.credential_id(), "capability": capability, "error": e.kind.code(), "message": e.message }),
             },
         )?;
         result.map_err(EngineError::Adapter)
@@ -401,10 +456,33 @@ impl Engine {
     /// or `AWAITING_APPROVAL`, and returns its receipt.
     pub async fn submit(
         &self,
-        principal: &str,
+        caller: &Caller,
         request: &serde_json::Value,
     ) -> Result<Receipt, EngineError> {
+        self.submit_inner(caller, request, None).await
+    }
+
+    /// Submit a command that needs approval together with an approval that was requested
+    /// and approved ahead of it ([`Engine::request_approval`]). The approval is spent only
+    /// if it was given for exactly this command, by this requester, and has not expired;
+    /// otherwise the command is denied and the approval is left as it was.
+    pub async fn submit_approved(
+        &self,
+        caller: &Caller,
+        request: &serde_json::Value,
+        approval_id: &str,
+    ) -> Result<Receipt, EngineError> {
+        self.submit_inner(caller, request, Some(approval_id)).await
+    }
+
+    async fn submit_inner(
+        &self,
+        caller: &Caller,
+        request: &serde_json::Value,
+        approval_id: Option<&str>,
+    ) -> Result<Receipt, EngineError> {
         let now = self.now();
+        let principal = caller.principal();
         let issues = schema::validate(Schema::Command, request);
         if !issues.is_empty() {
             let errors: Vec<ErrorObject> = issues.into_iter().map(Into::into).collect();
@@ -412,7 +490,7 @@ impl Engine {
                 now,
                 "request.rejected",
                 principal,
-                &serde_json::json!({ "errors": errors }),
+                &serde_json::json!({ "errors": errors, "credential_id": caller.credential_id() }),
             )?;
             return Err(EngineError::InvalidRequest(errors));
         }
@@ -431,20 +509,25 @@ impl Engine {
             req,
             now,
         );
-        let receipt = match self.inner.journal.insert_command(&receipt, &request_hash)? {
-            Inserted::New(r) => r,
-            Inserted::Existing {
-                receipt,
-                request_hash: existing,
-            } => {
-                return if existing == request_hash {
-                    Ok(receipt)
-                } else {
-                    Err(EngineError::IdempotencyConflict(receipt.command_id))
-                };
-            }
-        };
-        self.run(receipt).await
+        let receipt =
+            match self
+                .inner
+                .journal
+                .insert_command(&receipt, &request_hash, &origin(caller))?
+            {
+                Inserted::New(r) => r,
+                Inserted::Existing {
+                    receipt,
+                    request_hash: existing,
+                } => {
+                    return if existing == request_hash {
+                        Ok(receipt)
+                    } else {
+                        Err(EngineError::IdempotencyConflict(receipt.command_id))
+                    };
+                }
+            };
+        self.run(caller, receipt, approval_id).await
     }
 
     fn transition(
@@ -481,11 +564,23 @@ impl Engine {
 
     /// Validation order of spec/lifecycle.md §3a, shared by submission and preflight so
     /// the two can never disagree.
-    async fn evaluate(&self, principal: &str, req: &CommandRequest) -> Evaluation {
+    async fn evaluate(&self, caller: &Caller, req: &CommandRequest) -> Evaluation {
+        let principal = caller.principal();
         let denied = |e: ErrorObject| Evaluation::Denied {
             errors: vec![e],
             rules: vec![],
         };
+        // The credential's ceiling comes first and before any lookup, so it can neither
+        // be widened by a grant nor used to probe for devices it cannot reach.
+        let operation: Operation = req.operation.into();
+        if !caller.in_scope(&req.target.device, &req.target.capability, operation) {
+            return denied(scope_denied(
+                caller,
+                &req.target.device,
+                &req.target.capability,
+                operation,
+            ));
+        }
         let Some(device) = self.device(&req.target.device) else {
             return denied(ErrorObject::new(
                 "command.device.unknown",
@@ -505,6 +600,12 @@ impl Engine {
                 ),
             ));
         };
+
+        // Someone else's lease keeps everyone but its holder off the device (ADR-0018).
+        // If the leases cannot be read, nothing runs.
+        if let Some(e) = self.lease_refusal(principal, &req.target.device) {
+            return denied(e);
+        }
 
         let authz =
             self.policy()
@@ -544,12 +645,17 @@ impl Engine {
         }
     }
 
-    async fn run(&self, receipt: Receipt) -> Result<Receipt, EngineError> {
+    async fn run(
+        &self,
+        caller: &Caller,
+        receipt: Receipt,
+        approval_id: Option<&str>,
+    ) -> Result<Receipt, EngineError> {
         let id = receipt.command_id.clone();
         self.transition(&id, Validating, None, |_| {})?;
         // `_guard` keeps the device locked from the live checks through verification.
         let (device, cap, decision, rules, prepared, _guard) =
-            match self.evaluate(&receipt.principal, &receipt.request).await {
+            match self.evaluate(caller, &receipt.request).await {
                 Evaluation::Denied { errors, rules } => return self.deny(&id, errors, rules),
                 Evaluation::Ready {
                     device,
@@ -562,6 +668,32 @@ impl Engine {
             };
 
         if decision == Decision::RequireApproval {
+            if let Some(approval_id) = approval_id {
+                // Spend the approval requested ahead of time, and move on, in one step.
+                let held = rules.clone();
+                let spent = self.inner.journal.consume_approval(
+                    approval_id,
+                    &id,
+                    self.now(),
+                    |r| fingerprint(&r.principal, &r.request),
+                    Approved,
+                    Some(format!("approval {approval_id} spent")),
+                    |r, a| {
+                        r.policy = PolicyRecord {
+                            decision: Decision::RequireApproval,
+                            rules: held,
+                            errors: vec![],
+                            approved_by: a.decided_by.clone(),
+                        };
+                    },
+                );
+                return match spent {
+                    Ok(_) => self.dispatch(&device, &cap, &id, prepared).await,
+                    Err(JournalError::Refused(e)) => self.deny(&id, vec![e], rules),
+                    Err(e) => Err(e.into()),
+                };
+            }
+            self.open_approval_for(caller.credential_id(), &receipt)?;
             return self.transition(
                 &id,
                 AwaitingApproval,
@@ -591,9 +723,10 @@ impl Engine {
     /// a command or contacting the device beyond those reads. Audited.
     pub async fn preflight(
         &self,
-        principal: &str,
+        caller: &Caller,
         request: &serde_json::Value,
     ) -> Result<PreflightResult, EngineError> {
+        let principal = caller.principal();
         let issues = schema::validate(Schema::Command, request);
         if !issues.is_empty() {
             return Err(EngineError::InvalidRequest(
@@ -606,7 +739,7 @@ impl Engine {
         if req.operation == RequestOperation::Read {
             return Err(EngineError::NotACommand);
         }
-        let (decision, rules, errors) = match self.evaluate(principal, &req).await {
+        let (decision, rules, errors) = match self.evaluate(caller, &req).await {
             Evaluation::Denied { errors, rules } => (Decision::Deny, rules, errors),
             Evaluation::Ready {
                 decision, rules, ..
@@ -624,6 +757,7 @@ impl Engine {
             &req.target.device,
             &serde_json::json!({
                 "principal": principal,
+                "credential_id": caller.credential_id(),
                 "request": req,
                 "decision": result.decision,
                 "errors": result.errors,
@@ -960,7 +1094,18 @@ impl Engine {
 
     /// Approve a command waiting in `AWAITING_APPROVAL`. Authorization and live checks
     /// are re-run, because policy and device state may have changed while it waited.
-    pub async fn approve(&self, approver: &str, command_id: &str) -> Result<Receipt, EngineError> {
+    pub async fn approve(
+        &self,
+        approver_caller: &Caller,
+        command_id: &str,
+    ) -> Result<Receipt, EngineError> {
+        let approver = approver_caller.principal();
+        if approver_caller.kind() == PrincipalKind::Agent {
+            return Err(EngineError::Denied(ErrorObject::new(
+                "policy.approval.not_human",
+                "an agent credential cannot approve commands",
+            )));
+        }
         if !self.policy().is_approver(approver) {
             return Err(EngineError::Denied(ErrorObject::new(
                 "policy.approval.not_approver",
@@ -970,6 +1115,17 @@ impl Engine {
         let receipt = self
             .receipt(command_id)?
             .ok_or_else(|| EngineError::UnknownCommand(command_id.into()))?;
+        // An approver's credential must reach what it approves.
+        let target = &receipt.request.target;
+        let operation: Operation = receipt.request.operation.into();
+        if !approver_caller.in_scope(&target.device, &target.capability, operation) {
+            return Err(EngineError::Denied(scope_denied(
+                approver_caller,
+                &target.device,
+                &target.capability,
+                operation,
+            )));
+        }
         if receipt.state != AwaitingApproval {
             return Err(EngineError::InvalidState {
                 id: command_id.into(),
@@ -984,12 +1140,14 @@ impl Engine {
             )));
         }
         if receipt.deadline_at.is_some_and(|d| self.now() >= d) {
-            return self.transition(
+            let expired = self.transition(
                 command_id,
                 Expired,
                 Some("deadline passed while awaiting approval".into()),
                 |_| {},
             );
+            self.sweep_approvals()?;
+            return expired;
         }
 
         let req = receipt.request.clone();
@@ -1025,6 +1183,13 @@ impl Engine {
                 };
             });
         }
+        // A lease someone else took while the command waited stops it too.
+        if let Some(e) = self.lease_refusal(&receipt.principal, &req.target.device) {
+            return self.transition(command_id, Denied, Some(e.message.clone()), |r| {
+                r.policy.decision = Decision::Deny;
+                r.policy.errors = vec![e];
+            });
+        }
 
         let _guard = device.lock.lock().await;
         let prepared = match self.check_live(&device, &cap, &req).await {
@@ -1037,20 +1202,57 @@ impl Engine {
                 });
             }
         };
-        let approver = approver.to_owned();
-        self.transition(
+        // The approval record for this command (commands held before M8 get theirs now).
+        let approval = match self.inner.journal.approval_for_command(command_id)? {
+            Some(a) => a,
+            None => self.open_approval_for(None, &receipt)?,
+        };
+        if approval.status == openmhs_types::ApprovalStatus::Pending {
+            self.inner.journal.decide_approval(
+                &approval.id,
+                openmhs_types::ApprovalStatus::Approved,
+                approver,
+                self.now(),
+                None,
+            )?;
+        }
+        // Spend it and move the command on in one transaction. The fingerprint is taken
+        // from the command as stored at this moment, so a command changed after it was
+        // held no longer matches what was approved.
+        let spent = self.inner.journal.consume_approval(
+            &approval.id,
             command_id,
+            self.now(),
+            |r| fingerprint(&r.principal, &r.request),
             Approved,
             Some(format!("approved by {approver}")),
-            |r| {
-                r.policy.approved_by = Some(approver);
-            },
-        )?;
-        self.dispatch(&device, &cap, command_id, prepared).await
+            |r, a| r.policy.approved_by = a.decided_by.clone(),
+        );
+        match spent {
+            Ok(_) => self.dispatch(&device, &cap, command_id, prepared).await,
+            Err(JournalError::Refused(e)) => {
+                let detail = Some(e.message.clone());
+                if e.code == "approval.mismatch" {
+                    let _ = self.inner.journal.decide_approval(
+                        &approval.id,
+                        openmhs_types::ApprovalStatus::Revoked,
+                        approver,
+                        self.now(),
+                        Some("the command no longer matches what was approved".into()),
+                    );
+                }
+                self.transition(command_id, Denied, detail, |r| {
+                    r.policy.decision = Decision::Deny;
+                    r.policy.errors = vec![e];
+                })
+            }
+            Err(e) => Err(e.into()),
+        }
     }
 
     /// Cancel a command that has not been dispatched. Allowed for the requester and approvers.
-    pub fn cancel(&self, principal: &str, command_id: &str) -> Result<Receipt, EngineError> {
+    pub fn cancel(&self, caller: &Caller, command_id: &str) -> Result<Receipt, EngineError> {
+        let principal = caller.principal();
         let receipt = self
             .receipt(command_id)?
             .ok_or_else(|| EngineError::UnknownCommand(command_id.into()))?;
@@ -1067,12 +1269,24 @@ impl Engine {
                 action: "cancel",
             });
         }
-        self.transition(
+        let cancelled = self.transition(
             command_id,
             Cancelled,
             Some(format!("cancelled by {principal}")),
             |_| {},
-        )
+        )?;
+        if let Some(a) = self.inner.journal.approval_for_command(command_id)?
+            && !a.status.is_final()
+        {
+            self.inner.journal.decide_approval(
+                &a.id,
+                openmhs_types::ApprovalStatus::Revoked,
+                principal,
+                self.now(),
+                Some("the command was cancelled".into()),
+            )?;
+        }
+        Ok(cancelled)
     }
 
     // ---------------------------------------------------------------- reconciliation and recovery
@@ -1203,6 +1417,8 @@ impl Engine {
                 _ => {}
             }
         }
+        self.sweep_approvals()?;
+        self.inner.journal.expire_leases(self.now())?;
         self.inner.journal.append_audit(
             self.now(),
             "gateway.recovered",
@@ -1216,6 +1432,32 @@ impl Engine {
         )?;
         Ok(report)
     }
+}
+
+/// The denial for a call outside its credential's scopes. Says what was refused, never
+/// what other scopes or devices exist.
+fn scope_denied(
+    caller: &Caller,
+    device: &str,
+    capability: &str,
+    operation: Operation,
+) -> ErrorObject {
+    ErrorObject::new(
+        "auth.scope.denied",
+        format!(
+            "credential {} of '{}' has no scope for {operation:?} on {device} / {capability}",
+            caller.credential_id().unwrap_or("(in-process)"),
+            caller.principal(),
+        ),
+    )
+}
+
+/// How the caller proved who they are, for the `command.created` audit record.
+fn origin(caller: &Caller) -> serde_json::Value {
+    serde_json::json!({
+        "credential_id": caller.credential_id(),
+        "auth_method": caller.method(),
+    })
 }
 
 fn describe_value(v: &openmhs_types::Value) -> String {

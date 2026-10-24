@@ -4,6 +4,7 @@
 //! L2 goes through [`Engine`]: lifecycle states are the engine's, and the point of L2 is
 //! that the adapter's answers make the engine reach the right ones.
 
+use openmhs_policy::Caller;
 use std::collections::HashMap;
 use std::future::Future;
 use std::sync::Arc;
@@ -1091,7 +1092,9 @@ impl Runner {
         let mut req = request.clone();
         req["deadline_ms"] = json!(deadline_ms);
         self.last.insert(cap.name.clone(), Instant::now());
-        self.engine().submit(PRINCIPAL, &req).await
+        self.engine()
+            .submit(&Caller::in_process(PRINCIPAL), &req)
+            .await
     }
 
     /// Wait out the rate and slew windows since the last command to `cap`.
@@ -1168,7 +1171,7 @@ impl Runner {
             self.pace(cap).await;
             let pre = self
                 .engine()
-                .preflight(PRINCIPAL, &request)
+                .preflight(&Caller::in_process(PRINCIPAL), &request)
                 .await
                 .map_err(|e| {
                     Problem::Refused(

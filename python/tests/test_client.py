@@ -11,6 +11,7 @@ from support import AXIS, PSU, SETPOINT, Gateway, default_grants, grant
 from test_models import jsonschema, receipt_validator
 
 from openmhs import (
+    ApprovalStatus,
     Client,
     CommandState,
     Decision,
@@ -121,7 +122,7 @@ class LiveGateway(unittest.TestCase):
 
     def test_token_never_in_repr(self) -> None:
         self.assertNotIn(self.agent_token, repr(self.agent))
-        created = self.op.create_token("agent:repr")
+        created = self.op.create_token("agent:repr", any_scope=True)
         self.assertNotIn(created.token, repr(created))
 
     @unittest.skipIf(jsonschema is None, "jsonschema not installed")
@@ -151,6 +152,91 @@ class Approval(unittest.TestCase):
             self.assertTrue(approved.confirmed)
             self.assertEqual(approved.policy.approved_by, "operator:local")
             self.assertTrue(agent.command(r.command_id).confirmed)
+
+    def test_ask_first_then_submit_with_the_approval(self) -> None:
+        grants = [
+            grant("read-all", "*", "*", ["read"]),
+            grant("psu-approve", PSU, SETPOINT, ["write"], effect="require_approval"),
+        ]
+        req = {
+            "target": {"device": PSU, "capability": SETPOINT},
+            "operation": "write",
+            "value": {"value": 1, "unit": "V"},
+        }
+        with Gateway() as gw:
+            agent, _ = gw.agent("agent:asks", grants)
+            op = gw.operator()
+            a = agent.request_approval(req)
+            self.assertIs(a.status, ApprovalStatus.PENDING)
+            self.assertEqual(a.extra, {})
+            self.assertEqual([x.id for x in agent.approvals()], [a.id])
+            with self.assertRaises(GatewayError):
+                agent.approve_approval(a.id)
+            self.assertTrue(op.approve_approval(a.id).usable)
+            # Not the command that was approved: refused, and the approval survives.
+            other = dict(req, value={"value": 2, "unit": "V"})
+            self.assertTrue(agent.submit(other, approval_id=a.id).denied)
+            self.assertTrue(agent.submit(req, approval_id=a.id).confirmed)
+            self.assertIs(op.approval(a.id).status, ApprovalStatus.CONSUMED)
+            again = agent.submit(req, approval_id=a.id)
+            self.assertEqual(again.reasons[0].code, "approval.consumed")
+
+    def test_deny_and_withdraw(self) -> None:
+        grants = [grant("psu-approve", PSU, SETPOINT, ["write"], effect="require_approval")]
+        req = {
+            "target": {"device": PSU, "capability": SETPOINT},
+            "operation": "write",
+            "value": {"value": 1, "unit": "V"},
+        }
+        with Gateway() as gw:
+            agent, _ = gw.agent("agent:denied", grants)
+            op = gw.operator()
+            denied = op.deny_approval(agent.request_approval(req).id, reason="not now")
+            self.assertIs(denied.status, ApprovalStatus.DENIED)
+            self.assertEqual(denied.reason, "not now")
+            withdrawn = agent.revoke_approval(agent.request_approval(req).id)
+            self.assertIs(withdrawn.status, ApprovalStatus.REVOKED)
+            statuses = {a.status for a in op.approvals([ApprovalStatus.DENIED, "REVOKED"])}
+            self.assertEqual(statuses, {ApprovalStatus.DENIED, ApprovalStatus.REVOKED})
+
+
+class Credentials(unittest.TestCase):
+    def test_a_credential_needs_scopes(self) -> None:
+        with Gateway() as gw:
+            op = gw.operator()
+            for kwargs in ({}, {"scopes": []}, {"scopes": [], "any_scope": True}):
+                with self.assertRaises(ValueError):
+                    op.create_token("agent:none", **kwargs)
+
+    def test_scopes_limit_and_rotation_keeps_them(self) -> None:
+        with Gateway() as gw:
+            op = gw.operator()
+            for g in default_grants():
+                op.add_grant(g)
+            scope = {"device": PSU, "capability": "*", "operations": ["read"]}
+            created = op.create_token("agent:narrow", scopes=[scope], ttl_ms=3_600_000)
+            self.assertEqual(created.scopes, [scope])
+            self.assertIsNotNone(created.expires_at)
+            self.assertEqual(created.extra, {})
+            narrow = Client(gw.url, created.token)
+            info = narrow.info()
+            self.assertEqual((info.credential_id, info.scopes), (created.id, [scope]))
+            self.assertTrue(narrow.read(PSU, SETPOINT).usable)
+            # Grants allow the write; the credential's scope does not.
+            r = narrow.write(PSU, SETPOINT, Quantity(1, "V"), idempotency_key="narrow")
+            self.assertEqual(r.reasons[0].code, "auth.scope.denied")
+            with self.assertRaises(GatewayError):
+                narrow.read(AXIS, "axis.position")
+
+            rotated = op.rotate_token(created.id)
+            self.assertEqual(rotated.scopes, [scope])
+            self.assertNotEqual(rotated.token, created.token)
+            with self.assertRaises(UnauthorizedError):
+                narrow.info()
+            self.assertEqual(Client(gw.url, rotated.token).info().principal, "agent:narrow")
+            listed = {t.id: t for t in op.tokens()}
+            self.assertIsNotNone(listed[created.id].revoked_at)
+            self.assertEqual(listed[rotated.id].kind, "agent")
 
 
 class Discovery(unittest.TestCase):

@@ -9,12 +9,14 @@
 //!
 //! The crate also holds what every protocol needs: value codecs ([`codec`]), command
 //! templates ([`template`]), and the [`VirtualDevice`] that the in-repo protocol
-//! simulators serve, with conformance faults on demand.
+//! simulators serve, with conformance faults on demand. [`tls`] holds the transport
+//! security every networked protocol shares.
 
 pub mod codec;
 mod device;
 mod profile;
 pub mod template;
+pub mod tls;
 
 pub use device::{Outcome, VirtualDevice};
 pub use profile::{FORMAT_VERSION, Loaded, Mapping, ProfileError, SimSettings, load, protocol_of};

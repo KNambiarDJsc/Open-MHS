@@ -70,6 +70,34 @@
   "readonly-with-verification.json": {
     "code": "descriptor.verification.not_applicable"
   },
+  "relationship-duplicate.json": {
+    "code": "descriptor.relationship.duplicate",
+    "pointer": "/relationships/3"
+  },
+  "relationship-field-not-applicable.json": {
+    "code": "descriptor.relationship.field_not_applicable",
+    "pointer": "/relationships/1/target"
+  },
+  "relationship-unknown-capability.json": {
+    "code": "descriptor.relationship.unknown_capability",
+    "pointer": "/relationships/2/capabilities/0"
+  },
+  "relationship-unknown-component.json": {
+    "code": "descriptor.component.unknown",
+    "pointer": "/relationships/2/component"
+  },
+  "relationship-unknown-kind.json": {
+    "code": "descriptor.schema",
+    "pointer": "/relationships/0/kind"
+  },
+  "relationship-with-itself.json": {
+    "code": "descriptor.relationship.self",
+    "pointer": "/relationships/0/target"
+  },
+  "relationship-without-target.json": {
+    "code": "descriptor.relationship.field_missing",
+    "pointer": "/relationships/0/target"
+  },
   "slew-on-boolean.json": {
     "code": "descriptor.constraint.not_applicable"
   },

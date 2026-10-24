@@ -17,6 +17,11 @@ OpenMHS is an independent open-source project, not affiliated with Anthropic.
 > the built-in protocol adapter. Write an adapter when the device speaks something else,
 > or does not fit a profile's shape.
 
+> **Prefer Python, or need a library that only exists there (OPC UA, ROS 2)?** Write an
+> out-of-process adapter with the [Python SDK](python-sdk.md). It passes the same
+> conformance suite and the gateway supervises it. The rest of this guide, on the
+> descriptor and conformance, applies to both.
+
 ## 1. What an adapter is
 
 OpenMHS is a gateway between AI agents (and people) and programmable hardware. Every
@@ -380,7 +385,8 @@ every action and hazardous capability, with values chosen from the descriptor's 
 
 ## 10. What is not covered yet
 
-- **Rust only.** Adapters in other languages, running out of process, come in M7.
+- **This guide is for Rust.** Adapters in other languages run out of process; see the
+  [Python SDK](python-sdk.md) and the [adapter host](../architecture/adapter-host.md).
 - **Subscriptions.** The adapter contract has no push updates yet, so `L1.subscribe` is
   reported as not applicable.
 - **L3.** Multi-device coordination is defined in M9; until then `L3.leases` is always

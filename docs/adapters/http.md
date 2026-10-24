@@ -11,6 +11,7 @@ matching board firmware is in [docs/hardware/](../hardware/esp32-led.md).
 ```json
 "connection": {
   "base_url": "http://192.168.1.60",
+  "allow_plaintext": true,
   "timeout_ms": 1000,
   "headers": { "Authorization": "Bearer ${env:LED_TOKEN}" },
   "response": { "ok_pointer": "/ok", "error_pointer": "/error" }
@@ -20,6 +21,8 @@ matching board firmware is in [docs/hardware/](../hardware/esp32-led.md).
 | Field | Default | |
 |---|---|---|
 | `base_url` | required | where the API is |
+| `tls` | system trust store | for `https://`: `ca_file`, `client_cert_file`, `client_key_file`, `server_name` ([transport security](../security/transport-security.md)). Certificates are always verified |
+| `allow_plaintext` | false | accept `http://` to a host that is not loopback |
 | `timeout_ms` | 1000 | how long to wait for any one response |
 | `headers` | none | sent with every request. `${env:NAME}` is replaced by that environment variable, so secrets stay out of the profile |
 | `response` | none | how the device says whether a command succeeded: `ok_pointer` to a boolean, optionally `error_pointer` to the reason |
@@ -69,6 +72,9 @@ again, elsewhere).
 
 - JSON only.
 - Each read is its own GET. Properties on the same path are not fetched together.
-- Plain `http://` only: the adapter is built without TLS for now. Keep devices on a
-  trusted network.
+- `https://` verifies the device's certificate (system trust store, or `connection.tls`).
+  Plain `http://` is accepted to loopback only, unless `allow_plaintext` is set
+  ([transport security](../security/transport-security.md)). Devices such as an ESP32 on a
+  home LAN usually serve plain HTTP: set `"allow_plaintext": true` for them, knowing
+  commands and any `headers` credentials cross the network unencrypted.
 - No polling or push: values are read when someone asks.

@@ -33,7 +33,17 @@ pub enum EngineError {
     #[error("cannot reconcile: {0}")]
     NotReconcilable(String),
     #[error("journal: {0}")]
-    Journal(#[from] JournalError),
+    Journal(JournalError),
+}
+
+impl From<JournalError> for EngineError {
+    /// An approval the journal refused is a denial, with the journal's code.
+    fn from(e: JournalError) -> Self {
+        match e {
+            JournalError::Refused(error) => Self::Denied(error),
+            other => Self::Journal(other),
+        }
+    }
 }
 
 impl EngineError {

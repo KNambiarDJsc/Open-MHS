@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use openmhs_policy::Grant;
 use openmhs_types::receipt::PreflightResult;
-use openmhs_types::{CommandState, Descriptor, Receipt};
+use openmhs_types::{Approval, ApprovalStatus, CommandState, Descriptor, Receipt};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 
@@ -47,6 +47,9 @@ pub struct Client {
 
 impl Client {
     pub fn new(base_url: &str, token: &str) -> Result<Self, ClientError> {
+        // reqwest needs a rustls provider to build any client; ring is OpenMHS's
+        // (docs/security/transport-security.md). A no-op if one is installed already.
+        let _ = rustls::crypto::ring::default_provider().install_default();
         // No overall timeout: a submit waits for the command's own deadline and
         // verification, which the gateway enforces.
         let http = reqwest::Client::builder()
@@ -93,7 +96,19 @@ impl Client {
                 message: e.to_string(),
             })?;
         if response.status() == reqwest::StatusCode::UNAUTHORIZED {
-            return Err(ClientError::Unauthorized);
+            // An expired or revoked credential says so; anything else is just rejected.
+            let specific = response
+                .json::<RpcResponse>()
+                .await
+                .ok()
+                .and_then(|b| b.error)
+                .filter(|e| {
+                    matches!(
+                        e.data.as_ref().map(|d| d.code.as_str()),
+                        Some("credential.expired" | "credential.revoked")
+                    )
+                });
+            return Err(specific.map_or(ClientError::Unauthorized, ClientError::Rpc));
         }
         let body: RpcResponse = response
             .json()
@@ -114,6 +129,66 @@ impl Client {
 
     pub async fn devices(&self) -> Result<Vec<Descriptor>, ClientError> {
         self.call(method::DEVICES_LIST, serde_json::json!({})).await
+    }
+
+    /// The capability graph: devices, relationships, shared resources, frames.
+    pub async fn graph(&self) -> Result<openmhs_types::graph::Graph, ClientError> {
+        self.call(method::GRAPH_GET, serde_json::json!({})).await
+    }
+
+    /// Take exclusive use of devices and shared resources until released or due.
+    pub async fn acquire_lease(
+        &self,
+        params: crate::AcquireLeaseParams,
+    ) -> Result<openmhs_types::lease::Lease, ClientError> {
+        self.call(method::LEASES_ACQUIRE, params).await
+    }
+
+    pub async fn lease(&self, id: &str) -> Result<openmhs_types::lease::Lease, ClientError> {
+        self.call(method::LEASES_GET, crate::IdParams { id: id.into() })
+            .await
+    }
+
+    pub async fn leases(
+        &self,
+        active: bool,
+        limit: Option<usize>,
+    ) -> Result<Vec<openmhs_types::lease::Lease>, ClientError> {
+        self.call(
+            method::LEASES_LIST,
+            crate::ListLeasesParams { active, limit },
+        )
+        .await
+    }
+
+    pub async fn renew_lease(
+        &self,
+        id: &str,
+        ttl_ms: u64,
+    ) -> Result<openmhs_types::lease::Lease, ClientError> {
+        self.call(
+            method::LEASES_RENEW,
+            crate::RenewLeaseParams {
+                id: id.into(),
+                ttl_ms,
+            },
+        )
+        .await
+    }
+
+    pub async fn release_lease(
+        &self,
+        id: &str,
+        reason: Option<String>,
+    ) -> Result<openmhs_types::lease::Lease, ClientError> {
+        self.call(
+            method::LEASES_RELEASE,
+            crate::ReleaseLeaseParams {
+                id: id.into(),
+                reason,
+            },
+        )
+        .await
     }
 
     pub async fn describe(&self, device: &str) -> Result<Descriptor, ClientError> {
@@ -137,9 +212,100 @@ impl Client {
         .await
     }
 
-    pub async fn submit(&self, request: serde_json::Value) -> Result<Receipt, ClientError> {
-        self.call(method::COMMANDS_SUBMIT, SubmitParams { request })
+    /// Submit a command together with an approval requested and approved ahead of it.
+    pub async fn submit_approved(
+        &self,
+        request: serde_json::Value,
+        approval_id: &str,
+    ) -> Result<Receipt, ClientError> {
+        self.call(
+            method::COMMANDS_SUBMIT,
+            SubmitParams {
+                request,
+                approval_id: Some(approval_id.into()),
+            },
+        )
+        .await
+    }
+
+    /// Ask for approval of a command before submitting it.
+    pub async fn request_approval(
+        &self,
+        request: serde_json::Value,
+        ttl_ms: Option<u64>,
+    ) -> Result<Approval, ClientError> {
+        self.call(
+            method::APPROVALS_REQUEST,
+            ApprovalRequestParams { request, ttl_ms },
+        )
+        .await
+    }
+
+    pub async fn approval(&self, id: &str) -> Result<Approval, ClientError> {
+        self.call(method::APPROVALS_GET, IdParams { id: id.into() })
             .await
+    }
+
+    pub async fn approvals(
+        &self,
+        statuses: Vec<ApprovalStatus>,
+        limit: Option<usize>,
+    ) -> Result<Vec<Approval>, ClientError> {
+        self.call(
+            method::APPROVALS_LIST,
+            ListApprovalsParams { statuses, limit },
+        )
+        .await
+    }
+
+    async fn approval_action(
+        &self,
+        method: &str,
+        id: &str,
+        reason: Option<String>,
+    ) -> Result<Approval, ClientError> {
+        self.call(
+            method,
+            ApprovalActionParams {
+                id: id.into(),
+                reason,
+            },
+        )
+        .await
+    }
+
+    pub async fn approve_approval(&self, id: &str) -> Result<Approval, ClientError> {
+        self.approval_action(method::APPROVALS_APPROVE, id, None)
+            .await
+    }
+
+    pub async fn deny_approval(
+        &self,
+        id: &str,
+        reason: Option<String>,
+    ) -> Result<Approval, ClientError> {
+        self.approval_action(method::APPROVALS_DENY, id, reason)
+            .await
+    }
+
+    pub async fn revoke_approval(
+        &self,
+        id: &str,
+        reason: Option<String>,
+    ) -> Result<Approval, ClientError> {
+        self.approval_action(method::APPROVALS_REVOKE, id, reason)
+            .await
+    }
+
+    pub async fn submit(&self, request: serde_json::Value) -> Result<Receipt, ClientError> {
+        self.call(
+            method::COMMANDS_SUBMIT,
+            SubmitParams {
+                request,
+                approval_id: None,
+            },
+        )
+        .await
     }
 
     /// Would this request be allowed right now? Creates no command.
@@ -147,8 +313,14 @@ impl Client {
         &self,
         request: serde_json::Value,
     ) -> Result<PreflightResult, ClientError> {
-        self.call(method::COMMANDS_PREFLIGHT, SubmitParams { request })
-            .await
+        self.call(
+            method::COMMANDS_PREFLIGHT,
+            SubmitParams {
+                request,
+                approval_id: None,
+            },
+        )
+        .await
     }
 
     pub async fn command(&self, command_id: &str) -> Result<Receipt, ClientError> {
@@ -196,21 +368,30 @@ impl Client {
 
     pub async fn create_token(
         &self,
-        principal: &str,
-        role: Role,
+        params: CreateTokenParams,
     ) -> Result<CreatedToken, ClientError> {
-        self.call(
-            method::TOKENS_CREATE,
-            CreateTokenParams {
-                principal: principal.into(),
-                role,
-            },
-        )
-        .await
+        self.call(method::TOKENS_CREATE, params).await
     }
 
     pub async fn tokens(&self) -> Result<Vec<TokenInfo>, ClientError> {
         self.call(method::TOKENS_LIST, serde_json::json!({})).await
+    }
+
+    /// Replace a credential with a fresh secret for the same principal and scopes; the old
+    /// one stops working immediately.
+    pub async fn rotate_token(
+        &self,
+        token_id: &str,
+        ttl_ms: Option<u64>,
+    ) -> Result<CreatedToken, ClientError> {
+        self.call(
+            method::TOKENS_ROTATE,
+            RotateTokenParams {
+                id: token_id.into(),
+                ttl_ms,
+            },
+        )
+        .await
     }
 
     pub async fn revoke_token(&self, token_id: &str) -> Result<TokenInfo, ClientError> {

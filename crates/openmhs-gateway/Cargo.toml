@@ -6,6 +6,7 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 authors.workspace = true
+publish = false
 
 [dependencies]
 axum.workspace = true
@@ -18,12 +19,14 @@ openmhs-sim.workspace = true
 openmhs-types.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+subtle.workspace = true
 thiserror.workspace = true
 tokio = { workspace = true, features = ["net", "signal"] }
 tracing.workspace = true
 
 [dev-dependencies]
 reqwest.workspace = true
+rustls.workspace = true
 tempfile.workspace = true
 tokio = { workspace = true, features = ["test-util"] }
 

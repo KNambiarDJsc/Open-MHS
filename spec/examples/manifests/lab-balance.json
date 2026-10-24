@@ -1,0 +1,28 @@
+{
+  "openmhs_manifest": "0.1",
+  "adapter": { "id": "example.lab-balance", "version": "0.3.1" },
+  "runtime": {
+    "command": ["python", "-I", "{manifest_dir}/balance.py", "--port", "/dev/ttyUSB0"],
+    "cwd": "{manifest_dir}",
+    "env": { "BALANCE_UNITS": "g" },
+    "protocol": ["0.1"]
+  },
+  "capabilities": {
+    "allow": [
+      { "name": "mass.*", "operations": ["read", "subscribe"] },
+      { "name": "tare", "operations": ["invoke"] }
+    ]
+  },
+  "endpoints": {
+    "serial": ["/dev/ttyUSB0"],
+    "network": ["https://lims.example.lab"]
+  },
+  "filesystem": {
+    "read": ["calibration.json"],
+    "write": []
+  },
+  "credentials": ["LIMS_TOKEN"],
+  "config": { "baud": 9600, "settle_ms": 1500 },
+  "limits": { "call_timeout_ms": 3000, "heartbeat_ms": 2000, "missed_heartbeats": 3 },
+  "restart": { "max_restarts": 3, "window_s": 120 }
+}

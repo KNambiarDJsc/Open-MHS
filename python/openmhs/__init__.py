@@ -15,6 +15,8 @@ from .errors import (
 )
 from .models import (
     AdapterResult,
+    Approval,
+    ApprovalStatus,
     AuditEntry,
     AuditVerifyResult,
     CommandState,
@@ -42,6 +44,8 @@ __version__ = "0.1.0.dev0"
 
 __all__ = [
     "AdapterResult",
+    "Approval",
+    "ApprovalStatus",
     "AuditEntry",
     "AuditVerifyResult",
     "Client",

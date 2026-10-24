@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openmhs:schema:0.1:topology",
+  "title": "OpenMHS topology",
+  "description": "Installation-specific relationships between registered devices (spec/topology.md). Each entry is a descriptor relationship plus the device it starts from. Which fields apply depends on kind; semantic validation enforces that.",
+  "type": "object",
+  "required": ["openmhs_topology"],
+  "additionalProperties": false,
+  "properties": {
+    "openmhs_topology": { "const": "0.1" },
+    "relationships": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "required": ["from", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "from": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
+          "kind": { "enum": ["contains", "depends_on", "shares_resource", "frame"] },
+          "component": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
+          "target": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
+          "resource": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
+          "frame": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/identifier" },
+          "capabilities": {
+            "type": "array",
+            "maxItems": 256,
+            "items": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/capability_name" }
+          },
+          "description": { "type": "string", "maxLength": 4096 }
+        }
+      }
+    }
+  }
+}

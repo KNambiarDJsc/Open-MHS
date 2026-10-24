@@ -51,19 +51,29 @@ apply to everyone. A role never bypasses authorization for device access.
 
 | Method | Role | Params | Result |
 |---|---|---|---|
-| `gateway.info` | any | — | version, spec version, your principal and role, simulation flag, device count |
+| `gateway.info` | any | — | version, spec version, your principal and role, your credential id and scopes, simulation flag, device count |
 | `devices.list` | any | — | descriptors |
 | `devices.describe` | any | `device` | descriptor |
+| `graph.get` | any | — | `devices`, `relationships` (each with `from` and `origin`), `resources`, `frames`, `issues` ([topology.md](topology.md)) |
+| `leases.acquire` | any⁵ | `devices?`, `resources?`, `ttl_ms`, `reason?` | lease (`id`, `holder`, `claim`, `expires_at`, …); all or nothing ([topology.md](topology.md) §Leases) |
+| `leases.get` / `leases.list` | any | `id` / `active?`, `limit?` | lease / leases, newest first |
+| `leases.renew` | holder | `id`, `ttl_ms` | lease with the new deadline |
+| `leases.release` | holder or a human approver | `id`, `reason?` | lease, released |
 | `state.read` | any | `device`, `capability` | `state` (value, timestamp, source, quality), `age_ms`, `max_age_ms`, `usable` |
-| `commands.submit` | any | `request` (`command.schema.json`) | receipt (waits until terminal, `UNKNOWN_OUTCOME`, or `AWAITING_APPROVAL`) |
+| `commands.submit` | any | `request` (`command.schema.json`), `approval_id?` | receipt (waits until terminal, `UNKNOWN_OUTCOME`, or `AWAITING_APPROVAL`). With `approval_id`, spends an approved request for exactly this command |
 | `commands.preflight` | any | `request` | `decision`, `rules`, `errors?`, `checked_at`: what a submission would get now. Creates no command and runs nothing |
 | `commands.get` | any¹ | `command_id` | receipt |
 | `commands.list` | any¹ | `states?`, `limit?` (default 50, max 500) | receipts, newest first |
 | `commands.cancel` | any² | `command_id` | receipt |
 | `commands.reconcile` | any¹ | `command_id` | receipt |
 | `commands.approve` | op | `command_id` | receipt (runs the command) |
+| `approvals.request` | any | `request`, `ttl_ms?` | approval (`PENDING`); only for commands policy holds for approval ([authorization.md](authorization.md) §5) |
+| `approvals.get` / `approvals.list` | any³ | `id` / `statuses?`, `limit?` | approval / approvals |
+| `approvals.approve` / `approvals.deny` | op⁴ | `id` / `id`, `reason?` | approval. Approving one bound to a held command runs it |
+| `approvals.revoke` | any³ | `id`, `reason?` | approval: withdrawn, if not yet used |
 | `grants.list` / `grants.add` / `grants.revoke` | op | — / `grant` / `id` | grants / grant / removed grant |
-| `tokens.create` / `tokens.list` / `tokens.revoke` | op | `principal`, `role` / — / `id` | token (secret shown once) / token infos / removed |
+| `tokens.create` | op | `principal`, `role`, `scopes`, `ttl_ms?` | credential (secret shown once). No scopes: it authorizes nothing ([authorization.md](authorization.md) §7) |
+| `tokens.list` / `tokens.revoke` / `tokens.rotate` | op | — / `id` / `id`, `ttl_ms?` | credential infos / revoked (its open approvals withdrawn) / replacement (secret shown once; old one revoked) |
 | `audit.verify` | op | — | `records`, `valid`, `first_invalid?` |
 | `audit.tail` | op | `limit?` | audit records |
 | `sim.fault` | op | `device`, `fault` | message; only with `serve --sim` |
@@ -71,6 +81,13 @@ apply to everyone. A role never bypasses authorization for device access.
 ¹ An agent sees only its own commands. Other commands answer `command.unknown`, so
 their existence isn't revealed.
 ² The requester or an approver.
+³ The requester sees its own approvals and an approver sees all. Others get
+`approval.unknown`.
+⁴ Also: an approver configured in policy, not the requester, whose credential's scopes
+reach the command.
+
+⁵ Only for devices the caller could operate: within its credential's scopes and with a
+grant short of `deny` for some write or invoke on each claimed device.
 
 The principal of a command always comes from the token, never from the request body.
 
@@ -100,7 +117,11 @@ The principal of a command always comes from the token, never from the request b
 | `gateway.started`, `gateway.stopped`, `gateway.recovered` | Gateway lifecycle and crash recovery |
 | `device.registered` | A device is registered at start |
 | `policy.updated`, `grant.added`, `grant.revoked` | Policy changes |
-| `token.created`, `token.revoked` | Token changes (never the secret) |
+| `token.created`, `token.revoked`, `token.rotated` | Credential changes (never the secret) |
+| `credential.rejected` | First refused use of an expired or revoked credential (once per credential and reason) |
+| `approval.requested`, `approval.approved`, `approval.denied`, `approval.expired`, `approval.revoked`, `approval.consumed` | Approval records and every change to them |
+| `topology.set` | The operator's topology was applied at start |
+| `lease.acquired`, `lease.renewed`, `lease.released`, `lease.expired` | Leases and every change to them (`token.revoked` and `token.rotated` list the leases they released) |
 | `read` | An allowed read, with the reading or the adapter's error |
 | `read.denied` | A refused read: unknown device or capability, no grant, or not readable |
 | `request.rejected` | A command request that failed schema validation, before it became a command |

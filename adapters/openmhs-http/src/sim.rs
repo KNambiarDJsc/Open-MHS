@@ -10,8 +10,8 @@ use std::sync::Arc;
 use openmhs_profile::template::{self, put};
 use openmhs_profile::{Outcome, VirtualDevice, codec};
 use openmhs_types::{Clock, SystemClock};
-use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
-use tokio::net::{TcpListener, TcpStream};
+use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, BufReader};
+use tokio::net::TcpListener;
 
 use crate::Profile;
 
@@ -48,7 +48,28 @@ impl HttpSim {
         }
     }
 
-    async fn connection(&self, stream: TcpStream) {
+    /// Serve HTTPS on `listener` with `config` (for the TLS tests). A client whose TLS
+    /// handshake fails is dropped.
+    pub async fn serve_tls(
+        self: Arc<Self>,
+        listener: TcpListener,
+        config: Arc<rustls::ServerConfig>,
+    ) {
+        let acceptor = tokio_rustls::TlsAcceptor::from(config);
+        while let Ok((stream, _)) = listener.accept().await {
+            if self.device.link_down() {
+                continue;
+            }
+            let (sim, acceptor) = (self.clone(), acceptor.clone());
+            tokio::spawn(async move {
+                if let Ok(stream) = acceptor.accept(stream).await {
+                    sim.connection(stream).await;
+                }
+            });
+        }
+    }
+
+    async fn connection<S: AsyncRead + AsyncWrite + Unpin>(&self, stream: S) {
         let mut stream = BufReader::new(stream);
         loop {
             let mut line = String::new();
