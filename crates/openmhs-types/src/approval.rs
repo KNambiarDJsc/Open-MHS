@@ -190,8 +190,10 @@ mod tests {
 
     #[test]
     fn canonical_json_ignores_key_order_and_whitespace() {
-        let a: serde_json::Value = serde_json::from_str(r#"{"b": 1, "a": {"y": [1, 2], "x": "s"}}"#).unwrap();
-        let b: serde_json::Value = serde_json::from_str(r#"{"a":{"x":"s","y":[1,2]},"b":1}"#).unwrap();
+        let a: serde_json::Value =
+            serde_json::from_str(r#"{"b": 1, "a": {"y": [1, 2], "x": "s"}}"#).unwrap();
+        let b: serde_json::Value =
+            serde_json::from_str(r#"{"a":{"x":"s","y":[1,2]},"b":1}"#).unwrap();
         assert_eq!(canonical_json(&a), canonical_json(&b));
         assert_eq!(canonical_json(&a), r#"{"a":{"x":"s","y":[1,2]},"b":1}"#);
     }

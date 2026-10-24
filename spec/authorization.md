@@ -65,11 +65,81 @@ preconditions are evaluated again at dispatch.
 
 ## 5. Approval
 
-An approval is recorded by an authorized human principal and stored in the receipt
-(`policy.approved_by`). Approvals expire with the command's deadline. A principal may
-not approve its own command.
+An approval is a durable record, one per approved command, kept in the journal with the
+command (ADR-0017). It has a status:
+
+```text
+PENDING ──► APPROVED ──► CONSUMED
+   │            │
+   ├──► DENIED  ├──► EXPIRED
+   ├──► EXPIRED └──► REVOKED
+   └──► REVOKED
+```
+
+`CONSUMED`, `DENIED`, `EXPIRED` and `REVOKED` are final. No other transition exists, and
+nothing returns to `PENDING`.
+
+- **Bound to the command.** The record holds a fingerprint: the SHA-256 of the canonical
+  JSON (sorted keys, no whitespace) of `{v:1, requester, device, capability, operation,
+  value, params}`. Idempotency key, correlation id and deadline are not part of it. The
+  fingerprint is recomputed from the stored command when the approval is spent, and a
+  mismatch spends nothing.
+- **Who decides.** A principal that is not an agent and that policy lists as an approver,
+  other than the requester, with a credential whose scopes reach the device, capability and operation.
+  An agent credential never decides. The decision is stored in the record and in the
+  receipt (`policy.approved_by`).
+- **Expiry.** An approval for a held command expires with the command's deadline. One
+  requested ahead of time lives for `ttl` (default 15 minutes, at most 24 hours). Expiry
+  is checked when the approval is spent, so a late approval is never used.
+- **Spent once.** Spending is one transaction: check `APPROVED`, unexpired, same requester
+  and fingerprint; mark `CONSUMED`; move the command on. A second attempt, or a concurrent
+  one, finds `CONSUMED`.
+- **Policy still applies.** An approval answers "may this proceed despite a
+  `require_approval` grant". It does not skip authorization, scopes, constraints or
+  preconditions, all evaluated again at the moment of use.
+- **Two ways in, one record.** A command policy holds gets an approval bound to it, which
+  an approver approves by command id or approval id. Or the requester asks first
+  (`approvals request`), an approver approves, and the requester submits the same command
+  naming the approval (`exec --approval`).
+- **Withdrawal.** The requester may revoke their own approval; an approver may revoke any.
+  Revoking a credential revokes its open approvals and cancels the commands waiting on
+  them. A command already dispatched is not recalled.
+
+Every transition is recorded in the audit chain in the same transaction as the change.
 
 ## 6. Out of scope for v0.1
 
-Time windows, attribute conditions, roles and delegated administration are planned for
-M8, where a policy language (Cedar) is re-evaluated.
+Time windows, attribute conditions, delegated administration and an external policy
+language (Cedar). M8 added scoped credentials (section 7) and approval records (section
+5); it did not add a policy language, and Cedar remains a candidate for a later milestone.
+
+## 7. Credentials and scopes
+
+Every request is attributed to a principal proved by a credential. Nothing in a request
+body names the caller.
+
+- **Format.** `omhs_` followed by 64 hex digits (256 bits from the OS random source).
+  Opaque: not a JWT, nothing can be read from it. Only its SHA-256 is stored, compared in
+  constant time over every record. Each credential has a random id (`tok_…`) unrelated to
+  the secret. The secret is shown once, when created or rotated, and is never logged.
+- **Kinds.** The principal id says what it is: `agent:…` is an agent, `service:…` is a service,
+  and any other prefix (`operator:…`, `user:…`) is human. An agent cannot decide approvals or
+  administer the gateway. One principal has one role.
+- **Scopes.** A scope is `device:capability:operations` (patterns allowed). A credential
+  can reach only what its scopes list. The scope is a ceiling intersected with policy: a
+  call needs a scope **and** a grant, and neither widens the other. A credential with no
+  scopes authorizes nothing, and so do credentials written before M8. `--any-scope` is an
+  explicit, visible choice for the operator.
+- **Lifetime.** Optional expiry (`--ttl`); revocation; rotation (a new secret, the same
+  principal and scopes, the old one revoked). Expiry and revocation are checked on every
+  request with no cache, so **revocation takes effect on the next request**. Revoked
+  credentials stay on record so that using one is distinguishable from a guess; the first
+  refused use is audited, once.
+- **Fail closed.** An unknown, malformed, expired or revoked credential gets 401 before
+  any method runs. A token file that cannot be read stops the gateway from starting.
+- **Evaluation order.** Credential → scope → grants (section 4) → constraints → approval →
+  dispatch. A scope denial is `auth.scope.denied` and does not reveal whether the device
+  exists.
+- **Audit.** Command and approval records carry the principal, the credential id and the
+  authentication method. In-process callers (tests, conformance, embedding) are recorded
+  as method `in_process`.

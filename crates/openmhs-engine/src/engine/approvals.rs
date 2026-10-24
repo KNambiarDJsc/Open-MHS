@@ -161,7 +161,8 @@ impl Engine {
         let Some(command_id) = a.command_id.as_deref() else {
             return;
         };
-        let waiting = matches!(self.receipt(command_id), Ok(Some(r)) if r.state == AwaitingApproval);
+        let waiting =
+            matches!(self.receipt(command_id), Ok(Some(r)) if r.state == AwaitingApproval);
         if waiting {
             let result = self.transition(command_id, to, Some(detail.to_owned()), |r| {
                 if let Some(e) = error {
@@ -346,7 +347,11 @@ impl Engine {
         by: &str,
     ) -> Result<Vec<String>, EngineError> {
         let mut revoked = Vec::new();
-        for open in self.inner.journal.open_approvals_of_credential(credential_id)? {
+        for open in self
+            .inner
+            .journal
+            .open_approvals_of_credential(credential_id)?
+        {
             let a = self.inner.journal.decide_approval(
                 &open.id,
                 ApprovalStatus::Revoked,
@@ -355,7 +360,12 @@ impl Engine {
                 Some(format!("credential {credential_id} revoked")),
             );
             if let Ok(a) = a {
-                self.end_waiting_command(&a, Cancelled, "the requester's credential was revoked", None);
+                self.end_waiting_command(
+                    &a,
+                    Cancelled,
+                    "the requester's credential was revoked",
+                    None,
+                );
                 revoked.push(a.id);
             }
         }

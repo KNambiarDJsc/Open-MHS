@@ -200,8 +200,8 @@ pub fn generate_keypair() -> Result<Keypair, String> {
 }
 
 pub fn keypair_from_seed(seed_hex: &str) -> Result<Keypair, String> {
-    let seed: [u8; 32] =
-        unhex_array(seed_hex.trim()).ok_or("a signing seed is 32 bytes, written as 64 hex digits")?;
+    let seed: [u8; 32] = unhex_array(seed_hex.trim())
+        .ok_or("a signing seed is 32 bytes, written as 64 hex digits")?;
     let public = hex(SigningKey::from_bytes(&seed).verifying_key().as_bytes());
     Ok(Keypair {
         seed: hex(&seed),
@@ -229,7 +229,11 @@ fn package_path(raw: &str) -> Result<String, String> {
         match c {
             Component::Normal(s) => parts.push(s.to_string_lossy().into_owned()),
             Component::CurDir => {}
-            _ => return Err(format!("artifact path {raw:?} must stay inside the package")),
+            _ => {
+                return Err(format!(
+                    "artifact path {raw:?} must stay inside the package"
+                ));
+            }
         }
     }
     if parts.is_empty() {
@@ -352,7 +356,8 @@ fn stage_dir() -> Result<PathBuf, TrustError> {
     let mut random = [0u8; 8];
     getrandom::fill(&mut random).map_err(|e| err("stage.failed", e.to_string()))?;
     let dir = std::env::temp_dir().join(format!("openmhs-stage-{}", hex(&random)));
-    std::fs::create_dir(&dir).map_err(|e| err("stage.failed", format!("{}: {e}", dir.display())))?;
+    std::fs::create_dir(&dir)
+        .map_err(|e| err("stage.failed", format!("{}: {e}", dir.display())))?;
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
@@ -377,7 +382,10 @@ pub fn verify_and_stage(resolved: &Resolved, store: &TrustStore) -> Result<Stage
     if sig.algorithm != ALGORITHM {
         return Err(err(
             "manifest.signature.algorithm",
-            format!("unsupported algorithm {:?}; only {ALGORITHM} is accepted", sig.algorithm),
+            format!(
+                "unsupported algorithm {:?}; only {ALGORITHM} is accepted",
+                sig.algorithm
+            ),
         ));
     }
 
@@ -389,13 +397,19 @@ pub fn verify_and_stage(resolved: &Resolved, store: &TrustStore) -> Result<Stage
         .ok_or_else(|| {
             err(
                 "signer.unknown",
-                format!("signing key {} is not in the trusted-key registry", sig.key_id),
+                format!(
+                    "signing key {} is not in the trusted-key registry",
+                    sig.key_id
+                ),
             )
         })?;
     if signer.revoked_at_ms.is_some() {
         return Err(err(
             "signer.revoked",
-            format!("signing key {} ({}) was revoked", signer.key_id, signer.name),
+            format!(
+                "signing key {} ({}) was revoked",
+                signer.key_id, signer.name
+            ),
         ));
     }
     if !signer
@@ -413,14 +427,21 @@ pub fn verify_and_stage(resolved: &Resolved, store: &TrustStore) -> Result<Stage
     }
 
     // That the manifest is what they signed.
-    let public: [u8; 32] = unhex_array(&signer.public_key)
-        .ok_or_else(|| err("signer.invalid", "the registry holds a malformed public key"))?;
+    let public: [u8; 32] = unhex_array(&signer.public_key).ok_or_else(|| {
+        err(
+            "signer.invalid",
+            "the registry holds a malformed public key",
+        )
+    })?;
     let verifying = VerifyingKey::from_bytes(&public)
         .map_err(|_| err("signer.invalid", "the registry holds an invalid public key"))?;
-    let value: [u8; 64] = unhex_array(&sig.value)
-        .ok_or_else(|| err("manifest.signature.invalid", "the signature is not 64 bytes of hex"))?;
-    let message = signing_message(manifest)
-        .map_err(|e| err("manifest.signature.invalid", e))?;
+    let value: [u8; 64] = unhex_array(&sig.value).ok_or_else(|| {
+        err(
+            "manifest.signature.invalid",
+            "the signature is not 64 bytes of hex",
+        )
+    })?;
+    let message = signing_message(manifest).map_err(|e| err("manifest.signature.invalid", e))?;
     verifying
         .verify_strict(&message, &Ed25519Signature::from_bytes(&value))
         .map_err(|_| {
@@ -473,8 +494,8 @@ fn stage_artifacts(
                 format!("{rel}: signed files must be regular files, not links or directories"),
             ));
         }
-        let bytes = std::fs::read(&source)
-            .map_err(|e| err("artifact.missing", format!("{rel}: {e}")))?;
+        let bytes =
+            std::fs::read(&source).map_err(|e| err("artifact.missing", format!("{rel}: {e}")))?;
         if sha256(&bytes) != artifact.sha256.to_lowercase() {
             return Err(err(
                 "artifact.modified",
@@ -507,29 +528,30 @@ fn stage_artifacts(
     // Point the launch command at the copies, and insist it names nothing unsigned.
     let package = normalize(&resolved.dir);
     let mut out = resolved.clone();
-    let check = |candidate: PathBuf, slot: Option<&mut String>| -> Result<Option<PathBuf>, TrustError> {
-        let candidate = normalize(&candidate);
-        if let Some((_, staged)) = mapped.iter().find(|(src, _)| *src == candidate) {
-            if let Some(slot) = slot {
-                *slot = staged.display().to_string();
+    let check =
+        |candidate: PathBuf, slot: Option<&mut String>| -> Result<Option<PathBuf>, TrustError> {
+            let candidate = normalize(&candidate);
+            if let Some((_, staged)) = mapped.iter().find(|(src, _)| *src == candidate) {
+                if let Some(slot) = slot {
+                    *slot = staged.display().to_string();
+                }
+                return Ok(Some(staged.clone()));
             }
-            return Ok(Some(staged.clone()));
-        }
-        if candidate.starts_with(&package) && candidate.is_file() {
-            return Err(err(
-                "artifact.uncovered",
-                format!(
-                    "the launch command runs {}, which the signature does not cover",
-                    candidate.display()
-                ),
-            ));
-        }
-        Ok(None)
-    };
-    if resolved.program.components().count() > 1 {
-        if let Some(staged) = check(resolved.program.clone(), None)? {
-            out.program = staged;
-        }
+            if candidate.starts_with(&package) && candidate.is_file() {
+                return Err(err(
+                    "artifact.uncovered",
+                    format!(
+                        "the launch command runs {}, which the signature does not cover",
+                        candidate.display()
+                    ),
+                ));
+            }
+            Ok(None)
+        };
+    if resolved.program.components().count() > 1
+        && let Some(staged) = check(resolved.program.clone(), None)?
+    {
+        out.program = staged;
     }
     for arg in &mut out.args {
         let candidate = if Path::new(arg.as_str()).is_absolute() {

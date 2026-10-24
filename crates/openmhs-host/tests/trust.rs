@@ -1,6 +1,9 @@
 //! M8: signed adapter manifests (ADR-0017). Each test builds a real package in a temporary
 //! directory, signs it with a real key, and starts a real adapter process (or fails to).
 
+// Helpers outside #[test] functions unwrap too; clippy's in-test allowance doesn't reach them.
+#![allow(clippy::unwrap_used)]
+
 mod common;
 
 use std::path::{Path, PathBuf};
@@ -23,7 +26,9 @@ impl Package {
     fn signed(mode: &str, extra: Value) -> Self {
         let key = trust::generate_keypair().unwrap();
         let dir = tempfile::tempdir().unwrap();
-        let source = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/adapters").join(SCRIPT);
+        let source = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/adapters")
+            .join(SCRIPT);
         std::fs::copy(source, dir.path().join(SCRIPT)).unwrap();
         let mut manifest = common::misbehave_json(mode, extra);
         manifest["runtime"]["command"] = json!([common::python(), "{manifest_dir}/misbehave.py"]);
@@ -54,7 +59,9 @@ impl Package {
 
     fn trusting(&self) -> TrustStore {
         let mut store = TrustStore::empty();
-        store.add(&self.key.public_key, "test signer", vec![], 0).unwrap();
+        store
+            .add(&self.key.public_key, "test signer", vec![], 0)
+            .unwrap();
         store
     }
 
@@ -100,7 +107,10 @@ async fn an_unsigned_manifest_is_refused_by_default() {
     let resolved = common::misbehave("normal", json!({}));
     let err = refused(ProcessAdapter::start(resolved, HostOptions::default()).await).await;
     assert!(err.contains("manifest.unsigned"), "{err}");
-    assert!(err.contains("openmhs adapter sign"), "the error says what to do: {err}");
+    assert!(
+        err.contains("openmhs adapter sign"),
+        "the error says what to do: {err}"
+    );
 }
 
 /// Changing the manifest after it was signed breaks the signature, whatever was changed.
@@ -108,7 +118,8 @@ async fn an_unsigned_manifest_is_refused_by_default() {
 async fn a_tampered_manifest_is_rejected() {
     for change in [
         // Widen what the adapter may do.
-        (|m: &mut Value| m["capabilities"]["allow"][0]["operations"] = json!(["read", "write"])) as fn(&mut Value),
+        (|m: &mut Value| m["capabilities"]["allow"][0]["operations"] = json!(["read", "write"]))
+            as fn(&mut Value),
         // Hand it a different configuration.
         |m| m["config"]["mode"] = json!("crash_on_read"),
         // Point the signature at a different file digest.
@@ -183,7 +194,9 @@ async fn unknown_revoked_and_out_of_scope_signers_are_rejected() {
 
     let stranger = trust::generate_keypair().unwrap();
     let mut other = TrustStore::empty();
-    other.add(&stranger.public_key, "someone else", vec![], 0).unwrap();
+    other
+        .add(&stranger.public_key, "someone else", vec![], 0)
+        .unwrap();
     let err = refused(pkg.start(other).await).await;
     assert!(err.contains("signer.unknown"), "{err}");
 
@@ -194,7 +207,12 @@ async fn unknown_revoked_and_out_of_scope_signers_are_rejected() {
 
     let mut narrow = TrustStore::empty();
     narrow
-        .add(&pkg.key.public_key, "pump vendor", vec!["vendor.pump.*".into()], 0)
+        .add(
+            &pkg.key.public_key,
+            "pump vendor",
+            vec!["vendor.pump.*".into()],
+            0,
+        )
         .unwrap();
     let err = refused(pkg.start(narrow).await).await;
     assert!(err.contains("signer.not_allowed"), "{err}");
@@ -211,7 +229,9 @@ async fn a_forged_key_id_does_not_borrow_trust() {
     m["signature"]["key_id"] = json!(trusted.key_id);
     pkg.write_manifest(&m);
     let mut store = TrustStore::empty();
-    store.add(&trusted.public_key, "the real signer", vec![], 0).unwrap();
+    store
+        .add(&trusted.public_key, "the real signer", vec![], 0)
+        .unwrap();
     let err = refused(pkg.start(store).await).await;
     assert!(err.contains("manifest.signature.invalid"), "{err}");
 }
@@ -227,7 +247,10 @@ async fn a_valid_signature_does_not_override_the_manifests_permissions() {
     let err = refused(pkg.start(pkg.trusting()).await).await;
     assert!(err.contains("manifest violation"), "{err}");
     assert!(err.contains("dose.run"), "{err}");
-    assert!(!err.contains("manifest.signature"), "the signature itself was fine: {err}");
+    assert!(
+        !err.contains("manifest.signature"),
+        "the signature itself was fine: {err}"
+    );
 }
 
 /// What runs is what was verified. Replacing the original afterwards changes nothing,
@@ -241,9 +264,10 @@ async fn the_adapter_runs_from_the_verified_copy() {
     // The read crashes the adapter; the host restarts it from its verified copy.
     let _ = adapter.read("level.measured").await;
     let status = adapter
-        .wait_for_status(Duration::from_secs(15), |s| {
-            matches!(s, Status::Running { generation } if *generation >= 2)
-        })
+        .wait_for_status(
+            Duration::from_secs(15),
+            |s| matches!(s, Status::Running { generation } if *generation >= 2),
+        )
         .await;
     assert!(
         matches!(status, Status::Running { generation } if generation >= 2),

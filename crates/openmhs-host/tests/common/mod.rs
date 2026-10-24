@@ -50,7 +50,8 @@ fn merge(base: &mut Value, extra: Value) {
 /// A manifest for tests/adapters/misbehave.py in `mode`, with `extra` merged in.
 pub fn misbehave(mode: &str, extra: Value) -> Resolved {
     let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/adapters");
-    let manifest = Manifest::parse(&misbehave_json(mode, extra).to_string()).expect("test manifest");
+    let manifest =
+        Manifest::parse(&misbehave_json(mode, extra).to_string()).expect("test manifest");
     Resolved::new(manifest, &dir)
 }
 

@@ -11,10 +11,10 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use openmhs_api::{
     ApprovalActionParams, ApprovalRequestParams, AuditEntry, AuditTailParams, AuditVerifyResult,
-    CommandIdParams, CreateTokenParams,
-    CreatedToken, DeviceParams, ErrorData, GatewayInfo, GrantParams, IdParams, ListCommandsParams,
-    RPC_PATH, ReadParams, ReadResult, Role, RotateTokenParams, RpcError, RpcRequest, RpcResponse,
-    SimFaultParams, SimFaultResult, SubmitParams, ListApprovalsParams, method, rpc_code,
+    CommandIdParams, CreateTokenParams, CreatedToken, DeviceParams, ErrorData, GatewayInfo,
+    GrantParams, IdParams, ListApprovalsParams, ListCommandsParams, RPC_PATH, ReadParams,
+    ReadResult, Role, RotateTokenParams, RpcError, RpcRequest, RpcResponse, SimFaultParams,
+    SimFaultResult, SubmitParams, method, rpc_code,
 };
 use openmhs_engine::journal::sha256_hex;
 use openmhs_engine::{Engine, EngineError};
@@ -415,9 +415,9 @@ async fn dispatch(
             let p: ApprovalRequestParams = params(raw)?;
             let engine = engine.clone();
             let caller = session.caller.clone();
-            ok(detached(async move {
-                engine.request_approval(&caller, &p.request, p.ttl_ms).await
-            })
+            ok(detached(
+                async move { engine.request_approval(&caller, &p.request, p.ttl_ms).await },
+            )
             .await?)
         }
 

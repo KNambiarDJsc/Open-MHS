@@ -18,6 +18,7 @@
 | [0014](0014-protocol-adapters.md) | Protocol adapters driven by device profiles; MQTT acknowledgements; dependency policy | Accepted |
 | [0015](0015-adapter-host.md) | Out-of-process adapters: JSON-RPC over stdio, supervision, permission manifests | Accepted |
 | [0016](0016-transport-security.md) | Transport security: verified TLS, no insecure mode, plaintext refused beyond loopback | Accepted |
+| [0017](0017-identity-and-trust.md) | Identity and trust: scoped credentials, approval records, signed adapter manifests, the `Caller` context | Accepted |
 
 Format: Context → Decision → Alternatives considered → Consequences. Supersede an
 ADR with a new one rather than rewriting history.

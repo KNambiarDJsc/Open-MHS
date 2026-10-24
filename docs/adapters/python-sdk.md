@@ -72,8 +72,24 @@ And its manifest:
 
 ```sh
 openmhs adapter check lamp/manifest.json
+openmhs serve --adapter-manifest lamp/manifest.json --allow-unsigned-adapters   # development
+```
+
+`serve` refuses an unsigned manifest by default. To run one the way it would run in
+production, make a key, sign the manifest over the files that make up the adapter, and
+trust the key:
+
+```sh
+openmhs adapter keygen signer
+openmhs adapter sign lamp/manifest.json --key signer.key --artifact lamp.py
+openmhs trust add signer.pub --name "my lab"
 openmhs serve --adapter-manifest lamp/manifest.json
 ```
+
+Every file the launch command runs from the package must be listed with `--artifact`, and
+the adapter runs from a verified copy. The interpreter and installed libraries are not
+covered ([signatures](../../spec/permission-manifest.md#signatures)). Keep `signer.key` (written next to where you ran `keygen`)
+out of the package and out of version control.
 
 ## Rules the SDK cannot enforce for you
 

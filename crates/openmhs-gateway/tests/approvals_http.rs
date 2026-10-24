@@ -44,8 +44,14 @@ async fn lab() -> Lab {
     config.simulation = true;
     let gw = openmhs_gateway::start(config).await.unwrap();
     let operator = Client::new(&gw.url, &gw.operator_token).unwrap();
-    operator.add_grant(grant("ask", ENABLED, Effect::RequireApproval)).await.unwrap();
-    operator.add_grant(grant("rest", "*", Effect::Allow)).await.unwrap();
+    operator
+        .add_grant(grant("ask", ENABLED, Effect::RequireApproval))
+        .await
+        .unwrap();
+    operator
+        .add_grant(grant("rest", "*", Effect::Allow))
+        .await
+        .unwrap();
     Lab {
         gw,
         operator,
@@ -83,10 +89,19 @@ async fn request_approve_submit_over_the_api() {
     assert_eq!(a.status, ApprovalStatus::Pending);
 
     // The agent cannot approve, deny or see others' approvals.
-    assert_eq!(code(agent.approve_approval(&a.id).await.unwrap_err()), "gateway.forbidden");
-    assert_eq!(code(agent.deny_approval(&a.id, None).await.unwrap_err()), "gateway.forbidden");
+    assert_eq!(
+        code(agent.approve_approval(&a.id).await.unwrap_err()),
+        "gateway.forbidden"
+    );
+    assert_eq!(
+        code(agent.deny_approval(&a.id, None).await.unwrap_err()),
+        "gateway.forbidden"
+    );
     let (other, _) = self::agent(&lab, "agent:other").await;
-    assert_eq!(code(other.approval(&a.id).await.unwrap_err()), "approval.unknown");
+    assert_eq!(
+        code(other.approval(&a.id).await.unwrap_err()),
+        "approval.unknown"
+    );
     assert!(other.approvals(vec![], None).await.unwrap().is_empty());
     assert_eq!(agent.approvals(vec![], None).await.unwrap().len(), 1);
 
@@ -124,7 +139,10 @@ async fn a_held_command_is_approved_through_its_approval() {
         .await
         .unwrap();
     assert_eq!(pending.len(), 1);
-    assert_eq!(pending[0].command_id.as_deref(), Some(held.command_id.as_str()));
+    assert_eq!(
+        pending[0].command_id.as_deref(),
+        Some(held.command_id.as_str())
+    );
     lab.operator.approve_approval(&pending[0].id).await.unwrap();
     let done = lab.operator.command(&held.command_id).await.unwrap();
     assert_eq!(done.state, CommandState::Verified);
@@ -138,18 +156,40 @@ async fn deny_and_revoke_end_the_wait() {
     let (agent, _) = agent(&lab, "agent:waiter").await;
 
     let denied = agent.submit(enable()).await.unwrap();
-    let a = lab.operator.approvals(vec![ApprovalStatus::Pending], None).await.unwrap().remove(0);
-    let out = lab.operator.deny_approval(&a.id, Some("not today".into())).await.unwrap();
+    let a = lab
+        .operator
+        .approvals(vec![ApprovalStatus::Pending], None)
+        .await
+        .unwrap()
+        .remove(0);
+    let out = lab
+        .operator
+        .deny_approval(&a.id, Some("not today".into()))
+        .await
+        .unwrap();
     assert_eq!(out.status, ApprovalStatus::Denied);
     assert_eq!(out.reason.as_deref(), Some("not today"));
-    assert_eq!(lab.operator.command(&denied.command_id).await.unwrap().state, CommandState::Denied);
-    assert_eq!(code(lab.operator.approve_approval(&a.id).await.unwrap_err()), "approval.denied");
+    assert_eq!(
+        lab.operator
+            .command(&denied.command_id)
+            .await
+            .unwrap()
+            .state,
+        CommandState::Denied
+    );
+    assert_eq!(
+        code(lab.operator.approve_approval(&a.id).await.unwrap_err()),
+        "approval.denied"
+    );
 
     // The requester can withdraw their own request.
     let b = agent.request_approval(enable(), None).await.unwrap();
     let withdrawn = agent.revoke_approval(&b.id, None).await.unwrap();
     assert_eq!(withdrawn.status, ApprovalStatus::Revoked);
-    assert_eq!(code(lab.operator.approve_approval(&b.id).await.unwrap_err()), "approval.revoked");
+    assert_eq!(
+        code(lab.operator.approve_approval(&b.id).await.unwrap_err()),
+        "approval.revoked"
+    );
     lab.gw.shutdown().await.unwrap();
 }
 
@@ -161,9 +201,18 @@ async fn revoking_a_credential_withdraws_its_open_approvals() {
     let held = agent.submit(enable()).await.unwrap();
     let ahead = agent.request_approval(enable(), None).await.unwrap();
     lab.operator.revoke_token(&token.info.id).await.unwrap();
-    assert_eq!(lab.operator.command(&held.command_id).await.unwrap().state, CommandState::Cancelled);
-    assert_eq!(lab.operator.approval(&ahead.id).await.unwrap().status, ApprovalStatus::Revoked);
-    assert_eq!(code(lab.operator.approve_approval(&ahead.id).await.unwrap_err()), "approval.revoked");
+    assert_eq!(
+        lab.operator.command(&held.command_id).await.unwrap().state,
+        CommandState::Cancelled
+    );
+    assert_eq!(
+        lab.operator.approval(&ahead.id).await.unwrap().status,
+        ApprovalStatus::Revoked
+    );
+    assert_eq!(
+        code(lab.operator.approve_approval(&ahead.id).await.unwrap_err()),
+        "approval.revoked"
+    );
     lab.gw.shutdown().await.unwrap();
 }
 
@@ -176,24 +225,52 @@ async fn every_method_requires_authentication() {
     let http = reqwest::Client::new();
     let url = format!("{}/rpc", lab.gw.url);
     let methods = [
-        method::GATEWAY_INFO, method::DEVICES_LIST, method::DEVICES_DESCRIBE, method::STATE_READ,
-        method::COMMANDS_SUBMIT, method::COMMANDS_PREFLIGHT, method::COMMANDS_GET,
-        method::COMMANDS_LIST, method::COMMANDS_APPROVE, method::COMMANDS_CANCEL,
-        method::COMMANDS_RECONCILE, method::APPROVALS_REQUEST, method::APPROVALS_GET,
-        method::APPROVALS_LIST, method::APPROVALS_APPROVE, method::APPROVALS_DENY,
-        method::APPROVALS_REVOKE, method::GRANTS_LIST, method::GRANTS_ADD, method::GRANTS_REVOKE,
-        method::TOKENS_CREATE, method::TOKENS_LIST, method::TOKENS_REVOKE, method::TOKENS_ROTATE,
-        method::AUDIT_VERIFY, method::AUDIT_TAIL, method::SIM_FAULT,
+        method::GATEWAY_INFO,
+        method::DEVICES_LIST,
+        method::DEVICES_DESCRIBE,
+        method::STATE_READ,
+        method::COMMANDS_SUBMIT,
+        method::COMMANDS_PREFLIGHT,
+        method::COMMANDS_GET,
+        method::COMMANDS_LIST,
+        method::COMMANDS_APPROVE,
+        method::COMMANDS_CANCEL,
+        method::COMMANDS_RECONCILE,
+        method::APPROVALS_REQUEST,
+        method::APPROVALS_GET,
+        method::APPROVALS_LIST,
+        method::APPROVALS_APPROVE,
+        method::APPROVALS_DENY,
+        method::APPROVALS_REVOKE,
+        method::GRANTS_LIST,
+        method::GRANTS_ADD,
+        method::GRANTS_REVOKE,
+        method::TOKENS_CREATE,
+        method::TOKENS_LIST,
+        method::TOKENS_REVOKE,
+        method::TOKENS_ROTATE,
+        method::AUDIT_VERIFY,
+        method::AUDIT_TAIL,
+        method::SIM_FAULT,
     ];
     for m in methods {
         let body = json!({ "jsonrpc": "2.0", "id": 1, "method": m, "params": {} });
-        for header in [None, Some("Bearer omhs_nope"), Some("Basic Zm9vOmJhcg=="), Some("Bearer ")] {
+        for header in [
+            None,
+            Some("Bearer omhs_nope"),
+            Some("Basic Zm9vOmJhcg=="),
+            Some("Bearer "),
+        ] {
             let mut req = http.post(&url).json(&body);
             if let Some(h) = header {
                 req = req.header("authorization", h);
             }
             let status = req.send().await.unwrap().status();
-            assert_eq!(status, reqwest::StatusCode::UNAUTHORIZED, "{m} with {header:?}");
+            assert_eq!(
+                status,
+                reqwest::StatusCode::UNAUTHORIZED,
+                "{m} with {header:?}"
+            );
         }
     }
     // Nothing was created by any of that.
@@ -209,7 +286,13 @@ async fn agent_credentials_cannot_administer() {
     let (agent, _) = agent(&lab, "agent:curious").await;
     for (name, result) in [
         ("grants.list", agent.grants().await.map(|_| ())),
-        ("grants.add", agent.add_grant(grant("mine", "*", Effect::Allow)).await.map(|_| ())),
+        (
+            "grants.add",
+            agent
+                .add_grant(grant("mine", "*", Effect::Allow))
+                .await
+                .map(|_| ()),
+        ),
         ("tokens.list", agent.tokens().await.map(|_| ())),
         ("audit.tail", agent.audit_tail(None).await.map(|_| ())),
         ("audit.verify", agent.verify_audit().await.map(|_| ())),

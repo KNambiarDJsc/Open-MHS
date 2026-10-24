@@ -141,7 +141,9 @@ enum TrustCmd {
     },
     List,
     /// Stop trusting a key. Adapters already running keep running until the gateway restarts.
-    Revoke { key_id: String },
+    Revoke {
+        key_id: String,
+    },
 }
 
 #[derive(Args)]
@@ -765,7 +767,10 @@ fn adapter_keygen(out: &Path) -> u8 {
     let (key_path, pub_path) = (out.with_extension("key"), out.with_extension("pub"));
     for p in [&key_path, &pub_path] {
         if p.exists() {
-            eprintln!("error: {} already exists; refusing to overwrite a key", p.display());
+            eprintln!(
+                "error: {} already exists; refusing to overwrite a key",
+                p.display()
+            );
             return exit::ERROR;
         }
     }
@@ -787,22 +792,34 @@ fn adapter_keygen(out: &Path) -> u8 {
         use std::io::Write;
         writeln!(f, "{}", pair.seed)
     });
-    if let Err(e) = written.and_then(|()| std::fs::write(&pub_path, format!("{}\n", pair.public_key))) {
+    if let Err(e) =
+        written.and_then(|()| std::fs::write(&pub_path, format!("{}\n", pair.public_key)))
+    {
         eprintln!("error: {e}");
         return exit::ERROR;
     }
-    println!("secret key  {} (keep private; anyone with it can sign as you)", key_path.display());
+    println!(
+        "secret key  {} (keep private; anyone with it can sign as you)",
+        key_path.display()
+    );
     println!("public key  {}", pub_path.display());
     println!("key id      {}", pair.key_id);
-    println!("Next: openmhs trust add {} --name <who>", pub_path.display());
+    println!(
+        "Next: openmhs trust add {} --name <who>",
+        pub_path.display()
+    );
     exit::OK
 }
 
 fn adapter_sign(manifest: &Path, key: &Path, artifacts: &[String], out: Option<&Path>) -> u8 {
     let run = || -> Result<(), String> {
-        let text = std::fs::read_to_string(manifest).map_err(|e| format!("{}: {e}", manifest.display()))?;
+        let text = std::fs::read_to_string(manifest)
+            .map_err(|e| format!("{}: {e}", manifest.display()))?;
         let seed = std::fs::read_to_string(key).map_err(|e| format!("{}: {e}", key.display()))?;
-        let dir = manifest.parent().filter(|p| !p.as_os_str().is_empty()).unwrap_or(Path::new("."));
+        let dir = manifest
+            .parent()
+            .filter(|p| !p.as_os_str().is_empty())
+            .unwrap_or(Path::new("."));
         let signed = openmhs_host::trust::sign_manifest(&text, dir, &seed, artifacts)?;
         let target = out.unwrap_or(manifest);
         std::fs::write(target, signed).map_err(|e| format!("{}: {e}", target.display()))?;
@@ -824,12 +841,24 @@ fn trust_cmd(json: bool, home: &Path, command: TrustCmd) -> u8 {
     let run = || -> Result<(), String> {
         let mut store = openmhs_host::TrustStore::load(&path)?;
         match command {
-            TrustCmd::Add { key, name, adapters } => {
-                let hex = std::fs::read_to_string(&key).unwrap_or(key).trim().to_owned();
+            TrustCmd::Add {
+                key,
+                name,
+                adapters,
+            } => {
+                let hex = std::fs::read_to_string(&key)
+                    .unwrap_or(key)
+                    .trim()
+                    .to_owned();
                 std::fs::create_dir_all(home).map_err(|e| e.to_string())?;
                 let added = store.add(&hex, &name, adapters, now)?;
                 store.save(&path)?;
-                println!("trusting {} ({}) to sign {}", added.key_id, added.name, added.adapters.join(", "));
+                println!(
+                    "trusting {} ({}) to sign {}",
+                    added.key_id,
+                    added.name,
+                    added.adapters.join(", ")
+                );
             }
             TrustCmd::Revoke { key_id } => {
                 if store.revoke(&key_id, now)? {
@@ -841,14 +870,27 @@ fn trust_cmd(json: bool, home: &Path, command: TrustCmd) -> u8 {
             }
             TrustCmd::List => {
                 if json {
-                    println!("{}", serde_json::to_string_pretty(store.keys()).map_err(|e| e.to_string())?);
+                    println!(
+                        "{}",
+                        serde_json::to_string_pretty(store.keys()).map_err(|e| e.to_string())?
+                    );
                 } else if store.keys().is_empty() {
                     println!("no trusted signing keys; signed adapters will be refused");
                 }
                 if !json {
                     for k in store.keys() {
-                        let status = if k.revoked_at_ms.is_some() { "revoked" } else { "trusted" };
-                        println!("{}  {:<8} {:<20} signs {}", k.key_id, status, k.name, k.adapters.join(", "));
+                        let status = if k.revoked_at_ms.is_some() {
+                            "revoked"
+                        } else {
+                            "trusted"
+                        };
+                        println!(
+                            "{}  {:<8} {:<20} signs {}",
+                            k.key_id,
+                            status,
+                            k.name,
+                            k.adapters.join(", ")
+                        );
                     }
                 }
             }
@@ -1239,10 +1281,18 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
                 show(json, &client.approve_approval(&id).await?, output::approval);
             }
             ApprovalsCmd::Deny { id, reason } => {
-                show(json, &client.deny_approval(&id, reason).await?, output::approval);
+                show(
+                    json,
+                    &client.deny_approval(&id, reason).await?,
+                    output::approval,
+                );
             }
             ApprovalsCmd::Revoke { id, reason } => {
-                show(json, &client.revoke_approval(&id, reason).await?, output::approval);
+                show(
+                    json,
+                    &client.revoke_approval(&id, reason).await?,
+                    output::approval,
+                );
             }
         },
         Cmd::Commands { command } => match command {

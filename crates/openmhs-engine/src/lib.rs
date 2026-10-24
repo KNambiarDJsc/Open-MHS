@@ -12,7 +12,8 @@ mod error;
 pub mod journal;
 
 pub use engine::{
-    DEFAULT_APPROVAL_TTL_MS, Engine, EngineOptions, MAX_APPROVAL_TTL_MS, RecoveryReport, fingerprint,
+    DEFAULT_APPROVAL_TTL_MS, Engine, EngineOptions, MAX_APPROVAL_TTL_MS, RecoveryReport,
+    fingerprint,
 };
 pub use error::EngineError;
 pub use journal::{AuditRecord, AuditVerification, Journal, JournalError};

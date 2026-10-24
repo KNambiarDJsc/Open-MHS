@@ -334,14 +334,20 @@ impl Journal {
                 r.get(0)
             })
             .optional()?;
-        let json = json.ok_or_else(|| refuse("approval.unknown", format!("unknown approval {id}")))?;
+        let json =
+            json.ok_or_else(|| refuse("approval.unknown", format!("unknown approval {id}")))?;
         Ok(serde_json::from_str(&json)?)
     }
 
     fn store_approval(tx: &Transaction<'_>, a: &Approval) -> Result<(), JournalError> {
         tx.execute(
             "UPDATE approvals SET status = ?1, command_id = ?2, record = ?3 WHERE id = ?4",
-            params![a.status.name(), a.command_id, serde_json::to_string(a)?, a.id],
+            params![
+                a.status.name(),
+                a.command_id,
+                serde_json::to_string(a)?,
+                a.id
+            ],
         )?;
         Ok(())
     }
@@ -445,10 +451,15 @@ impl Journal {
         limit: usize,
     ) -> Result<Vec<Approval>, JournalError> {
         let conn = self.lock();
-        let mut stmt = conn
-            .prepare("SELECT record, status, requester FROM approvals ORDER BY created_ms DESC, id DESC")?;
+        let mut stmt = conn.prepare(
+            "SELECT record, status, requester FROM approvals ORDER BY created_ms DESC, id DESC",
+        )?;
         let rows = stmt.query_map([], |r| {
-            Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?, r.get::<_, String>(2)?))
+            Ok((
+                r.get::<_, String>(0)?,
+                r.get::<_, String>(1)?,
+                r.get::<_, String>(2)?,
+            ))
         })?;
         let wanted: Vec<&str> = statuses.iter().map(|s| s.name()).collect();
         let mut out = Vec::new();

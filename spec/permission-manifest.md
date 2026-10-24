@@ -58,6 +58,48 @@ treat the cooperative fields as documentation of what they should need.
   that it never reads stdin again leaves its container running until `docker rm -f`.
   Name containers (`--name`) if you need to find them.
 
+## Signatures
+
+A manifest may carry a `signature`. The host verifies it **before launching anything**, and
+by default refuses a manifest without one (`manifest.unsigned`). `openmhs serve
+--allow-unsigned-adapters` turns that off for development and prints a warning.
+
+```json
+"signature": {
+  "algorithm": "ed25519",
+  "key_id": "<sha256 of the public key, hex>",
+  "artifacts": [ { "path": "balance.py", "sha256": "<hex>" } ],
+  "value": "<128 hex digits>"
+}
+```
+
+- **What is signed.** The ASCII domain tag `openmhs-adapter-manifest-v1\n` followed by the
+  canonical JSON (sorted keys, no whitespace) of the manifest with `signature.value`
+  emptied. Everything is covered: the adapter id and version, the launch command,
+  environment, capabilities, endpoints, filesystem entries, configuration and the digest of
+  every listed file. Changing any of it invalidates the signature.
+- **Which files.** `artifacts` lists the adapter's files (paths relative to the manifest,
+  inside the package; directories are expanded). Every file the launch command runs from
+  the package must be listed (`artifact.uncovered` otherwise). Links, missing files and
+  non-regular files are refused.
+- **Trusted signers.** The key must be in the operator's `trusted_keys.json`
+  (`openmhs trust add/list/revoke`), not revoked, and allowed for this adapter id
+  (`signer.unknown`, `signer.revoked`, `signer.not_allowed`). The registry is not
+  changeable through the API.
+- **No gap between check and use.** The host hashes the bytes it reads, compares them to
+  the signed digests, copies them to a private staging directory, and launches (and
+  restarts) from the copies. Replacing the originals afterwards changes nothing.
+- **A signature is not permission.** It says who vouches for these files. The manifest's
+  limits are enforced exactly as for an unsigned one: capabilities are checked against the
+  descriptor at every start, and device policy and credential scopes decide what any
+  caller may do. A trusted signature never widens what an adapter may do.
+- **Not covered.** The interpreter and libraries the adapter uses, and files it reads at
+  run time. Pin what matters in the package.
+
+Make a key with `openmhs adapter keygen <out>` (writes `<out>.key`, secret, and
+`<out>.pub`), sign with `openmhs adapter sign <manifest> --key <out>.key --artifact FILE…`,
+and trust it with `openmhs trust add <out>.pub --name "…"`.
+
 ## Fields
 
 ```json

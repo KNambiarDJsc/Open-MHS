@@ -3,6 +3,9 @@
 //! Every test drives the real engine, journal and simulated supply. Where a test says a
 //! device was or was not touched, it counts the simulator's own `execute` calls.
 
+// Helpers outside #[test] functions unwrap too; clippy's in-test allowance doesn't reach them.
+#![allow(clippy::unwrap_used)]
+
 mod common;
 
 use std::time::Duration;
@@ -31,7 +34,12 @@ fn ask_to_enable() -> Policy {
     let mut policy = allow_all();
     policy.grants.insert(
         0,
-        grant("ask.enable", ENABLED, &[Operation::Write], Effect::RequireApproval),
+        grant(
+            "ask.enable",
+            ENABLED,
+            &[Operation::Write],
+            Effect::RequireApproval,
+        ),
     );
     policy
 }
@@ -60,8 +68,15 @@ async fn a_held_command_gets_a_pending_approval_bound_to_its_fingerprint() {
     assert_eq!(a.status, ApprovalStatus::Pending);
     assert_eq!(a.requester, REQUESTER);
     assert_eq!((a.device.as_str(), a.capability.as_str()), (PSU, ENABLED));
-    assert_eq!(a.fingerprint, openmhs_engine::fingerprint(REQUESTER, &r.request));
-    assert_eq!(Some(a.expires_at), r.deadline_at, "approvals expire with the command");
+    assert_eq!(
+        a.fingerprint,
+        openmhs_engine::fingerprint(REQUESTER, &r.request)
+    );
+    assert_eq!(
+        Some(a.expires_at),
+        r.deadline_at,
+        "approvals expire with the command"
+    );
     assert_eq!(psu.execute_calls(), 0);
 }
 
@@ -77,7 +92,11 @@ async fn approved_commands_run_and_spend_their_approval() {
     assert_eq!(done.policy.approved_by.as_deref(), Some(OPERATOR));
     assert_eq!(psu.execute_calls(), 1);
 
-    let a = engine.journal().approval_for_command(&r.command_id).unwrap().unwrap();
+    let a = engine
+        .journal()
+        .approval_for_command(&r.command_id)
+        .unwrap()
+        .unwrap();
     assert_eq!(a.status, ApprovalStatus::Consumed);
     assert_eq!(a.decided_by.as_deref(), Some(OPERATOR));
     assert!(a.consumed_at.is_some());
@@ -89,7 +108,10 @@ async fn an_approval_cannot_be_used_twice() {
     let (engine, psu) = setup(ask_to_enable()).await;
     let r = held(&engine, &enable(true)).await;
     engine.approve(&approver(), &r.command_id).await.unwrap();
-    let again = engine.approve(&approver(), &r.command_id).await.unwrap_err();
+    let again = engine
+        .approve(&approver(), &r.command_id)
+        .await
+        .unwrap_err();
     assert_eq!(again.code(), "command.invalid_state");
     assert_eq!(psu.execute_calls(), 1);
 }
@@ -129,7 +151,11 @@ async fn an_expired_approval_is_rejected() {
     let late = engine.approve(&approver(), &r.command_id).await.unwrap();
     assert_eq!(late.state, Expired);
     assert_eq!(psu.execute_calls(), 0);
-    let a = engine.journal().approval_for_command(&r.command_id).unwrap().unwrap();
+    let a = engine
+        .journal()
+        .approval_for_command(&r.command_id)
+        .unwrap()
+        .unwrap();
     assert_eq!(a.status, ApprovalStatus::Expired);
 }
 
@@ -138,13 +164,23 @@ async fn an_expired_approval_is_rejected() {
 async fn a_revoked_approval_is_rejected() {
     let (engine, psu) = setup(ask_to_enable()).await;
     let r = held(&engine, &enable(true)).await;
-    let a = engine.journal().approval_for_command(&r.command_id).unwrap().unwrap();
+    let a = engine
+        .journal()
+        .approval_for_command(&r.command_id)
+        .unwrap()
+        .unwrap();
     let revoked = engine
         .revoke_approval(&approver(), &a.id, Some("changed my mind".into()))
         .unwrap();
     assert_eq!(revoked.status, ApprovalStatus::Revoked);
-    assert_eq!(engine.receipt(&r.command_id).unwrap().unwrap().state, Cancelled);
-    let err = engine.approve(&approver(), &r.command_id).await.unwrap_err();
+    assert_eq!(
+        engine.receipt(&r.command_id).unwrap().unwrap().state,
+        Cancelled
+    );
+    let err = engine
+        .approve(&approver(), &r.command_id)
+        .await
+        .unwrap_err();
     assert_eq!(err.code(), "command.invalid_state");
     assert_eq!(psu.execute_calls(), 0);
 }
@@ -206,7 +242,11 @@ async fn a_modified_command_is_rejected() {
     let padded = engine
         .submit_approved(
             &requester(),
-            &with(enable(true), "params", json!({ "extra": { "value": 1, "unit": "V" } })),
+            &with(
+                enable(true),
+                "params",
+                json!({ "extra": { "value": 1, "unit": "V" } }),
+            ),
             &a.id,
         )
         .await
@@ -229,7 +269,12 @@ async fn another_principal_cannot_spend_an_approval() {
     let mut policy = ask_to_enable();
     policy.grants.push(openmhs_policy::Grant {
         principal: "agent.other".into(),
-        ..grant("other.all", "*", &[Operation::Read, Operation::Write], Effect::RequireApproval)
+        ..grant(
+            "other.all",
+            "*",
+            &[Operation::Read, Operation::Write],
+            Effect::RequireApproval,
+        )
     });
     let (engine, psu) = setup(policy).await;
     let a = engine
@@ -257,12 +302,20 @@ async fn a_spent_approval_is_not_reusable() {
         .unwrap();
     engine.approve_approval(&approver(), &a.id).await.unwrap();
     let first = engine
-        .submit_approved(&requester(), &with(enable(true), "idempotency_key", json!("k1")), &a.id)
+        .submit_approved(
+            &requester(),
+            &with(enable(true), "idempotency_key", json!("k1")),
+            &a.id,
+        )
         .await
         .unwrap();
     assert_eq!(first.state, Verified);
     let second = engine
-        .submit_approved(&requester(), &with(enable(true), "idempotency_key", json!("k2")), &a.id)
+        .submit_approved(
+            &requester(),
+            &with(enable(true), "idempotency_key", json!("k2")),
+            &a.id,
+        )
         .await
         .unwrap();
     assert_eq!(second.state, Denied);
@@ -313,7 +366,12 @@ async fn policy_still_applies_after_approval() {
         .unwrap();
     engine.approve_approval(&approver(), &a.id).await.unwrap();
     // The operator withdraws the agent's access altogether.
-    engine.set_policy(Policy { grants: vec![], approvers: vec![OPERATOR.into()] }).unwrap();
+    engine
+        .set_policy(Policy {
+            grants: vec![],
+            approvers: vec![OPERATOR.into()],
+        })
+        .unwrap();
     let r = engine
         .submit_approved(&requester(), &enable(true), &a.id)
         .await
@@ -358,10 +416,23 @@ async fn only_a_human_approver_other_than_the_requester_can_decide() {
     let code = |who: Caller| {
         let engine = engine.clone();
         let id = a.id.clone();
-        async move { engine.approve_approval(&who, &id).await.unwrap_err().code().to_owned() }
+        async move {
+            engine
+                .approve_approval(&who, &id)
+                .await
+                .unwrap_err()
+                .code()
+                .to_owned()
+        }
     };
-    assert_eq!(code(Caller::in_process("agent:sneaky")).await, "policy.approval.not_human");
-    assert_eq!(code(Caller::in_process("human.random")).await, "policy.approval.not_approver");
+    assert_eq!(
+        code(Caller::in_process("agent:sneaky")).await,
+        "policy.approval.not_human"
+    );
+    assert_eq!(
+        code(Caller::in_process("human.random")).await,
+        "policy.approval.not_approver"
+    );
     assert_eq!(code(requester()).await, "policy.approval.self");
     // An approver whose credential does not reach the device cannot decide either.
     let narrow = Caller::authenticated(
@@ -390,7 +461,11 @@ async fn approvals_are_only_issued_for_commands_that_need_one() {
         .request_approval(&requester(), &write(SETPOINT, volts(9_999.0)), None)
         .await
         .unwrap_err();
-    assert!(impossible.code().starts_with("command.") || impossible.code().starts_with("constraint"), "{}", impossible.code());
+    assert!(
+        impossible.code().starts_with("command.") || impossible.code().starts_with("constraint"),
+        "{}",
+        impossible.code()
+    );
     let nobody = engine
         .request_approval(&Caller::in_process("agent.stranger"), &enable(true), None)
         .await
@@ -419,7 +494,10 @@ async fn a_pre_approval_expires() {
         .unwrap();
     assert_eq!(r.state, Denied);
     assert_eq!(codes(&r), vec!["approval.expired"]);
-    assert_eq!(engine.journal().approval(&a.id).unwrap().unwrap().status, ApprovalStatus::Expired);
+    assert_eq!(
+        engine.journal().approval(&a.id).unwrap().unwrap().status,
+        ApprovalStatus::Expired
+    );
     assert_eq!(psu.execute_calls(), 0);
 }
 
@@ -437,6 +515,13 @@ async fn approval_changes_are_audited() {
         .map(|a| a.kind)
         .filter(|k| k.starts_with("approval."))
         .collect();
-    assert_eq!(kinds, vec!["approval.requested", "approval.approved", "approval.consumed"]);
+    assert_eq!(
+        kinds,
+        vec![
+            "approval.requested",
+            "approval.approved",
+            "approval.consumed"
+        ]
+    );
     assert!(engine.verify_audit().unwrap().is_valid());
 }

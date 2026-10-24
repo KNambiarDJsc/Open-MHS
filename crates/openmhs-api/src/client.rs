@@ -245,7 +245,7 @@ impl Client {
                 approval_id: None,
             },
         )
-            .await
+        .await
     }
 
     /// Would this request be allowed right now? Creates no command.
@@ -260,7 +260,7 @@ impl Client {
                 approval_id: None,
             },
         )
-            .await
+        .await
     }
 
     pub async fn command(&self, command_id: &str) -> Result<Receipt, ClientError> {

@@ -38,6 +38,11 @@ openmhs read sim.thermo-01 temperature.ambient
 | `exec … --check` | Ask whether it would be allowed now (preflight); runs nothing. Exit 0 allow, 2 deny, 5 needs approval |
 | `commands show <id>` / `commands list [--state S]… [--limit N]` | Receipts |
 | `approve <id>` (or `commands approve <id>`) | Approve a held command (operator) |
+| `approvals request <exec arguments> [--ttl 15m]` | Ask for approval of a command before submitting it; prints the approval id. Only for commands policy holds for approval ([spec/authorization.md](../spec/authorization.md) §5) |
+| `approvals show <id>` / `approvals list [--status S]… [--limit N]` | Requesters see their own; approvers see all |
+| `approvals approve <id>` / `approvals deny <id> [--reason R]` | Decide (an approver who is not the requester; agents cannot). Approving a held command runs it |
+| `approvals revoke <id> [--reason R]` | Withdraw an approval that has not been used: your own, or any as approver |
+| `exec … --approval <id>` | Submit the command an approved request covers. The approval is spent once, and only for exactly that command |
 | `commands cancel <id>` / `commands reconcile <id>` | Cancel before dispatch / resolve `UNKNOWN_OUTCOME` by readback |
 | `grants list` / `grants add …` / `grants revoke <id>` | Policy (operator) |
 | `tokens create <principal> [--role agent\|operator] (--scope DEVICE:CAPABILITY:OPS … \| --any-scope) [--ttl 12h]` / `tokens list` / `tokens revoke <id>` / `tokens rotate <id> [--ttl …]` | Credentials (operator). A credential reaches only its scopes, and only what grants also allow; it expires at `--ttl`; revoked credentials stay listed ([spec/authorization.md](../spec/authorization.md) §7) |
@@ -45,6 +50,10 @@ openmhs read sim.thermo-01 temperature.ambient
 | `sim fault <device> <fault>` / `sim faults` | Fault injection (operator, `serve --sim` only) |
 | `conformance [--device ID]… [--profile FILE]… [--adapter-manifest FILE]… [--report-dir DIR] [--seed N]` | Run the conformance suite against the built-in simulators, protocol profiles' simulators, or out-of-process adapters started in fixture mode (their manifests must point at a simulator, never a real device); no gateway needed. Exit 0 when each reaches its declared level ([spec/conformance.md](../spec/conformance.md)) |
 | `adapter check FILE…` | Validate adapter permission manifests; starts nothing. Exit 0 when all are valid |
+| `adapter keygen <out>` | Make an Ed25519 signing key: `<out>.key` (secret, keep private) and `<out>.pub` |
+| `adapter sign <manifest> --key <out>.key --artifact FILE… [--out FILE]` | Sign a manifest, binding it to the adapter's files ([signatures](../spec/permission-manifest.md#signatures)) |
+| `trust add <key.pub \| hex> --name N [--adapter ID]…` / `trust list` / `trust revoke <key_id>` | The signers whose adapters may start (operator, local files only). Revoking does not stop an adapter that is already running; restart the gateway |
+| `serve … --allow-unsigned-adapters` | Development only: start adapters whose manifests are not signed. The default refuses them |
 | `adapter new <name> [--path DIR] [--openmhs-path CHECKOUT]` | Create an adapter crate with a fake device and conformance tests ([adapters/README.md](adapters/README.md)) |
 | `mcp [--url U] [--allow-operator]` | Serve MCP on stdin/stdout for an AI agent; needs an agent `--token` ([mcp.md](mcp.md)) |
 
