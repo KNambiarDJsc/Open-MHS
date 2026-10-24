@@ -31,8 +31,13 @@ enforces this in both directions.
 | `descriptor.schema` | Structural JSON Schema violation |
 | `descriptor.version.unsupported` | Spec version not supported |
 | `descriptor.component.duplicate` | Component id declared twice |
-| `descriptor.component.unknown` | Capability references an undeclared component |
+| `descriptor.component.unknown` | Capability or relationship references an undeclared component |
 | `descriptor.capability.duplicate` | Capability name declared twice |
+| `descriptor.relationship.duplicate` | The same relationship declared twice |
+| `descriptor.relationship.field_missing` | Relationship without the field its kind needs (`target`, `resource` or `frame`) |
+| `descriptor.relationship.field_not_applicable` | Relationship field its kind does not use |
+| `descriptor.relationship.self` | Relationship whose target is the device itself |
+| `descriptor.relationship.unknown_capability` | Frame relationship names a capability that does not exist |
 | `descriptor.capability.invalid_operation` | Operation not allowed for the capability kind |
 | `descriptor.capability.value_missing` | Property without `value` |
 | `descriptor.capability.field_not_applicable` | Field not used by this kind (e.g. `params` on a property) |
@@ -96,10 +101,85 @@ A deadline that passes before dispatch is reported by the `EXPIRED` state, not a
 | `policy.denied.side_effect` | Grant does not cover this side-effect class |
 | `policy.approval.not_approver` | The principal is not configured as an approver |
 | `policy.approval.self` | A principal tried to approve its own command |
+| `policy.approval.not_human` | An agent credential tried to decide an approval |
 | `policy.cancel.not_allowed` | Only the requester or an approver can cancel |
 | `policy.grant.invalid` | A grant has an empty id, pattern or operation list |
 | `policy.grant.duplicate` | A grant with that id already exists |
 | `policy.grant.unknown` | No grant with that id |
+
+### Credentials and scopes (M8)
+
+| Code | Meaning |
+|---|---|
+| `auth.scope.denied` | The credential's scopes do not reach this device, capability and operation; checked before grants, and does not reveal whether the device exists |
+| `credential.expired` | The credential is past its expiry (HTTP 401) |
+| `credential.revoked` | The credential was revoked (HTTP 401) |
+| `credential.principal.invalid` | Not a valid principal id |
+| `credential.principal.reserved` | The gateway operator's own principal cannot be issued |
+| `credential.role.invalid` | The operator role for an `agent:*` principal |
+| `credential.role.conflict` | The principal already holds the other role |
+| `credential.scope.invalid` | A scope with an empty pattern or operation list |
+
+### Approvals (M8)
+
+| Code | Meaning |
+|---|---|
+| `approval.unknown` | No approval with that id that the caller may see |
+| `approval.pending` | The approval has not been decided yet |
+| `approval.denied` | The approval was denied |
+| `approval.expired` | The approval ran out before it was used |
+| `approval.revoked` | The approval was withdrawn |
+| `approval.consumed` | The approval was already used |
+| `approval.mismatch` | The command is not the one approved (fingerprint, requester or binding) |
+| `approval.invalid_transition` | The change is not allowed from the approval's current status |
+| `approval.not_required` | Policy allows the command without approval; submit it directly |
+| `approval.ttl.invalid` | `ttl_ms` outside 1 ms to 24 h |
+
+### Adapter signatures (M8)
+
+Reported by the adapter host when it refuses to start an adapter (spec/permission-manifest.md).
+
+| Code | Meaning |
+|---|---|
+| `manifest.unsigned` | The manifest has no signature and unsigned adapters are not allowed |
+| `manifest.signature.invalid` | The signature does not verify over the manifest's canonical form |
+| `manifest.signature.algorithm` | An algorithm other than `ed25519` |
+| `manifest.signature.no_artifacts` | The signature covers no files |
+| `signer.unknown` | The signing key is not in the trusted-key registry |
+| `signer.revoked` | The signing key was revoked |
+| `signer.not_allowed` | The key is not trusted for this adapter id |
+| `signer.invalid` | The registry holds an unusable public key |
+| `artifact.missing` | A signed file is missing |
+| `artifact.modified` | A signed file's contents do not match its digest |
+| `artifact.invalid` | A path outside the package, a link, or not a regular file |
+| `artifact.uncovered` | The launch command runs a package file the signature does not cover |
+
+### Graph and topology (M9)
+
+| Code | Meaning |
+|---|---|
+| `graph.target.unregistered` | A relationship names a device that is not registered (reported by `graph.get`; does not stop the gateway) |
+| `graph.contains.cycle` | A device contains itself through other devices (reported by `graph.get`) |
+| `topology.device.unknown` | A topology relationship starts from a device that is not registered (stops the gateway) |
+| `topology.target.unknown` | A topology relationship targets a device that is not registered (stops the gateway) |
+
+A topology relationship that breaks a descriptor relationship rule is reported with the
+code the descriptor relationship rule uses (see Descriptor validation above).
+
+### Leases (M9)
+
+| Code | Meaning |
+|---|---|
+| `lease.held` | The device is claimed by someone else's live lease; writes and invokes are refused until it ends (stops are not leased) |
+| `lease.conflict` | Something the lease would claim is already claimed by a live lease; nothing was taken |
+| `lease.unknown` | No lease with that id |
+| `lease.ended` | The lease was released or is past its deadline |
+| `lease.not_holder` | Only the holder renews a lease; only the holder or an approver releases it |
+| `lease.not_authorized` | The caller could not operate every device the lease would claim |
+| `lease.device.unknown` | A requested device is not registered or not within the credential's scopes |
+| `lease.resource.unknown` | No registered device shares the requested resource |
+| `lease.ttl.invalid` | The lease duration is zero or longer than 24 hours |
+| `lease.empty` | The request names no device and no resource |
 
 ### Adapter
 

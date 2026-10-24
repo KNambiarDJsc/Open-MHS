@@ -63,6 +63,8 @@ for p in sorted((ex / "events").glob("*.json")):
     expect("event", p, True)
 for p in sorted((ex / "conformance").glob("*.json")):
     expect("conformance-report", p, True)
+for p in sorted((ex / "topology").glob("*.json")):
+    expect("topology", p, True)
 for p in sorted((ex / "manifests").glob("*.json")) + sorted(ROOT.glob("adapters/python/*/manifest*.json")):
     expect("adapter-manifest", p, True)
 

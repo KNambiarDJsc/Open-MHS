@@ -14,6 +14,10 @@ pub struct Descriptor {
     pub adapter: AdapterBinding,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub components: Vec<Component>,
+    /// How this device relates to others, to shared resources and to frames
+    /// (spec/descriptor.md §7). The operator's topology adds installation-specific ones.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub relationships: Vec<Relationship>,
     pub capabilities: Vec<Capability>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub extensions: Option<serde_json::Map<String, serde_json::Value>>,
@@ -85,6 +89,55 @@ impl std::fmt::Display for ConformanceLevel {
             Self::L3 => "L3",
         })
     }
+}
+
+/// What a relationship says. Which other fields it uses depends on the kind.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RelationshipKind {
+    /// This device (or component) physically contains `target`, another device.
+    Contains,
+    /// This device needs `target` to operate, e.g. its power or its controller.
+    DependsOn,
+    /// This device uses `resource` (a workspace, a bus, a fluid line), which others may
+    /// share. Devices sharing a resource cannot be leased apart.
+    SharesResource,
+    /// `capabilities` (all of them, if empty) express positions or directions in `frame`.
+    Frame,
+}
+
+impl RelationshipKind {
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Contains => "contains",
+            Self::DependsOn => "depends_on",
+            Self::SharesResource => "shares_resource",
+            Self::Frame => "frame",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Relationship {
+    pub kind: RelationshipKind,
+    /// The part of this device the relationship is about; the whole device if absent.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub component: Option<String>,
+    /// Another device's id (`contains`, `depends_on`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub target: Option<String>,
+    /// A shared resource's id (`shares_resource`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resource: Option<String>,
+    /// A frame's id (`frame`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub frame: Option<String>,
+    /// Capabilities expressed in `frame`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub capabilities: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

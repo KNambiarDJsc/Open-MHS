@@ -15,6 +15,7 @@ permissions — see [authorization.md](authorization.md).
 | `device` | yes | `id`, `manufacturer`, `model`; optional `name`, `serial`, `firmware`, `description` |
 | `adapter` | yes | `id` and `version` (semver) of the adapter that drives this device, plus adapter-specific `config`, and optionally the `conformance` level (`L0`–`L3`) the adapter's author claims. That level is a claim like the rest of the descriptor; the conformance report is the evidence ([conformance.md](conformance.md)) |
 | `components` | no | Named parts of the device (`id`, `name`, `description`). Capabilities may reference one. |
+| `relationships` | no | How the device relates to other devices, shared resources and frames (§7) |
 | `capabilities` | yes | At least one capability |
 | `extensions` | no | Vendor data, keys namespaced `x-<vendor>` |
 
@@ -126,5 +127,42 @@ Each rule's error code is listed in [errors.md](errors.md).
     type-compatible with the target.
 12. Precondition ids are unique per capability; targets exist and are readable
     properties; values are type-compatible with the operator and target.
+13. Each relationship has the field its kind needs and none it does not use; its
+    `component` is declared; its `target` is not the device itself; a frame's
+    capabilities exist; no relationship is declared twice.
 
 Implementations MUST report all issues found, not only the first.
+
+## 7. Relationships
+
+A relationship states a fact the gateway's capability graph uses. It is a claim, like the
+rest of the descriptor.
+
+| `kind` | Fields | Meaning |
+|---|---|---|
+| `contains` | `target` | This device (or `component`) physically contains the device `target` |
+| `depends_on` | `target` | This device needs `target` to operate: its power, its controller |
+| `shares_resource` | `resource` | This device uses `resource` (a workspace, a bus, a fluid line) that others may also use |
+| `frame` | `frame`, optional `capabilities` | Those capabilities (all of them if none are listed) express positions or directions in `frame` |
+
+All kinds take an optional `component` (the part of this device the fact is about) and
+`description`. Ids are identifiers (`common.schema.json`).
+
+```json
+"relationships": [
+  { "kind": "depends_on", "target": "bench.psu-01", "description": "motor power" },
+  { "kind": "shares_resource", "resource": "bench.workspace" },
+  { "kind": "frame", "component": "carriage", "frame": "bench", "capabilities": ["axis.position"] }
+]
+```
+
+A descriptor says what an adapter or profile knows about the device. Facts about one
+installation, such as which supply powers which stage, belong in the operator's topology
+file, which uses the same relationship objects with a `from` device
+([topology.md](topology.md)). The gateway merges both into one graph.
+
+A relationship whose `target` is not registered is reported by the graph
+(`graph.target.unregistered`), not rejected here: devices register independently and in
+any order. How the graph uses relationships, notably to decide what a lease claims, is in
+[topology.md](topology.md).
+

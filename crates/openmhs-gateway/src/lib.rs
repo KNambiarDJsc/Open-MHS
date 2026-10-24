@@ -70,6 +70,9 @@ pub struct GatewayConfig {
     /// Adapters to register at start, for programs that embed the gateway with their own
     /// devices (docs/adapters/). Registered after the virtual lab, if any.
     pub adapters: Vec<Arc<dyn HardwareAdapter>>,
+    /// The operator's topology (spec/topology.md), applied once every device is
+    /// registered. A topology naming a device that is not registered stops the start.
+    pub topology: Option<openmhs_types::Topology>,
 }
 
 impl std::fmt::Debug for GatewayConfig {
@@ -103,6 +106,7 @@ impl GatewayConfig {
             simulation: false,
             seed: 42,
             adapters: Vec::new(),
+            topology: None,
         }
     }
 }
@@ -198,6 +202,19 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
     }
     for adapter in &config.adapters {
         engine.register(adapter.clone()).await?;
+    }
+    if let Some(topology) = config.topology.clone() {
+        engine.set_topology(topology).map_err(|e| match e {
+            EngineError::InvalidRequest(issues) => GatewayError::Config(format!(
+                "topology: {}",
+                issues
+                    .iter()
+                    .map(|i| format!("[{}] {}", i.code, i.message))
+                    .collect::<Vec<_>>()
+                    .join("; ")
+            )),
+            other => other.into(),
+        })?;
     }
     let recovery = engine.recover().await?;
     if !recovery.unknown_outcome.is_empty() {

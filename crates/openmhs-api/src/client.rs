@@ -131,6 +131,66 @@ impl Client {
         self.call(method::DEVICES_LIST, serde_json::json!({})).await
     }
 
+    /// The capability graph: devices, relationships, shared resources, frames.
+    pub async fn graph(&self) -> Result<openmhs_types::graph::Graph, ClientError> {
+        self.call(method::GRAPH_GET, serde_json::json!({})).await
+    }
+
+    /// Take exclusive use of devices and shared resources until released or due.
+    pub async fn acquire_lease(
+        &self,
+        params: crate::AcquireLeaseParams,
+    ) -> Result<openmhs_types::lease::Lease, ClientError> {
+        self.call(method::LEASES_ACQUIRE, params).await
+    }
+
+    pub async fn lease(&self, id: &str) -> Result<openmhs_types::lease::Lease, ClientError> {
+        self.call(method::LEASES_GET, crate::IdParams { id: id.into() })
+            .await
+    }
+
+    pub async fn leases(
+        &self,
+        active: bool,
+        limit: Option<usize>,
+    ) -> Result<Vec<openmhs_types::lease::Lease>, ClientError> {
+        self.call(
+            method::LEASES_LIST,
+            crate::ListLeasesParams { active, limit },
+        )
+        .await
+    }
+
+    pub async fn renew_lease(
+        &self,
+        id: &str,
+        ttl_ms: u64,
+    ) -> Result<openmhs_types::lease::Lease, ClientError> {
+        self.call(
+            method::LEASES_RENEW,
+            crate::RenewLeaseParams {
+                id: id.into(),
+                ttl_ms,
+            },
+        )
+        .await
+    }
+
+    pub async fn release_lease(
+        &self,
+        id: &str,
+        reason: Option<String>,
+    ) -> Result<openmhs_types::lease::Lease, ClientError> {
+        self.call(
+            method::LEASES_RELEASE,
+            crate::ReleaseLeaseParams {
+                id: id.into(),
+                reason,
+            },
+        )
+        .await
+    }
+
     pub async fn describe(&self, device: &str) -> Result<Descriptor, ClientError> {
         self.call(
             method::DEVICES_DESCRIBE,

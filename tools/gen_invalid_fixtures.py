@@ -17,6 +17,11 @@ BASE = {
     "device": {"id": "fixture.dev-01", "manufacturer": "Fixture Co", "model": "F-1"},
     "adapter": {"id": "fixture.adapter", "version": "0.1.0"},
     "components": [{"id": "main"}],
+    "relationships": [
+        {"kind": "depends_on", "target": "fixture.power-01"},
+        {"kind": "shares_resource", "resource": "fixture.bench"},
+        {"kind": "frame", "component": "main", "frame": "fixture.bench", "capabilities": ["level.setpoint"]},
+    ],
     "capabilities": [
         {
             "name": "level.measured",
@@ -194,6 +199,27 @@ def _(d): cap(d, "cycle.run")["verification"]["expect"] = {"value": 1, "unit": "
 
 @case("verification-param-type-mismatch", "descriptor.verification.type_mismatch")
 def _(d): cap(d, "cycle.run")["params"]["target"] = {"type": "number", "quantity": "electric_current", "unit": "A"}
+
+@case("relationship-duplicate", "descriptor.relationship.duplicate", "/relationships/3")
+def _(d): d["relationships"].append({"kind": "depends_on", "target": "fixture.power-01"})
+
+@case("relationship-unknown-component", "descriptor.component.unknown", "/relationships/2/component")
+def _(d): d["relationships"][2]["component"] = "nonexistent"
+
+@case("relationship-without-target", "descriptor.relationship.field_missing", "/relationships/0/target")
+def _(d): del d["relationships"][0]["target"]
+
+@case("relationship-field-not-applicable", "descriptor.relationship.field_not_applicable", "/relationships/1/target")
+def _(d): d["relationships"][1]["target"] = "fixture.power-01"
+
+@case("relationship-with-itself", "descriptor.relationship.self", "/relationships/0/target")
+def _(d): d["relationships"][0]["target"] = d["device"]["id"]
+
+@case("relationship-unknown-capability", "descriptor.relationship.unknown_capability", "/relationships/2/capabilities/0")
+def _(d): d["relationships"][2]["capabilities"] = ["level.nonexistent"]
+
+@case("relationship-unknown-kind", "descriptor.schema", "/relationships/0/kind")
+def _(d): d["relationships"][0]["kind"] = "near"
 
 (OUT.parent / "valid" / "fixture-base.json").write_text(json.dumps(BASE, indent=2) + "\n", encoding="utf-8")
 (OUT / "expected.json").write_text(json.dumps(dict(sorted(fixtures.items())), indent=2) + "\n", encoding="utf-8")

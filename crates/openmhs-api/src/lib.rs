@@ -20,6 +20,12 @@ pub mod method {
     pub const GATEWAY_INFO: &str = "gateway.info";
     pub const DEVICES_LIST: &str = "devices.list";
     pub const DEVICES_DESCRIBE: &str = "devices.describe";
+    pub const GRAPH_GET: &str = "graph.get";
+    pub const LEASES_ACQUIRE: &str = "leases.acquire";
+    pub const LEASES_GET: &str = "leases.get";
+    pub const LEASES_LIST: &str = "leases.list";
+    pub const LEASES_RENEW: &str = "leases.renew";
+    pub const LEASES_RELEASE: &str = "leases.release";
     pub const STATE_READ: &str = "state.read";
     pub const COMMANDS_SUBMIT: &str = "commands.submit";
     pub const COMMANDS_PREFLIGHT: &str = "commands.preflight";
@@ -180,6 +186,40 @@ pub struct ApprovalActionParams {
 pub struct ListApprovalsParams {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub statuses: Vec<ApprovalStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub limit: Option<usize>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct AcquireLeaseParams {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub devices: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub resources: Vec<String>,
+    /// Required; at most 24 hours.
+    pub ttl_ms: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RenewLeaseParams {
+    pub id: String,
+    pub ttl_ms: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ReleaseLeaseParams {
+    pub id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ListLeasesParams {
+    /// Only leases that hold something now.
+    #[serde(default)]
+    pub active: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub limit: Option<usize>,
 }

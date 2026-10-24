@@ -3,8 +3,8 @@
 use std::collections::{BTreeMap, HashSet};
 
 use crate::descriptor::{
-    Capability, CapabilityKind, CompareOp, Descriptor, Operation, PreconditionValue, SideEffect,
-    ValueSpec, ValueType, Verification,
+    Capability, CapabilityKind, CompareOp, Descriptor, Operation, PreconditionValue, Relationship,
+    RelationshipKind, SideEffect, ValueSpec, ValueType, Verification,
 };
 use crate::issue::Issue;
 use crate::schema::{self, Schema};
@@ -43,6 +43,17 @@ pub fn semantic_issues(d: &Descriptor) -> Vec<Issue> {
         issues: Vec::new(),
     };
     v.check();
+    v.issues
+}
+
+/// Check one relationship as if `d` declared it: the same rules, for relationships the
+/// operator's topology adds to a registered device. `at` prefixes the issue pointers.
+pub fn relationship_issues(d: &Descriptor, r: &Relationship, at: &str) -> Vec<Issue> {
+    let mut v = Checker {
+        d,
+        issues: Vec::new(),
+    };
+    v.check_relationship(r, at);
     v.issues
 }
 
@@ -99,6 +110,102 @@ impl<'a> Checker<'a> {
                 );
             }
             self.check_capability(cap, &at);
+        }
+
+        let mut seen = HashSet::new();
+        for (i, r) in self.d.relationships.iter().enumerate() {
+            let at = format!("/relationships/{i}");
+            if !seen.insert(relationship_key(r)) {
+                self.push(
+                    "descriptor.relationship.duplicate",
+                    at.clone(),
+                    format!("{} relationship declared twice", r.kind.name()),
+                );
+            }
+            self.check_relationship(r, &at);
+        }
+    }
+
+    /// Each kind uses its own fields (spec/descriptor.md §7) and no others.
+    fn check_relationship(&mut self, r: &Relationship, at: &str) {
+        if let Some(comp) = &r.component
+            && !self.d.components.iter().any(|c| &c.id == comp)
+        {
+            self.push(
+                "descriptor.component.unknown",
+                format!("{at}/component"),
+                format!("component '{comp}' is not declared"),
+            );
+        }
+        let kind = r.kind.name();
+        let (needs, fields): (&str, [(&str, bool); 4]) = match r.kind {
+            RelationshipKind::Contains | RelationshipKind::DependsOn => (
+                "target",
+                [
+                    ("target", true),
+                    ("resource", false),
+                    ("frame", false),
+                    ("capabilities", false),
+                ],
+            ),
+            RelationshipKind::SharesResource => (
+                "resource",
+                [
+                    ("target", false),
+                    ("resource", true),
+                    ("frame", false),
+                    ("capabilities", false),
+                ],
+            ),
+            RelationshipKind::Frame => (
+                "frame",
+                [
+                    ("target", false),
+                    ("resource", false),
+                    ("frame", true),
+                    ("capabilities", true),
+                ],
+            ),
+        };
+        let present = |field: &str| match field {
+            "target" => r.target.is_some(),
+            "resource" => r.resource.is_some(),
+            "frame" => r.frame.is_some(),
+            _ => !r.capabilities.is_empty(),
+        };
+        if !present(needs) {
+            self.push(
+                "descriptor.relationship.field_missing",
+                format!("{at}/{needs}"),
+                format!("a {kind} relationship needs '{needs}'"),
+            );
+        }
+        for (field, allowed) in fields {
+            if !allowed && present(field) {
+                self.push(
+                    "descriptor.relationship.field_not_applicable",
+                    format!("{at}/{field}"),
+                    format!("'{field}' does not apply to a {kind} relationship"),
+                );
+            }
+        }
+        if r.target.as_deref() == Some(self.d.device.id.as_str()) {
+            self.push(
+                "descriptor.relationship.self",
+                format!("{at}/target"),
+                format!("a device cannot have a {kind} relationship with itself"),
+            );
+        }
+        if r.kind == RelationshipKind::Frame {
+            for (j, name) in r.capabilities.iter().enumerate() {
+                if self.d.capability(name).is_none() {
+                    self.push(
+                        "descriptor.relationship.unknown_capability",
+                        format!("{at}/capabilities/{j}"),
+                        format!("capability '{name}' does not exist"),
+                    );
+                }
+            }
         }
     }
 
@@ -532,4 +639,14 @@ pub fn issues_by_code(issues: &[Issue]) -> BTreeMap<&str, usize> {
         *map.entry(i.code.as_str()).or_default() += 1;
     }
     map
+}
+
+/// Two relationships are the same if they say the same thing about the same part.
+fn relationship_key(r: &Relationship) -> (RelationshipKind, Option<&str>, Option<&str>) {
+    let object = r
+        .target
+        .as_deref()
+        .or(r.resource.as_deref())
+        .or(r.frame.as_deref());
+    (r.kind, r.component.as_deref(), object)
 }

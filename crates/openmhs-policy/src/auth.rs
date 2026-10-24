@@ -145,6 +145,11 @@ impl Caller {
             .iter()
             .any(|s| s.permits(device, capability, operation))
     }
+
+    /// Whether some scope reaches `device` at all.
+    pub fn in_scope_device(&self, device: &str) -> bool {
+        self.scopes.iter().any(|s| glob::matches(&s.device, device))
+    }
 }
 
 #[cfg(test)]

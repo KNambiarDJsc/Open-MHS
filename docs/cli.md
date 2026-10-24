@@ -31,6 +31,10 @@ openmhs read sim.thermo-01 temperature.ambient
 | `demo [--keep]` | Guided scenario; exits non-zero if anything behaves unexpectedly |
 | `info` | Your principal and role, gateway version, device count |
 | `devices list` / `devices inspect <id>` | Registered devices / one descriptor |
+| `graph` | Relationships, shared resources and frames ([spec/topology.md](../spec/topology.md)) |
+| `leases acquire --device D [--resource R] --ttl 10m [--reason …]` | Exclusive use of devices (and what they contain or share) until released or due; others' writes and invokes are refused meanwhile |
+| `leases list [--active]` / `leases show <id>` | Every lease, or one: holder, claim, deadline |
+| `leases renew <id> --ttl 10m` / `leases release <id> [--reason …]` | Move your lease's deadline / end it (an approver can end anyone's) |
 | `read <device> <capability>` | Read from the device; flags stale or bad-quality readings |
 | `exec <device> <capability> --value 5V` | Write a property |
 | `exec <device> <action> --param position=120mm --param speed=50mm/s` | Invoke an action |
@@ -54,6 +58,7 @@ openmhs read sim.thermo-01 temperature.ambient
 | `adapter sign <manifest> --key <out>.key --artifact FILE… [--out FILE]` | Sign a manifest, binding it to the adapter's files ([signatures](../spec/permission-manifest.md#signatures)) |
 | `trust add <key.pub \| hex> --name N [--adapter ID]…` / `trust list` / `trust revoke <key_id>` | The signers whose adapters may start (operator, local files only). Revoking does not stop an adapter that is already running; restart the gateway |
 | `serve … --allow-unsigned-adapters` | Development only: start adapters whose manifests are not signed. The default refuses them |
+| `serve … --topology FILE` | The installation's topology: how registered devices relate. A topology naming an unknown device stops the start ([spec/topology.md](../spec/topology.md)) |
 | `adapter new <name> [--path DIR] [--openmhs-path CHECKOUT]` | Create an adapter crate with a fake device and conformance tests ([adapters/README.md](adapters/README.md)) |
 | `mcp [--url U] [--allow-operator]` | Serve MCP on stdin/stdout for an AI agent; needs an agent `--token` ([mcp.md](mcp.md)) |
 

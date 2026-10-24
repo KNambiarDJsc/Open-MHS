@@ -68,6 +68,14 @@ enum Cmd {
         #[command(subcommand)]
         command: DevicesCmd,
     },
+    /// Show the capability graph: relationships, shared resources and frames
+    /// (spec/topology.md).
+    Graph,
+    /// Take, inspect, renew and release leases: exclusive use of devices for a while.
+    Leases {
+        #[command(subcommand)]
+        command: LeasesCmd,
+    },
     /// Read a property from the device (authorized and audited).
     Read { device: String, capability: String },
     /// Submit a write (properties) or invoke (actions) and wait for its receipt.
@@ -248,6 +256,11 @@ pub struct ServeArgs {
     /// Development only: launch adapters whose manifests are unsigned or unverified.
     #[arg(long)]
     allow_unsigned_adapters: bool,
+    /// The installation's topology: how registered devices relate (spec/topology.md).
+    /// Applied after every device is registered; a topology naming an unknown device
+    /// stops the start.
+    #[arg(long)]
+    topology: Option<PathBuf>,
     /// Port to listen on (0 picks a free one; the runtime file records it).
     #[arg(long, default_value_t = DEFAULT_PORT)]
     port: u16,
@@ -391,6 +404,46 @@ enum ApprovalsCmd {
     },
     /// Withdraw an approval that has not been used: the requester's own, or any as approver.
     Revoke {
+        id: String,
+        #[arg(long)]
+        reason: Option<String>,
+    },
+}
+
+#[derive(Subcommand)]
+enum LeasesCmd {
+    /// Lease devices (and what they contain or share, spec/topology.md). Others' writes
+    /// and invokes on them are refused until the lease ends; stops never are.
+    Acquire {
+        #[arg(long = "device")]
+        devices: Vec<String>,
+        /// A shared resource: claims every device that uses it.
+        #[arg(long = "resource")]
+        resources: Vec<String>,
+        /// How long, e.g. `10m`, `2h` (at most 24h).
+        #[arg(long, value_parser = parse_duration_ms)]
+        ttl: u64,
+        #[arg(long)]
+        reason: Option<String>,
+    },
+    /// Show one lease.
+    Show { id: String },
+    /// List leases, newest first.
+    List {
+        /// Only leases that hold something now.
+        #[arg(long)]
+        active: bool,
+        #[arg(long)]
+        limit: Option<usize>,
+    },
+    /// Move a lease's deadline to `--ttl` from now (holder only).
+    Renew {
+        id: String,
+        #[arg(long, value_parser = parse_duration_ms)]
+        ttl: u64,
+    },
+    /// End a lease: yours, or any as an approver.
+    Release {
         id: String,
         #[arg(long)]
         reason: Option<String>,
@@ -583,6 +636,13 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
             .iter()
             .map(|a| a.clone() as std::sync::Arc<dyn HardwareAdapter>),
     );
+    let topology = match args.topology.as_deref().map(read_topology).transpose() {
+        Ok(t) => t,
+        Err(e) => {
+            eprintln!("error: {e}");
+            return exit::ERROR;
+        }
+    };
     let config = GatewayConfig {
         home,
         listen: SocketAddr::new(args.listen, args.port),
@@ -591,6 +651,7 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
         simulation: args.sim,
         seed: args.seed,
         adapters,
+        topology,
     };
     let gateway = match openmhs_gateway::start(config).await {
         Ok(g) => g,
@@ -697,6 +758,11 @@ fn report_error(json: bool, e: &ClientError) -> u8 {
         Some(c) if c.starts_with("policy.") || c == "gateway.forbidden" => exit::DENIED,
         _ => exit::ERROR,
     }
+}
+
+fn read_topology(path: &Path) -> Result<openmhs_types::Topology, String> {
+    let text = std::fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    openmhs_types::Topology::parse(&text).map_err(|e| format!("{}: {e}", path.display()))
 }
 
 /// Validate profiles; connects to nothing.
@@ -1230,6 +1296,39 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
             DevicesCmd::List => show(json, &client.devices().await?, |d| output::devices(d)),
             DevicesCmd::Inspect { device } => {
                 show(json, &client.describe(&device).await?, output::descriptor);
+            }
+        },
+        Cmd::Graph => show(json, &client.graph().await?, output::graph),
+        Cmd::Leases { command } => match command {
+            LeasesCmd::Acquire {
+                devices,
+                resources,
+                ttl,
+                reason,
+            } => {
+                let params = openmhs_api::AcquireLeaseParams {
+                    devices,
+                    resources,
+                    ttl_ms: ttl,
+                    reason,
+                };
+                show(json, &client.acquire_lease(params).await?, output::lease);
+            }
+            LeasesCmd::Show { id } => show(json, &client.lease(&id).await?, output::lease),
+            LeasesCmd::List { active, limit } => {
+                show(json, &client.leases(active, limit).await?, |l| {
+                    output::leases(l)
+                });
+            }
+            LeasesCmd::Renew { id, ttl } => {
+                show(json, &client.renew_lease(&id, ttl).await?, output::lease);
+            }
+            LeasesCmd::Release { id, reason } => {
+                show(
+                    json,
+                    &client.release_lease(&id, reason).await?,
+                    output::lease,
+                );
             }
         },
         Cmd::Read { device, capability } => {

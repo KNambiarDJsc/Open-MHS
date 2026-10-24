@@ -13,6 +13,24 @@
       "id": "main"
     }
   ],
+  "relationships": [
+    {
+      "kind": "depends_on",
+      "target": "fixture.power-01"
+    },
+    {
+      "kind": "shares_resource",
+      "resource": "fixture.bench"
+    },
+    {
+      "kind": "frame",
+      "component": "main",
+      "frame": "fixture.bench",
+      "capabilities": [
+        "level.setpoint"
+      ]
+    }
+  ],
   "capabilities": [
     {
       "name": "level.measured",

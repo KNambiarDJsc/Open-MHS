@@ -10,11 +10,12 @@ use axum::http::{HeaderMap, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use openmhs_api::{
-    ApprovalActionParams, ApprovalRequestParams, AuditEntry, AuditTailParams, AuditVerifyResult,
-    CommandIdParams, CreateTokenParams, CreatedToken, DeviceParams, ErrorData, GatewayInfo,
-    GrantParams, IdParams, ListApprovalsParams, ListCommandsParams, RPC_PATH, ReadParams,
-    ReadResult, Role, RotateTokenParams, RpcError, RpcRequest, RpcResponse, SimFaultParams,
-    SimFaultResult, SubmitParams, method, rpc_code,
+    AcquireLeaseParams, ApprovalActionParams, ApprovalRequestParams, AuditEntry, AuditTailParams,
+    AuditVerifyResult, CommandIdParams, CreateTokenParams, CreatedToken, DeviceParams, ErrorData,
+    GatewayInfo, GrantParams, IdParams, ListApprovalsParams, ListCommandsParams, ListLeasesParams,
+    RPC_PATH, ReadParams, ReadResult, ReleaseLeaseParams, RenewLeaseParams, Role,
+    RotateTokenParams, RpcError, RpcRequest, RpcResponse, SimFaultParams, SimFaultResult,
+    SubmitParams, method, rpc_code,
 };
 use openmhs_engine::journal::sha256_hex;
 use openmhs_engine::{Engine, EngineError};
@@ -334,6 +335,52 @@ async fn dispatch(
 
         method::DEVICES_LIST => ok(engine.devices()),
 
+        // Visible to every caller, like the device list it is built from.
+        method::GRAPH_GET => ok(engine.graph()),
+
+        method::LEASES_ACQUIRE => {
+            let p: AcquireLeaseParams = params(raw)?;
+            ok(engine
+                .acquire_lease(
+                    &session.caller,
+                    openmhs_engine::LeaseRequest {
+                        devices: p.devices,
+                        resources: p.resources,
+                        ttl_ms: p.ttl_ms,
+                        reason: p.reason,
+                        plan_id: None,
+                    },
+                )
+                .map_err(engine_error)?)
+        }
+
+        // Every caller sees every lease: who holds a device is how callers coordinate.
+        method::LEASES_GET => {
+            let p: IdParams = params(raw)?;
+            ok(engine.lease(&p.id).map_err(engine_error)?)
+        }
+
+        method::LEASES_LIST => {
+            let p: ListLeasesParams = params(raw)?;
+            let limit = p.limit.unwrap_or(DEFAULT_LIST_LIMIT).min(MAX_LIST_LIMIT);
+            ok(engine.leases(p.active, limit).map_err(engine_error)?)
+        }
+
+        method::LEASES_RENEW => {
+            let p: RenewLeaseParams = params(raw)?;
+            ok(engine
+                .renew_lease(&session.caller, &p.id, p.ttl_ms)
+                .map_err(engine_error)?)
+        }
+
+        // The holder, or an approver freeing devices a holder left leased.
+        method::LEASES_RELEASE => {
+            let p: ReleaseLeaseParams = params(raw)?;
+            ok(engine
+                .release_lease(&session.caller, &p.id, p.reason.as_deref())
+                .map_err(engine_error)?)
+        }
+
         method::DEVICES_DESCRIBE => {
             let p: DeviceParams = params(raw)?;
             match engine.descriptor(&p.device) {
@@ -585,12 +632,15 @@ async fn dispatch(
                 let withdrawn = engine
                     .revoke_credential_approvals(&info.id, &session.principal)
                     .map_err(engine_error)?;
+                let released = engine
+                    .release_credential_leases(&info.id, &session.principal)
+                    .map_err(engine_error)?;
                 shared.audit(
                     "token.revoked",
                     &info.id,
                     json!({
                         "by": session.principal, "principal": info.principal,
-                        "approvals_revoked": withdrawn,
+                        "approvals_revoked": withdrawn, "leases_released": released,
                     }),
                 )?;
             }
@@ -607,12 +657,15 @@ async fn dispatch(
             let withdrawn = engine
                 .revoke_credential_approvals(&old.id, &session.principal)
                 .map_err(engine_error)?;
+            let released = engine
+                .release_credential_leases(&old.id, &session.principal)
+                .map_err(engine_error)?;
             shared.audit(
                 "token.rotated",
                 &info.id,
                 json!({
                     "by": session.principal, "replaces": old.id, "principal": info.principal,
-                    "approvals_revoked": withdrawn,
+                    "approvals_revoked": withdrawn, "leases_released": released,
                 }),
             )?;
             ok(CreatedToken { info, token })

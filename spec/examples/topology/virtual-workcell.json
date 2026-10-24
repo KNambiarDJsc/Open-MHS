@@ -1,0 +1,9 @@
+{
+  "openmhs_topology": "0.1",
+  "relationships": [
+    { "from": "sim.axis-01", "kind": "depends_on", "target": "sim.psu-01", "description": "the stage's motor is powered by the supply" },
+    { "from": "sim.axis-01", "kind": "shares_resource", "resource": "workcell.bench" },
+    { "from": "sim.thermo-01", "kind": "shares_resource", "resource": "workcell.bench" },
+    { "from": "sim.axis-01", "kind": "frame", "frame": "workcell.bench", "capabilities": ["axis.position", "axis.move_absolute"] }
+  ]
+}

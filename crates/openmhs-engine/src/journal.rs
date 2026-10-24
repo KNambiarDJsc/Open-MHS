@@ -14,6 +14,8 @@ use openmhs_types::{Approval, ApprovalStatus, CommandState, ErrorObject, Receipt
 use rusqlite::{Connection, OptionalExtension, Transaction, params};
 use sha2::{Digest, Sha256};
 
+mod leases;
+
 const GENESIS: &str = "0000000000000000000000000000000000000000000000000000000000000000";
 
 #[derive(Debug, thiserror::Error)]
@@ -148,6 +150,16 @@ impl Journal {
             CREATE UNIQUE INDEX IF NOT EXISTS approvals_command
                 ON approvals(command_id) WHERE command_id IS NOT NULL;
             CREATE INDEX IF NOT EXISTS approvals_status ON approvals(status);
+            CREATE TABLE IF NOT EXISTS leases (
+                id                TEXT PRIMARY KEY,
+                holder            TEXT NOT NULL,
+                holder_credential TEXT,
+                created_ms        INTEGER NOT NULL,
+                expires_ms        INTEGER NOT NULL,
+                ended_ms          INTEGER,
+                record            TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS leases_open ON leases(ended_ms, expires_ms);
             CREATE TABLE IF NOT EXISTS audit (
                 seq       INTEGER PRIMARY KEY,
                 at_ms     INTEGER NOT NULL,

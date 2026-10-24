@@ -1,0 +1,139 @@
+{
+  "openmhs": "0.1",
+  "device": {
+    "id": "fixture.dev-01",
+    "manufacturer": "Fixture Co",
+    "model": "F-1"
+  },
+  "adapter": {
+    "id": "fixture.adapter",
+    "version": "0.1.0"
+  },
+  "components": [
+    {
+      "id": "main"
+    }
+  ],
+  "relationships": [
+    {
+      "kind": "depends_on"
+    },
+    {
+      "kind": "shares_resource",
+      "resource": "fixture.bench"
+    },
+    {
+      "kind": "frame",
+      "component": "main",
+      "frame": "fixture.bench",
+      "capabilities": [
+        "level.setpoint"
+      ]
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "level.measured",
+      "kind": "property",
+      "operations": [
+        "read",
+        "subscribe"
+      ],
+      "value": {
+        "type": "number",
+        "quantity": "electric_potential",
+        "unit": "V"
+      },
+      "side_effect": "none"
+    },
+    {
+      "name": "level.setpoint",
+      "kind": "property",
+      "component": "main",
+      "operations": [
+        "read",
+        "write"
+      ],
+      "value": {
+        "type": "number",
+        "quantity": "electric_potential",
+        "unit": "V",
+        "range": {
+          "min": 0,
+          "max": 12
+        }
+      },
+      "side_effect": "reversible",
+      "idempotent": true,
+      "preconditions": [
+        {
+          "id": "not-faulted",
+          "capability": "fault.active",
+          "op": "eq",
+          "value": false
+        }
+      ],
+      "verification": {
+        "mode": "readback",
+        "capability": "level.measured",
+        "tolerance": {
+          "abs": 0.05
+        }
+      }
+    },
+    {
+      "name": "fault.active",
+      "kind": "property",
+      "operations": [
+        "read"
+      ],
+      "value": {
+        "type": "boolean"
+      },
+      "side_effect": "none"
+    },
+    {
+      "name": "mode",
+      "kind": "property",
+      "operations": [
+        "read"
+      ],
+      "value": {
+        "type": "enum",
+        "values": [
+          "auto",
+          "manual"
+        ]
+      },
+      "side_effect": "none"
+    },
+    {
+      "name": "cycle.run",
+      "kind": "action",
+      "operations": [
+        "invoke"
+      ],
+      "params": {
+        "target": {
+          "type": "number",
+          "quantity": "electric_potential",
+          "unit": "V"
+        }
+      },
+      "side_effect": "reversible",
+      "verification": {
+        "mode": "readback",
+        "capability": "level.measured",
+        "expect_param": "target"
+      }
+    },
+    {
+      "name": "fault.raised",
+      "kind": "event",
+      "operations": [
+        "subscribe"
+      ],
+      "side_effect": "none"
+    }
+  ]
+}

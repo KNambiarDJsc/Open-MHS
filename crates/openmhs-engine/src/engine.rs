@@ -11,6 +11,7 @@ use openmhs_adapter::{
 };
 use openmhs_policy::{Caller, Expectation, Live, Mutation, Policy, Prepared, PrincipalKind};
 use openmhs_types::descriptor::{Capability, Operation};
+use openmhs_types::graph::{Graph, check_topology};
 use openmhs_types::receipt::{
     AdapterResult, Decision, PolicyRecord, PreflightResult, RuleMatch, VerificationMode,
     VerificationRecord,
@@ -18,13 +19,15 @@ use openmhs_types::receipt::{
 use openmhs_types::schema::{self, Schema};
 use openmhs_types::{
     Clock, CommandRequest, CommandState, Descriptor, ErrorObject, Issue, Receipt, RequestOperation,
-    StateValue, Timestamp,
+    StateValue, Timestamp, Topology, TopologyRelationship,
 };
 use tracing::{info, warn};
 
 mod approvals;
+mod leases;
 
 pub use approvals::{DEFAULT_APPROVAL_TTL_MS, MAX_APPROVAL_TTL_MS, fingerprint};
+pub use leases::LeaseRequest;
 
 use crate::error::EngineError;
 use crate::journal::{AuditVerification, Inserted, Journal, JournalError, sha256_hex};
@@ -76,6 +79,8 @@ struct Inner {
     journal: Journal,
     policy: RwLock<Policy>,
     devices: RwLock<HashMap<String, Arc<Device>>>,
+    /// The operator's installation-specific relationships (spec/topology.md).
+    topology: RwLock<Vec<TopologyRelationship>>,
     state: Mutex<HashMap<(String, String), StateValue>>,
     options: EngineOptions,
 }
@@ -147,6 +152,7 @@ impl Engine {
                 journal,
                 policy: RwLock::new(policy),
                 devices: RwLock::new(HashMap::new()),
+                topology: RwLock::new(Vec::new()),
                 state: Mutex::new(HashMap::new()),
                 options,
             }),
@@ -208,6 +214,41 @@ impl Engine {
 
     pub fn descriptor(&self, device: &str) -> Option<Descriptor> {
         self.device(device).map(|d| d.descriptor.clone())
+    }
+
+    /// The capability graph of what is registered now, with the operator's topology.
+    pub fn graph(&self) -> Graph {
+        let topology = self
+            .inner
+            .topology
+            .read()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .clone();
+        Graph::build(&self.devices(), &topology)
+    }
+
+    /// Install the operator's topology. Refused, whole, if any relationship names a device
+    /// that is not registered or breaks a relationship rule: register devices first.
+    pub fn set_topology(&self, topology: Topology) -> Result<(), EngineError> {
+        let issues = check_topology(&self.devices(), &topology.relationships);
+        if !issues.is_empty() {
+            return Err(EngineError::InvalidRequest(
+                issues.into_iter().map(Into::into).collect(),
+            ));
+        }
+        let count = topology.relationships.len();
+        *self
+            .inner
+            .topology
+            .write()
+            .unwrap_or_else(std::sync::PoisonError::into_inner) = topology.relationships;
+        self.inner.journal.append_audit(
+            self.now(),
+            "topology.set",
+            "topology",
+            &serde_json::json!({ "relationships": count }),
+        )?;
+        Ok(())
     }
 
     /// Last reading the engine observed, without contacting the device.
@@ -559,6 +600,12 @@ impl Engine {
                 ),
             ));
         };
+
+        // Someone else's lease keeps everyone but its holder off the device (ADR-0018).
+        // If the leases cannot be read, nothing runs.
+        if let Some(e) = self.lease_refusal(principal, &req.target.device) {
+            return denied(e);
+        }
 
         let authz =
             self.policy()
@@ -1136,6 +1183,13 @@ impl Engine {
                 };
             });
         }
+        // A lease someone else took while the command waited stops it too.
+        if let Some(e) = self.lease_refusal(&receipt.principal, &req.target.device) {
+            return self.transition(command_id, Denied, Some(e.message.clone()), |r| {
+                r.policy.decision = Decision::Deny;
+                r.policy.errors = vec![e];
+            });
+        }
 
         let _guard = device.lock.lock().await;
         let prepared = match self.check_live(&device, &cap, &req).await {
@@ -1364,6 +1418,7 @@ impl Engine {
             }
         }
         self.sweep_approvals()?;
+        self.inner.journal.expire_leases(self.now())?;
         self.inner.journal.append_audit(
             self.now(),
             "gateway.recovered",

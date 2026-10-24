@@ -226,6 +226,12 @@ async fn every_method_requires_authentication() {
     let url = format!("{}/rpc", lab.gw.url);
     let methods = [
         method::GATEWAY_INFO,
+        method::GRAPH_GET,
+        method::LEASES_ACQUIRE,
+        method::LEASES_GET,
+        method::LEASES_LIST,
+        method::LEASES_RENEW,
+        method::LEASES_RELEASE,
         method::DEVICES_LIST,
         method::DEVICES_DESCRIBE,
         method::STATE_READ,
