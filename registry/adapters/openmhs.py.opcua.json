@@ -1,0 +1,17 @@
+{
+  "openmhs_registry": "0.1",
+  "id": "openmhs.py.opcua",
+  "name": "OPC UA adapter (read-only)",
+  "protocol": "opc-ua",
+  "maintainer": "KNambiarDJsc",
+  "source": "adapters/python/opcua",
+  "profiles": [
+    "adapters/python/opcua/manifest.sim.json"
+  ],
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "conformance_profile": "L1",
+  "category": "experimental",
+  "report": null,
+  "notes": "Needs asyncua. Checked at L1 against a simulated server in CI only; no report is committed, so the matrix shows it as not verified."
+}

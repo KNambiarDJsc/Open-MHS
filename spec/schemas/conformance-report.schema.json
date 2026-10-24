@@ -35,6 +35,17 @@
         "counts_deliveries": { "type": "boolean" }
       }
     },
+    "environment": {
+      "description": "Where the suite ran. Absent from reports written before M10.",
+      "type": "object",
+      "required": ["runtime_version", "os", "arch"],
+      "additionalProperties": false,
+      "properties": {
+        "runtime_version": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/semver" },
+        "os": { "type": "string", "maxLength": 32 },
+        "arch": { "type": "string", "maxLength": 32 }
+      }
+    },
     "declared": { "$ref": "#/$defs/level" },
     "achieved": { "$ref": "#/$defs/level" },
     "passed": { "type": "boolean" },

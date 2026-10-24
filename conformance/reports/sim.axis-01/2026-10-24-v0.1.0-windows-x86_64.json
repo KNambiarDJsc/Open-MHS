@@ -1,0 +1,959 @@
+{
+  "openmhs_conformance": "0.1",
+  "suite_version": "0.1.0",
+  "subject": {
+    "adapter": "openmhs.sim.axis",
+    "adapter_version": "0.1.0",
+    "device": "sim.axis-01",
+    "descriptor_sha256": "6a9ba9e84ecf69ee3d07959d04e461516e0f357b4a49f81a9e08a806d3a55af8",
+    "sources": [
+      "simulator"
+    ]
+  },
+  "fixture": {
+    "faults": [
+      "link_down",
+      "no_response",
+      "lost_ack",
+      "garbled",
+      "refuse"
+    ],
+    "counts_deliveries": true
+  },
+  "environment": {
+    "runtime_version": "0.1.0",
+    "os": "windows",
+    "arch": "x86_64"
+  },
+  "declared": "L3",
+  "achieved": "L3",
+  "passed": true,
+  "started_at": "2026-10-24T19:45:17.054Z",
+  "duration_ms": 14309,
+  "summary": {
+    "pass": 51,
+    "fail": 0,
+    "untested": 0,
+    "not_applicable": 4
+  },
+  "checks": [
+    {
+      "id": "L0.describe",
+      "level": "L0",
+      "status": "pass",
+      "message": "returned a descriptor",
+      "duration_ms": 7
+    },
+    {
+      "id": "L0.descriptor",
+      "level": "L0",
+      "status": "pass",
+      "message": "valid: device 'sim.axis-01', 8 capabilities",
+      "duration_ms": 155
+    },
+    {
+      "id": "L0.adapter_id",
+      "level": "L0",
+      "status": "pass",
+      "message": "'openmhs.sim.axis'",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.describe_stable",
+      "level": "L0",
+      "status": "pass",
+      "message": "same descriptor both times",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.connect",
+      "level": "L0",
+      "status": "pass",
+      "message": "connected and registered",
+      "duration_ms": 5
+    },
+    {
+      "id": "L0.health",
+      "level": "L0",
+      "status": "pass",
+      "message": "healthy",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.shutdown",
+      "level": "L0",
+      "status": "pass",
+      "message": "shut down cleanly",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "axis.position",
+      "status": "pass",
+      "message": "read 137.4 mm",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:45:17.225Z",
+          "value": {
+            "unit": "mm",
+            "value": 137.4
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "axis.position",
+      "status": "pass",
+      "message": "137.4 mm matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "axis.position",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:45:17.225Z",
+          "value": {
+            "unit": "mm",
+            "value": 137.4
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "axis.position",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "axis.homed",
+      "status": "pass",
+      "message": "read false",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:45:17.225Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "axis.homed",
+      "status": "pass",
+      "message": "false matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "axis.homed",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:45:17.225Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "axis.homed",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "axis.fault",
+      "status": "pass",
+      "message": "read false",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:45:17.225Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "axis.fault",
+      "status": "pass",
+      "message": "false matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "axis.fault",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:45:17.225Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "axis.fault",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "axis.motion.state",
+      "status": "pass",
+      "message": "read 'idle'",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:45:17.225Z",
+          "value": "idle"
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "axis.motion.state",
+      "status": "pass",
+      "message": "'idle' matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "axis.motion.state",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:45:17.225Z",
+          "value": "idle"
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "axis.motion.state",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.subscribe",
+      "level": "L1",
+      "status": "not_applicable",
+      "message": "deferred: the adapter contract (v0.1) has no subscription API, so there is nothing to test yet (ADR-0013)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "axis.position",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "axis.homed",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "axis.fault",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "axis.motion.state",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.health",
+      "level": "L1",
+      "status": "pass",
+      "message": "disconnected: simulated disconnect",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.reconnect",
+      "level": "L1",
+      "status": "pass",
+      "message": "back after 0 ms",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "axis.home",
+      "status": "pass",
+      "message": "carried out in 1034 ms (expected about 3000 ms, limit 10000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f72-31cc-73a5-a1f2-c5252707670b",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 11000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "axis.home",
+            "device": "sim.axis-01"
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "axis.homed",
+          "expected": true,
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:45:18.325Z",
+            "value": true
+          }
+        }
+      },
+      "duration_ms": 1067
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "axis.home",
+      "status": "pass",
+      "message": "VERIFIED: 'axis.homed' read back true",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "axis.home",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "simulated rejection"
+          }
+        },
+        "command_id": "01a16f72-35f7-7187-a2df-46c6eda03f31",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 11000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "axis.home",
+            "device": "sim.axis-01"
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 27
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "axis.home",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "simulated garbled response"
+          }
+        },
+        "command_id": "01a16f72-3614-7578-9de0-f69f365c527c",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 11000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "axis.home",
+            "device": "sim.axis-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1025
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "axis.home",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 998 ms"
+          }
+        },
+        "command_id": "01a16f72-3a14-733c-9f0a-73e99fb0d671",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "axis.home",
+            "device": "sim.axis-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1032
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "axis.home",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'axis.homed' (the readback already held before the command, so this shows the path, not that this command applied)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 998 ms"
+          }
+        },
+        "command_id": "01a16f72-3e1d-7420-b86a-9faa7a21748d",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "axis.home",
+            "device": "sim.axis-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1017
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "axis.home",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "axis.move_absolute",
+      "status": "pass",
+      "message": "carried out in 615 ms (expected about 2000 ms, limit 15000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true,
+          "result": {
+            "final_position": {
+              "unit": "mm",
+              "value": 15.0
+            }
+          }
+        },
+        "command_id": "01a16f72-4277-75e2-9243-4f83f8964efc",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 16000,
+          "operation": "invoke",
+          "params": {
+            "position": {
+              "unit": "mm",
+              "value": 15.0
+            },
+            "speed": {
+              "unit": "mm/s",
+              "value": 25.5
+            }
+          },
+          "target": {
+            "capability": "axis.move_absolute",
+            "device": "sim.axis-01"
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "axis.position",
+          "expected": {
+            "unit": "mm",
+            "value": 15.0
+          },
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:45:22.248Z",
+            "value": {
+              "unit": "mm",
+              "value": 15.0
+            }
+          }
+        }
+      },
+      "duration_ms": 819
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "axis.move_absolute",
+      "status": "pass",
+      "message": "VERIFIED: 'axis.position' read back 15 mm",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "axis.move_absolute",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "simulated rejection"
+          }
+        },
+        "command_id": "01a16f72-454b-759a-9e56-9e669b19c003",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 16000,
+          "operation": "invoke",
+          "params": {
+            "position": {
+              "unit": "mm",
+              "value": 30.0
+            },
+            "speed": {
+              "unit": "mm/s",
+              "value": 25.5
+            }
+          },
+          "target": {
+            "capability": "axis.move_absolute",
+            "device": "sim.axis-01"
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 15
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "axis.move_absolute",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "simulated garbled response"
+          }
+        },
+        "command_id": "01a16f72-455a-73b7-a637-f44b9c72bb58",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 16000,
+          "operation": "invoke",
+          "params": {
+            "position": {
+              "unit": "mm",
+              "value": 30.0
+            },
+            "speed": {
+              "unit": "mm/s",
+              "value": 25.5
+            }
+          },
+          "target": {
+            "capability": "axis.move_absolute",
+            "device": "sim.axis-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 615
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "axis.move_absolute",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 998 ms"
+          }
+        },
+        "command_id": "01a16f72-47c1-7115-8e5c-73c29e25a236",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "invoke",
+          "params": {
+            "position": {
+              "unit": "mm",
+              "value": 45.0
+            },
+            "speed": {
+              "unit": "mm/s",
+              "value": 25.5
+            }
+          },
+          "target": {
+            "capability": "axis.move_absolute",
+            "device": "sim.axis-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1009
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "axis.move_absolute",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'axis.position'",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 996 ms"
+          }
+        },
+        "command_id": "01a16f72-4bb4-7698-9fe3-8d190f6a18f8",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "invoke",
+          "params": {
+            "position": {
+              "unit": "mm",
+              "value": 45.0
+            },
+            "speed": {
+              "unit": "mm/s",
+              "value": 25.5
+            }
+          },
+          "target": {
+            "capability": "axis.move_absolute",
+            "device": "sim.axis-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1035
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "axis.move_absolute",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "axis.stop",
+      "status": "pass",
+      "message": "carried out in 23 ms (expected about 200 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f72-4fbe-7543-b9e5-9f0de91c3a0f",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "axis.stop",
+            "device": "sim.axis-01"
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "axis.motion.state",
+          "expected": "idle",
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:45:24.966Z",
+            "value": "idle"
+          }
+        }
+      },
+      "duration_ms": 43
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "axis.stop",
+      "status": "pass",
+      "message": "VERIFIED: 'axis.motion.state' read back 'idle'",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "axis.stop",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "simulated rejection"
+          }
+        },
+        "command_id": "01a16f72-4fe9-72bf-823f-5a397a6b0db2",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "axis.stop",
+            "device": "sim.axis-01"
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 15
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "axis.stop",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "simulated garbled response"
+          }
+        },
+        "command_id": "01a16f72-4ff8-75c9-ab46-574dffdbb2ff",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "axis.stop",
+            "device": "sim.axis-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 17
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "axis.stop",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 997 ms"
+          }
+        },
+        "command_id": "01a16f72-5009-77c0-bec6-973b9be0417e",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "axis.stop",
+            "device": "sim.axis-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1013
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "axis.stop",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'axis.motion.state' (the readback already held before the command, so this shows the path, not that this command applied)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 999 ms"
+          }
+        },
+        "command_id": "01a16f72-53ff-708e-99c5-33a7b676f1e7",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "axis.stop",
+            "device": "sim.axis-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1025
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "axis.stop",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 3
+    },
+    {
+      "id": "L2.recovery",
+      "level": "L2",
+      "status": "pass",
+      "message": "'axis.home' carried out after the faults cleared",
+      "duration_ms": 1037
+    },
+    {
+      "id": "L3.leases",
+      "level": "L3",
+      "capability": "axis.home",
+      "status": "pass",
+      "message": "another principal's command was refused (lease.held), without reaching the device; the holder's was carried out",
+      "duration_ms": 1092
+    },
+    {
+      "id": "L3.plan",
+      "level": "L3",
+      "capability": "axis.home",
+      "status": "pass",
+      "message": "a one-step plan succeeded and released its lease; under refuse the plan halted at that step and sent nothing more; under no_response it stopped for a decision instead of guessing",
+      "duration_ms": 2159
+    },
+    {
+      "id": "L3.stop",
+      "level": "L3",
+      "status": "pass",
+      "message": "'axis.stop' was carried out while another principal held the device's lease (the stop lane)",
+      "duration_ms": 30
+    }
+  ]
+}

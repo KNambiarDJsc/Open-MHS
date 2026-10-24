@@ -67,6 +67,29 @@ pub struct Subject {
     pub sources: Vec<Source>,
 }
 
+/// Where the suite ran, so a report can be read years later without guessing.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Environment {
+    /// Version of the OpenMHS runtime that ran the suite (the suite ships with it).
+    pub runtime_version: String,
+    /// Operating system, as Rust names it: `windows`, `linux`, `macos`.
+    pub os: String,
+    /// CPU architecture: `x86_64`, `aarch64`.
+    pub arch: String,
+}
+
+impl Environment {
+    /// The machine running now.
+    pub fn current() -> Self {
+        Self {
+            runtime_version: env!("CARGO_PKG_VERSION").into(),
+            os: std::env::consts::OS.into(),
+            arch: std::env::consts::ARCH.into(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct FixtureInfo {
@@ -91,6 +114,9 @@ pub struct Report {
     pub suite_version: String,
     pub subject: Subject,
     pub fixture: FixtureInfo,
+    /// Absent from reports written before M10.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub environment: Option<Environment>,
     /// The level the descriptor claims (`adapter.conformance`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub declared: Option<ConformanceLevel>,

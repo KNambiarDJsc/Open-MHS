@@ -1,0 +1,264 @@
+{
+  "openmhs_conformance": "0.1",
+  "suite_version": "0.1.0",
+  "subject": {
+    "adapter": "openmhs.sim.thermo",
+    "adapter_version": "0.1.0",
+    "device": "sim.thermo-01",
+    "descriptor_sha256": "57891b50bfecaf736e32dfca750e29cdf2cacdc5894f9a91ce934b8ae4c20633",
+    "sources": [
+      "simulator"
+    ]
+  },
+  "fixture": {
+    "faults": [
+      "link_down",
+      "no_response",
+      "lost_ack",
+      "garbled",
+      "refuse"
+    ],
+    "counts_deliveries": false
+  },
+  "environment": {
+    "runtime_version": "0.1.0",
+    "os": "windows",
+    "arch": "x86_64"
+  },
+  "declared": "L1",
+  "achieved": "L1",
+  "passed": true,
+  "started_at": "2026-10-24T19:45:17.054Z",
+  "duration_ms": 205,
+  "summary": {
+    "pass": 19,
+    "fail": 0,
+    "untested": 0,
+    "not_applicable": 6
+  },
+  "checks": [
+    {
+      "id": "L0.describe",
+      "level": "L0",
+      "status": "pass",
+      "message": "returned a descriptor",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.descriptor",
+      "level": "L0",
+      "status": "pass",
+      "message": "valid: device 'sim.thermo-01', 3 capabilities",
+      "duration_ms": 166
+    },
+    {
+      "id": "L0.adapter_id",
+      "level": "L0",
+      "status": "pass",
+      "message": "'openmhs.sim.thermo'",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.describe_stable",
+      "level": "L0",
+      "status": "pass",
+      "message": "same descriptor both times",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.connect",
+      "level": "L0",
+      "status": "pass",
+      "message": "connected and registered",
+      "duration_ms": 3
+    },
+    {
+      "id": "L0.health",
+      "level": "L0",
+      "status": "pass",
+      "message": "healthy",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.shutdown",
+      "level": "L0",
+      "status": "pass",
+      "message": "shut down cleanly",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "temperature.ambient",
+      "status": "pass",
+      "message": "read 21.71480372386278 Cel",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:45:17.225Z",
+          "value": {
+            "unit": "Cel",
+            "value": 21.71480372386278
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "temperature.ambient",
+      "status": "pass",
+      "message": "21.71480372386278 Cel matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "temperature.ambient",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:45:17.225Z",
+          "value": {
+            "unit": "Cel",
+            "value": 21.71480372386278
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "temperature.ambient",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "sensor.status",
+      "status": "pass",
+      "message": "read 'ok'",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:45:17.225Z",
+          "value": "ok"
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "sensor.status",
+      "status": "pass",
+      "message": "'ok' matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "sensor.status",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:45:17.225Z",
+          "value": "ok"
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "sensor.status",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.subscribe",
+      "level": "L1",
+      "status": "not_applicable",
+      "message": "deferred: the adapter contract (v0.1) has no subscription API, so there is nothing to test yet (ADR-0013)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "temperature.ambient",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "sensor.status",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.health",
+      "level": "L1",
+      "status": "pass",
+      "message": "disconnected: simulated disconnect",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.reconnect",
+      "level": "L1",
+      "status": "pass",
+      "message": "back after 0 ms",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "status": "not_applicable",
+      "message": "the descriptor declares no writable property or action",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.recovery",
+      "level": "L2",
+      "status": "not_applicable",
+      "message": "the descriptor declares no writable property or action",
+      "duration_ms": 0
+    },
+    {
+      "id": "L3.leases",
+      "level": "L3",
+      "status": "not_applicable",
+      "message": "the descriptor declares no writable property or action",
+      "duration_ms": 0
+    },
+    {
+      "id": "L3.plan",
+      "level": "L3",
+      "status": "not_applicable",
+      "message": "the descriptor declares no writable property or action",
+      "duration_ms": 0
+    },
+    {
+      "id": "L3.stop",
+      "level": "L3",
+      "status": "not_applicable",
+      "message": "the descriptor declares no stop action",
+      "duration_ms": 0
+    }
+  ]
+}

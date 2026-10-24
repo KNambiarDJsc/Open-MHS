@@ -1,0 +1,60 @@
+# Recorded by tools/record_demo.py from a real `openmhs serve --sim` gateway.
+# Simulated devices only. The agent token is redacted, and the `export` line is shown
+# rather than typed (the script sets the variable). All other output is verbatim.
+
+# terminal 1:  openmhs serve --sim
+# terminal 2, as the operator: allow an agent to use the power supply
+$ openmhs devices list
+sim.axis-01      Simulated single-axis linear stage           openmhs.sim.axis       8 capabilities
+sim.psu-01       Simulated single-channel programmable power supply openmhs.sim.psu        7 capabilities
+sim.thermo-01    Simulated ambient temperature sensor         openmhs.sim.thermo     3 capabilities
+
+$ openmhs grants add --id agent-psu --principal agent:demo --device sim.psu-01 --capability '*' --ops read,write --effect allow
+added agent-psu            allow            agent:demo read,write on sim.psu-01 / *
+
+$ openmhs tokens create agent:demo --any-scope
+created tok_eb7db73ad4662aae for agent:demo (agent)
+scope: * / * [read, write, subscribe, invoke]
+token: omhs_<redacted>
+This is shown once. Pass it with --token or OPENMHS_TOKEN.
+$ export OPENMHS_TOKEN=omhs_<redacted>
+
+# now act as the agent
+$ openmhs exec sim.psu-01 power.output.voltage.setpoint --value 5V
+command  01a16f7b-dac5-73d4-a651-dcb8399aafc5  by agent:demo
+target   sim.psu-01 / power.output.voltage.setpoint  write 5 V
+state    DENIED  -> denied (nothing sent to the device)
+policy   deny  (rules: agent-psu)
+  denied command.slew_exceeded: change of 5 V exceeds the limit of 2 V per 1000 ms
+history  19:55:50.340  CREATED
+         19:55:50.343  VALIDATING
+         19:55:50.345  DENIED  change of 5 V exceeds the limit of 2 V per 1000 ms
+
+$ openmhs exec sim.psu-01 power.output.voltage.setpoint --value 2V
+command  01a16f7b-dae9-77c9-bf0b-b7b486c5aacf  by agent:demo
+target   sim.psu-01 / power.output.voltage.setpoint  write 2 V
+state    VERIFIED  -> succeeded (confirmed by readback)
+policy   allow  (rules: agent-psu)
+device   acknowledged; reported applied
+verify   readback power.output.voltage.setpoint  expected 2 V  observed 2 V  (GOOD, simulator)  MATCH
+history  19:55:50.377  CREATED
+         19:55:50.378  VALIDATING
+         19:55:50.393  APPROVED
+         19:55:50.395  DISPATCHED  intent journaled
+         19:55:50.406  ACCEPTED
+         19:55:50.407  APPLIED  device reports applied
+         19:55:50.467  VERIFIED  readback 2 V matches
+
+$ openmhs exec sim.psu-01 power.output.voltage.setpoint --value 48V
+command  01a16f7b-db69-75d9-8b34-47db1a6967ce  by agent:demo
+target   sim.psu-01 / power.output.voltage.setpoint  write 48 V
+state    DENIED  -> denied (nothing sent to the device)
+policy   deny  (rules: agent-psu)
+  denied command.value.out_of_range: 48 V is outside the allowed range 0..12 V
+history  19:55:50.505  CREATED
+         19:55:50.506  VALIDATING
+         19:55:50.520  DENIED  48 V is outside the allowed range 0..12 V
+
+# and as the operator again
+$ openmhs audit verify
+audit log intact: 21 records, hash chain verified

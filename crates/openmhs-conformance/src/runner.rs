@@ -29,7 +29,8 @@ use tokio::time::Instant;
 
 use crate::fixture::{Fault, Fixture};
 use crate::report::{
-    CheckResult, FixtureInfo, REPORT_VERSION, Report, Status, Subject, achieved_level, summarize,
+    CheckResult, Environment, FixtureInfo, REPORT_VERSION, Report, Status, Subject, achieved_level,
+    summarize,
 };
 use crate::requirements::requirement;
 use crate::values;
@@ -1662,6 +1663,7 @@ impl Runner {
                 faults,
                 counts_deliveries: self.fixture.deliveries().is_some(),
             },
+            environment: Some(Environment::current()),
             declared,
             achieved,
             passed,

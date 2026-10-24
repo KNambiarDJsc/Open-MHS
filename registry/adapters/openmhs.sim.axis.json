@@ -1,0 +1,20 @@
+{
+  "openmhs_registry": "0.1",
+  "id": "openmhs.sim.axis",
+  "name": "Simulated linear stage",
+  "protocol": "builtin",
+  "maintainer": "KNambiarDJsc",
+  "source": "crates/openmhs-sim",
+  "profiles": [],
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "conformance_profile": "L3",
+  "category": "official",
+  "peer": "in-process-simulator",
+  "report": {
+    "path": "conformance/reports/sim.axis-01/2026-10-24-v0.1.0-windows-x86_64.json",
+    "sha256": "0094ef546b9c8e520ff0dfc333487a62047214e2aa22041c0fde54f981610ab8",
+    "verified_at": "2026-10-24"
+  },
+  "notes": "The virtual lab's single-axis stage, with fault injection."
+}

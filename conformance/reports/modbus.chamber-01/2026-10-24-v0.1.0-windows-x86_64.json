@@ -1,0 +1,1464 @@
+{
+  "openmhs_conformance": "0.1",
+  "suite_version": "0.1.0",
+  "subject": {
+    "adapter": "openmhs.modbus",
+    "adapter_version": "0.1.0",
+    "device": "modbus.chamber-01",
+    "descriptor_sha256": "04b10cc83e15ddbe28384fb8b224e986319a74ef6467341d1cb1792534d29b91",
+    "sources": [
+      "simulator"
+    ]
+  },
+  "fixture": {
+    "faults": [
+      "link_down",
+      "no_response",
+      "lost_ack",
+      "garbled",
+      "refuse"
+    ],
+    "counts_deliveries": true
+  },
+  "environment": {
+    "runtime_version": "0.1.0",
+    "os": "windows",
+    "arch": "x86_64"
+  },
+  "declared": "L2",
+  "achieved": "L3",
+  "passed": true,
+  "started_at": "2026-10-24T19:44:56.88Z",
+  "duration_ms": 5969,
+  "summary": {
+    "pass": 78,
+    "fail": 0,
+    "untested": 0,
+    "not_applicable": 6
+  },
+  "checks": [
+    {
+      "id": "L0.describe",
+      "level": "L0",
+      "status": "pass",
+      "message": "returned a descriptor",
+      "duration_ms": 2
+    },
+    {
+      "id": "L0.descriptor",
+      "level": "L0",
+      "status": "pass",
+      "message": "valid: device 'modbus.chamber-01', 9 capabilities",
+      "duration_ms": 2
+    },
+    {
+      "id": "L0.adapter_id",
+      "level": "L0",
+      "status": "pass",
+      "message": "'openmhs.modbus'",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.describe_stable",
+      "level": "L0",
+      "status": "pass",
+      "message": "same descriptor both times",
+      "duration_ms": 27
+    },
+    {
+      "id": "L0.connect",
+      "level": "L0",
+      "status": "pass",
+      "message": "connected and registered",
+      "duration_ms": 58
+    },
+    {
+      "id": "L0.health",
+      "level": "L0",
+      "status": "pass",
+      "message": "healthy",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.shutdown",
+      "level": "L0",
+      "status": "pass",
+      "message": "shut down cleanly",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "chamber.temperature",
+      "status": "pass",
+      "message": "read 21.5 Cel",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.971Z",
+          "value": {
+            "unit": "Cel",
+            "value": 21.5
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "chamber.temperature",
+      "status": "pass",
+      "message": "21.5 Cel matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "chamber.temperature",
+      "status": "pass",
+      "message": "1 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.971Z",
+          "value": {
+            "unit": "Cel",
+            "value": 21.5
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "chamber.temperature",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "heater.setpoint",
+      "status": "pass",
+      "message": "read 25 Cel",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.972Z",
+          "value": {
+            "unit": "Cel",
+            "value": 25.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "heater.setpoint",
+      "status": "pass",
+      "message": "25 Cel matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "heater.setpoint",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.972Z",
+          "value": {
+            "unit": "Cel",
+            "value": 25.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "heater.setpoint",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "heater.enabled",
+      "status": "pass",
+      "message": "read false",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.972Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "heater.enabled",
+      "status": "pass",
+      "message": "false matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "heater.enabled",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.972Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "heater.enabled",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "heater.power",
+      "status": "pass",
+      "message": "read 0 W",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.973Z",
+          "value": {
+            "unit": "W",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "heater.power",
+      "status": "pass",
+      "message": "0 W matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "heater.power",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.973Z",
+          "value": {
+            "unit": "W",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "heater.power",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "fan.speed",
+      "status": "pass",
+      "message": "read 'off'",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.973Z",
+          "value": "off"
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "fan.speed",
+      "status": "pass",
+      "message": "'off' matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "fan.speed",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.973Z",
+          "value": "off"
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "fan.speed",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "door.closed",
+      "status": "pass",
+      "message": "read true",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.973Z",
+          "value": true
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "door.closed",
+      "status": "pass",
+      "message": "true matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "door.closed",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.973Z",
+          "value": true
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "door.closed",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "alarm.active",
+      "status": "pass",
+      "message": "read true",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.974Z",
+          "value": true
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "alarm.active",
+      "status": "pass",
+      "message": "true matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "alarm.active",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.974Z",
+          "value": true
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "alarm.active",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.subscribe",
+      "level": "L1",
+      "status": "not_applicable",
+      "message": "deferred: the adapter contract (v0.1) has no subscription API, so there is nothing to test yet (ADR-0013)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "chamber.temperature",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 1
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "heater.setpoint",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 1
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "heater.enabled",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 1
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "heater.power",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 1
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "fan.speed",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 1
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "door.closed",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "alarm.active",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.health",
+      "level": "L1",
+      "status": "pass",
+      "message": "disconnected: An established connection was aborted by the software in your host machine. (os error 10053)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.reconnect",
+      "level": "L1",
+      "status": "pass",
+      "message": "back after 6 ms",
+      "duration_ms": 6
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "heater.setpoint",
+      "status": "pass",
+      "message": "carried out in 1 ms (expected about 50 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-e29f-73b4-989f-79cb11ca5c26",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "heater.setpoint",
+            "device": "modbus.chamber-01"
+          },
+          "value": {
+            "unit": "Cel",
+            "value": 31.0
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "heater.setpoint",
+          "expected": {
+            "unit": "Cel",
+            "value": 31.0
+          },
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:44:56.999Z",
+            "value": {
+              "unit": "Cel",
+              "value": 31.0
+            }
+          }
+        }
+      },
+      "duration_ms": 11
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "heater.setpoint",
+      "status": "pass",
+      "message": "VERIFIED: 'heater.setpoint' read back 31 Cel",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "heater.setpoint",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "the device refused the value (exception IllegalDataValue)"
+          }
+        },
+        "command_id": "01a16f71-e2aa-7572-8c59-979210886a59",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "heater.setpoint",
+            "device": "modbus.chamber-01"
+          },
+          "value": {
+            "unit": "Cel",
+            "value": 37.0
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 5
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "heater.setpoint",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "mismatching function codes: 6 Ok(Custom(65, b\"\\xde\\xad\"))"
+          }
+        },
+        "command_id": "01a16f71-e2af-716e-b0d8-e65300260645",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "heater.setpoint",
+            "device": "modbus.chamber-01"
+          },
+          "value": {
+            "unit": "Cel",
+            "value": 37.0
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 4
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "heater.setpoint",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply in time"
+          }
+        },
+        "command_id": "01a16f71-e2b5-7013-9f48-b77bfe1856a5",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "heater.setpoint",
+            "device": "modbus.chamber-01"
+          },
+          "value": {
+            "unit": "Cel",
+            "value": 43.0
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 515
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "heater.setpoint",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'heater.setpoint'",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply in time"
+          }
+        },
+        "command_id": "01a16f71-e4bc-72dd-90bf-c1799aefed3b",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "heater.setpoint",
+            "device": "modbus.chamber-01"
+          },
+          "value": {
+            "unit": "Cel",
+            "value": 43.0
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 548
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "heater.setpoint",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "heater.enabled",
+      "status": "pass",
+      "message": "carried out in 1 ms (expected about 50 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-e6de-73ae-9916-539484f75552",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "heater.enabled",
+            "device": "modbus.chamber-01"
+          },
+          "value": true
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "heater.enabled",
+          "expected": true,
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:44:58.085Z",
+            "value": true
+          }
+        }
+      },
+      "duration_ms": 11
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "heater.enabled",
+      "status": "pass",
+      "message": "VERIFIED: 'heater.enabled' read back true",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "heater.enabled",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "the device refused the value (exception IllegalDataValue)"
+          }
+        },
+        "command_id": "01a16f71-e6eb-7316-ae5c-7371cbd645f8",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "heater.enabled",
+            "device": "modbus.chamber-01"
+          },
+          "value": false
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 13
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "heater.enabled",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "mismatching function codes: 5 Ok(Custom(65, b\"\\xde\\xad\"))"
+          }
+        },
+        "command_id": "01a16f71-e6f5-72b2-8677-3f1f84f7c1ef",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "heater.enabled",
+            "device": "modbus.chamber-01"
+          },
+          "value": false
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 5
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "heater.enabled",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply in time"
+          }
+        },
+        "command_id": "01a16f71-e6fc-7659-8fd3-d7ba78622503",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "heater.enabled",
+            "device": "modbus.chamber-01"
+          },
+          "value": true
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 507
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "heater.enabled",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'heater.enabled'",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply in time"
+          }
+        },
+        "command_id": "01a16f71-e8f6-748e-8487-27d4002acf98",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "heater.enabled",
+            "device": "modbus.chamber-01"
+          },
+          "value": true
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 533
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "heater.enabled",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "fan.speed",
+      "status": "pass",
+      "message": "carried out in 2 ms (expected about 50 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-eb0c-713e-bce8-013b1a710b88",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "fan.speed",
+            "device": "modbus.chamber-01"
+          },
+          "value": "low"
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "fan.speed",
+          "expected": "low",
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:44:59.154Z",
+            "value": "low"
+          }
+        }
+      },
+      "duration_ms": 8
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "fan.speed",
+      "status": "pass",
+      "message": "VERIFIED: 'fan.speed' read back 'low'",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "fan.speed",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "the device refused the value (exception IllegalDataValue)"
+          }
+        },
+        "command_id": "01a16f71-eb14-7366-bc2a-d36ac117d56c",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "fan.speed",
+            "device": "modbus.chamber-01"
+          },
+          "value": "off"
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 4
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "fan.speed",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "mismatching function codes: 6 Ok(Custom(65, b\"\\xde\\xad\"))"
+          }
+        },
+        "command_id": "01a16f71-eb18-7791-a224-611ca73948c3",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "fan.speed",
+            "device": "modbus.chamber-01"
+          },
+          "value": "off"
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 3
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "fan.speed",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply in time"
+          }
+        },
+        "command_id": "01a16f71-eb1d-73a5-9123-034616a68390",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "fan.speed",
+            "device": "modbus.chamber-01"
+          },
+          "value": "low"
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 520
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "fan.speed",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'fan.speed'",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply in time"
+          }
+        },
+        "command_id": "01a16f71-ed25-77ca-aef2-cfe93c002e72",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "fan.speed",
+            "device": "modbus.chamber-01"
+          },
+          "value": "low"
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 516
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "fan.speed",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "alarm.acknowledge",
+      "status": "pass",
+      "message": "carried out in 0 ms (expected about 50 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-ef28-70eb-9045-2c56ebe88c34",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "alarm.acknowledge",
+            "device": "modbus.chamber-01"
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "alarm.active",
+          "expected": false,
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:45:00.213Z",
+            "value": false
+          }
+        }
+      },
+      "duration_ms": 13
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "alarm.acknowledge",
+      "status": "pass",
+      "message": "VERIFIED: 'alarm.active' read back false",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "alarm.acknowledge",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "the device refused the value (exception IllegalDataValue)"
+          }
+        },
+        "command_id": "01a16f71-ef36-7622-b7ce-aac924809a79",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "alarm.acknowledge",
+            "device": "modbus.chamber-01"
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 2
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "alarm.acknowledge",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "mismatching function codes: 5 Ok(Custom(65, b\"\\xde\\xad\"))"
+          }
+        },
+        "command_id": "01a16f71-ef38-734f-bd07-ff4b793237fc",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "alarm.acknowledge",
+            "device": "modbus.chamber-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "alarm.acknowledge",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply in time"
+          }
+        },
+        "command_id": "01a16f71-ef3a-7134-b430-77a4e44d4d66",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "alarm.acknowledge",
+            "device": "modbus.chamber-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 512
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "alarm.acknowledge",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'alarm.active' (the readback already held before the command, so this shows the path, not that this command applied)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply in time"
+          }
+        },
+        "command_id": "01a16f71-f13b-77e3-92e9-986c35b32319",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "alarm.acknowledge",
+            "device": "modbus.chamber-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 507
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "alarm.acknowledge",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "chamber.purge",
+      "status": "pass",
+      "message": "carried out in 0 ms (expected about 50 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-f336-73b7-b807-18f7ec76a5de",
+        "outcome": "unverified",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {
+            "duration": {
+              "unit": "s",
+              "value": 300.5
+            }
+          },
+          "target": {
+            "capability": "chamber.purge",
+            "device": "modbus.chamber-01"
+          }
+        },
+        "state": "UNVERIFIABLE",
+        "verification": {
+          "mode": "none",
+          "reason": "the controller reports no purge state"
+        }
+      },
+      "duration_ms": 2
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "chamber.purge",
+      "status": "pass",
+      "message": "UNVERIFIABLE, as declared (mode: none): the receipt claims nothing beyond the device's report",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "chamber.purge",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "the device refused the value (exception IllegalDataValue)"
+          }
+        },
+        "command_id": "01a16f71-f338-7006-8c1e-3dc870d8a55c",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {
+            "duration": {
+              "unit": "s",
+              "value": 300.5
+            }
+          },
+          "target": {
+            "capability": "chamber.purge",
+            "device": "modbus.chamber-01"
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 1
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "chamber.purge",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "mismatching function codes: 16 Ok(Custom(65, b\"\\xde\\xad\"))"
+          }
+        },
+        "command_id": "01a16f71-f33a-723f-8c7e-a3e5435fe76e",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {
+            "duration": {
+              "unit": "s",
+              "value": 300.5
+            }
+          },
+          "target": {
+            "capability": "chamber.purge",
+            "device": "modbus.chamber-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "chamber.purge",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply in time"
+          }
+        },
+        "command_id": "01a16f71-f33b-71dc-9bf8-ae713d4757a4",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 2000,
+          "operation": "invoke",
+          "params": {
+            "duration": {
+              "unit": "s",
+              "value": 300.5
+            }
+          },
+          "target": {
+            "capability": "chamber.purge",
+            "device": "modbus.chamber-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 504
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "chamber.purge",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME; no readback is declared, so an operator resolves it",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply in time"
+          }
+        },
+        "command_id": "01a16f71-f535-7012-94ea-9515e78f7ba1",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 2000,
+          "operation": "invoke",
+          "params": {
+            "duration": {
+              "unit": "s",
+              "value": 300.5
+            }
+          },
+          "target": {
+            "capability": "chamber.purge",
+            "device": "modbus.chamber-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 509
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "chamber.purge",
+      "status": "pass",
+      "message": "each command reached the device at most once (refuse: 1, garbled: 1, no_response: 1, lost_ack: 1)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.recovery",
+      "level": "L2",
+      "status": "pass",
+      "message": "'heater.setpoint' carried out after the faults cleared",
+      "duration_ms": 12
+    },
+    {
+      "id": "L3.leases",
+      "level": "L3",
+      "capability": "heater.setpoint",
+      "status": "pass",
+      "message": "another principal's command was refused (lease.held), without reaching the device; the holder's was carried out",
+      "duration_ms": 32
+    },
+    {
+      "id": "L3.plan",
+      "level": "L3",
+      "capability": "heater.setpoint",
+      "status": "pass",
+      "message": "a one-step plan succeeded and released its lease; under refuse the plan halted at that step and sent nothing more; under no_response it stopped for a decision instead of guessing",
+      "duration_ms": 545
+    },
+    {
+      "id": "L3.stop",
+      "level": "L3",
+      "status": "not_applicable",
+      "message": "the descriptor declares no stop action",
+      "duration_ms": 0
+    }
+  ]
+}

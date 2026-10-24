@@ -4,6 +4,7 @@ The Rust crate is the reference implementation; this script makes sure the schem
 themselves are portable and behave the same in another language:
 
 - every example under spec/examples/{valid,commands/valid,receipts,events,conformance,manifests}
+  and every report under conformance/reports/,
   passes, and so does every adapters/python/*/manifest*.json,
 - every command under spec/examples/commands/invalid fails,
 - invalid descriptors expected to fail with `descriptor.schema` fail structurally,
@@ -62,6 +63,8 @@ for p in sorted((ex / "receipts").glob("*.json")):
 for p in sorted((ex / "events").glob("*.json")):
     expect("event", p, True)
 for p in sorted((ex / "conformance").glob("*.json")):
+    expect("conformance-report", p, True)
+for p in sorted(ROOT.glob("conformance/reports/*/*.json")):
     expect("conformance-report", p, True)
 for p in sorted((ex / "topology").glob("*.json")):
     expect("topology", p, True)

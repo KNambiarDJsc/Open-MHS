@@ -159,4 +159,5 @@ The report names the subject (adapter id and version, device id, SHA-256 of the
 descriptor) and the `sources` its readings carried (`simulator` means a simulator was
 tested, not hardware). It lists the fixture's faults, the declared and reached levels,
 `passed`, and every check with its status, message and evidence (receipts, readings,
-delivery counts).
+delivery counts). An optional `environment` records the runtime version, operating
+system and architecture that ran the suite, so old reports stay interpretable.

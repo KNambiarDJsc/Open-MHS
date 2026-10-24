@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1029" width="900" height="1029" role="img" aria-label="OpenMHS terminal demo: an agent is refused a 5 V jump and 48 V, a 2 V setpoint is confirmed by readback, and the audit log verifies">
+<style>
+.bg{fill:#0d1117} .bar{fill:#161b22}
+.l{font:12px ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;white-space:pre;fill:#c9d1d9;opacity:0;animation:show .01s forwards}
+.prompt{fill:#e6edf3;font-weight:600} .comment{fill:#7d8590} .bad{fill:#ff7b72} .good{fill:#7ee787}
+@keyframes show{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.l{opacity:1;animation:none}}
+</style>
+<rect class="bg" width="900" height="1029" rx="8"/>
+<rect class="bar" width="900" height="28" rx="8"/><rect class="bar" y="14" width="900" height="14"/>
+<circle cx="18" cy="14" r="5" fill="#ff5f56"/><circle cx="36" cy="14" r="5" fill="#ffbd2e"/><circle cx="54" cy="14" r="5" fill="#27c93f"/>
+<text x="450" y="18" text-anchor="middle" style="font:11px ui-monospace,Menlo,Consolas,monospace;fill:#7d8590">openmhs · simulated devices only</text>
+<text class="l comment" style="animation-delay:1.00s" x="18" y="61" xml:space="preserve"># terminal 1:  openmhs serve --sim</text>
+<text class="l comment" style="animation-delay:1.60s" x="18" y="78" xml:space="preserve"># terminal 2, as the operator: allow an agent to use the power supply</text>
+<text class="l prompt" style="animation-delay:2.50s" x="18" y="95" xml:space="preserve">$ openmhs devices list</text>
+<text class="l out" style="animation-delay:2.57s" x="18" y="112" xml:space="preserve">sim.axis-01      Simulated single-axis linear stage           openmhs.sim.axis       8 capabilities</text>
+<text class="l out" style="animation-delay:2.64s" x="18" y="129" xml:space="preserve">sim.psu-01       Simulated single-channel programmable power supply openmhs.sim.psu        7 capabilities</text>
+<text class="l out" style="animation-delay:2.71s" x="18" y="146" xml:space="preserve">sim.thermo-01    Simulated ambient temperature sensor         openmhs.sim.thermo     3 capabilities</text>
+<text class="l out" style="animation-delay:2.86s" x="18" y="163" xml:space="preserve"></text>
+<text class="l prompt" style="animation-delay:3.76s" x="18" y="180" xml:space="preserve">$ openmhs grants add --id agent-psu --principal agent:demo --device sim.psu-01 --capability &#x27;*&#x27; --ops read,write --effect allow</text>
+<text class="l good" style="animation-delay:3.83s" x="18" y="197" xml:space="preserve">added agent-psu            allow            agent:demo read,write on sim.psu-01 / *</text>
+<text class="l out" style="animation-delay:3.98s" x="18" y="214" xml:space="preserve"></text>
+<text class="l prompt" style="animation-delay:4.88s" x="18" y="231" xml:space="preserve">$ openmhs tokens create agent:demo --any-scope</text>
+<text class="l good" style="animation-delay:4.95s" x="18" y="248" xml:space="preserve">created tok_eb7db73ad4662aae for agent:demo (agent)</text>
+<text class="l out" style="animation-delay:5.02s" x="18" y="265" xml:space="preserve">scope: * / * [read, write, subscribe, invoke]</text>
+<text class="l out" style="animation-delay:5.09s" x="18" y="282" xml:space="preserve">token: omhs_&lt;redacted&gt;</text>
+<text class="l out" style="animation-delay:5.16s" x="18" y="299" xml:space="preserve">This is shown once. Pass it with --token or OPENMHS_TOKEN.</text>
+<text class="l prompt" style="animation-delay:6.06s" x="18" y="316" xml:space="preserve">$ export OPENMHS_TOKEN=omhs_&lt;redacted&gt;</text>
+<text class="l out" style="animation-delay:6.21s" x="18" y="333" xml:space="preserve"></text>
+<text class="l comment" style="animation-delay:6.81s" x="18" y="350" xml:space="preserve"># now act as the agent</text>
+<text class="l prompt" style="animation-delay:7.71s" x="18" y="367" xml:space="preserve">$ openmhs exec sim.psu-01 power.output.voltage.setpoint --value 5V</text>
+<text class="l out" style="animation-delay:7.78s" x="18" y="384" xml:space="preserve">command  01a16f7b-dac5-73d4-a651-dcb8399aafc5  by agent:demo</text>
+<text class="l out" style="animation-delay:7.85s" x="18" y="401" xml:space="preserve">target   sim.psu-01 / power.output.voltage.setpoint  write 5 V</text>
+<text class="l bad" style="animation-delay:7.92s" x="18" y="418" xml:space="preserve">state    DENIED  -&gt; denied (nothing sent to the device)</text>
+<text class="l out" style="animation-delay:7.99s" x="18" y="435" xml:space="preserve">policy   deny  (rules: agent-psu)</text>
+<text class="l bad" style="animation-delay:8.06s" x="18" y="452" xml:space="preserve">  denied command.slew_exceeded: change of 5 V exceeds the limit of 2 V per 1000 ms</text>
+<text class="l out" style="animation-delay:8.13s" x="18" y="469" xml:space="preserve">history  19:55:50.340  CREATED</text>
+<text class="l out" style="animation-delay:8.20s" x="18" y="486" xml:space="preserve">         19:55:50.343  VALIDATING</text>
+<text class="l bad" style="animation-delay:8.27s" x="18" y="503" xml:space="preserve">         19:55:50.345  DENIED  change of 5 V exceeds the limit of 2 V per 1000 ms</text>
+<text class="l out" style="animation-delay:8.42s" x="18" y="520" xml:space="preserve"></text>
+<text class="l prompt" style="animation-delay:9.32s" x="18" y="537" xml:space="preserve">$ openmhs exec sim.psu-01 power.output.voltage.setpoint --value 2V</text>
+<text class="l out" style="animation-delay:9.39s" x="18" y="554" xml:space="preserve">command  01a16f7b-dae9-77c9-bf0b-b7b486c5aacf  by agent:demo</text>
+<text class="l out" style="animation-delay:9.46s" x="18" y="571" xml:space="preserve">target   sim.psu-01 / power.output.voltage.setpoint  write 2 V</text>
+<text class="l good" style="animation-delay:9.53s" x="18" y="588" xml:space="preserve">state    VERIFIED  -&gt; succeeded (confirmed by readback)</text>
+<text class="l out" style="animation-delay:9.60s" x="18" y="605" xml:space="preserve">policy   allow  (rules: agent-psu)</text>
+<text class="l out" style="animation-delay:9.67s" x="18" y="622" xml:space="preserve">device   acknowledged; reported applied</text>
+<text class="l out" style="animation-delay:9.74s" x="18" y="639" xml:space="preserve">verify   readback power.output.voltage.setpoint  expected 2 V  observed 2 V  (GOOD, simulator)  MATCH</text>
+<text class="l out" style="animation-delay:9.81s" x="18" y="656" xml:space="preserve">history  19:55:50.377  CREATED</text>
+<text class="l out" style="animation-delay:9.88s" x="18" y="673" xml:space="preserve">         19:55:50.378  VALIDATING</text>
+<text class="l out" style="animation-delay:9.95s" x="18" y="690" xml:space="preserve">         19:55:50.393  APPROVED</text>
+<text class="l out" style="animation-delay:10.02s" x="18" y="707" xml:space="preserve">         19:55:50.395  DISPATCHED  intent journaled</text>
+<text class="l out" style="animation-delay:10.09s" x="18" y="724" xml:space="preserve">         19:55:50.406  ACCEPTED</text>
+<text class="l out" style="animation-delay:10.16s" x="18" y="741" xml:space="preserve">         19:55:50.407  APPLIED  device reports applied</text>
+<text class="l good" style="animation-delay:10.23s" x="18" y="758" xml:space="preserve">         19:55:50.467  VERIFIED  readback 2 V matches</text>
+<text class="l out" style="animation-delay:10.38s" x="18" y="775" xml:space="preserve"></text>
+<text class="l prompt" style="animation-delay:11.28s" x="18" y="792" xml:space="preserve">$ openmhs exec sim.psu-01 power.output.voltage.setpoint --value 48V</text>
+<text class="l out" style="animation-delay:11.35s" x="18" y="809" xml:space="preserve">command  01a16f7b-db69-75d9-8b34-47db1a6967ce  by agent:demo</text>
+<text class="l out" style="animation-delay:11.42s" x="18" y="826" xml:space="preserve">target   sim.psu-01 / power.output.voltage.setpoint  write 48 V</text>
+<text class="l bad" style="animation-delay:11.49s" x="18" y="843" xml:space="preserve">state    DENIED  -&gt; denied (nothing sent to the device)</text>
+<text class="l out" style="animation-delay:11.56s" x="18" y="860" xml:space="preserve">policy   deny  (rules: agent-psu)</text>
+<text class="l bad" style="animation-delay:11.63s" x="18" y="877" xml:space="preserve">  denied command.value.out_of_range: 48 V is outside the allowed range 0..12 V</text>
+<text class="l out" style="animation-delay:11.70s" x="18" y="894" xml:space="preserve">history  19:55:50.505  CREATED</text>
+<text class="l out" style="animation-delay:11.77s" x="18" y="911" xml:space="preserve">         19:55:50.506  VALIDATING</text>
+<text class="l bad" style="animation-delay:11.84s" x="18" y="928" xml:space="preserve">         19:55:50.520  DENIED  48 V is outside the allowed range 0..12 V</text>
+<text class="l out" style="animation-delay:11.99s" x="18" y="945" xml:space="preserve"></text>
+<text class="l comment" style="animation-delay:12.59s" x="18" y="962" xml:space="preserve"># and as the operator again</text>
+<text class="l prompt" style="animation-delay:13.49s" x="18" y="979" xml:space="preserve">$ openmhs audit verify</text>
+<text class="l good" style="animation-delay:13.56s" x="18" y="996" xml:space="preserve">audit log intact: 21 records, hash chain verified</text>
+</svg>

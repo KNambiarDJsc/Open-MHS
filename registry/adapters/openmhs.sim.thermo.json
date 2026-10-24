@@ -1,0 +1,20 @@
+{
+  "openmhs_registry": "0.1",
+  "id": "openmhs.sim.thermo",
+  "name": "Simulated ambient temperature sensor",
+  "protocol": "builtin",
+  "maintainer": "KNambiarDJsc",
+  "source": "crates/openmhs-sim",
+  "profiles": [],
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "conformance_profile": "L1",
+  "category": "official",
+  "peer": "in-process-simulator",
+  "report": {
+    "path": "conformance/reports/sim.thermo-01/2026-10-24-v0.1.0-windows-x86_64.json",
+    "sha256": "9f1e63a8773782f1fb07850d1dff4c5e2adc46ee2c2465a245d21b60cdd82041",
+    "verified_at": "2026-10-24"
+  },
+  "notes": "The virtual lab's thermometer. A simulator, not a device model."
+}

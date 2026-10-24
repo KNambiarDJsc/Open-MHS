@@ -1,0 +1,22 @@
+{
+  "openmhs_registry": "0.1",
+  "id": "openmhs.scpi",
+  "name": "SCPI profile adapter (TCP and serial)",
+  "protocol": "scpi",
+  "maintainer": "KNambiarDJsc",
+  "source": "adapters/openmhs-scpi",
+  "profiles": [
+    "adapters/openmhs-scpi/profiles/bench-psu.json"
+  ],
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "conformance_profile": "L2",
+  "category": "official",
+  "peer": "protocol-simulator",
+  "report": {
+    "path": "conformance/reports/scpi.psu-01/2026-10-24-v0.1.0-windows-x86_64.json",
+    "sha256": "a65318bdcb2136a098f8308cf97da2e74bb1e6ce87a4bf6f15deabffd52305b9",
+    "verified_at": "2026-10-24"
+  },
+  "notes": "Tested over TCP against an in-repo instrument simulator. Serial is untested on Windows."
+}

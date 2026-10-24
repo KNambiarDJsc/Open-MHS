@@ -1,0 +1,22 @@
+{
+  "openmhs_registry": "0.1",
+  "id": "openmhs.mqtt",
+  "name": "MQTT profile adapter",
+  "protocol": "mqtt",
+  "maintainer": "KNambiarDJsc",
+  "source": "adapters/openmhs-mqtt",
+  "profiles": [
+    "adapters/openmhs-mqtt/profiles/greenhouse-node.json"
+  ],
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "conformance_profile": "L2",
+  "category": "official",
+  "peer": "protocol-simulator",
+  "report": {
+    "path": "conformance/reports/mqtt.greenhouse-01/2026-10-24-v0.1.0-windows-x86_64.json",
+    "sha256": "ca3c310b22b989c05511ff0ec24cbf538fa8f79b8551bc5d34d60725b817b6a5",
+    "verified_at": "2026-10-24"
+  },
+  "notes": "Tested against an in-repo broker simulator. TLS is verified when configured."
+}

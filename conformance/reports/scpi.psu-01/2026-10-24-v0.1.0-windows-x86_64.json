@@ -1,0 +1,1410 @@
+{
+  "openmhs_conformance": "0.1",
+  "suite_version": "0.1.0",
+  "subject": {
+    "adapter": "openmhs.scpi",
+    "adapter_version": "0.1.0",
+    "device": "scpi.psu-01",
+    "descriptor_sha256": "db785bf896019ce6444319235985a636d89280696770ef7552cce55b3790276a",
+    "sources": [
+      "simulator"
+    ]
+  },
+  "fixture": {
+    "faults": [
+      "link_down",
+      "no_response",
+      "lost_ack",
+      "garbled",
+      "refuse"
+    ],
+    "counts_deliveries": true
+  },
+  "environment": {
+    "runtime_version": "0.1.0",
+    "os": "windows",
+    "arch": "x86_64"
+  },
+  "declared": "L2",
+  "achieved": "L3",
+  "passed": true,
+  "started_at": "2026-10-24T19:44:56.88Z",
+  "duration_ms": 6160,
+  "summary": {
+    "pass": 73,
+    "fail": 0,
+    "untested": 0,
+    "not_applicable": 6
+  },
+  "checks": [
+    {
+      "id": "L0.describe",
+      "level": "L0",
+      "status": "pass",
+      "message": "returned a descriptor",
+      "duration_ms": 4
+    },
+    {
+      "id": "L0.descriptor",
+      "level": "L0",
+      "status": "pass",
+      "message": "valid: device 'scpi.psu-01', 8 capabilities",
+      "duration_ms": 2
+    },
+    {
+      "id": "L0.adapter_id",
+      "level": "L0",
+      "status": "pass",
+      "message": "'openmhs.scpi'",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.describe_stable",
+      "level": "L0",
+      "status": "pass",
+      "message": "same descriptor both times",
+      "duration_ms": 37
+    },
+    {
+      "id": "L0.connect",
+      "level": "L0",
+      "status": "pass",
+      "message": "connected and registered",
+      "duration_ms": 45
+    },
+    {
+      "id": "L0.health",
+      "level": "L0",
+      "status": "pass",
+      "message": "healthy",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.shutdown",
+      "level": "L0",
+      "status": "pass",
+      "message": "shut down cleanly",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "psu.voltage.setpoint",
+      "status": "pass",
+      "message": "read 5 V",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.972Z",
+          "value": {
+            "unit": "V",
+            "value": 5.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "psu.voltage.setpoint",
+      "status": "pass",
+      "message": "5 V matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "psu.voltage.setpoint",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.972Z",
+          "value": {
+            "unit": "V",
+            "value": 5.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "psu.voltage.setpoint",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "psu.current.limit",
+      "status": "pass",
+      "message": "read 1 A",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.972Z",
+          "value": {
+            "unit": "A",
+            "value": 1.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "psu.current.limit",
+      "status": "pass",
+      "message": "1 A matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "psu.current.limit",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.972Z",
+          "value": {
+            "unit": "A",
+            "value": 1.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "psu.current.limit",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "psu.output.enabled",
+      "status": "pass",
+      "message": "read false",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.972Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "psu.output.enabled",
+      "status": "pass",
+      "message": "false matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "psu.output.enabled",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.972Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "psu.output.enabled",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "psu.voltage.measured",
+      "status": "pass",
+      "message": "read 0 V",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.973Z",
+          "value": {
+            "unit": "V",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "psu.voltage.measured",
+      "status": "pass",
+      "message": "0 V matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "psu.voltage.measured",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.973Z",
+          "value": {
+            "unit": "V",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "psu.voltage.measured",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "psu.current.measured",
+      "status": "pass",
+      "message": "read 0 A",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.973Z",
+          "value": {
+            "unit": "A",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "psu.current.measured",
+      "status": "pass",
+      "message": "0 A matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "psu.current.measured",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.973Z",
+          "value": {
+            "unit": "A",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "psu.current.measured",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "psu.protection.tripped",
+      "status": "pass",
+      "message": "read false",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.974Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "psu.protection.tripped",
+      "status": "pass",
+      "message": "false matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "psu.protection.tripped",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.974Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "psu.protection.tripped",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.subscribe",
+      "level": "L1",
+      "status": "not_applicable",
+      "message": "deferred: the adapter contract (v0.1) has no subscription API, so there is nothing to test yet (ADR-0013)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "psu.voltage.setpoint",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "psu.current.limit",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 1
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "psu.output.enabled",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 1
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "psu.voltage.measured",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "psu.current.measured",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "psu.protection.tripped",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.health",
+      "level": "L1",
+      "status": "pass",
+      "message": "disconnected: connection lost: An existing connection was forcibly closed by the remote host. (os error 10054)",
+      "duration_ms": 1
+    },
+    {
+      "id": "L1.reconnect",
+      "level": "L1",
+      "status": "pass",
+      "message": "back after 4 ms",
+      "duration_ms": 4
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "psu.voltage.setpoint",
+      "status": "pass",
+      "message": "carried out in 2 ms (expected about 50 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-e29e-7627-922a-ca2a7163e245",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "psu.voltage.setpoint",
+            "device": "scpi.psu-01"
+          },
+          "value": {
+            "unit": "V",
+            "value": 6.5
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "psu.voltage.setpoint",
+          "expected": {
+            "unit": "V",
+            "value": 6.5
+          },
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:44:56.999Z",
+            "value": {
+              "unit": "V",
+              "value": 6.5
+            }
+          }
+        }
+      },
+      "duration_ms": 12
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "psu.voltage.setpoint",
+      "status": "pass",
+      "message": "VERIFIED: 'psu.voltage.setpoint' read back 6.5 V",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "psu.voltage.setpoint",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "-221: Settings conflict; refused by the device (fault injection)"
+          }
+        },
+        "command_id": "01a16f71-e2aa-7572-8c59-9793c51a2833",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "psu.voltage.setpoint",
+            "device": "scpi.psu-01"
+          },
+          "value": {
+            "unit": "V",
+            "value": 8.0
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 6
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "psu.voltage.setpoint",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "'SOUR:VOLT 8;*OPC?' answered \"\\u{1}#?K\" instead of 1"
+          }
+        },
+        "command_id": "01a16f71-e2b0-730b-8b75-359dbb74ae58",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "psu.voltage.setpoint",
+            "device": "scpi.psu-01"
+          },
+          "value": {
+            "unit": "V",
+            "value": 8.0
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 6
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "psu.voltage.setpoint",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply to 'SOUR:VOLT 9.5;*OPC?'"
+          }
+        },
+        "command_id": "01a16f71-e2b7-7088-93fa-1e9b6fa8052c",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "psu.voltage.setpoint",
+            "device": "scpi.psu-01"
+          },
+          "value": {
+            "unit": "V",
+            "value": 9.5
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 514
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "psu.voltage.setpoint",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'psu.voltage.setpoint'",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply to 'SOUR:VOLT 9.5;*OPC?'"
+          }
+        },
+        "command_id": "01a16f71-e4c0-7353-93f8-fc6bc185dda8",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "psu.voltage.setpoint",
+            "device": "scpi.psu-01"
+          },
+          "value": {
+            "unit": "V",
+            "value": 9.5
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 542
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "psu.voltage.setpoint",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "psu.current.limit",
+      "status": "pass",
+      "message": "carried out in 4 ms (expected about 50 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-e6d7-703f-8d47-3b530ae96ab5",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "psu.current.limit",
+            "device": "scpi.psu-01"
+          },
+          "value": {
+            "unit": "A",
+            "value": 1.25
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "psu.current.limit",
+          "expected": {
+            "unit": "A",
+            "value": 1.25
+          },
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:44:58.078Z",
+            "value": {
+              "unit": "A",
+              "value": 1.25
+            }
+          }
+        }
+      },
+      "duration_ms": 8
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "psu.current.limit",
+      "status": "pass",
+      "message": "VERIFIED: 'psu.current.limit' read back 1.25 A",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "psu.current.limit",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "-221: Settings conflict; refused by the device (fault injection)"
+          }
+        },
+        "command_id": "01a16f71-e6e0-741e-9ab3-4d9779fc9405",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "psu.current.limit",
+            "device": "scpi.psu-01"
+          },
+          "value": {
+            "unit": "A",
+            "value": 1.5
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 5
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "psu.current.limit",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "'SOUR:CURR 1.5;*OPC?' answered \"\\u{1}#?K\" instead of 1"
+          }
+        },
+        "command_id": "01a16f71-e6eb-7316-ae5c-7370231fdac4",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "psu.current.limit",
+            "device": "scpi.psu-01"
+          },
+          "value": {
+            "unit": "A",
+            "value": 1.5
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 9
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "psu.current.limit",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply to 'SOUR:CURR 1.75;*OPC?'"
+          }
+        },
+        "command_id": "01a16f71-e6ef-738f-bfe5-a55c230289f5",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "psu.current.limit",
+            "device": "scpi.psu-01"
+          },
+          "value": {
+            "unit": "A",
+            "value": 1.75
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 515
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "psu.current.limit",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'psu.current.limit'",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply to 'SOUR:CURR 1.75;*OPC?'"
+          }
+        },
+        "command_id": "01a16f71-e8fa-74b1-8a0e-49e3deb48e7a",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "psu.current.limit",
+            "device": "scpi.psu-01"
+          },
+          "value": {
+            "unit": "A",
+            "value": 1.75
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 539
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "psu.current.limit",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "psu.output.enabled",
+      "status": "pass",
+      "message": "carried out in 2 ms (expected about 50 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-eb0f-779a-a8fc-355a26c71183",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "psu.output.enabled",
+            "device": "scpi.psu-01"
+          },
+          "value": true
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "psu.output.enabled",
+          "expected": true,
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:44:59.158Z",
+            "value": true
+          }
+        }
+      },
+      "duration_ms": 9
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "psu.output.enabled",
+      "status": "pass",
+      "message": "VERIFIED: 'psu.output.enabled' read back true",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "psu.output.enabled",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "-221: Settings conflict; refused by the device (fault injection)"
+          }
+        },
+        "command_id": "01a16f71-eb18-7791-a224-611b25adf7ff",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "psu.output.enabled",
+            "device": "scpi.psu-01"
+          },
+          "value": false
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 6
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "psu.output.enabled",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "'OUTP OFF;*OPC?' answered \"\\u{1}#?K\" instead of 1"
+          }
+        },
+        "command_id": "01a16f71-eb1e-752e-bbdd-ece0a3b00f44",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "psu.output.enabled",
+            "device": "scpi.psu-01"
+          },
+          "value": false
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 4
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "psu.output.enabled",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply to 'OUTP ON;*OPC?'"
+          }
+        },
+        "command_id": "01a16f71-eb23-7370-a80b-ff65dddda1de",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "psu.output.enabled",
+            "device": "scpi.psu-01"
+          },
+          "value": true
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 513
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "psu.output.enabled",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'psu.output.enabled'",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply to 'OUTP ON;*OPC?'"
+          }
+        },
+        "command_id": "01a16f71-ed35-73ab-bc55-3dd70fb20bf9",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "psu.output.enabled",
+            "device": "scpi.psu-01"
+          },
+          "value": true
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 537
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "psu.output.enabled",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "psu.protection.clear",
+      "status": "pass",
+      "message": "carried out in 1 ms (expected about 50 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-ef3d-7153-99cb-f259ba28fa27",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "psu.protection.clear",
+            "device": "scpi.psu-01"
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "psu.protection.tripped",
+          "expected": false,
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:45:00.233Z",
+            "value": false
+          }
+        }
+      },
+      "duration_ms": 12
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "psu.protection.clear",
+      "status": "pass",
+      "message": "VERIFIED: 'psu.protection.tripped' read back false",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "psu.protection.clear",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "-221: Settings conflict; refused by the device (fault injection)"
+          }
+        },
+        "command_id": "01a16f71-ef4b-7121-b7a2-9764895f2f05",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "psu.protection.clear",
+            "device": "scpi.psu-01"
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 2
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "psu.protection.clear",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "'OUTP:PROT:CLE;*OPC?' answered \"\\u{1}#?K\" instead of 1"
+          }
+        },
+        "command_id": "01a16f71-ef4d-761a-9495-c970365b48b4",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "psu.protection.clear",
+            "device": "scpi.psu-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 2
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "psu.protection.clear",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply to 'OUTP:PROT:CLE;*OPC?'"
+          }
+        },
+        "command_id": "01a16f71-ef4f-74a8-a661-5a115b190d9f",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "psu.protection.clear",
+            "device": "scpi.psu-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 516
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "psu.protection.clear",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'psu.protection.tripped' (the readback already held before the command, so this shows the path, not that this command applied)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply to 'OUTP:PROT:CLE;*OPC?'"
+          }
+        },
+        "command_id": "01a16f71-f166-74f8-aedd-7eff841c4316",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "psu.protection.clear",
+            "device": "scpi.psu-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 551
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "psu.protection.clear",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "psu.trigger",
+      "status": "pass",
+      "message": "carried out in 1 ms (expected about 50 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-f37c-70a2-b4c2-c01f8fa21ab2",
+        "outcome": "unverified",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "psu.trigger",
+            "device": "scpi.psu-01"
+          }
+        },
+        "state": "UNVERIFIABLE",
+        "verification": {
+          "mode": "none",
+          "reason": "a sequence leaves no state the instrument reports"
+        }
+      },
+      "duration_ms": 3
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "psu.trigger",
+      "status": "pass",
+      "message": "UNVERIFIABLE, as declared (mode: none): the receipt claims nothing beyond the device's report",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "psu.trigger",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "-221: Settings conflict; refused by the device (fault injection)"
+          }
+        },
+        "command_id": "01a16f71-f37f-7709-8e8f-9f2b335e8070",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "psu.trigger",
+            "device": "scpi.psu-01"
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 1
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "psu.trigger",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "'*TRG;*OPC?' answered \"\\u{1}#?K\" instead of 1"
+          }
+        },
+        "command_id": "01a16f71-f381-759f-ba04-5376cd46ac71",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "psu.trigger",
+            "device": "scpi.psu-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "psu.trigger",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply to '*TRG;*OPC?'"
+          }
+        },
+        "command_id": "01a16f71-f383-72f7-9f21-754da99e4827",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 2000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "psu.trigger",
+            "device": "scpi.psu-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 509
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "psu.trigger",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME; no readback is declared, so an operator resolves it",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no reply to '*TRG;*OPC?'"
+          }
+        },
+        "command_id": "01a16f71-f590-7449-a56c-625709b268e5",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 2000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "psu.trigger",
+            "device": "scpi.psu-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 529
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "psu.trigger",
+      "status": "pass",
+      "message": "each command reached the device at most once (refuse: 1, garbled: 1, no_response: 1, lost_ack: 1)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.recovery",
+      "level": "L2",
+      "status": "pass",
+      "message": "'psu.voltage.setpoint' carried out after the faults cleared",
+      "duration_ms": 33
+    },
+    {
+      "id": "L3.leases",
+      "level": "L3",
+      "capability": "psu.voltage.setpoint",
+      "status": "pass",
+      "message": "another principal's command was refused (lease.held), without reaching the device; the holder's was carried out",
+      "duration_ms": 63
+    },
+    {
+      "id": "L3.plan",
+      "level": "L3",
+      "capability": "psu.voltage.setpoint",
+      "status": "pass",
+      "message": "a one-step plan succeeded and released its lease; under refuse the plan halted at that step and sent nothing more; under no_response it stopped for a decision instead of guessing",
+      "duration_ms": 590
+    },
+    {
+      "id": "L3.stop",
+      "level": "L3",
+      "status": "not_applicable",
+      "message": "the descriptor declares no stop action",
+      "duration_ms": 0
+    }
+  ]
+}

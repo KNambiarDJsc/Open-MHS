@@ -1,0 +1,22 @@
+{
+  "openmhs_registry": "0.1",
+  "id": "openmhs.http",
+  "name": "HTTP profile adapter",
+  "protocol": "http",
+  "maintainer": "KNambiarDJsc",
+  "source": "adapters/openmhs-http",
+  "profiles": [
+    "adapters/openmhs-http/profiles/led-controller.json"
+  ],
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "conformance_profile": "L2",
+  "category": "official",
+  "peer": "protocol-simulator",
+  "report": {
+    "path": "conformance/reports/http.led-01/2026-10-24-v0.1.0-windows-x86_64.json",
+    "sha256": "0325f77fd58afb185a70759de31b1372a6c9193fd4a866ff9cdeedc92e2ec2ac",
+    "verified_at": "2026-10-24"
+  },
+  "notes": "Tested against an in-repo HTTP device simulator."
+}

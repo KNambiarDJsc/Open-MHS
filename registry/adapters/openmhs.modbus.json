@@ -1,0 +1,22 @@
+{
+  "openmhs_registry": "0.1",
+  "id": "openmhs.modbus",
+  "name": "Modbus TCP profile adapter",
+  "protocol": "modbus-tcp",
+  "maintainer": "KNambiarDJsc",
+  "source": "adapters/openmhs-modbus",
+  "profiles": [
+    "adapters/openmhs-modbus/profiles/climate-chamber.json"
+  ],
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "conformance_profile": "L2",
+  "category": "official",
+  "peer": "protocol-simulator",
+  "report": {
+    "path": "conformance/reports/modbus.chamber-01/2026-10-24-v0.1.0-windows-x86_64.json",
+    "sha256": "71e5068aade6260138d8a858f1feeb81967f6288367d92718e2cb5a75f016ca7",
+    "verified_at": "2026-10-24"
+  },
+  "notes": "Tested against the in-repo Modbus simulator over loopback sockets. No Modbus RTU."
+}

@@ -1,0 +1,1008 @@
+{
+  "openmhs_conformance": "0.1",
+  "suite_version": "0.1.0",
+  "subject": {
+    "adapter": "openmhs.mqtt",
+    "adapter_version": "0.1.0",
+    "device": "mqtt.greenhouse-01",
+    "descriptor_sha256": "0f72879876427c15de32355be43536f5ce41f236e43bcae3d958336b6d0803ae",
+    "sources": [
+      "simulator"
+    ]
+  },
+  "fixture": {
+    "faults": [
+      "link_down",
+      "no_response",
+      "lost_ack",
+      "garbled",
+      "refuse"
+    ],
+    "counts_deliveries": true
+  },
+  "environment": {
+    "runtime_version": "0.1.0",
+    "os": "windows",
+    "arch": "x86_64"
+  },
+  "declared": "L2",
+  "achieved": "L3",
+  "passed": true,
+  "started_at": "2026-10-24T19:44:56.88Z",
+  "duration_ms": 4323,
+  "summary": {
+    "pass": 56,
+    "fail": 0,
+    "untested": 0,
+    "not_applicable": 4
+  },
+  "checks": [
+    {
+      "id": "L0.describe",
+      "level": "L0",
+      "status": "pass",
+      "message": "returned a descriptor",
+      "duration_ms": 4
+    },
+    {
+      "id": "L0.descriptor",
+      "level": "L0",
+      "status": "pass",
+      "message": "valid: device 'mqtt.greenhouse-01', 6 capabilities",
+      "duration_ms": 9
+    },
+    {
+      "id": "L0.adapter_id",
+      "level": "L0",
+      "status": "pass",
+      "message": "'openmhs.mqtt'",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.describe_stable",
+      "level": "L0",
+      "status": "pass",
+      "message": "same descriptor both times",
+      "duration_ms": 18
+    },
+    {
+      "id": "L0.connect",
+      "level": "L0",
+      "status": "pass",
+      "message": "connected and registered",
+      "duration_ms": 61
+    },
+    {
+      "id": "L0.health",
+      "level": "L0",
+      "status": "pass",
+      "message": "healthy",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.shutdown",
+      "level": "L0",
+      "status": "pass",
+      "message": "shut down cleanly",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "air.temperature",
+      "status": "pass",
+      "message": "read 24.5 Cel",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.889Z",
+          "value": {
+            "unit": "Cel",
+            "value": 24.5
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "air.temperature",
+      "status": "pass",
+      "message": "24.5 Cel matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "air.temperature",
+      "status": "pass",
+      "message": "86 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.889Z",
+          "value": {
+            "unit": "Cel",
+            "value": 24.5
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "air.temperature",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "air.humidity",
+      "status": "pass",
+      "message": "read 61 %",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.889Z",
+          "value": {
+            "unit": "%",
+            "value": 61.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "air.humidity",
+      "status": "pass",
+      "message": "61 % matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "air.humidity",
+      "status": "pass",
+      "message": "86 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.889Z",
+          "value": {
+            "unit": "%",
+            "value": 61.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "air.humidity",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "tank.level",
+      "status": "pass",
+      "message": "read 80 %",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.889Z",
+          "value": {
+            "unit": "%",
+            "value": 80.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "tank.level",
+      "status": "pass",
+      "message": "80 % matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "tank.level",
+      "status": "pass",
+      "message": "87 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.889Z",
+          "value": {
+            "unit": "%",
+            "value": 80.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "tank.level",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "fan.on",
+      "status": "pass",
+      "message": "read false",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.889Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "fan.on",
+      "status": "pass",
+      "message": "false matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "fan.on",
+      "status": "pass",
+      "message": "88 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.889Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "fan.on",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "vent.position",
+      "status": "pass",
+      "message": "read 20 %",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.889Z",
+          "value": {
+            "unit": "%",
+            "value": 20.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "vent.position",
+      "status": "pass",
+      "message": "20 % matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "vent.position",
+      "status": "pass",
+      "message": "89 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.889Z",
+          "value": {
+            "unit": "%",
+            "value": 20.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "vent.position",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.subscribe",
+      "level": "L1",
+      "status": "not_applicable",
+      "message": "deferred: the adapter contract (v0.1) has no subscription API, so there is nothing to test yet (ADR-0013)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "air.temperature",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 1
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "air.humidity",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "tank.level",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "fan.on",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "vent.position",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.health",
+      "level": "L1",
+      "status": "pass",
+      "message": "disconnected: greenhouse/node-01/ack: no broker connection (Mqtt state: Connection closed by peer abruptly)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.reconnect",
+      "level": "L1",
+      "status": "pass",
+      "message": "back after 347 ms",
+      "duration_ms": 347
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "fan.on",
+      "status": "pass",
+      "message": "carried out in 2 ms (expected about 50 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-e3f0-77e3-8ec1-3f9d07d73474",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "fan.on",
+            "device": "mqtt.greenhouse-01"
+          },
+          "value": true
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "fan.on",
+          "expected": true,
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:44:57.331Z",
+            "value": true
+          }
+        }
+      },
+      "duration_ms": 14
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "fan.on",
+      "status": "pass",
+      "message": "VERIFIED: 'fan.on' read back true",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "fan.on",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "refused by the device (fault injection)"
+          }
+        },
+        "command_id": "01a16f71-e3ff-769b-a11d-83fcf12a42d7",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "fan.on",
+            "device": "mqtt.greenhouse-01"
+          },
+          "value": false
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 4
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "fan.on",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "greenhouse/node-01/ack: not JSON: \"\\u{1}#?K\""
+          }
+        },
+        "command_id": "01a16f71-e404-77ca-9ae0-efb9d8183222",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "fan.on",
+            "device": "mqtt.greenhouse-01"
+          },
+          "value": false
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 5
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "fan.on",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "greenhouse/node-01/set: no acknowledgement on greenhouse/node-01/ack within 500 ms"
+          }
+        },
+        "command_id": "01a16f71-e409-7528-9dc9-941ab24ec556",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "fan.on",
+            "device": "mqtt.greenhouse-01"
+          },
+          "value": true
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 520
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "fan.on",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'fan.on'",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "greenhouse/node-01/set: no acknowledgement on greenhouse/node-01/ack within 500 ms"
+          }
+        },
+        "command_id": "01a16f71-e612-73bd-a143-854b3fd6cf21",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "fan.on",
+            "device": "mqtt.greenhouse-01"
+          },
+          "value": true
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 564
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "fan.on",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "vent.position",
+      "status": "pass",
+      "message": "carried out in 2 ms (expected about 50 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-e846-7087-924a-3caab6fb35b2",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "vent.position",
+            "device": "mqtt.greenhouse-01"
+          },
+          "value": {
+            "unit": "%",
+            "value": 25.0
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "vent.position",
+          "expected": {
+            "unit": "%",
+            "value": 25.0
+          },
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:44:58.455Z",
+            "value": {
+              "unit": "%",
+              "value": 25.0
+            }
+          }
+        }
+      },
+      "duration_ms": 20
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "vent.position",
+      "status": "pass",
+      "message": "VERIFIED: 'vent.position' read back 25 %",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "vent.position",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "refused by the device (fault injection)"
+          }
+        },
+        "command_id": "01a16f71-e85a-7488-bd65-659bc7e52bd7",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "vent.position",
+            "device": "mqtt.greenhouse-01"
+          },
+          "value": {
+            "unit": "%",
+            "value": 30.0
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 4
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "vent.position",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "greenhouse/node-01/ack: not JSON: \"\\u{1}#?K\""
+          }
+        },
+        "command_id": "01a16f71-e85f-73b5-8d94-b88737b0c8e9",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "vent.position",
+            "device": "mqtt.greenhouse-01"
+          },
+          "value": {
+            "unit": "%",
+            "value": 30.0
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 4
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "vent.position",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "greenhouse/node-01/set: no acknowledgement on greenhouse/node-01/ack within 500 ms"
+          }
+        },
+        "command_id": "01a16f71-e863-76b9-8de3-c725932e64ca",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "vent.position",
+            "device": "mqtt.greenhouse-01"
+          },
+          "value": {
+            "unit": "%",
+            "value": 35.0
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 545
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "vent.position",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'vent.position'",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "greenhouse/node-01/set: no acknowledgement on greenhouse/node-01/ack within 500 ms"
+          }
+        },
+        "command_id": "01a16f71-ea85-7526-9d90-208d884c7398",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "vent.position",
+            "device": "mqtt.greenhouse-01"
+          },
+          "value": {
+            "unit": "%",
+            "value": 35.0
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 519
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "vent.position",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "irrigation.dose",
+      "status": "pass",
+      "message": "carried out in 2 ms (expected about 100 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-ec8d-7026-8258-f0bf6ecd61a6",
+        "outcome": "unverified",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {
+            "volume": {
+              "unit": "mL",
+              "value": 255.0
+            }
+          },
+          "target": {
+            "capability": "irrigation.dose",
+            "device": "mqtt.greenhouse-01"
+          }
+        },
+        "state": "UNVERIFIABLE",
+        "verification": {
+          "mode": "none",
+          "reason": "the node reports no dosing state"
+        }
+      },
+      "duration_ms": 7
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "irrigation.dose",
+      "status": "pass",
+      "message": "UNVERIFIABLE, as declared (mode: none): the receipt claims nothing beyond the device's report",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "irrigation.dose",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "refused by the device (fault injection)"
+          }
+        },
+        "command_id": "01a16f71-ec94-7745-a656-5b33ea4dc6fb",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {
+            "volume": {
+              "unit": "mL",
+              "value": 255.0
+            }
+          },
+          "target": {
+            "capability": "irrigation.dose",
+            "device": "mqtt.greenhouse-01"
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 6
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "irrigation.dose",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "greenhouse/node-01/ack: not JSON: \"\\u{1}#?K\""
+          }
+        },
+        "command_id": "01a16f71-ec9b-7392-a983-ab5508108aad",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {
+            "volume": {
+              "unit": "mL",
+              "value": 255.0
+            }
+          },
+          "target": {
+            "capability": "irrigation.dose",
+            "device": "mqtt.greenhouse-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 6
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "irrigation.dose",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "greenhouse/node-01/dose: no acknowledgement on greenhouse/node-01/ack within 500 ms"
+          }
+        },
+        "command_id": "01a16f71-eca0-73d1-994a-9c7d68048c76",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 2000,
+          "operation": "invoke",
+          "params": {
+            "volume": {
+              "unit": "mL",
+              "value": 255.0
+            }
+          },
+          "target": {
+            "capability": "irrigation.dose",
+            "device": "mqtt.greenhouse-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 520
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "irrigation.dose",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME; no readback is declared, so an operator resolves it",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "greenhouse/node-01/dose: no acknowledgement on greenhouse/node-01/ack within 500 ms"
+          }
+        },
+        "command_id": "01a16f71-eea9-733d-9947-06568be4aac0",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 2000,
+          "operation": "invoke",
+          "params": {
+            "volume": {
+              "unit": "mL",
+              "value": 255.0
+            }
+          },
+          "target": {
+            "capability": "irrigation.dose",
+            "device": "mqtt.greenhouse-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 570
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "irrigation.dose",
+      "status": "pass",
+      "message": "each command reached the device at most once (refuse: 1, garbled: 1, no_response: 1, lost_ack: 1)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.recovery",
+      "level": "L2",
+      "status": "pass",
+      "message": "'fan.on' carried out after the faults cleared",
+      "duration_ms": 9
+    },
+    {
+      "id": "L3.leases",
+      "level": "L3",
+      "capability": "fan.on",
+      "status": "pass",
+      "message": "another principal's command was refused (lease.held), without reaching the device; the holder's was carried out",
+      "duration_ms": 16
+    },
+    {
+      "id": "L3.plan",
+      "level": "L3",
+      "capability": "fan.on",
+      "status": "pass",
+      "message": "a one-step plan succeeded and released its lease; under refuse the plan halted at that step and sent nothing more; under no_response it stopped for a decision instead of guessing",
+      "duration_ms": 536
+    },
+    {
+      "id": "L3.stop",
+      "level": "L3",
+      "status": "not_applicable",
+      "message": "the descriptor declares no stop action",
+      "duration_ms": 0
+    }
+  ]
+}

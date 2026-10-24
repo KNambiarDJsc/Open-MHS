@@ -1,0 +1,869 @@
+{
+  "openmhs_conformance": "0.1",
+  "suite_version": "0.1.0",
+  "subject": {
+    "adapter": "openmhs.http",
+    "adapter_version": "0.1.0",
+    "device": "http.led-01",
+    "descriptor_sha256": "ed4e97cfc5f921068cccca938cac803f450ca6ad3e7ad2276e06427b59daf37e",
+    "sources": [
+      "simulator"
+    ]
+  },
+  "fixture": {
+    "faults": [
+      "link_down",
+      "no_response",
+      "lost_ack",
+      "garbled",
+      "refuse"
+    ],
+    "counts_deliveries": true
+  },
+  "environment": {
+    "runtime_version": "0.1.0",
+    "os": "windows",
+    "arch": "x86_64"
+  },
+  "declared": "L2",
+  "achieved": "L3",
+  "passed": true,
+  "started_at": "2026-10-24T19:44:56.88Z",
+  "duration_ms": 4274,
+  "summary": {
+    "pass": 46,
+    "fail": 0,
+    "untested": 0,
+    "not_applicable": 4
+  },
+  "checks": [
+    {
+      "id": "L0.describe",
+      "level": "L0",
+      "status": "pass",
+      "message": "returned a descriptor",
+      "duration_ms": 11
+    },
+    {
+      "id": "L0.descriptor",
+      "level": "L0",
+      "status": "pass",
+      "message": "valid: device 'http.led-01', 4 capabilities",
+      "duration_ms": 1
+    },
+    {
+      "id": "L0.adapter_id",
+      "level": "L0",
+      "status": "pass",
+      "message": "'openmhs.http'",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.describe_stable",
+      "level": "L0",
+      "status": "pass",
+      "message": "same descriptor both times",
+      "duration_ms": 18
+    },
+    {
+      "id": "L0.connect",
+      "level": "L0",
+      "status": "pass",
+      "message": "connected and registered",
+      "duration_ms": 60
+    },
+    {
+      "id": "L0.health",
+      "level": "L0",
+      "status": "pass",
+      "message": "healthy",
+      "duration_ms": 1
+    },
+    {
+      "id": "L0.shutdown",
+      "level": "L0",
+      "status": "pass",
+      "message": "shut down cleanly",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "led.on",
+      "status": "pass",
+      "message": "read false",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.975Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "led.on",
+      "status": "pass",
+      "message": "false matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "led.on",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.975Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "led.on",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "led.brightness",
+      "status": "pass",
+      "message": "read 40 %",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.977Z",
+          "value": {
+            "unit": "%",
+            "value": 40.0
+          }
+        }
+      },
+      "duration_ms": 1
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "led.brightness",
+      "status": "pass",
+      "message": "40 % matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "led.brightness",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.977Z",
+          "value": {
+            "unit": "%",
+            "value": 40.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "led.brightness",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "sensor.temperature",
+      "status": "pass",
+      "message": "read 31.2 Cel",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.977Z",
+          "value": {
+            "unit": "Cel",
+            "value": 31.2
+          }
+        }
+      },
+      "duration_ms": 1
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "sensor.temperature",
+      "status": "pass",
+      "message": "31.2 Cel matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "sensor.temperature",
+      "status": "pass",
+      "message": "1 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.977Z",
+          "value": {
+            "unit": "Cel",
+            "value": 31.2
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "sensor.temperature",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.subscribe",
+      "level": "L1",
+      "status": "not_applicable",
+      "message": "deferred: the adapter contract (v0.1) has no subscription API, so there is nothing to test yet (ADR-0013)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "led.on",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 1
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "led.brightness",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 1
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "sensor.temperature",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 1
+    },
+    {
+      "id": "L1.disconnect.health",
+      "level": "L1",
+      "status": "pass",
+      "message": "disconnected: GET /api/state: error sending request for url (http://127.0.0.1:59354/api/state): client error (SendRequest): connection closed before message completed",
+      "duration_ms": 2
+    },
+    {
+      "id": "L1.reconnect",
+      "level": "L1",
+      "status": "pass",
+      "message": "back after 5 ms",
+      "duration_ms": 5
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "led.on",
+      "status": "pass",
+      "message": "carried out in 2 ms (expected about 50 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-e2a1-75b7-9c6e-47ce4b8b505c",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "led.on",
+            "device": "http.led-01"
+          },
+          "value": true
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "led.on",
+          "expected": true,
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:44:57Z",
+            "value": true
+          }
+        }
+      },
+      "duration_ms": 9
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "led.on",
+      "status": "pass",
+      "message": "VERIFIED: 'led.on' read back true",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "led.on",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "refused by the device (fault injection)"
+          }
+        },
+        "command_id": "01a16f71-e2aa-7572-8c59-97947be1843e",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "led.on",
+            "device": "http.led-01"
+          },
+          "value": false
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 5
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "led.on",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "200 OK without a boolean at '/ok': \"\\u{1}#?K\""
+          }
+        },
+        "command_id": "01a16f71-e2b0-730b-8b75-359c37bf17ee",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "led.on",
+            "device": "http.led-01"
+          },
+          "value": false
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 6
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "led.on",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "PUT /api/led: error sending request for url (http://127.0.0.1:59354/api/led): operation timed out"
+          }
+        },
+        "command_id": "01a16f71-e2b6-7613-b2df-c1490e2d4161",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "led.on",
+            "device": "http.led-01"
+          },
+          "value": true
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 515
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "led.on",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'led.on'",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "PUT /api/led: error sending request for url (http://127.0.0.1:59354/api/led): operation timed out"
+          }
+        },
+        "command_id": "01a16f71-e4bc-72dd-90bf-c17a994bfd5d",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "led.on",
+            "device": "http.led-01"
+          },
+          "value": true
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 534
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "led.on",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "led.brightness",
+      "status": "pass",
+      "message": "carried out in 3 ms (expected about 50 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-e6d0-7718-9217-3007dbfe1115",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "led.brightness",
+            "device": "http.led-01"
+          },
+          "value": {
+            "unit": "%",
+            "value": 45.0
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "led.brightness",
+          "expected": {
+            "unit": "%",
+            "value": 45.0
+          },
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:44:58.071Z",
+            "value": {
+              "unit": "%",
+              "value": 45.0
+            }
+          }
+        }
+      },
+      "duration_ms": 9
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "led.brightness",
+      "status": "pass",
+      "message": "VERIFIED: 'led.brightness' read back 45 %",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "led.brightness",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "refused by the device (fault injection)"
+          }
+        },
+        "command_id": "01a16f71-e6db-725c-b008-3b7c51e602aa",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "led.brightness",
+            "device": "http.led-01"
+          },
+          "value": {
+            "unit": "%",
+            "value": 50.0
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 6
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "led.brightness",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "200 OK without a boolean at '/ok': \"\\u{1}#?K\""
+          }
+        },
+        "command_id": "01a16f71-e6e0-741e-9ab3-4d98578bfac3",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "write",
+          "target": {
+            "capability": "led.brightness",
+            "device": "http.led-01"
+          },
+          "value": {
+            "unit": "%",
+            "value": 50.0
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 5
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "led.brightness",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "PUT /api/led: error sending request for url (http://127.0.0.1:59354/api/led): operation timed out"
+          }
+        },
+        "command_id": "01a16f71-e6e7-731c-830f-f23c63cfa2ef",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "led.brightness",
+            "device": "http.led-01"
+          },
+          "value": {
+            "unit": "%",
+            "value": 55.0
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 523
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "led.brightness",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'led.brightness'",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "PUT /api/led: error sending request for url (http://127.0.0.1:59354/api/led): operation timed out"
+          }
+        },
+        "command_id": "01a16f71-e8f7-73ca-83de-c27fe5559103",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "led.brightness",
+            "device": "http.led-01"
+          },
+          "value": {
+            "unit": "%",
+            "value": 55.0
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 539
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "led.brightness",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "led.blink",
+      "status": "pass",
+      "message": "carried out in 16 ms (expected about 100 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-eb0d-7503-84f7-31b80eca7192",
+        "outcome": "unverified",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {
+            "count": 6
+          },
+          "target": {
+            "capability": "led.blink",
+            "device": "http.led-01"
+          }
+        },
+        "state": "UNVERIFIABLE",
+        "verification": {
+          "mode": "none",
+          "reason": "a blink leaves no state to read back"
+        }
+      },
+      "duration_ms": 22
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "led.blink",
+      "status": "pass",
+      "message": "UNVERIFIABLE, as declared (mode: none): the receipt claims nothing beyond the device's report",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "led.blink",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "refused by the device (fault injection)"
+          }
+        },
+        "command_id": "01a16f71-eb28-767f-b923-77fc96b9159a",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {
+            "count": 6
+          },
+          "target": {
+            "capability": "led.blink",
+            "device": "http.led-01"
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 12
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "led.blink",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "200 OK without a boolean at '/ok': \"\\u{1}#?K\""
+          }
+        },
+        "command_id": "01a16f71-eb2f-70cd-86f4-e8e2cd32b460",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {
+            "count": 6
+          },
+          "target": {
+            "capability": "led.blink",
+            "device": "http.led-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 6
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "led.blink",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "POST /api/blink: error sending request for url (http://127.0.0.1:59354/api/blink): operation timed out"
+          }
+        },
+        "command_id": "01a16f71-eb36-717f-962e-69934630ef27",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 2000,
+          "operation": "invoke",
+          "params": {
+            "count": 6
+          },
+          "target": {
+            "capability": "led.blink",
+            "device": "http.led-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 536
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "led.blink",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME; no readback is declared, so an operator resolves it",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "POST /api/blink: error sending request for url (http://127.0.0.1:59354/api/blink): operation timed out"
+          }
+        },
+        "command_id": "01a16f71-ed52-766d-9d79-ea46c9125019",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 2000,
+          "operation": "invoke",
+          "params": {
+            "count": 6
+          },
+          "target": {
+            "capability": "led.blink",
+            "device": "http.led-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 513
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "led.blink",
+      "status": "pass",
+      "message": "each command reached the device at most once (refuse: 1, garbled: 1, no_response: 1, lost_ack: 1)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.recovery",
+      "level": "L2",
+      "status": "pass",
+      "message": "'led.on' carried out after the faults cleared",
+      "duration_ms": 18
+    },
+    {
+      "id": "L3.leases",
+      "level": "L3",
+      "capability": "led.on",
+      "status": "pass",
+      "message": "another principal's command was refused (lease.held), without reaching the device; the holder's was carried out",
+      "duration_ms": 15
+    },
+    {
+      "id": "L3.plan",
+      "level": "L3",
+      "capability": "led.on",
+      "status": "pass",
+      "message": "a one-step plan succeeded and released its lease; under refuse the plan halted at that step and sent nothing more; under no_response it stopped for a decision instead of guessing",
+      "duration_ms": 881
+    },
+    {
+      "id": "L3.stop",
+      "level": "L3",
+      "status": "not_applicable",
+      "message": "the descriptor declares no stop action",
+      "duration_ms": 0
+    }
+  ]
+}

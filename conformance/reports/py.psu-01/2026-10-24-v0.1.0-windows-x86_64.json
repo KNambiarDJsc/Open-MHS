@@ -1,0 +1,1251 @@
+{
+  "openmhs_conformance": "0.1",
+  "suite_version": "0.1.0",
+  "subject": {
+    "adapter": "openmhs.py.psu-sim",
+    "adapter_version": "0.1.0",
+    "device": "py.psu-01",
+    "descriptor_sha256": "cd9c9235f53b90dee078f8d9116051551e6874f0ca590e54cd1d94038dc09731",
+    "sources": [
+      "simulator"
+    ]
+  },
+  "fixture": {
+    "faults": [
+      "link_down",
+      "no_response",
+      "lost_ack",
+      "garbled",
+      "refuse"
+    ],
+    "counts_deliveries": true
+  },
+  "environment": {
+    "runtime_version": "0.1.0",
+    "os": "windows",
+    "arch": "x86_64"
+  },
+  "declared": "L3",
+  "achieved": "L3",
+  "passed": true,
+  "started_at": "2026-10-24T19:44:56.88Z",
+  "duration_ms": 19421,
+  "summary": {
+    "pass": 66,
+    "fail": 0,
+    "untested": 0,
+    "not_applicable": 6
+  },
+  "checks": [
+    {
+      "id": "L0.describe",
+      "level": "L0",
+      "status": "pass",
+      "message": "returned a descriptor",
+      "duration_ms": 2
+    },
+    {
+      "id": "L0.descriptor",
+      "level": "L0",
+      "status": "pass",
+      "message": "valid: device 'py.psu-01', 7 capabilities",
+      "duration_ms": 2
+    },
+    {
+      "id": "L0.adapter_id",
+      "level": "L0",
+      "status": "pass",
+      "message": "'openmhs.py.psu-sim'",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.describe_stable",
+      "level": "L0",
+      "status": "pass",
+      "message": "same descriptor both times",
+      "duration_ms": 49
+    },
+    {
+      "id": "L0.connect",
+      "level": "L0",
+      "status": "pass",
+      "message": "connected and registered",
+      "duration_ms": 35
+    },
+    {
+      "id": "L0.health",
+      "level": "L0",
+      "status": "pass",
+      "message": "healthy",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.shutdown",
+      "level": "L0",
+      "status": "pass",
+      "message": "shut down cleanly",
+      "duration_ms": 1155
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "power.output.voltage.setpoint",
+      "status": "pass",
+      "message": "read 0 V",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.97Z",
+          "value": {
+            "unit": "V",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 1
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "power.output.voltage.setpoint",
+      "status": "pass",
+      "message": "0 V matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "power.output.voltage.setpoint",
+      "status": "pass",
+      "message": "2 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.97Z",
+          "value": {
+            "unit": "V",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "power.output.voltage.setpoint",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "power.output.voltage.measured",
+      "status": "pass",
+      "message": "read 0 V",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.972Z",
+          "value": {
+            "unit": "V",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "power.output.voltage.measured",
+      "status": "pass",
+      "message": "0 V matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "power.output.voltage.measured",
+      "status": "pass",
+      "message": "1 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.972Z",
+          "value": {
+            "unit": "V",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "power.output.voltage.measured",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "power.output.current.limit",
+      "status": "pass",
+      "message": "read 1 A",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.972Z",
+          "value": {
+            "unit": "A",
+            "value": 1.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "power.output.current.limit",
+      "status": "pass",
+      "message": "1 A matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "power.output.current.limit",
+      "status": "pass",
+      "message": "2 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.972Z",
+          "value": {
+            "unit": "A",
+            "value": 1.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "power.output.current.limit",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "power.output.current.measured",
+      "status": "pass",
+      "message": "read 0 A",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.972Z",
+          "value": {
+            "unit": "A",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "power.output.current.measured",
+      "status": "pass",
+      "message": "0 A matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "power.output.current.measured",
+      "status": "pass",
+      "message": "3 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.972Z",
+          "value": {
+            "unit": "A",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "power.output.current.measured",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "power.output.enabled",
+      "status": "pass",
+      "message": "read false",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.974Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "power.output.enabled",
+      "status": "pass",
+      "message": "false matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "power.output.enabled",
+      "status": "pass",
+      "message": "1 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.974Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "power.output.enabled",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "protection.tripped",
+      "status": "pass",
+      "message": "read false",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.976Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "protection.tripped",
+      "status": "pass",
+      "message": "false matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "protection.tripped",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-10-24T19:44:56.976Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "protection.tripped",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.subscribe",
+      "level": "L1",
+      "status": "not_applicable",
+      "message": "deferred: the adapter contract (v0.1) has no subscription API, so there is nothing to test yet (ADR-0013)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "power.output.voltage.setpoint",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "power.output.voltage.measured",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "power.output.current.limit",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "power.output.current.measured",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "power.output.enabled",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "protection.tripped",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.health",
+      "level": "L1",
+      "status": "pass",
+      "message": "disconnected: simulated disconnect",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.reconnect",
+      "level": "L1",
+      "status": "pass",
+      "message": "back after 5 ms",
+      "duration_ms": 6
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "power.output.voltage.setpoint",
+      "status": "pass",
+      "message": "carried out in 20 ms",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-e2a1-75b7-9c6e-47cfdeb5ae79",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 11000,
+          "operation": "write",
+          "target": {
+            "capability": "power.output.voltage.setpoint",
+            "device": "py.psu-01"
+          },
+          "value": {
+            "unit": "V",
+            "value": 0.6
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "power.output.voltage.setpoint",
+          "expected": {
+            "unit": "V",
+            "value": 0.6
+          },
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:44:57.072Z",
+            "value": {
+              "unit": "V",
+              "value": 0.6
+            }
+          }
+        }
+      },
+      "duration_ms": 86
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "power.output.voltage.setpoint",
+      "status": "pass",
+      "message": "VERIFIED: 'power.output.voltage.setpoint' read back 0.6 V",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "power.output.voltage.setpoint",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "simulated rejection"
+          }
+        },
+        "command_id": "01a16f71-e6b9-7512-be27-f51b55b2cceb",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 11000,
+          "operation": "write",
+          "target": {
+            "capability": "power.output.voltage.setpoint",
+            "device": "py.psu-01"
+          },
+          "value": {
+            "unit": "V",
+            "value": 1.2
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 995
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "power.output.voltage.setpoint",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "simulated garbled response"
+          }
+        },
+        "command_id": "01a16f71-eabd-7792-98d6-dd894478d849",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 11000,
+          "operation": "write",
+          "target": {
+            "capability": "power.output.voltage.setpoint",
+            "device": "py.psu-01"
+          },
+          "value": {
+            "unit": "V",
+            "value": 1.2
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1077
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "power.output.voltage.setpoint",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 998 ms"
+          }
+        },
+        "command_id": "01a16f71-eeb8-7627-8ba4-7b4987df9ddd",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "power.output.voltage.setpoint",
+            "device": "py.psu-01"
+          },
+          "value": {
+            "unit": "V",
+            "value": 1.8
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1946
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "power.output.voltage.setpoint",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'power.output.voltage.setpoint'",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 995 ms"
+          }
+        },
+        "command_id": "01a16f71-f2b7-7530-94b1-fa965746df52",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "power.output.voltage.setpoint",
+            "device": "py.psu-01"
+          },
+          "value": {
+            "unit": "V",
+            "value": 1.8
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1064
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "power.output.voltage.setpoint",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "power.output.current.limit",
+      "status": "pass",
+      "message": "carried out in 19 ms",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-f6da-73b3-b687-359ac4a81437",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 11000,
+          "operation": "write",
+          "target": {
+            "capability": "power.output.current.limit",
+            "device": "py.psu-01"
+          },
+          "value": {
+            "unit": "A",
+            "value": 1.15
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "power.output.current.limit",
+          "expected": {
+            "unit": "A",
+            "value": 1.15
+          },
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:45:02.221Z",
+            "value": {
+              "unit": "A",
+              "value": 1.15
+            }
+          }
+        }
+      },
+      "duration_ms": 66
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "power.output.current.limit",
+      "status": "pass",
+      "message": "VERIFIED: 'power.output.current.limit' read back 1.15 A",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "power.output.current.limit",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "simulated rejection"
+          }
+        },
+        "command_id": "01a16f71-f724-7413-9595-bd4677cc01f9",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 11000,
+          "operation": "write",
+          "target": {
+            "capability": "power.output.current.limit",
+            "device": "py.psu-01"
+          },
+          "value": {
+            "unit": "A",
+            "value": 1.3
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 47
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "power.output.current.limit",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "simulated garbled response"
+          }
+        },
+        "command_id": "01a16f71-f751-766a-bc0d-dcc559a26fff",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 11000,
+          "operation": "write",
+          "target": {
+            "capability": "power.output.current.limit",
+            "device": "py.psu-01"
+          },
+          "value": {
+            "unit": "A",
+            "value": 1.3
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 34
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "power.output.current.limit",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 999 ms"
+          }
+        },
+        "command_id": "01a16f71-f766-7388-9e8a-71ade597401f",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "power.output.current.limit",
+            "device": "py.psu-01"
+          },
+          "value": {
+            "unit": "A",
+            "value": 1.45
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1019
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "power.output.current.limit",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'power.output.current.limit'",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 999 ms"
+          }
+        },
+        "command_id": "01a16f71-fb5f-76ed-a5a4-1316a840207f",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "power.output.current.limit",
+            "device": "py.psu-01"
+          },
+          "value": {
+            "unit": "A",
+            "value": 1.45
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1019
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "power.output.current.limit",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "power.output.enabled",
+      "status": "pass",
+      "message": "carried out in 15 ms",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f71-ff5c-713c-a68f-29a65f0804af",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 11000,
+          "operation": "write",
+          "target": {
+            "capability": "power.output.enabled",
+            "device": "py.psu-01"
+          },
+          "value": true
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "power.output.enabled",
+          "expected": true,
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:45:04.365Z",
+            "value": true
+          }
+        }
+      },
+      "duration_ms": 33
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "power.output.enabled",
+      "status": "pass",
+      "message": "VERIFIED: 'power.output.enabled' read back true",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "power.output.enabled",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "simulated rejection"
+          }
+        },
+        "command_id": "01a16f71-ff7e-7485-97b9-8aa57d95a539",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 11000,
+          "operation": "write",
+          "target": {
+            "capability": "power.output.enabled",
+            "device": "py.psu-01"
+          },
+          "value": false
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 41
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "power.output.enabled",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "simulated garbled response"
+          }
+        },
+        "command_id": "01a16f71-ffa8-737b-b888-03ee3d33f35f",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 11000,
+          "operation": "write",
+          "target": {
+            "capability": "power.output.enabled",
+            "device": "py.psu-01"
+          },
+          "value": false
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 71
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "power.output.enabled",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 997 ms"
+          }
+        },
+        "command_id": "01a16f71-fff3-75eb-b19d-5551c3b04336",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "power.output.enabled",
+            "device": "py.psu-01"
+          },
+          "value": true
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1010
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "power.output.enabled",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'power.output.enabled'",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 998 ms"
+          }
+        },
+        "command_id": "01a16f72-03e0-7656-a075-2db66493cb37",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "write",
+          "target": {
+            "capability": "power.output.enabled",
+            "device": "py.psu-01"
+          },
+          "value": true
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1016
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "power.output.enabled",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "protection.reset",
+      "status": "pass",
+      "message": "carried out in 13 ms (expected about 100 ms, limit 2000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a16f72-07d6-7648-9fd6-3198f4cd53b5",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "protection.reset",
+            "device": "py.psu-01"
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "protection.tripped",
+          "expected": false,
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-24T19:45:06.546Z",
+            "value": false
+          }
+        }
+      },
+      "duration_ms": 30
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "protection.reset",
+      "status": "pass",
+      "message": "VERIFIED: 'protection.tripped' read back false",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "protection.reset",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "simulated rejection"
+          }
+        },
+        "command_id": "01a16f72-07f5-7523-8838-24e4d7baff8c",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "protection.reset",
+            "device": "py.psu-01"
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 22
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "protection.reset",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "simulated garbled response"
+          }
+        },
+        "command_id": "01a16f72-080b-75c5-a7cb-02ef03e3f1c6",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "protection.reset",
+            "device": "py.psu-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 17
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "protection.reset",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 999 ms"
+          }
+        },
+        "command_id": "01a16f72-081d-7292-afe7-20d01ef77dfe",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "protection.reset",
+            "device": "py.psu-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1005
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "protection.reset",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'protection.tripped' (the readback already held before the command, so this shows the path, not that this command applied)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 999 ms"
+          }
+        },
+        "command_id": "01a16f72-0c0b-7251-a1df-b0b8c93e463b",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "protection.reset",
+            "device": "py.psu-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1028
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "protection.reset",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.recovery",
+      "level": "L2",
+      "status": "pass",
+      "message": "'power.output.voltage.setpoint' carried out after the faults cleared",
+      "duration_ms": 140
+    },
+    {
+      "id": "L3.leases",
+      "level": "L3",
+      "capability": "power.output.voltage.setpoint",
+      "status": "pass",
+      "message": "another principal's command was refused (lease.held), without reaching the device; the holder's was carried out",
+      "duration_ms": 2058
+    },
+    {
+      "id": "L3.plan",
+      "level": "L3",
+      "capability": "power.output.voltage.setpoint",
+      "status": "pass",
+      "message": "a one-step plan succeeded and released its lease; under refuse the plan halted at that step and sent nothing more; under no_response it stopped for a decision instead of guessing",
+      "duration_ms": 4323
+    },
+    {
+      "id": "L3.stop",
+      "level": "L3",
+      "status": "not_applicable",
+      "message": "the descriptor declares no stop action",
+      "duration_ms": 0
+    }
+  ]
+}

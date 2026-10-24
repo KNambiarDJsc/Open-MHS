@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openmhs:registry:0.1:adapter-entry",
+  "title": "OpenMHS adapter registry entry",
+  "description": "One adapter in the git-based registry (registry/README.md). An entry is a claim plus a pointer to evidence; it is never an endorsement, and nothing in it is executed to validate it.",
+  "type": "object",
+  "required": ["openmhs_registry", "id", "name", "protocol", "maintainer", "source", "profiles", "version", "license", "conformance_profile", "category", "report"],
+  "additionalProperties": false,
+  "properties": {
+    "openmhs_registry": { "const": "0.1" },
+    "id": {
+      "description": "The adapter's own id (`adapter.id` in its descriptor). Also the file name: registry/adapters/<id>.json.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*(\\.[a-z][a-z0-9_-]*)+$",
+      "maxLength": 128
+    },
+    "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "summary": { "type": "string", "maxLength": 300 },
+    "protocol": {
+      "description": "How the adapter talks to the device. `builtin` is an in-process simulator.",
+      "enum": ["builtin", "modbus-tcp", "mqtt", "scpi", "http", "opc-ua", "ros2", "other"]
+    },
+    "maintainer": {
+      "description": "Who answers for the adapter. A name or a GitHub handle; no email addresses.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "source": {
+      "description": "Where the code lives: an https URL, or a path inside this repository.",
+      "type": "string",
+      "pattern": "^(https://[^\\s]+|[A-Za-z0-9_./-]+)$",
+      "maxLength": 300
+    },
+    "profiles": {
+      "description": "Device profiles or manifests shipped with the adapter, as paths or https URLs.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^(https://[^\\s]+|[A-Za-z0-9_./-]+)$", "maxLength": 300 }
+    },
+    "version": {
+      "description": "Adapter version the evidence was gathered for.",
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?$"
+    },
+    "license": { "description": "SPDX expression.", "type": "string", "minLength": 1, "maxLength": 80 },
+    "conformance_profile": {
+      "description": "The conformance level the adapter declares (spec/conformance.md); null if it declares none.",
+      "enum": ["L0", "L1", "L2", "L3", null]
+    },
+    "category": {
+      "description": "official: maintained in this repository. community: maintained elsewhere, with a conformance report. experimental: works in part or lacks full evidence. unverified: listed without evidence.",
+      "enum": ["official", "community", "experimental", "unverified"]
+    },
+    "peer": {
+      "description": "What the report's adapter talked to: the project's in-process virtual lab, a protocol simulator reached over its real protocol, or a physical device. Required when there is a report. `device` is only accepted when the report's readings did not come from a simulator.",
+      "enum": ["in-process-simulator", "protocol-simulator", "device"]
+    },
+    "report": {
+      "description": "The conformance report this entry stands on, or null if there is none. A path inside this repository, with its SHA-256 so the reference cannot drift, and the date it was verified.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["path", "sha256", "verified_at"],
+          "additionalProperties": false,
+          "properties": {
+            "path": { "type": "string", "pattern": "^conformance/reports/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\\.json$" },
+            "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            "verified_at": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+          }
+        }
+      ]
+    },
+    "notes": { "type": "string", "maxLength": 600 }
+  }
+}

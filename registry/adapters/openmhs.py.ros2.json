@@ -1,0 +1,17 @@
+{
+  "openmhs_registry": "0.1",
+  "id": "openmhs.py.ros2",
+  "name": "ROS 2 adapter (observation only)",
+  "protocol": "ros2",
+  "maintainer": "KNambiarDJsc",
+  "source": "adapters/python/ros2",
+  "profiles": [
+    "adapters/python/ros2/manifest.sim.json"
+  ],
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "conformance_profile": "L1",
+  "category": "experimental",
+  "report": null,
+  "notes": "Runs in a pinned ROS 2 Jazzy container. Checked at L1 against a simulated publisher in CI only; no report is committed, so the matrix shows it as not verified."
+}

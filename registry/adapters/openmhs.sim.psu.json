@@ -1,0 +1,20 @@
+{
+  "openmhs_registry": "0.1",
+  "id": "openmhs.sim.psu",
+  "name": "Simulated programmable power supply",
+  "protocol": "builtin",
+  "maintainer": "KNambiarDJsc",
+  "source": "crates/openmhs-sim",
+  "profiles": [],
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "conformance_profile": "L3",
+  "category": "official",
+  "peer": "in-process-simulator",
+  "report": {
+    "path": "conformance/reports/sim.psu-01/2026-10-24-v0.1.0-windows-x86_64.json",
+    "sha256": "0a5badd2845f4f5e5b92cbd15136a100382684d19cad5c0353ba9859e444d767",
+    "verified_at": "2026-10-24"
+  },
+  "notes": "The virtual lab's supply, with fault injection."
+}

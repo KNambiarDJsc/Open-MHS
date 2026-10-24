@@ -31,7 +31,8 @@ pub use fixture::{Fault, Fixture, NoFixture};
 pub use openmhs_types::descriptor::ConformanceLevel;
 pub use render::render;
 pub use report::{
-    CheckResult, FixtureInfo, REPORT_VERSION, Report, Status, Subject, Summary, achieved_level,
+    CheckResult, Environment, FixtureInfo, REPORT_VERSION, Report, Status, Subject, Summary,
+    achieved_level,
 };
 pub use requirements::{REQUIREMENTS, Requirement, requirement};
 pub use runner::{Options, PRINCIPAL};
