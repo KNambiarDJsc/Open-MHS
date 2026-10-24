@@ -21,7 +21,7 @@ use serde_json::json;
 const RESTART_WITHIN: Duration = Duration::from_secs(15);
 
 async fn start(mode: &str, extra: serde_json::Value) -> ProcessAdapter {
-    ProcessAdapter::start(common::misbehave(mode, extra), HostOptions::default())
+    ProcessAdapter::start(common::misbehave(mode, extra), HostOptions::unsigned())
         .await
         .unwrap_or_else(|e| panic!("start {mode}: {e}"))
 }

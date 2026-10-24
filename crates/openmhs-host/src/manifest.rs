@@ -43,6 +43,32 @@ pub struct Manifest {
     pub limits: Limits,
     #[serde(default)]
     pub restart: RestartPolicy,
+    /// Who vouches for this manifest and the files it launches (ADR-0017). Checked before
+    /// launch; never widens what the rest of the manifest allows.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub signature: Option<Signature>,
+}
+
+/// An Ed25519 signature over the manifest and the digests of the adapter's files.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Signature {
+    /// Only `ed25519`.
+    pub algorithm: String,
+    /// SHA-256 of the signer's public key, as listed in the trusted-key registry.
+    pub key_id: String,
+    /// The files that make up the adapter, relative to the manifest's directory.
+    pub artifacts: Vec<Artifact>,
+    /// 64 bytes, hex, over the domain-prefixed canonical manifest with this field blank.
+    pub value: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Artifact {
+    pub path: String,
+    /// SHA-256 of the file, hex.
+    pub sha256: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -327,6 +353,8 @@ pub fn op_name(op: Operation) -> &'static str {
 #[derive(Debug, Clone)]
 pub struct Resolved {
     pub manifest: Manifest,
+    /// The manifest's directory.
+    pub dir: PathBuf,
     pub program: PathBuf,
     pub args: Vec<String>,
     pub cwd: PathBuf,
@@ -360,6 +388,7 @@ impl Resolved {
             .collect();
         Self {
             manifest,
+            dir: dir.to_path_buf(),
             program,
             args,
             cwd,

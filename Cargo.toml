@@ -53,6 +53,9 @@ async-trait = "0.1"
 axum = { version = "0.8", default-features = false, features = ["http1", "json", "tokio"] }
 clap = { version = "4.6", features = ["derive", "env"] }
 dirs = "7"
+# Ed25519 signatures on adapter manifests (docs/security/M8_THREAT_MODEL.md). Verification
+# and signing only; no key derivation or encryption.
+ed25519-dalek = { version = "3", default-features = false, features = ["zeroize"] }
 getrandom = "0.4"
 jsonschema = { version = "0.60", default-features = false }
 proptest = "1"

@@ -66,11 +66,52 @@ const EXIT_GRACE: Duration = Duration::from_millis(500);
 /// The engine's own timeout normally ends the wait first.
 const EXECUTE_GRACE_MS: u64 = 1_000;
 
-#[derive(Debug, Clone, Default)]
+/// What the host requires of a manifest before it launches the adapter.
+#[derive(Debug, Clone)]
+pub enum Trust {
+    /// The manifest must be signed by a key in the registry, and its files must match
+    /// the signature. The adapter runs from verified copies (see [`crate::trust`]).
+    Require(crate::trust::TrustStore),
+    /// No verification. For adapter development and for conformance runs against
+    /// simulators; never for a gateway that serves real devices.
+    AllowUnsigned,
+}
+
+#[derive(Debug, Clone)]
 pub struct HostOptions {
     /// Ask the adapter for its conformance fixture (`fixture.*` methods). Only for the
     /// conformance suite; never set when serving real devices.
     pub fixture: bool,
+    pub trust: Trust,
+}
+
+impl Default for HostOptions {
+    /// Signed manifests only, from no trusted keys: nothing launches until the operator
+    /// has said whom to trust.
+    fn default() -> Self {
+        Self {
+            fixture: false,
+            trust: Trust::Require(crate::trust::TrustStore::empty()),
+        }
+    }
+}
+
+impl HostOptions {
+    /// Launch without verifying signatures. Development and simulator-only use.
+    pub fn unsigned() -> Self {
+        Self {
+            fixture: false,
+            trust: Trust::AllowUnsigned,
+        }
+    }
+
+    /// As [`HostOptions::unsigned`], with the conformance fixture.
+    pub fn unsigned_fixture() -> Self {
+        Self {
+            fixture: true,
+            trust: Trust::AllowUnsigned,
+        }
+    }
 }
 
 /// Where the adapter process is in its life.
@@ -857,6 +898,8 @@ impl Inner {
 pub struct ProcessAdapter {
     id: String,
     inner: Arc<Inner>,
+    /// The verified copies the process was launched from, removed on drop.
+    _staged: Option<crate::trust::Staged>,
 }
 
 impl ProcessAdapter {
@@ -864,6 +907,16 @@ impl ProcessAdapter {
     /// manifest. Fails if any of that fails; restarts only happen after a good start.
     pub async fn start(resolved: Resolved, options: HostOptions) -> Result<Self, String> {
         let id = resolved.manifest.adapter.id.clone();
+        // Verified before anything is launched, and launched from what was verified.
+        let (resolved, staged) = match &options.trust {
+            Trust::AllowUnsigned => (resolved, None),
+            Trust::Require(store) => {
+                let staged = crate::trust::verify_and_stage(&resolved, store)
+                    .map_err(|e| format!("adapter {id:?} refused: {e}"))?;
+                info!(adapter = %id, signer = %staged.signer.key_id, name = %staged.signer.name, "manifest signature verified");
+                (staged.resolved.clone(), Some(staged))
+            }
+        };
         let secrets = resolved
             .manifest
             .credentials
@@ -891,7 +944,11 @@ impl ProcessAdapter {
         let conn = inner.spawn().await.map_err(StartError::message)?;
         inner.set_state(State::Running(conn));
         tokio::spawn(inner.clone().supervise(events_rx));
-        Ok(Self { id, inner })
+        Ok(Self {
+            id,
+            inner,
+            _staged: staged,
+        })
     }
 
     pub fn status(&self) -> Status {

@@ -119,6 +119,29 @@ enum Cmd {
         #[command(subcommand)]
         command: AdapterCmd,
     },
+    /// Choose which signing keys may vouch for adapters (a file in the gateway home).
+    Trust {
+        #[command(subcommand)]
+        command: TrustCmd,
+    },
+}
+
+#[derive(Subcommand)]
+enum TrustCmd {
+    /// Trust a public key to sign adapter manifests.
+    Add {
+        /// The key: a `.pub` file written by `adapter keygen`, or 64 hex digits.
+        key: String,
+        /// Whose key this is, so you can tell later.
+        #[arg(long)]
+        name: String,
+        /// Adapter ids this key may sign (`*` patterns). Default: any.
+        #[arg(long = "adapter")]
+        adapters: Vec<String>,
+    },
+    List,
+    /// Stop trusting a key. Adapters already running keep running until the gateway restarts.
+    Revoke { key_id: String },
 }
 
 #[derive(Args)]
@@ -173,6 +196,22 @@ enum AdapterCmd {
         #[arg(required = true)]
         files: Vec<PathBuf>,
     },
+    /// Make a signing key: writes <OUT>.key (secret, keep it private) and <OUT>.pub.
+    Keygen { out: PathBuf },
+    /// Sign a manifest, binding it to the files that make up the adapter.
+    Sign {
+        manifest: PathBuf,
+        /// The secret key file from `adapter keygen`.
+        #[arg(long)]
+        key: PathBuf,
+        /// A file or directory of the adapter, relative to the manifest. Repeatable. Every
+        /// file the launch command runs must be covered.
+        #[arg(long = "artifact", required = true)]
+        artifacts: Vec<String>,
+        /// Write here instead of overwriting the manifest.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
 }
 
 #[derive(Args)]
@@ -201,8 +240,12 @@ pub struct ServeArgs {
     profile_sims: Vec<PathBuf>,
     /// Run an adapter as a separate process from its permission manifest. It connects
     /// to whatever its manifest configures. Repeatable (docs/architecture/adapter-host.md).
+    /// The manifest must be signed by a key added with `openmhs trust add`.
     #[arg(long = "adapter-manifest")]
     manifests: Vec<PathBuf>,
+    /// Development only: launch adapters whose manifests are unsigned or unverified.
+    #[arg(long)]
+    allow_unsigned_adapters: bool,
     /// Port to listen on (0 picks a free one; the runtime file records it).
     #[arg(long, default_value_t = DEFAULT_PORT)]
     port: u16,
@@ -506,8 +549,24 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
         }
     }
     let mut hosted = Vec::new();
+    let trust = if args.allow_unsigned_adapters {
+        if !args.manifests.is_empty() {
+            eprintln!(
+                "warning: --allow-unsigned-adapters: adapter manifests are NOT verified. Use this for development only."
+            );
+        }
+        openmhs_host::Trust::AllowUnsigned
+    } else {
+        match openmhs_host::TrustStore::load(&home.join(openmhs_host::trust::TRUSTED_KEYS_FILE)) {
+            Ok(store) => openmhs_host::Trust::Require(store),
+            Err(e) => {
+                eprintln!("error: {e}");
+                return exit::ERROR;
+            }
+        }
+    };
     for path in &args.manifests {
-        match start_hosted(path, false).await {
+        match start_hosted(path, false, trust.clone()).await {
             Ok(a) => hosted.push(a),
             Err(e) => {
                 eprintln!("error: {e}");
@@ -684,10 +743,11 @@ fn profile_check(json: bool, files: &[PathBuf]) -> u8 {
 async fn start_hosted(
     path: &Path,
     fixture: bool,
+    trust: openmhs_host::Trust,
 ) -> Result<std::sync::Arc<openmhs_host::ProcessAdapter>, String> {
     let resolved = openmhs_host::Resolved::load(path)?;
     let adapter =
-        openmhs_host::ProcessAdapter::start(resolved, openmhs_host::HostOptions { fixture })
+        openmhs_host::ProcessAdapter::start(resolved, openmhs_host::HostOptions { fixture, trust })
             .await
             .map_err(|e| format!("{}: {e}", path.display()))?;
     if fixture && adapter.fixture().is_none() {
@@ -701,6 +761,109 @@ async fn start_hosted(
 }
 
 /// Validate adapter manifests; starts nothing.
+fn adapter_keygen(out: &Path) -> u8 {
+    let (key_path, pub_path) = (out.with_extension("key"), out.with_extension("pub"));
+    for p in [&key_path, &pub_path] {
+        if p.exists() {
+            eprintln!("error: {} already exists; refusing to overwrite a key", p.display());
+            return exit::ERROR;
+        }
+    }
+    let pair = match openmhs_host::trust::generate_keypair() {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("error: {e}");
+            return exit::ERROR;
+        }
+    };
+    let mut options = std::fs::OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let written = options.open(&key_path).and_then(|mut f| {
+        use std::io::Write;
+        writeln!(f, "{}", pair.seed)
+    });
+    if let Err(e) = written.and_then(|()| std::fs::write(&pub_path, format!("{}\n", pair.public_key))) {
+        eprintln!("error: {e}");
+        return exit::ERROR;
+    }
+    println!("secret key  {} (keep private; anyone with it can sign as you)", key_path.display());
+    println!("public key  {}", pub_path.display());
+    println!("key id      {}", pair.key_id);
+    println!("Next: openmhs trust add {} --name <who>", pub_path.display());
+    exit::OK
+}
+
+fn adapter_sign(manifest: &Path, key: &Path, artifacts: &[String], out: Option<&Path>) -> u8 {
+    let run = || -> Result<(), String> {
+        let text = std::fs::read_to_string(manifest).map_err(|e| format!("{}: {e}", manifest.display()))?;
+        let seed = std::fs::read_to_string(key).map_err(|e| format!("{}: {e}", key.display()))?;
+        let dir = manifest.parent().filter(|p| !p.as_os_str().is_empty()).unwrap_or(Path::new("."));
+        let signed = openmhs_host::trust::sign_manifest(&text, dir, &seed, artifacts)?;
+        let target = out.unwrap_or(manifest);
+        std::fs::write(target, signed).map_err(|e| format!("{}: {e}", target.display()))?;
+        println!("signed {}", target.display());
+        Ok(())
+    };
+    match run() {
+        Ok(()) => exit::OK,
+        Err(e) => {
+            eprintln!("error: {e}");
+            exit::ERROR
+        }
+    }
+}
+
+fn trust_cmd(json: bool, home: &Path, command: TrustCmd) -> u8 {
+    let path = home.join(openmhs_host::trust::TRUSTED_KEYS_FILE);
+    let now = openmhs_types::Clock::now(&openmhs_types::SystemClock).millis();
+    let run = || -> Result<(), String> {
+        let mut store = openmhs_host::TrustStore::load(&path)?;
+        match command {
+            TrustCmd::Add { key, name, adapters } => {
+                let hex = std::fs::read_to_string(&key).unwrap_or(key).trim().to_owned();
+                std::fs::create_dir_all(home).map_err(|e| e.to_string())?;
+                let added = store.add(&hex, &name, adapters, now)?;
+                store.save(&path)?;
+                println!("trusting {} ({}) to sign {}", added.key_id, added.name, added.adapters.join(", "));
+            }
+            TrustCmd::Revoke { key_id } => {
+                if store.revoke(&key_id, now)? {
+                    store.save(&path)?;
+                    println!("revoked {key_id}; adapters it signed are refused at the next start");
+                } else {
+                    println!("{key_id} was already revoked");
+                }
+            }
+            TrustCmd::List => {
+                if json {
+                    println!("{}", serde_json::to_string_pretty(store.keys()).map_err(|e| e.to_string())?);
+                } else if store.keys().is_empty() {
+                    println!("no trusted signing keys; signed adapters will be refused");
+                }
+                if !json {
+                    for k in store.keys() {
+                        let status = if k.revoked_at_ms.is_some() { "revoked" } else { "trusted" };
+                        println!("{}  {:<8} {:<20} signs {}", k.key_id, status, k.name, k.adapters.join(", "));
+                    }
+                }
+            }
+        }
+        Ok(())
+    };
+    match run() {
+        Ok(()) => exit::OK,
+        Err(e) => {
+            eprintln!("error: {e}");
+            exit::ERROR
+        }
+    }
+}
+
 fn manifest_check(json: bool, files: &[PathBuf]) -> u8 {
     let results: Vec<(&Path, Result<openmhs_host::Resolved, String>)> = files
         .iter()
@@ -773,7 +936,9 @@ async fn conformance(json: bool, args: ConformanceArgs) -> u8 {
     }
     let mut hosted = Vec::new();
     for path in &args.manifests {
-        match start_hosted(path, true).await {
+        // Fixture mode talks only to the adapter's own simulator, so a signature is not
+        // required here; `serve` is where it is.
+        match start_hosted(path, true, openmhs_host::Trust::AllowUnsigned).await {
             Ok(a) => hosted.push(a),
             Err(e) => {
                 eprintln!("error: {e}");
@@ -960,6 +1125,19 @@ async fn run(cli: Cli) -> u8 {
         Cmd::Adapter {
             command: AdapterCmd::Check { files },
         } => return manifest_check(cli.json, &files),
+        Cmd::Adapter {
+            command: AdapterCmd::Keygen { out },
+        } => return adapter_keygen(&out),
+        Cmd::Adapter {
+            command:
+                AdapterCmd::Sign {
+                    manifest,
+                    key,
+                    artifacts,
+                    out,
+                },
+        } => return adapter_sign(&manifest, &key, &artifacts, out.as_deref()),
+        Cmd::Trust { command } => return trust_cmd(cli.json, &home, command),
         Cmd::Sim {
             command: SimCmd::Faults,
         } => {
@@ -986,7 +1164,8 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
         | Cmd::Mcp(_)
         | Cmd::Conformance(_)
         | Cmd::Profile { .. }
-        | Cmd::Adapter { .. } => {
+        | Cmd::Adapter { .. }
+        | Cmd::Trust { .. } => {
             unreachable!("handled before connecting")
         }
         Cmd::Info => {

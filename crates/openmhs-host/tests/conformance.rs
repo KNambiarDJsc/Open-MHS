@@ -28,7 +28,7 @@ async fn python_psu_reaches_the_same_level_as_the_rust_psu() {
     .await;
     assert!(rust.passed, "{}", render(&rust));
 
-    let adapter = ProcessAdapter::start(common::psu_sim(), HostOptions { fixture: true })
+    let adapter = ProcessAdapter::start(common::psu_sim(), HostOptions::unsigned_fixture())
         .await
         .expect("start the Python PSU");
     let fixture = adapter.fixture().expect("fixture mode");

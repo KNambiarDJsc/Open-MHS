@@ -10,13 +10,15 @@
 //! # async fn demo() -> Result<(), String> {
 //! use openmhs_host::{HostOptions, ProcessAdapter, Resolved};
 //! let manifest = Resolved::load(std::path::Path::new("adapters/python/psu-sim/manifest.json"))?;
-//! let adapter = ProcessAdapter::start(manifest, HostOptions::default()).await?;
+//! let adapter = ProcessAdapter::start(manifest, HostOptions::unsigned()).await?;
 //! # Ok(()) }
 //! ```
 
 pub mod manifest;
 mod process;
 pub mod protocol;
+pub mod trust;
 
 pub use manifest::{MANIFEST_SCHEMA, Manifest, Resolved};
-pub use process::{HostOptions, OS_ENV, ProcessAdapter, ProcessFixture, Status};
+pub use process::{HostOptions, OS_ENV, ProcessAdapter, ProcessFixture, Status, Trust};
+pub use trust::{TrustError, TrustStore, TrustedKey};

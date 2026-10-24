@@ -94,6 +94,30 @@
       "items": { "$ref": "#/$defs/env_name" }
     },
     "config": { "type": "object" },
+    "signature": {
+      "description": "Who vouches for this manifest and the files it launches (spec/permission-manifest.md, Signatures). Checked before launch; never widens the permissions above.",
+      "type": "object",
+      "required": ["algorithm", "key_id", "artifacts", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": { "const": "ed25519" },
+        "key_id": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of the signer's 32-byte public key." },
+        "artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["path", "sha256"],
+            "additionalProperties": false,
+            "properties": {
+              "path": { "type": "string", "minLength": 1, "description": "Relative to the manifest's directory; no '..'." },
+              "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+            }
+          }
+        },
+        "value": { "type": "string", "pattern": "^[0-9a-f]{128}$", "description": "Ed25519 signature, hex." }
+      }
+    },
     "limits": {
       "type": "object",
       "additionalProperties": false,
