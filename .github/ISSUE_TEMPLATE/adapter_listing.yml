@@ -1,0 +1,37 @@
+name: Adapter registry listing
+description: Ask for an adapter to be listed in the registry
+labels: [registry]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A pull request adding `registry/adapters/<id>.json` is the normal route
+        (see `registry/README.md`). Use this form if you want help getting there.
+        Listing is not an endorsement, and OpenMHS never runs listed adapters to validate them.
+  - type: input
+    id: id
+    attributes:
+      label: Adapter id
+      placeholder: acme.lab-psu
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source repository
+    validations:
+      required: true
+  - type: input
+    id: protocol
+    attributes:
+      label: Protocol
+      placeholder: modbus-tcp / scpi / mqtt / http / opc-ua / ros2 / other
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Conformance evidence
+      description: Link the conformance report, say which level it reached, and whether it was run against hardware or a simulator.
+    validations:
+      required: true

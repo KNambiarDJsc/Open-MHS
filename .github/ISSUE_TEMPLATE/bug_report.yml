@@ -1,0 +1,53 @@
+name: Bug report
+description: Something does not work as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. For security problems use the private advisory link instead.
+        Please do not paste tokens or the contents of a gateway home.
+  - type: input
+    id: version
+    attributes:
+      label: OpenMHS version
+      description: Output of `openmhs --version`, or the commit
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Operating system and architecture
+      placeholder: Windows 11 x86_64 / Ubuntu 24.04 x86_64 / macOS 15 arm64
+    validations:
+      required: true
+  - type: dropdown
+    id: target
+    attributes:
+      label: What were you running against?
+      options:
+        - Built-in virtual lab (--sim)
+        - Protocol simulator (--profile-sim)
+        - Real hardware
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact commands, descriptors or profiles
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output
+      description: Real output only. Redact tokens.
+      render: shell
