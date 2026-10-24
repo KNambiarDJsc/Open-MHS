@@ -218,6 +218,7 @@ mod tests {
             payload: None,
             side_effect,
             idempotent: None,
+            stop: false,
             freshness: None,
             rate_limit: None,
             slew: None,

@@ -206,6 +206,11 @@ pub struct Capability {
     pub side_effect: SideEffect,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub idempotent: Option<bool>,
+    /// An action that halts the device: it takes the stop lane, past the per-device lock
+    /// and other holders' leases (ADR-0018). Only actions, with no preconditions or rate
+    /// limits, may be stops.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub stop: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub freshness: Option<Freshness>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

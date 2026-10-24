@@ -40,6 +40,7 @@ Common fields:
 | `component` | Optional component id |
 | `side_effect` | `none`, `reversible`, `irreversible`, `hazardous` |
 | `idempotent` | Repeating the same write/invoke has the same effect as doing it once |
+| `stop` | Actions only: this action halts the device. Stops take the stop lane: they are authorized and validated as usual but do not wait for a command already running on the device and are not blocked by another holder's lease (ADR-0018). Adapters MUST accept a stop while another command is executing |
 | `freshness.max_age_ms` | Readings older than this are stale |
 | `rate_limit` | At most `max` mutating commands per `per_ms` |
 | `slew` | Numeric properties only: at most `max_change` (canonical unit) per `per_ms` |
@@ -130,6 +131,8 @@ Each rule's error code is listed in [errors.md](errors.md).
 13. Each relationship has the field its kind needs and none it does not use; its
     `component` is declared; its `target` is not the device itself; a frame's
     capabilities exist; no relationship is declared twice.
+14. Only actions are `stop`s, and a stop declares no `preconditions` and no
+    `rate_limit`: nothing may hold a stop back.
 
 Implementations MUST report all issues found, not only the first.
 

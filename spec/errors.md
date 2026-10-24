@@ -48,6 +48,8 @@ enforces this in both directions.
 | `descriptor.unit.quantity_mismatch` | Unit measures a different quantity kind |
 | `descriptor.constraint.range_inverted` | `range.min` > `range.max` |
 | `descriptor.constraint.not_applicable` | Constraint used on a value type it doesn't apply to |
+| `descriptor.stop.not_action` | `stop` declared on a property or event |
+| `descriptor.stop.guarded` | A stop declares `preconditions` or a `rate_limit` |
 | `descriptor.verification.not_applicable` | `verification` on a capability that can't change state |
 | `descriptor.verification.unknown_capability` | Readback capability doesn't exist |
 | `descriptor.verification.not_readable` | Readback capability is not a readable property |

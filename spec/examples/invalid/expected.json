@@ -101,6 +101,18 @@
   "slew-on-boolean.json": {
     "code": "descriptor.constraint.not_applicable"
   },
+  "stop-on-property.json": {
+    "code": "descriptor.stop.not_action",
+    "pointer": "/capabilities/1/stop"
+  },
+  "stop-with-precondition.json": {
+    "code": "descriptor.stop.guarded",
+    "pointer": "/capabilities/6/preconditions"
+  },
+  "stop-with-rate-limit.json": {
+    "code": "descriptor.stop.guarded",
+    "pointer": "/capabilities/6/rate_limit"
+  },
   "unit-quantity-mismatch.json": {
     "code": "descriptor.unit.quantity_mismatch",
     "pointer": "/capabilities/1/value/unit"

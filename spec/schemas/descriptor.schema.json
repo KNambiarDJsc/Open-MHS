@@ -205,6 +205,10 @@
         "idempotent": {
           "type": "boolean"
         },
+        "stop": {
+          "type": "boolean",
+          "description": "An action that halts the device. Stops bypass the per-device lock and leases (ADR-0018)."
+        },
         "freshness": {
           "type": "object",
           "required": [

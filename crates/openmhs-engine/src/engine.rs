@@ -105,14 +105,14 @@ enum Evaluation {
         rules: Vec<RuleMatch>,
     },
     /// Allowed or held for approval. The device lock is held so the live checks stay
-    /// valid until dispatch.
+    /// valid until dispatch; a stop holds none (ADR-0018).
     Ready {
         device: Arc<Device>,
         cap: Box<Capability>,
         decision: Decision,
         rules: Vec<RuleMatch>,
         prepared: Prepared,
-        guard: tokio::sync::OwnedMutexGuard<()>,
+        guard: Option<tokio::sync::OwnedMutexGuard<()>>,
     },
 }
 
@@ -602,8 +602,10 @@ impl Engine {
         };
 
         // Someone else's lease keeps everyone but its holder off the device (ADR-0018).
-        // If the leases cannot be read, nothing runs.
-        if let Some(e) = self.lease_refusal(principal, &req.target.device) {
+        // If the leases cannot be read, nothing runs. Stops are never leased away.
+        if !cap.stop
+            && let Some(e) = self.lease_refusal(principal, &req.target.device)
+        {
             return denied(e);
         }
 
@@ -628,7 +630,13 @@ impl Engine {
             };
         }
 
-        let guard = device.lock.clone().lock_owned().await;
+        // The stop lane: a stop does not wait for the command it may be meant to stop.
+        // It has no preconditions or rate limit to protect (descriptor rule 14).
+        let guard = if cap.stop {
+            None
+        } else {
+            Some(device.lock.clone().lock_owned().await)
+        };
         match self.check_live(&device, &cap, req).await {
             Ok(prepared) => Evaluation::Ready {
                 device,
@@ -1183,15 +1191,21 @@ impl Engine {
                 };
             });
         }
-        // A lease someone else took while the command waited stops it too.
-        if let Some(e) = self.lease_refusal(&receipt.principal, &req.target.device) {
+        // A lease someone else took while the command waited stops it too (not a stop).
+        if !cap.stop
+            && let Some(e) = self.lease_refusal(&receipt.principal, &req.target.device)
+        {
             return self.transition(command_id, Denied, Some(e.message.clone()), |r| {
                 r.policy.decision = Decision::Deny;
                 r.policy.errors = vec![e];
             });
         }
 
-        let _guard = device.lock.lock().await;
+        let _guard = if cap.stop {
+            None
+        } else {
+            Some(device.lock.lock().await)
+        };
         let prepared = match self.check_live(&device, &cap, &req).await {
             Ok(p) => p,
             Err(errors) => {

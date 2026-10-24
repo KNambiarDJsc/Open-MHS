@@ -69,6 +69,15 @@ BASE = {
             "operations": ["subscribe"],
             "side_effect": "none",
         },
+        {
+            "name": "cycle.abort",
+            "kind": "action",
+            "operations": ["invoke"],
+            "params": {},
+            "stop": True,
+            "side_effect": "reversible",
+            "verification": {"mode": "readback", "capability": "mode", "expect": "manual"},
+        },
     ],
 }
 
@@ -220,6 +229,17 @@ def _(d): d["relationships"][2]["capabilities"] = ["level.nonexistent"]
 
 @case("relationship-unknown-kind", "descriptor.schema", "/relationships/0/kind")
 def _(d): d["relationships"][0]["kind"] = "near"
+
+ABORT = f"/capabilities/{CAP['cycle.abort']}"
+
+@case("stop-on-property", "descriptor.stop.not_action", f"{SP}/stop")
+def _(d): cap(d, "level.setpoint")["stop"] = True
+
+@case("stop-with-precondition", "descriptor.stop.guarded", f"{ABORT}/preconditions")
+def _(d): cap(d, "cycle.abort")["preconditions"] = [{"id": "not-faulted", "capability": "fault.active", "op": "eq", "value": False}]
+
+@case("stop-with-rate-limit", "descriptor.stop.guarded", f"{ABORT}/rate_limit")
+def _(d): cap(d, "cycle.abort")["rate_limit"] = {"max": 1, "per_ms": 1000}
 
 (OUT.parent / "valid" / "fixture-base.json").write_text(json.dumps(BASE, indent=2) + "\n", encoding="utf-8")
 (OUT / "expected.json").write_text(json.dumps(dict(sorted(fixtures.items())), indent=2) + "\n", encoding="utf-8")

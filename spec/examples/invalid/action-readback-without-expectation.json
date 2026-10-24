@@ -134,6 +134,21 @@
         "subscribe"
       ],
       "side_effect": "none"
+    },
+    {
+      "name": "cycle.abort",
+      "kind": "action",
+      "operations": [
+        "invoke"
+      ],
+      "params": {},
+      "stop": true,
+      "side_effect": "reversible",
+      "verification": {
+        "mode": "readback",
+        "capability": "mode",
+        "expect": "manual"
+      }
     }
   ]
 }

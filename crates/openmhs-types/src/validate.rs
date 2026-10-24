@@ -351,6 +351,31 @@ impl<'a> Checker<'a> {
             );
         }
 
+        // Stops: nothing may stand between a stop and the device.
+        if cap.stop && cap.kind != CapabilityKind::Action {
+            self.push(
+                "descriptor.stop.not_action",
+                format!("{at}/stop"),
+                format!("only actions can be stops; '{}' is not one", cap.name),
+            );
+        } else if cap.stop {
+            for (field, present) in [
+                ("preconditions", !cap.preconditions.is_empty()),
+                ("rate_limit", cap.rate_limit.is_some()),
+            ] {
+                if present {
+                    self.push(
+                        "descriptor.stop.guarded",
+                        format!("{at}/{field}"),
+                        format!(
+                            "stop '{}' cannot declare '{field}': a stop must never be held back",
+                            cap.name
+                        ),
+                    );
+                }
+            }
+        }
+
         // Preconditions.
         let mut ids = HashSet::new();
         for (k, pre) in cap.preconditions.iter().enumerate() {

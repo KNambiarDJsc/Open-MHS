@@ -96,7 +96,11 @@ Agents usually only need the coarse class:
 9. **One state-changing command per device at a time.** The gateway serializes writes and
    invokes per device, from the stateful checks through verification, so rate limits,
    slew limits and preconditions are evaluated against settled state
-   ([ADR-0010](../docs/adr/0010-engine-execution-model.md)).
+   ([ADR-0010](../docs/adr/0010-engine-execution-model.md)). The one exception is a
+   capability declared `stop` ([descriptor.md](descriptor.md) §2): it does not wait for
+   the command running on the device, so it can interrupt it, and it is not blocked by
+   another holder's lease ([ADR-0018](../docs/adr/0018-orchestration.md)). The command
+   it interrupts ends `FAILED` if the device reports it did not complete.
 
 ## 3a. Validation order
 

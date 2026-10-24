@@ -63,3 +63,24 @@ Still, a software stop that has to wait for the motion it is meant to stop is th
 behaviour. It is recorded as a known limitation. A priority "stop lane" that bypasses
 the per-device lock for capabilities declared as stops is planned with resource leases
 (M9), and needs a descriptor field to mark such capabilities.
+
+## Amendment (M9): the stop lane
+
+The M3 limitation above is removed. A descriptor may mark an action `"stop": true`
+(spec/descriptor.md §2). For such a capability the engine:
+
+- runs scope, authorization and stateless validation as for any command, and journals
+  it the same way (intent before dispatch, verification after);
+- does **not** take the per-device lock, so the stop reaches the adapter while another
+  command on the device is executing;
+- is **not** blocked by another holder's lease (ADR-0018).
+
+Descriptor validation forbids `preconditions` and `rate_limit` on stops (and slew already
+applies only to properties), so the checks the lock protects have nothing to protect for
+a stop. Adapters MUST accept a stop while another command is executing; the process
+host already multiplexes requests by id. The command a stop interrupts is reported by
+its adapter (the simulated stage reports `adapter.device_failure`, "stopped at … mm"), so
+it ends `FAILED` rather than appearing to succeed.
+
+Everything else in this ADR stands: ordinary writes and invokes on one device still run
+one at a time. Tested in `crates/openmhs-engine/tests/stop_lane.rs`.

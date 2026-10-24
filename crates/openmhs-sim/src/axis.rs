@@ -87,6 +87,13 @@ impl AxisTruth {
         self.motion.map_or(self.position_mm, |m| m.position_at(now))
     }
 
+    /// Whether `m` ran to its end (and is no longer the current motion).
+    fn completed(&self, m: &Motion) -> bool {
+        self.motion.is_none()
+            && (self.position_mm - m.to_mm).abs() < 1e-9
+            && (m.kind != MotionKind::Home || self.homed)
+    }
+
     /// Stop immediately at the current position.
     fn halt(&mut self, now: Timestamp) {
         self.position_mm = self.position(now);
@@ -275,8 +282,10 @@ impl VirtualAxis {
         Ok(None)
     }
 
-    /// Wait until the current motion finishes, or fail if the axis faults on the way.
-    async fn wait_for_motion(&self) -> Result<f64, AdapterError> {
+    /// Wait until `motion` (the one this command started, if any) finishes. Fails if the
+    /// axis faults on the way, or if the motion is stopped before it completes, as a stop
+    /// through the stop lane does.
+    async fn wait_for(&self, motion: Option<Motion>) -> Result<f64, AdapterError> {
         loop {
             let now = self.now();
             let (remaining, position) = {
@@ -289,7 +298,20 @@ impl VirtualAxis {
                         format!("axis faulted at {:.1} mm", t.position(now)),
                     ));
                 }
-                (t.motion.map(|m| now.ms_until(m.end())), t.position_mm)
+                match motion {
+                    Some(m) if t.motion == Some(m) => (Some(now.ms_until(m.end())), t.position_mm),
+                    Some(m) if !t.completed(&m) => {
+                        return Err(AdapterError::new(
+                            AdapterErrorKind::DeviceFailure,
+                            format!(
+                                "stopped at {:.1} mm before reaching {:.1} mm",
+                                t.position(now),
+                                m.to_mm
+                            ),
+                        ));
+                    }
+                    _ => (None, t.position_mm),
+                }
             };
             match remaining {
                 None => return Ok(position),
@@ -384,8 +406,9 @@ impl HardwareAdapter for VirtualAxis {
         if let Some(report) = self.start(&command)? {
             return Ok(report);
         }
+        let started = self.handle.lock().truth.motion;
         progress.accepted();
-        let final_position = self.wait_for_motion().await?;
+        let final_position = self.wait_for(started).await?;
         self.handle.lock().truth.applied_count += 1;
 
         let mut result = BTreeMap::new();

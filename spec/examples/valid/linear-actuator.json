@@ -89,6 +89,7 @@
       "kind": "action",
       "description": "Decelerate and stop any motion.",
       "operations": ["invoke"],
+      "stop": true,
       "params": {},
       "side_effect": "reversible",
       "idempotent": true,
