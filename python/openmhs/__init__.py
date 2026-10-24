@@ -49,7 +49,7 @@ from .models import (
 )
 from .runtime import RuntimeInfo, default_home
 
-__version__ = "0.1.0.dev0"
+__version__ = "0.1.0"
 
 __all__ = [
     "AdapterResult",

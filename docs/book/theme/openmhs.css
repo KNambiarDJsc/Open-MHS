@@ -1,0 +1,6 @@
+/* A neutral, plain engineering look: default mdBook themes, a slightly wider text column,
+   and the "independent project" notice kept visible. No marketing styling. */
+.content main { max-width: 880px; }
+table { font-size: 0.95em; }
+code { font-size: 0.92em; }
+#menu-bar { border-bottom: 1px solid var(--table-border-color); }

@@ -1,7 +1,8 @@
 # openmhs (Python client)
 
-A Python client for the OpenMHS gateway's local API ([spec/api.md](../spec/api.md)).
-Standard library only, Python 3.10+. **Not published**: install it from this repository.
+A Python client for the OpenMHS gateway's local API ([spec/api.md](https://github.com/KNambiarDJsc/Open-MHS/blob/main/spec/api.md)).
+Standard library only, Python 3.10+. **Not on PyPI yet**: install it from a checkout of the repository. It talks to a running
+OpenMHS gateway (`openmhs serve`); it does not include one.
 
 ```sh
 pip install -e python          # or put python/ on PYTHONPATH
@@ -29,7 +30,7 @@ elif r.denied:                                     # a refusal is a receipt, not
   gateway are kept in `.extra`.
 - Leases (`acquire_lease`, `renew_lease`, `release_lease`) and plans (`preflight_plan`,
   `submit_plan`, `plan`, `plans`, `cancel_plan`, and `decide_plan` for a human approver)
-  follow [spec/topology.md](../spec/topology.md) and [spec/plans.md](../spec/plans.md).
+  follow [spec/topology.md](https://github.com/KNambiarDJsc/Open-MHS/blob/main/spec/topology.md) and [spec/plans.md](https://github.com/KNambiarDJsc/Open-MHS/blob/main/spec/plans.md).
 - `Client` never prints its token, and is safe to share between threads.
 
 Tests run a real gateway binary:

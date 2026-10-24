@@ -5,6 +5,7 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
+repository.workspace = true
 authors.workspace = true
 publish = false
 
@@ -45,3 +46,8 @@ tempfile.workspace = true
 
 [lints]
 workspace = true
+
+# The only crate whose binaries are released (openmhs and openmhsd). Every crate here is
+# `publish = false`, so `dist` must be told to release it. See dist-workspace.toml.
+[package.metadata.dist]
+dist = true

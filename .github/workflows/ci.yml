@@ -123,3 +123,25 @@ jobs:
       - run: pip install "jsonschema>=4.18"
       - name: Schemas behave the same in an independent implementation
         run: python tools/check_schemas.py
+
+  release-tooling:
+    name: Registry, compatibility matrix and release metadata
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.12"
+      - run: pip install "jsonschema>=4.18"
+      - name: Registry entries and conformance reports are valid
+        run: python tools/check_registry.py
+      - name: The compatibility matrix is current
+        run: python tools/gen_matrix.py --check
+      - name: Versions agree across the Rust workspace and the Python package
+        run: python tools/check_release_versions.py
+      - name: Tests for the registry and matrix tooling
+        run: python -m unittest discover -s tools -p "test_*.py" -v
+      - name: The release plan is valid (cargo-dist 0.32.0; builds nothing)
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.32.0/cargo-dist-installer.sh | sh
+          dist plan

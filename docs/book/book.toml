@@ -1,0 +1,35 @@
+[book]
+title = "OpenMHS"
+description = "Documentation for OpenMHS: an open-source runtime for connecting AI agents to programmable hardware. Independent; not affiliated with Anthropic."
+authors = ["OpenMHS contributors"]
+language = "en"
+# The source is staged from the repository by tools/build_docs.py; it is never edited here.
+src = "src"
+
+[build]
+build-dir = "build"
+create-missing = false
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/KNambiarDJsc/Open-MHS"
+git-repository-icon = "fab-github"
+# Every staged page ends with links to its source file and an edit link (tools/build_docs.py).
+site-url = "/Open-MHS/"
+no-section-label = false
+additional-css = ["theme/openmhs.css"]
+
+[output.html.search]
+enable = true
+limit-results = 20
+use-boolean-and = true
+boost-title = 2
+expand = true
+
+[output.html.print]
+enable = false
+
+[output.html.fold]
+enable = true
+level = 1

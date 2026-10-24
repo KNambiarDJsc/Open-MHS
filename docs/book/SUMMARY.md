@@ -1,0 +1,92 @@
+# Summary
+
+[What is OpenMHS?](README.md)
+
+# Getting Started
+
+- [Installation](docs/installation.md)
+- [Five-minute tutorial](docs/tutorial.md)
+- [First simulated device](docs/first-device.md)
+- [Connecting an AI agent](docs/mcp.md)
+
+# Core Concepts
+
+- [Overview](docs/concepts.md)
+- [Devices and capabilities](spec/descriptor.md)
+- [Units](spec/units.md)
+- [Adapters](docs/architecture/adapter-host.md)
+- [Commands](spec/lifecycle.md)
+- [Authorization](spec/authorization.md)
+- [Command outcomes and errors](spec/errors.md)
+- [Topology and leases](spec/topology.md)
+- [Plans](spec/plans.md)
+
+# Guides
+
+- [Python SDK](python/README.md)
+- [Agent-loop examples](examples/agent-loop/README.md)
+- [Multi-device workcell](examples/workcell/README.md)
+- [Building adapters](docs/adapters/README.md)
+  - [Recorded walkthrough](docs/adapters/walkthrough.md)
+  - [Python adapter SDK](docs/adapters/python-sdk.md)
+  - [Device profiles](docs/adapters/profiles.md)
+    - [Modbus TCP](docs/adapters/modbus.md)
+    - [MQTT](docs/adapters/mqtt.md)
+    - [SCPI](docs/adapters/scpi.md)
+    - [HTTP](docs/adapters/http.md)
+  - [OPC UA](docs/adapters/opcua.md)
+  - [ROS 2](docs/adapters/ros2.md)
+- [Simulators and fault injection](docs/simulators.md)
+- [Conformance testing](spec/conformance.md)
+- [Trying real hardware](docs/hardware/README.md)
+  - [ESP32 LED](docs/hardware/esp32-led.md)
+- [Troubleshooting](docs/troubleshooting.md)
+
+# Reference
+
+- [CLI commands](docs/cli.md)
+- [Local API](spec/api.md)
+- [Specification index](spec/README.md)
+- [Adapter protocol](spec/adapter-protocol.md)
+- [Permission manifests](spec/permission-manifest.md)
+- [Configuration](docs/configuration.md)
+- [Versions](docs/versions.md)
+
+# Project
+
+- [Architecture decisions](docs/adr/README.md)
+  - [0001 Single trusted gateway](docs/adr/0001-single-trusted-gateway.md)
+  - [0002 Command lifecycle](docs/adr/0002-command-lifecycle.md)
+  - [0003 Authorization engine](docs/adr/0003-authorization-engine.md)
+  - [0004 Units](docs/adr/0004-units.md)
+  - [0005 Local API transport](docs/adr/0005-local-api-transport.md)
+  - [0006 MCP SDK](docs/adr/0006-mcp-sdk.md)
+  - [0007 MHS independence](docs/adr/0007-mhs-independence.md)
+  - [0008 Languages](docs/adr/0008-languages.md)
+  - [0009 Descriptor model](docs/adr/0009-descriptor-model.md)
+  - [0010 Engine execution model](docs/adr/0010-engine-execution-model.md)
+  - [0011 Gateway API and roles](docs/adr/0011-gateway-api-and-roles.md)
+  - [0012 MCP server and SDK](docs/adr/0012-mcp-server-and-sdk.md)
+  - [0013 Conformance suite](docs/adr/0013-conformance-suite.md)
+  - [0014 Protocol adapters](docs/adr/0014-protocol-adapters.md)
+  - [0015 Adapter host](docs/adr/0015-adapter-host.md)
+  - [0016 Transport security](docs/adr/0016-transport-security.md)
+  - [0017 Identity and trust](docs/adr/0017-identity-and-trust.md)
+  - [0018 Orchestration](docs/adr/0018-orchestration.md)
+- [Security](SECURITY.md)
+  - [Threat model](docs/security/M8_THREAT_MODEL.md)
+  - [Transport security](docs/security/transport-security.md)
+- [Compatibility](docs/compatibility.md)
+- [Adapter registry](registry/README.md)
+- [Limitations](docs/limitations.md)
+- [Roadmap](docs/roadmap.md)
+- [Landscape research](docs/research/landscape.md)
+- [Naming](docs/research/naming.md)
+- [Governance](GOVERNANCE.md)
+- [Contributing](CONTRIBUTING.md)
+  - [Good first issues](docs/good-first-issues.md)
+  - [RFC template](docs/rfcs/0000-template.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Support](SUPPORT.md)
+- [Changelog](CHANGELOG.md)
+- [Releasing](docs/release/RELEASING.md)

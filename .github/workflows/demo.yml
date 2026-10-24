@@ -1,0 +1,33 @@
+# Records the README demo video with VHS (demo/openmhs.tape). Manual only; it uploads the
+# GIF and MP4 as workflow artifacts and commits nothing. Download them, look at them, and
+# add them to the repository yourself if you want them there.
+name: Demo recording
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build openmhs
+        run: |
+          cargo build --release -p openmhs-cli
+          mkdir -p "$HOME/bin" demo/out
+          cp target/release/openmhs "$HOME/bin/"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+      - uses: charmbracelet/vhs-action@f6d7db07a432fcd3b06772628d36a57f96d95dcf # v2.1.1
+        with:
+          version: v0.12.1
+          path: demo/openmhs.tape
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: openmhs-demo
+          path: demo/out/
+          if-no-files-found: error

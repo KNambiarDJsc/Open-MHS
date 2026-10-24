@@ -1,0 +1,65 @@
+# Builds the documentation site (mdBook) and checks its links. Publishing to GitHub Pages
+# never happens on its own: it needs a maintainer to run this workflow by hand with
+# "deploy" ticked, from the ref to publish, after GitHub Pages is enabled for the repository
+# (Settings -> Pages -> Source: GitHub Actions) and the maintainer has approved publishing.
+name: Docs
+
+on:
+  push:
+    branches: [main]
+    paths: ["docs/**", "spec/**", "*.md", "examples/**/*.md", "python/README.md", "registry/**", "tools/build_docs.py", ".github/workflows/docs.yml"]
+  pull_request:
+    paths: ["docs/**", "spec/**", "*.md", "examples/**/*.md", "python/README.md", "registry/**", "tools/build_docs.py", ".github/workflows/docs.yml"]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Publish the built site to GitHub Pages"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install mdBook and lychee (pinned releases, checksum verified)
+        run: |
+          set -euo pipefail
+          curl -sSfL -o mdbook.tgz https://github.com/rust-lang/mdBook/releases/download/v0.5.4/mdbook-v0.5.4-x86_64-unknown-linux-musl.tar.gz
+          echo "5222beabd3e37dc5be0d18ff99b79058469354db5c220153a1b92db5ba12be89  mdbook.tgz" | sha256sum -c -
+          curl -sSfL -o lychee.tgz https://github.com/lycheeverse/lychee/releases/download/lychee-v0.24.2/lychee-x86_64-unknown-linux-musl.tar.gz
+          echo "73657a111819a30c47c08352896796f23d64e4eb2b3ed39b6d32149241566fc5  lychee.tgz" | sha256sum -c -
+          mkdir -p "$HOME/bin"
+          tar -xzf mdbook.tgz -C "$HOME/bin" mdbook
+          tar -xzf lychee.tgz --strip-components=1 -C "$HOME/bin" lychee-x86_64-unknown-linux-musl/lychee
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+      - name: Build the site and check its links
+        run: python tools/build_docs.py --check-links
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        if: github.event_name == 'workflow_dispatch' && inputs.deploy
+        with:
+          path: docs/book/build
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

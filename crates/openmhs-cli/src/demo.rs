@@ -366,11 +366,11 @@ async fn scenario(t: &mut Tour, url: &str, operator_token: &str) -> Result<(), C
         "position read back within 0.1 mm of 120 mm",
     );
 
-    t.step("Lost acknowledgement: the supply applies 7 V but never answers (1.5 s deadline)");
+    t.step("Lost acknowledgement: the supply applies 7 V but never answers (3 s deadline)");
     tokio::time::sleep(SLEW_WINDOW).await;
     operator.sim_fault(PSU, "apply-then-hang").await?;
     let mut req = write(volts(7.0));
-    req["deadline_ms"] = 1500.into();
+    req["deadline_ms"] = 3000.into();
     let lost = agent.submit(req).await?;
     t.receipt(
         &lost,

@@ -1,0 +1,85 @@
+# Builds the `openmhs` Python package and, only on request, publishes it to PyPI with
+# Trusted Publishing (OIDC; there is no API token anywhere).
+#
+# Nothing here publishes by itself:
+#   * a pushed version tag only BUILDS and checks the package (a dry run);
+#   * publishing needs a maintainer to run this workflow by hand from a version tag with
+#     "publish" ticked, AND the `pypi` environment's protection rules (set required
+#     reviewers on it) to pass.
+#
+# One-time setup on PyPI (docs/release/RELEASING.md): add a pending trusted publisher for
+# project `openmhs`, repository KNambiarDJsc/Open-MHS, workflow `pypi.yml`, environment `pypi`.
+name: Python package
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+*"
+  pull_request:
+    paths:
+      - "python/**"
+      - ".github/workflows/pypi.yml"
+      - "tools/check_release_versions.py"
+      - "tools/smoke_python_package.py"
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish to PyPI (needs a version tag ref and the pypi environment's approval)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Versions agree
+        run: python tools/check_release_versions.py ${{ startsWith(github.ref, 'refs/tags/v') && format('--tag {0}', github.ref_name) || '' }}
+      - name: Build sdist and wheel
+        run: |
+          python -m pip install build==1.2.1 twine==7.0.0
+          python -m build --outdir dist python
+          python -m twine check --strict dist/*
+      - name: Smoke test the wheel in a clean environment
+        run: |
+          cargo build -p openmhs-cli
+          python -m venv /tmp/clean
+          /tmp/clean/bin/pip install dist/*.whl
+          /tmp/clean/bin/python -I tools/smoke_python_package.py --bin target/debug/openmhs
+      - name: Smoke test the sdist in a clean environment
+        run: |
+          python -m venv /tmp/clean-sdist
+          /tmp/clean-sdist/bin/pip install dist/*.tar.gz
+          /tmp/clean-sdist/bin/python -I tools/smoke_python_package.py --bin target/debug/openmhs
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: python-dist
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    # Never on tag push or pull request: only a manual run, from a version tag, with the box ticked.
+    if: github.event_name == 'workflow_dispatch' && inputs.publish && startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/openmhs
+    permissions:
+      id-token: write # Trusted Publishing; nothing else
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: python-dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          packages-dir: dist/

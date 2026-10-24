@@ -1,21 +1,42 @@
-# Not published. Publishing to PyPI needs the maintainer's explicit approval.
+# Not yet published to PyPI. Publishing needs the maintainer's explicit approval and a
+# pushed version tag; see docs/release/RELEASING.md and .github/workflows/pypi.yml.
 [build-system]
-requires = ["setuptools>=69"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "openmhs"
-version = "0.1.0.dev0"
+dynamic = ["version"]
 description = "Python client for the OpenMHS gateway between AI agents and programmable hardware."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "OpenMHS contributors" }]
+keywords = ["openmhs", "hardware", "agents", "mcp", "instrumentation", "lab-automation"]
 dependencies = []
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Private :: Do Not Upload",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development :: Libraries",
+    "Typing :: Typed",
 ]
+
+[project.urls]
+Homepage = "https://github.com/KNambiarDJsc/Open-MHS"
+Documentation = "https://github.com/KNambiarDJsc/Open-MHS/blob/main/README.md"
+Source = "https://github.com/KNambiarDJsc/Open-MHS/tree/main/python"
+Issues = "https://github.com/KNambiarDJsc/Open-MHS/issues"
+Changelog = "https://github.com/KNambiarDJsc/Open-MHS/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 # Only the schema tests use it; the client itself is standard library only.
@@ -26,3 +47,8 @@ include = ["openmhs*"]
 
 [tool.setuptools.package-data]
 openmhs = ["py.typed"]
+
+[tool.setuptools.dynamic]
+# One place: openmhs/__init__.py. tools/check_release_versions.py keeps it equal to the Rust
+# workspace version.
+version = { attr = "openmhs.__version__" }

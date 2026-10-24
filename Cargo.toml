@@ -26,6 +26,7 @@ edition = "2024"
 rust-version = "1.89"
 license = "Apache-2.0"
 authors = ["OpenMHS contributors"]
+repository = "https://github.com/KNambiarDJsc/Open-MHS"
 
 [workspace.dependencies]
 # Publishing (ADR-0014). Nothing is published yet. Crates that may one day go to
@@ -88,3 +89,8 @@ unsafe_code = "forbid"
 dbg_macro = "warn"
 todo = "warn"
 unwrap_used = "warn"
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"

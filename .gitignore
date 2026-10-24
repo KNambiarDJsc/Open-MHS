@@ -13,3 +13,7 @@ dist/
 .vscode/
 *.egg-info/
 build/
+
+# Generated documentation site (tools/build_docs.py)
+/docs/book/src/
+/docs/book/build/
