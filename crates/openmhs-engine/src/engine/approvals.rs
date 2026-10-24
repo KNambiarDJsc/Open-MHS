@@ -170,8 +170,11 @@ impl Engine {
                     r.policy.errors = vec![e];
                 }
             });
-            if let Err(e) = result {
-                warn!(command = %command_id, error = %e, "could not move a command whose approval ended");
+            match result {
+                Ok(_) => self.plan_command_settled_later(command_id),
+                Err(e) => {
+                    warn!(command = %command_id, error = %e, "could not move a command whose approval ended");
+                }
             }
         }
     }

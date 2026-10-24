@@ -10,9 +10,9 @@ pub mod authz;
 pub mod constraints;
 mod glob;
 
-pub use auth::{AuthMethod, Caller, PrincipalKind, Scope};
+pub use auth::{AuthMethod, Caller, CallerRecord, PrincipalKind, Scope};
 pub use authz::{AuthzDecision, Effect, Grant, Policy};
 pub use constraints::{
-    Expectation, Live, Mutation, Prepared, check_command, check_read, readback_matches,
-    state_needed,
+    Expectation, Live, Mutation, Prepared, check_command, check_read, condition_holds,
+    readback_matches, state_needed,
 };

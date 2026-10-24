@@ -522,6 +522,17 @@ fn compare(
     }
 }
 
+/// Whether a reading satisfies a comparison, as a descriptor precondition would judge it
+/// (units converted to the capability's own). Used for plan step preconditions.
+pub fn condition_holds(
+    spec: &ValueSpec,
+    actual: &Value,
+    op: CompareOp,
+    expected: &PreconditionValue,
+) -> Result<bool, String> {
+    compare(spec, actual, op, expected)
+}
+
 /// Whether an observed readback matches the expectation within tolerance.
 pub fn readback_matches(expected: &Value, observed: &Value, tolerance: Option<Tolerance>) -> bool {
     match (expected, observed) {

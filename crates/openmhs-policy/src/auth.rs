@@ -150,6 +150,39 @@ impl Caller {
     pub fn in_scope_device(&self, device: &str) -> bool {
         self.scopes.iter().any(|s| glob::matches(&s.device, device))
     }
+
+    /// What the engine keeps to act for this caller later.
+    pub fn record(&self) -> CallerRecord {
+        CallerRecord {
+            principal: self.principal.clone(),
+            credential_id: self.credential_id.clone(),
+            method: self.method,
+            scopes: self.scopes.clone(),
+        }
+    }
+
+    /// The caller a plan was submitted by, to continue it after an approval or a
+    /// restart. Only for records the engine wrote itself; never for data a client sent.
+    pub fn from_record(r: &CallerRecord) -> Self {
+        Self {
+            kind: PrincipalKind::of(&r.principal),
+            principal: r.principal.clone(),
+            credential_id: r.credential_id.clone(),
+            method: r.method,
+            scopes: r.scopes.clone(),
+        }
+    }
+}
+
+/// A verified caller as stored by the engine alongside work it carries on with later
+/// (plans). Credential revocation ends that work (ADR-0018).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CallerRecord {
+    pub principal: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub credential_id: Option<String>,
+    pub method: AuthMethod,
+    pub scopes: Vec<Scope>,
 }
 
 #[cfg(test)]

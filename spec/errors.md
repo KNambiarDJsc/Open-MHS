@@ -183,6 +183,31 @@ code the descriptor relationship rule uses (see Descriptor validation above).
 | `lease.ttl.invalid` | The lease duration is zero or longer than 24 hours |
 | `lease.empty` | The request names no device and no resource |
 
+### Plans (M9)
+
+| Code | Meaning |
+|---|---|
+| `plan.empty` | The plan has no steps |
+| `plan.too_many_steps` | More than 100 steps |
+| `plan.step.id_invalid` | A step id is empty, too long, or uses other characters than letters, digits, `-`, `_`, `.` |
+| `plan.step.duplicate` | Two steps share an id |
+| `plan.step.unknown_dependency` | `after` names a step that does not exist (or the step itself) |
+| `plan.cycle` | Steps depend on each other in a cycle |
+| `plan.step.invalid_request` | A step's request or compensation is not a valid write or invoke, or carries its own `idempotency_key` |
+| `plan.precondition.unknown` | A step precondition reads something that is not a readable property of a registered device |
+| `plan.precondition.failed` | A step precondition did not hold, or its reading was missing or stale, just before the step; nothing was sent |
+| `plan.step.failed` | A step's command ended without success and carried no more specific error |
+| `plan.step.uncertain` | A step's command may or may not have taken effect; the plan waits for a decision |
+| `plan.unknown` | No plan with that id visible to the caller |
+| `plan.decision.not_approver` | Only a human approver decides how a plan continues |
+| `plan.decision.not_awaiting` | The plan is not waiting for a decision |
+| `plan.decision.uncertain` | `resume`, `retry` and `compensate` wait until the uncertain step is reconciled |
+| `plan.decision.not_allowed` | The decision does not fit the step's result (e.g. resuming past a failed step) |
+| `plan.cancel.not_allowed` | Only the plan's submitter or an approver cancels it |
+
+A step that fails reports its command's own error (for example `lease.held`,
+`policy.denied.no_grant` or `adapter.rejected`). Those codes are not wrapped.
+
 ### Adapter
 
 The class decides the lifecycle state (spec/lifecycle.md §3).

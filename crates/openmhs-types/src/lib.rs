@@ -12,6 +12,7 @@ pub mod graph;
 pub mod issue;
 pub mod lease;
 pub mod lifecycle;
+pub mod plan;
 pub mod principal;
 pub mod receipt;
 pub mod schema;

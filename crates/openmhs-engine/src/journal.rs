@@ -15,6 +15,7 @@ use rusqlite::{Connection, OptionalExtension, Transaction, params};
 use sha2::{Digest, Sha256};
 
 mod leases;
+mod plans;
 
 const GENESIS: &str = "0000000000000000000000000000000000000000000000000000000000000000";
 
@@ -160,6 +161,22 @@ impl Journal {
                 record            TEXT NOT NULL
             );
             CREATE INDEX IF NOT EXISTS leases_open ON leases(ended_ms, expires_ms);
+            CREATE TABLE IF NOT EXISTS plans (
+                id            TEXT PRIMARY KEY,
+                principal     TEXT NOT NULL,
+                credential_id TEXT,
+                state         TEXT NOT NULL,
+                created_ms    INTEGER NOT NULL,
+                updated_ms    INTEGER NOT NULL,
+                caller        TEXT NOT NULL,
+                record        TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS plans_state ON plans(state);
+            CREATE TABLE IF NOT EXISTS plan_commands (
+                command_id TEXT PRIMARY KEY,
+                plan_id    TEXT NOT NULL,
+                step_id    TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS audit (
                 seq       INTEGER PRIMARY KEY,
                 at_ms     INTEGER NOT NULL,

@@ -632,6 +632,10 @@ async fn dispatch(
                 let withdrawn = engine
                     .revoke_credential_approvals(&info.id, &session.principal)
                     .map_err(engine_error)?;
+                let cancelled = engine
+                    .cancel_credential_plans(&info.id, &session.principal)
+                    .await
+                    .map_err(engine_error)?;
                 let released = engine
                     .release_credential_leases(&info.id, &session.principal)
                     .map_err(engine_error)?;
@@ -641,6 +645,7 @@ async fn dispatch(
                     json!({
                         "by": session.principal, "principal": info.principal,
                         "approvals_revoked": withdrawn, "leases_released": released,
+                        "plans_cancelled": cancelled,
                     }),
                 )?;
             }
@@ -657,6 +662,10 @@ async fn dispatch(
             let withdrawn = engine
                 .revoke_credential_approvals(&old.id, &session.principal)
                 .map_err(engine_error)?;
+            let cancelled = engine
+                .cancel_credential_plans(&old.id, &session.principal)
+                .await
+                .map_err(engine_error)?;
             let released = engine
                 .release_credential_leases(&old.id, &session.principal)
                 .map_err(engine_error)?;
@@ -666,6 +675,7 @@ async fn dispatch(
                 json!({
                     "by": session.principal, "replaces": old.id, "principal": info.principal,
                     "approvals_revoked": withdrawn, "leases_released": released,
+                    "plans_cancelled": cancelled,
                 }),
             )?;
             ok(CreatedToken { info, token })

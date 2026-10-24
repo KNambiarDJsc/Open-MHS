@@ -25,6 +25,7 @@ use tracing::{info, warn};
 
 mod approvals;
 mod leases;
+mod plans;
 
 pub use approvals::{DEFAULT_APPROVAL_TTL_MS, MAX_APPROVAL_TTL_MS, fingerprint};
 pub use leases::LeaseRequest;
@@ -63,6 +64,8 @@ pub struct RecoveryReport {
     pub verification_resumed: Vec<String>,
     /// Commands left untouched because their device is not registered yet.
     pub skipped: Vec<String>,
+    /// Plans that were moving and now wait for a decision.
+    pub plans_awaiting_decision: Vec<String>,
 }
 
 struct Device {
@@ -83,6 +86,7 @@ struct Inner {
     topology: RwLock<Vec<TopologyRelationship>>,
     state: Mutex<HashMap<(String, String), StateValue>>,
     options: EngineOptions,
+    plans: plans::PlanRuntime,
 }
 
 /// Cheap to clone; all clones share one engine.
@@ -155,6 +159,7 @@ impl Engine {
                 topology: RwLock::new(Vec::new()),
                 state: Mutex::new(HashMap::new()),
                 options,
+                plans: plans::PlanRuntime::default(),
             }),
         }
     }
@@ -1107,6 +1112,19 @@ impl Engine {
         approver_caller: &Caller,
         command_id: &str,
     ) -> Result<Receipt, EngineError> {
+        let receipt = self.approve_command(approver_caller, command_id).await?;
+        // A plan held on this command carries on before the call returns (ADR-0018).
+        if receipt.state != AwaitingApproval {
+            self.plan_command_settled(command_id).await?;
+        }
+        Ok(receipt)
+    }
+
+    async fn approve_command(
+        &self,
+        approver_caller: &Caller,
+        command_id: &str,
+    ) -> Result<Receipt, EngineError> {
         let approver = approver_caller.principal();
         if approver_caller.kind() == PrincipalKind::Agent {
             return Err(EngineError::Denied(ErrorObject::new(
@@ -1289,6 +1307,7 @@ impl Engine {
             Some(format!("cancelled by {principal}")),
             |_| {},
         )?;
+        self.plan_command_settled_later(command_id);
         if let Some(a) = self.inner.journal.approval_for_command(command_id)?
             && !a.status.is_final()
         {
@@ -1433,6 +1452,7 @@ impl Engine {
         }
         self.sweep_approvals()?;
         self.inner.journal.expire_leases(self.now())?;
+        report.plans_awaiting_decision = self.recover_plans()?;
         self.inner.journal.append_audit(
             self.now(),
             "gateway.recovered",
@@ -1442,6 +1462,7 @@ impl Engine {
                 "not_executed": report.not_executed,
                 "verification_resumed": report.verification_resumed,
                 "skipped": report.skipped,
+                "plans_awaiting_decision": report.plans_awaiting_decision,
             }),
         )?;
         Ok(report)

@@ -19,6 +19,7 @@ Rust reference implementation in `crates/` — follow it, and tests keep them in
 | [adapter-protocol.md](adapter-protocol.md) | Adapter-host protocol: JSON-RPC over stdio, lifecycle, errors, supervision |
 | [permission-manifest.md](permission-manifest.md) | Adapter permission manifest: what is host-enforced, cooperative, OS-enforced; signatures |
 | [topology.md](topology.md) | Capability graph: relationships from descriptors and the operator's topology, and what a lease claims |
+| [plans.md](plans.md) | Plans: ordered commands under one lease, failure handling (halt, compensate, ask), decisions, restart |
 
 Machine-readable contracts (JSON Schema Draft 2020-12) live in [`schemas/`](schemas/):
 

@@ -122,6 +122,7 @@ The principal of a command always comes from the token, never from the request b
 | `approval.requested`, `approval.approved`, `approval.denied`, `approval.expired`, `approval.revoked`, `approval.consumed` | Approval records and every change to them |
 | `topology.set` | The operator's topology was applied at start |
 | `lease.acquired`, `lease.renewed`, `lease.released`, `lease.expired` | Leases and every change to them (`token.revoked` and `token.rotated` list the leases they released) |
+| `plan.submitted`, `plan.step.started`, `plan.step.succeeded`, `plan.step.failed`, `plan.step.compensating`, `plan.step.compensated`, `plan.waiting_approval`, `plan.awaiting_decision`, `plan.compensating`, `plan.decision`, `plan.recovered`, `plan.succeeded`, `plan.halted`, `plan.compensated`, `plan.aborted`, `plan.cancelled` | Every change to a plan ([plans.md](plans.md)). Each step's command has its own command records as usual |
 | `read` | An allowed read, with the reading or the adapter's error |
 | `read.denied` | A refused read: unknown device or capability, no grant, or not readable |
 | `request.rejected` | A command request that failed schema validation, before it became a command |
