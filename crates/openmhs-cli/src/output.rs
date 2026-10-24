@@ -380,6 +380,46 @@ pub fn tokens(tokens: &[TokenInfo]) {
     }
 }
 
+pub fn approval(a: &openmhs_types::Approval) {
+    println!("approval   {}", a.id);
+    println!("status     {}", a.status.name());
+    println!(
+        "for        {} / {} ({}) by {}",
+        a.device,
+        a.capability,
+        name(&a.operation),
+        a.requester
+    );
+    println!("fingerprint {}", a.fingerprint);
+    if let Some(c) = &a.command_id {
+        println!("command    {c}");
+    }
+    if let Some(by) = &a.decided_by {
+        println!("decided by {by}");
+    }
+    if let Some(r) = &a.reason {
+        println!("reason     {r}");
+    }
+    println!("expires    {}", a.expires_at);
+}
+
+pub fn approvals(list: &[openmhs_types::Approval]) {
+    if list.is_empty() {
+        println!("no approvals");
+        return;
+    }
+    for a in list {
+        println!(
+            "{:<37} {:<9} {:<24} {} / {}",
+            a.id,
+            a.status.name(),
+            a.requester,
+            a.device,
+            a.capability
+        );
+    }
+}
+
 pub fn created_token(t: &openmhs_api::CreatedToken) {
     println!(
         "created {} for {} ({})",

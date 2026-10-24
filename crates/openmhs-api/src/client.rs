@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use openmhs_policy::Grant;
 use openmhs_types::receipt::PreflightResult;
-use openmhs_types::{CommandState, Descriptor, Receipt};
+use openmhs_types::{Approval, ApprovalStatus, CommandState, Descriptor, Receipt};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 
@@ -152,8 +152,99 @@ impl Client {
         .await
     }
 
+    /// Submit a command together with an approval requested and approved ahead of it.
+    pub async fn submit_approved(
+        &self,
+        request: serde_json::Value,
+        approval_id: &str,
+    ) -> Result<Receipt, ClientError> {
+        self.call(
+            method::COMMANDS_SUBMIT,
+            SubmitParams {
+                request,
+                approval_id: Some(approval_id.into()),
+            },
+        )
+        .await
+    }
+
+    /// Ask for approval of a command before submitting it.
+    pub async fn request_approval(
+        &self,
+        request: serde_json::Value,
+        ttl_ms: Option<u64>,
+    ) -> Result<Approval, ClientError> {
+        self.call(
+            method::APPROVALS_REQUEST,
+            ApprovalRequestParams { request, ttl_ms },
+        )
+        .await
+    }
+
+    pub async fn approval(&self, id: &str) -> Result<Approval, ClientError> {
+        self.call(method::APPROVALS_GET, IdParams { id: id.into() })
+            .await
+    }
+
+    pub async fn approvals(
+        &self,
+        statuses: Vec<ApprovalStatus>,
+        limit: Option<usize>,
+    ) -> Result<Vec<Approval>, ClientError> {
+        self.call(
+            method::APPROVALS_LIST,
+            ListApprovalsParams { statuses, limit },
+        )
+        .await
+    }
+
+    async fn approval_action(
+        &self,
+        method: &str,
+        id: &str,
+        reason: Option<String>,
+    ) -> Result<Approval, ClientError> {
+        self.call(
+            method,
+            ApprovalActionParams {
+                id: id.into(),
+                reason,
+            },
+        )
+        .await
+    }
+
+    pub async fn approve_approval(&self, id: &str) -> Result<Approval, ClientError> {
+        self.approval_action(method::APPROVALS_APPROVE, id, None)
+            .await
+    }
+
+    pub async fn deny_approval(
+        &self,
+        id: &str,
+        reason: Option<String>,
+    ) -> Result<Approval, ClientError> {
+        self.approval_action(method::APPROVALS_DENY, id, reason)
+            .await
+    }
+
+    pub async fn revoke_approval(
+        &self,
+        id: &str,
+        reason: Option<String>,
+    ) -> Result<Approval, ClientError> {
+        self.approval_action(method::APPROVALS_REVOKE, id, reason)
+            .await
+    }
+
     pub async fn submit(&self, request: serde_json::Value) -> Result<Receipt, ClientError> {
-        self.call(method::COMMANDS_SUBMIT, SubmitParams { request })
+        self.call(
+            method::COMMANDS_SUBMIT,
+            SubmitParams {
+                request,
+                approval_id: None,
+            },
+        )
             .await
     }
 
@@ -162,7 +253,13 @@ impl Client {
         &self,
         request: serde_json::Value,
     ) -> Result<PreflightResult, ClientError> {
-        self.call(method::COMMANDS_PREFLIGHT, SubmitParams { request })
+        self.call(
+            method::COMMANDS_PREFLIGHT,
+            SubmitParams {
+                request,
+                approval_id: None,
+            },
+        )
             .await
     }
 

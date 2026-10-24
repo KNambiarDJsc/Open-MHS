@@ -10,10 +10,11 @@ use axum::http::{HeaderMap, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use openmhs_api::{
-    AuditEntry, AuditTailParams, AuditVerifyResult, CommandIdParams, CreateTokenParams,
+    ApprovalActionParams, ApprovalRequestParams, AuditEntry, AuditTailParams, AuditVerifyResult,
+    CommandIdParams, CreateTokenParams,
     CreatedToken, DeviceParams, ErrorData, GatewayInfo, GrantParams, IdParams, ListCommandsParams,
     RPC_PATH, ReadParams, ReadResult, Role, RotateTokenParams, RpcError, RpcRequest, RpcResponse,
-    SimFaultParams, SimFaultResult, SubmitParams, method, rpc_code,
+    SimFaultParams, SimFaultResult, SubmitParams, ListApprovalsParams, method, rpc_code,
 };
 use openmhs_engine::journal::sha256_hex;
 use openmhs_engine::{Engine, EngineError};
@@ -367,7 +368,13 @@ async fn dispatch(
             let p: SubmitParams = params(raw)?;
             let engine = engine.clone();
             let caller = session.caller.clone();
-            ok(detached(async move { engine.submit(&caller, &p.request).await }).await?)
+            ok(detached(async move {
+                match p.approval_id {
+                    Some(approval) => engine.submit_approved(&caller, &p.request, &approval).await,
+                    None => engine.submit(&caller, &p.request).await,
+                }
+            })
+            .await?)
         }
 
         method::COMMANDS_PREFLIGHT => {
@@ -402,6 +409,55 @@ async fn dispatch(
             let engine = engine.clone();
             let approver = session.caller.clone();
             ok(detached(async move { engine.approve(&approver, &p.command_id).await }).await?)
+        }
+
+        method::APPROVALS_REQUEST => {
+            let p: ApprovalRequestParams = params(raw)?;
+            let engine = engine.clone();
+            let caller = session.caller.clone();
+            ok(detached(async move {
+                engine.request_approval(&caller, &p.request, p.ttl_ms).await
+            })
+            .await?)
+        }
+
+        method::APPROVALS_GET => {
+            let p: IdParams = params(raw)?;
+            ok(engine
+                .approval(&session.caller, &p.id)
+                .map_err(engine_error)?)
+        }
+
+        method::APPROVALS_LIST => {
+            let p: ListApprovalsParams = params(raw)?;
+            let limit = p.limit.unwrap_or(DEFAULT_LIST_LIMIT).min(MAX_LIST_LIMIT);
+            ok(engine
+                .approvals(&session.caller, &p.statuses, limit)
+                .map_err(engine_error)?)
+        }
+
+        method::APPROVALS_APPROVE => {
+            require_operator("approving")?;
+            let p: ApprovalActionParams = params(raw)?;
+            let engine = engine.clone();
+            let caller = session.caller.clone();
+            ok(detached(async move { engine.approve_approval(&caller, &p.id).await }).await?)
+        }
+
+        method::APPROVALS_DENY => {
+            require_operator("denying approvals")?;
+            let p: ApprovalActionParams = params(raw)?;
+            ok(engine
+                .deny_approval(&session.caller, &p.id, p.reason)
+                .map_err(engine_error)?)
+        }
+
+        // The requester may withdraw their own; the engine lets approvers revoke any.
+        method::APPROVALS_REVOKE => {
+            let p: ApprovalActionParams = params(raw)?;
+            ok(engine
+                .revoke_approval(&session.caller, &p.id, p.reason)
+                .map_err(engine_error)?)
         }
 
         method::COMMANDS_CANCEL => {
@@ -524,10 +580,18 @@ async fn dispatch(
                 ));
             };
             if newly {
+                // What the credential asked for and nobody has yet approved or used is
+                // withdrawn with it. Commands already dispatched are not recalled.
+                let withdrawn = engine
+                    .revoke_credential_approvals(&info.id, &session.principal)
+                    .map_err(engine_error)?;
                 shared.audit(
                     "token.revoked",
                     &info.id,
-                    json!({ "by": session.principal, "principal": info.principal }),
+                    json!({
+                        "by": session.principal, "principal": info.principal,
+                        "approvals_revoked": withdrawn,
+                    }),
                 )?;
             }
             ok(info)
@@ -540,10 +604,16 @@ async fn dispatch(
                 .tokens()
                 .rotate(&p.id, p.ttl_ms, shared.clock.now())
                 .map_err(token_error)?;
+            let withdrawn = engine
+                .revoke_credential_approvals(&old.id, &session.principal)
+                .map_err(engine_error)?;
             shared.audit(
                 "token.rotated",
                 &info.id,
-                json!({ "by": session.principal, "replaces": old.id, "principal": info.principal }),
+                json!({
+                    "by": session.principal, "replaces": old.id, "principal": info.principal,
+                    "approvals_revoked": withdrawn,
+                }),
             )?;
             ok(CreatedToken { info, token })
         }

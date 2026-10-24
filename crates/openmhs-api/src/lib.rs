@@ -7,7 +7,7 @@ pub mod client;
 pub mod runtime;
 
 use openmhs_policy::{Grant, PrincipalKind, Scope};
-use openmhs_types::{CommandState, ErrorObject, StateValue};
+use openmhs_types::{ApprovalStatus, CommandState, ErrorObject, StateValue};
 use serde::{Deserialize, Serialize};
 
 pub use client::{Client, ClientError};
@@ -28,6 +28,12 @@ pub mod method {
     pub const COMMANDS_APPROVE: &str = "commands.approve";
     pub const COMMANDS_CANCEL: &str = "commands.cancel";
     pub const COMMANDS_RECONCILE: &str = "commands.reconcile";
+    pub const APPROVALS_REQUEST: &str = "approvals.request";
+    pub const APPROVALS_GET: &str = "approvals.get";
+    pub const APPROVALS_LIST: &str = "approvals.list";
+    pub const APPROVALS_APPROVE: &str = "approvals.approve";
+    pub const APPROVALS_DENY: &str = "approvals.deny";
+    pub const APPROVALS_REVOKE: &str = "approvals.revoke";
     pub const GRANTS_LIST: &str = "grants.list";
     pub const GRANTS_ADD: &str = "grants.add";
     pub const GRANTS_REVOKE: &str = "grants.revoke";
@@ -148,6 +154,34 @@ pub struct ReadResult {
 pub struct SubmitParams {
     /// A command request (`command.schema.json`). The principal comes from the token.
     pub request: serde_json::Value,
+    /// An approval requested and approved ahead of this command (`approvals.request`).
+    /// It is spent only if it was given for exactly this command, to this requester.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub approval_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ApprovalRequestParams {
+    /// The command to be approved, as it will be submitted.
+    pub request: serde_json::Value,
+    /// How long the approval stays valid once approved; default 15 minutes, at most 24 hours.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ttl_ms: Option<u64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ApprovalActionParams {
+    pub id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ListApprovalsParams {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub statuses: Vec<ApprovalStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub limit: Option<usize>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

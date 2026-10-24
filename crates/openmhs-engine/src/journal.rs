@@ -10,7 +10,7 @@ use std::sync::{Mutex, MutexGuard};
 
 use openmhs_policy::Expectation;
 use openmhs_types::receipt::TransitionRecord;
-use openmhs_types::{CommandState, Receipt, Timestamp};
+use openmhs_types::{Approval, ApprovalStatus, CommandState, ErrorObject, Receipt, Timestamp};
 use rusqlite::{Connection, OptionalExtension, Transaction, params};
 use sha2::{Digest, Sha256};
 
@@ -29,6 +29,27 @@ pub enum JournalError {
     },
     #[error("unknown command {0}")]
     NotFound(String),
+    /// An approval was refused: unknown, not approved, expired, already spent, or it does
+    /// not match the command. The error says which.
+    #[error("{0}")]
+    Refused(ErrorObject),
+}
+
+fn refuse(code: &str, message: impl Into<String>) -> JournalError {
+    JournalError::Refused(ErrorObject::new(code, message))
+}
+
+/// Why an approval in `status` cannot be used (or moved) right now.
+fn unusable(id: &str, status: ApprovalStatus) -> JournalError {
+    let (code, why) = match status {
+        ApprovalStatus::Pending => ("approval.pending", "has not been approved yet"),
+        ApprovalStatus::Approved => ("approval.invalid_transition", "is already approved"),
+        ApprovalStatus::Denied => ("approval.denied", "was denied"),
+        ApprovalStatus::Expired => ("approval.expired", "has expired"),
+        ApprovalStatus::Revoked => ("approval.revoked", "was revoked"),
+        ApprovalStatus::Consumed => ("approval.consumed", "was already used"),
+    };
+    refuse(code, format!("approval {id} {why}"))
 }
 
 /// Result of inserting a new command.
@@ -114,6 +135,19 @@ impl Journal {
                 ON commands(principal, device, idempotency_key)
                 WHERE idempotency_key IS NOT NULL;
             CREATE INDEX IF NOT EXISTS commands_state ON commands(state);
+            CREATE TABLE IF NOT EXISTS approvals (
+                id                   TEXT PRIMARY KEY,
+                status               TEXT NOT NULL,
+                requester            TEXT NOT NULL,
+                requester_credential TEXT,
+                command_id           TEXT,
+                created_ms           INTEGER NOT NULL,
+                expires_ms           INTEGER NOT NULL,
+                record               TEXT NOT NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS approvals_command
+                ON approvals(command_id) WHERE command_id IS NOT NULL;
+            CREATE INDEX IF NOT EXISTS approvals_status ON approvals(status);
             CREATE TABLE IF NOT EXISTS audit (
                 seq       INTEGER PRIMARY KEY,
                 at_ms     INTEGER NOT NULL,
@@ -245,7 +279,20 @@ impl Journal {
     ) -> Result<Receipt, JournalError> {
         let mut conn = self.lock();
         let tx = conn.transaction()?;
-        let mut r = Self::load(&tx, command_id)?;
+        let r = Self::transition_tx(&tx, command_id, to, at, detail, update)?;
+        tx.commit()?;
+        Ok(r)
+    }
+
+    fn transition_tx(
+        tx: &Transaction<'_>,
+        command_id: &str,
+        to: CommandState,
+        at: Timestamp,
+        detail: Option<String>,
+        update: impl FnOnce(&mut Receipt),
+    ) -> Result<Receipt, JournalError> {
+        let mut r = Self::load(tx, command_id)?;
         let from = r.state;
         if !from.can_transition_to(to) {
             return Err(JournalError::IllegalTransition { from, to });
@@ -259,7 +306,7 @@ impl Journal {
             detail: detail.clone(),
         });
         let hash = Self::append_audit_tx(
-            &tx,
+            tx,
             at,
             "command.transition",
             command_id,
@@ -270,8 +317,266 @@ impl Journal {
             "UPDATE commands SET state = ?1, receipt = ?2 WHERE command_id = ?3",
             params![state_name(to), serde_json::to_string(&r)?, command_id],
         )?;
-        tx.commit()?;
         Ok(r)
+    }
+
+    // ---------------------------------------------------------------- approvals
+    //
+    // Every change to an approval is one SQLite transaction under the connection mutex:
+    // the status check, the update and its audit record happen together or not at all.
+    // Spending an approval additionally moves the command in the same transaction, so
+    // "approved once" and "command proceeds" cannot come apart, and a second attempt to
+    // spend it sees CONSUMED.
+
+    fn load_approval(conn: &Connection, id: &str) -> Result<Approval, JournalError> {
+        let json: Option<String> = conn
+            .query_row("SELECT record FROM approvals WHERE id = ?1", [id], |r| {
+                r.get(0)
+            })
+            .optional()?;
+        let json = json.ok_or_else(|| refuse("approval.unknown", format!("unknown approval {id}")))?;
+        Ok(serde_json::from_str(&json)?)
+    }
+
+    fn store_approval(tx: &Transaction<'_>, a: &Approval) -> Result<(), JournalError> {
+        tx.execute(
+            "UPDATE approvals SET status = ?1, command_id = ?2, record = ?3 WHERE id = ?4",
+            params![a.status.name(), a.command_id, serde_json::to_string(a)?, a.id],
+        )?;
+        Ok(())
+    }
+
+    /// Move an approval to `to`, stamping who and when, and audit it. The caller has
+    /// already checked legality.
+    fn apply_approval(
+        tx: &Transaction<'_>,
+        a: &mut Approval,
+        to: ApprovalStatus,
+        at: Timestamp,
+        by: Option<&str>,
+        reason: Option<String>,
+    ) -> Result<(), JournalError> {
+        a.status = to;
+        match to {
+            ApprovalStatus::Approved | ApprovalStatus::Denied | ApprovalStatus::Revoked => {
+                a.decided_by = by.map(str::to_owned);
+                a.decided_at = Some(at);
+            }
+            ApprovalStatus::Consumed => a.consumed_at = Some(at),
+            ApprovalStatus::Pending | ApprovalStatus::Expired => {}
+        }
+        if reason.is_some() {
+            a.reason = reason;
+        }
+        Self::store_approval(tx, a)?;
+        Self::append_audit_tx(
+            tx,
+            at,
+            &format!("approval.{}", to.name().to_lowercase()),
+            &a.id,
+            &serde_json::json!({
+                "by": by, "requester": a.requester, "command_id": a.command_id,
+                "device": a.device, "capability": a.capability, "fingerprint": a.fingerprint,
+                "reason": a.reason,
+            }),
+        )?;
+        Ok(())
+    }
+
+    /// Record a new approval request in `PENDING`.
+    pub fn insert_approval(&self, a: &Approval) -> Result<(), JournalError> {
+        let mut conn = self.lock();
+        let tx = conn.transaction()?;
+        tx.execute(
+            "INSERT INTO approvals (id, status, requester, requester_credential, command_id, created_ms, expires_ms, record)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+            params![
+                a.id,
+                a.status.name(),
+                a.requester,
+                a.requester_credential,
+                a.command_id,
+                a.created_at.millis(),
+                a.expires_at.millis(),
+                serde_json::to_string(a)?
+            ],
+        )?;
+        Self::append_audit_tx(
+            &tx,
+            a.created_at,
+            "approval.requested",
+            &a.id,
+            &serde_json::json!({
+                "requester": a.requester, "credential_id": a.requester_credential,
+                "command_id": a.command_id, "device": a.device, "capability": a.capability,
+                "operation": a.operation, "fingerprint": a.fingerprint, "expires_at": a.expires_at,
+            }),
+        )?;
+        tx.commit()?;
+        Ok(())
+    }
+
+    pub fn approval(&self, id: &str) -> Result<Option<Approval>, JournalError> {
+        match Self::load_approval(&self.lock(), id) {
+            Ok(a) => Ok(Some(a)),
+            Err(JournalError::Refused(e)) if e.code == "approval.unknown" => Ok(None),
+            Err(e) => Err(e),
+        }
+    }
+
+    pub fn approval_for_command(&self, command_id: &str) -> Result<Option<Approval>, JournalError> {
+        let json: Option<String> = self
+            .lock()
+            .query_row(
+                "SELECT record FROM approvals WHERE command_id = ?1",
+                [command_id],
+                |r| r.get(0),
+            )
+            .optional()?;
+        json.map(|j| serde_json::from_str(&j).map_err(Into::into))
+            .transpose()
+    }
+
+    /// Newest first, optionally only one requester's and only the given statuses.
+    pub fn approvals(
+        &self,
+        requester: Option<&str>,
+        statuses: &[ApprovalStatus],
+        limit: usize,
+    ) -> Result<Vec<Approval>, JournalError> {
+        let conn = self.lock();
+        let mut stmt = conn
+            .prepare("SELECT record, status, requester FROM approvals ORDER BY created_ms DESC, id DESC")?;
+        let rows = stmt.query_map([], |r| {
+            Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?, r.get::<_, String>(2)?))
+        })?;
+        let wanted: Vec<&str> = statuses.iter().map(|s| s.name()).collect();
+        let mut out = Vec::new();
+        for row in rows {
+            let (json, status, who) = row?;
+            if requester.is_some_and(|p| p != who)
+                || (!wanted.is_empty() && !wanted.contains(&status.as_str()))
+            {
+                continue;
+            }
+            out.push(serde_json::from_str(&json)?);
+            if out.len() >= limit {
+                break;
+            }
+        }
+        Ok(out)
+    }
+
+    /// Approvals not yet final that a credential asked for.
+    pub fn open_approvals_of_credential(
+        &self,
+        credential_id: &str,
+    ) -> Result<Vec<Approval>, JournalError> {
+        let conn = self.lock();
+        let mut stmt = conn.prepare(
+            "SELECT record FROM approvals WHERE requester_credential = ?1 AND status IN ('PENDING', 'APPROVED')",
+        )?;
+        let rows = stmt.query_map([credential_id], |r| r.get::<_, String>(0))?;
+        let mut out = Vec::new();
+        for json in rows {
+            out.push(serde_json::from_str(&json?)?);
+        }
+        Ok(out)
+    }
+
+    /// Decide an approval: `Approved`, `Denied` or `Revoked`. An approval past its expiry
+    /// is marked `Expired` instead and the decision refused.
+    pub fn decide_approval(
+        &self,
+        id: &str,
+        to: ApprovalStatus,
+        by: &str,
+        at: Timestamp,
+        reason: Option<String>,
+    ) -> Result<Approval, JournalError> {
+        let mut conn = self.lock();
+        let tx = conn.transaction()?;
+        let mut a = Self::load_approval(&tx, id)?;
+        if !a.status.is_final() && a.is_expired_at(at) {
+            Self::apply_approval(&tx, &mut a, ApprovalStatus::Expired, at, None, None)?;
+            tx.commit()?;
+            return Err(unusable(id, ApprovalStatus::Expired));
+        }
+        if !a.status.can_transition_to(to) {
+            return Err(unusable(id, a.status));
+        }
+        Self::apply_approval(&tx, &mut a, to, at, Some(by), reason)?;
+        tx.commit()?;
+        Ok(a)
+    }
+
+    /// Mark every open approval past its expiry as `EXPIRED`; returns them.
+    pub fn expire_approvals(&self, at: Timestamp) -> Result<Vec<Approval>, JournalError> {
+        let mut conn = self.lock();
+        let tx = conn.transaction()?;
+        let ids: Vec<String> = {
+            let mut stmt = tx.prepare(
+                "SELECT id FROM approvals WHERE status IN ('PENDING', 'APPROVED') AND expires_ms <= ?1",
+            )?;
+            let rows = stmt.query_map([at.millis()], |r| r.get::<_, String>(0))?;
+            rows.collect::<Result<_, _>>()?
+        };
+        let mut out = Vec::new();
+        for id in ids {
+            let mut a = Self::load_approval(&tx, &id)?;
+            Self::apply_approval(&tx, &mut a, ApprovalStatus::Expired, at, None, None)?;
+            out.push(a);
+        }
+        tx.commit()?;
+        Ok(out)
+    }
+
+    /// Spend an approved approval on a command and move that command, atomically.
+    ///
+    /// Everything is checked against the stored records inside the transaction: the
+    /// approval is `APPROVED` and unexpired, it belongs to this requester, it is not bound
+    /// to another command, and `fingerprint_of` (computed from the command as stored
+    /// now, not as it was when asked about) equals the fingerprint that was approved.
+    /// Any mismatch spends nothing. A second call finds `CONSUMED` and fails.
+    #[allow(clippy::too_many_arguments)]
+    pub fn consume_approval(
+        &self,
+        approval_id: &str,
+        command_id: &str,
+        at: Timestamp,
+        fingerprint_of: impl FnOnce(&Receipt) -> String,
+        to: CommandState,
+        detail: Option<String>,
+        update: impl FnOnce(&mut Receipt, &Approval),
+    ) -> Result<(Approval, Receipt), JournalError> {
+        let mut conn = self.lock();
+        let tx = conn.transaction()?;
+        let mut a = Self::load_approval(&tx, approval_id)?;
+        if a.status != ApprovalStatus::Approved {
+            return Err(unusable(approval_id, a.status));
+        }
+        if a.is_expired_at(at) {
+            Self::apply_approval(&tx, &mut a, ApprovalStatus::Expired, at, None, None)?;
+            tx.commit()?;
+            return Err(unusable(approval_id, ApprovalStatus::Expired));
+        }
+        let receipt = Self::load(&tx, command_id)?;
+        let bound_elsewhere = a.command_id.as_deref().is_some_and(|c| c != command_id);
+        if bound_elsewhere
+            || receipt.principal != a.requester
+            || fingerprint_of(&receipt) != a.fingerprint
+        {
+            return Err(refuse(
+                "approval.mismatch",
+                format!("approval {approval_id} was not given for this command"),
+            ));
+        }
+        a.command_id = Some(command_id.to_owned());
+        Self::apply_approval(&tx, &mut a, ApprovalStatus::Consumed, at, None, None)?;
+        let approved = a.clone();
+        let r = Self::transition_tx(&tx, command_id, to, at, detail, |r| update(r, &approved))?;
+        tx.commit()?;
+        Ok((a, r))
     }
 
     fn load(conn: &Connection, command_id: &str) -> Result<Receipt, JournalError> {

@@ -79,6 +79,11 @@ enum Cmd {
     },
     /// Approve a command waiting in AWAITING_APPROVAL (operator).
     Approve { command_id: String },
+    /// Request, inspect, approve, deny and revoke approvals.
+    Approvals {
+        #[command(subcommand)]
+        command: ApprovalsCmd,
+    },
     /// Manage authorization grants (operator).
     Grants {
         #[command(subcommand)]
@@ -252,6 +257,9 @@ struct ExecArgs {
     /// Only ask whether it would be allowed right now (preflight). Runs nothing.
     #[arg(long)]
     check: bool,
+    /// Spend an approval that was requested and approved ahead of this exact command.
+    #[arg(long)]
+    approval: Option<String>,
 }
 
 #[derive(Subcommand)]
@@ -305,6 +313,43 @@ struct GrantArgs {
     max_side_effect: Option<SideEffect>,
     #[arg(long)]
     reason: Option<String>,
+}
+
+#[derive(Subcommand)]
+enum ApprovalsCmd {
+    /// Ask for approval of a command before submitting it (same arguments as `exec`).
+    /// Prints the approval id; once approved, `exec ... --approval <id>` spends it.
+    Request {
+        #[command(flatten)]
+        exec: ExecArgs,
+        /// How long the approval stays valid once approved, e.g. `15m`, `2h`.
+        #[arg(long, value_parser = parse_duration_ms)]
+        ttl: Option<u64>,
+    },
+    /// Show one approval.
+    Show { id: String },
+    /// List approvals (requesters see their own; approvers see all).
+    List {
+        /// Only these statuses: pending, approved, denied, expired, revoked, consumed.
+        #[arg(long = "status", value_parser = parse_enum::<openmhs_types::ApprovalStatus>)]
+        statuses: Vec<openmhs_types::ApprovalStatus>,
+        #[arg(long)]
+        limit: Option<usize>,
+    },
+    /// Approve (operator who is an approver). Not the requester.
+    Approve { id: String },
+    /// Deny a pending approval.
+    Deny {
+        id: String,
+        #[arg(long)]
+        reason: Option<String>,
+    },
+    /// Withdraw an approval that has not been used: the requester's own, or any as approver.
+    Revoke {
+        id: String,
+        #[arg(long)]
+        reason: Option<String>,
+    },
 }
 
 #[derive(Subcommand)]
@@ -987,10 +1032,40 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
                     Decision::RequireApproval => exit::PENDING,
                 });
             }
-            let receipt = client.submit(request).await?;
+            let receipt = match &args.approval {
+                Some(id) => client.submit_approved(request, id).await?,
+                None => client.submit(request).await?,
+            };
             show(json, &receipt, output::receipt);
             return Ok(receipt_exit(&receipt));
         }
+        Cmd::Approvals { command } => match command {
+            ApprovalsCmd::Request { exec, ttl } => {
+                let request = match build_request(client, &exec).await {
+                    Ok(r) => r,
+                    Err(m) => {
+                        eprintln!("error: {m}");
+                        return Ok(exit::ERROR);
+                    }
+                };
+                let a = client.request_approval(request, ttl).await?;
+                show(json, &a, output::approval);
+            }
+            ApprovalsCmd::Show { id } => show(json, &client.approval(&id).await?, output::approval),
+            ApprovalsCmd::List { statuses, limit } => {
+                let list = client.approvals(statuses, limit).await?;
+                show(json, &list, |l| output::approvals(l));
+            }
+            ApprovalsCmd::Approve { id } => {
+                show(json, &client.approve_approval(&id).await?, output::approval);
+            }
+            ApprovalsCmd::Deny { id, reason } => {
+                show(json, &client.deny_approval(&id, reason).await?, output::approval);
+            }
+            ApprovalsCmd::Revoke { id, reason } => {
+                show(json, &client.revoke_approval(&id, reason).await?, output::approval);
+            }
+        },
         Cmd::Commands { command } => match command {
             CommandsCmd::Show { command_id } => {
                 let r = client.command(&command_id).await?;

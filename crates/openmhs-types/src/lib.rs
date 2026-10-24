@@ -4,6 +4,7 @@
 //! descriptor types, the unit table, the command lifecycle, wire types, and validation.
 //! It contains no hardware-specific logic.
 
+pub mod approval;
 pub mod command;
 pub mod descriptor;
 pub mod error;
@@ -18,6 +19,7 @@ pub mod units;
 pub mod validate;
 pub mod value;
 
+pub use approval::{Approval, ApprovalStatus, canonical_json};
 pub use command::{CommandRequest, RequestOperation, Target};
 pub use descriptor::Descriptor;
 pub use error::ErrorObject;
