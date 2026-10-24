@@ -397,6 +397,8 @@ class Descriptor(Model):
     adapter: dict[str, Any]
     capabilities: list[dict[str, Any]]
     components: list[dict[str, Any]] | None = None
+    #: How this device relates to others (spec/descriptor.md §7).
+    relationships: list[dict[str, Any]] | None = None
     extensions: dict[str, Any] | None = None
     extra: dict[str, Any] = _extra()
 
