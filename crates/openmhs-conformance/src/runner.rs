@@ -11,12 +11,13 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use openmhs_adapter::{AdapterErrorKind, HardwareAdapter, Health};
-use openmhs_engine::Engine;
+use openmhs_engine::{Engine, LeaseRequest};
 use openmhs_policy::{Effect, Grant, Policy};
 use openmhs_types::descriptor::{
     Capability, CapabilityKind, CompareOp, ConformanceLevel, Operation, PreconditionValue,
     SideEffect, Verification,
 };
+use openmhs_types::plan::{Plan, PlanSpec, PlanState, StepStatus};
 use openmhs_types::receipt::Decision;
 use openmhs_types::state::MAX_FUTURE_SKEW_MS;
 use openmhs_types::{
@@ -36,6 +37,8 @@ use crate::values;
 /// The principal the suite acts as. Its policy allows everything, so only the device and
 /// the descriptor decide what happens.
 pub const PRINCIPAL: &str = "conformance:suite";
+/// A second principal, for the lease checks (L3): it holds, or is kept out by, a lease.
+pub const OTHER: &str = "conformance:other";
 
 /// How a run behaves.
 #[derive(Clone)]
@@ -223,17 +226,21 @@ fn is_state_changing(c: &Capability) -> bool {
 }
 
 fn policy() -> Policy {
+    let grant = |id: &str, principal: &str| Grant {
+        id: id.into(),
+        principal: principal.into(),
+        device: "*".into(),
+        capability: "*".into(),
+        operations: vec![Operation::Read, Operation::Write, Operation::Invoke],
+        effect: Effect::Allow,
+        max_side_effect: None,
+        reason: Some("conformance suite, against a fixture".into()),
+    };
     Policy {
-        grants: vec![Grant {
-            id: "conformance".into(),
-            principal: PRINCIPAL.into(),
-            device: "*".into(),
-            capability: "*".into(),
-            operations: vec![Operation::Read, Operation::Write, Operation::Invoke],
-            effect: Effect::Allow,
-            max_side_effect: None,
-            reason: Some("conformance suite, against a fixture".into()),
-        }],
+        grants: vec![
+            grant("conformance", PRINCIPAL),
+            grant("conformance-other", OTHER),
+        ],
         approvers: vec![],
     }
 }
@@ -278,16 +285,14 @@ impl Runner {
         let t0 = Instant::now();
         if self.discover().await {
             self.observe().await;
-            self.control().await;
+            let working = self.control().await;
+            self.coordinate(working).await;
+        } else {
+            let t = Instant::now();
+            for id in ["L3.leases", "L3.plan", "L3.stop"] {
+                self.record(id, None, t, Finding::untested("needs a device; see L0"));
+            }
         }
-        self.record(
-            "L3.leases",
-            None,
-            Instant::now(),
-            Finding::untested(
-                "L3 is defined with multi-device plans in M9; no adapter can claim it yet",
-            ),
-        );
         self.shutdown().await;
         self.finish(started_at, t0)
     }
@@ -731,7 +736,7 @@ impl Runner {
 
     // ------------------------------------------------------------------- L2
 
-    async fn control(&mut self) {
+    async fn control(&mut self) -> Option<Capability> {
         let caps = self.capabilities(is_state_changing);
         if caps.is_empty() {
             let t = Instant::now();
@@ -743,7 +748,7 @@ impl Runner {
                     Finding::na("the descriptor declares no writable property or action"),
                 );
             }
-            return;
+            return None;
         }
         let mut working = None;
         for cap in &caps {
@@ -753,7 +758,7 @@ impl Runner {
         }
 
         let t = Instant::now();
-        let f = match (self.faulted, working) {
+        let f = match (self.faulted, working.clone()) {
             (false, _) => Finding::untested(
                 "no fault was injected (the fixture supports none of refuse, garbled, no_response, lost_ack), so there was nothing to recover from",
             ),
@@ -780,6 +785,327 @@ impl Runner {
             },
         };
         self.record("L2.recovery", None, t, f);
+        working
+    }
+
+    // ------------------------------------------------------------------- L3
+
+    /// The L3 checks, with the capability whose command L2 showed is carried out.
+    async fn coordinate(&mut self, working: Option<Capability>) {
+        let t = Instant::now();
+        let Some(cap) = working else {
+            let none = self.capabilities(is_state_changing).is_empty();
+            for id in ["L3.leases", "L3.plan"] {
+                let f = if none {
+                    Finding::na("the descriptor declares no writable property or action")
+                } else {
+                    Finding::untested("needs a command that is carried out; see L2.command")
+                };
+                self.record(id, None, t, f);
+            }
+            let f = self.stop_check().await;
+            self.record("L3.stop", None, t, f);
+            return;
+        };
+        let f = self.lease_check(&cap).await;
+        self.record("L3.leases", Some(&cap.name), t, f);
+        let t = Instant::now();
+        let f = self.plan_check(&cap).await;
+        self.record("L3.plan", Some(&cap.name), t, f);
+        let t = Instant::now();
+        let f = self.stop_check().await;
+        self.record("L3.stop", None, t, f);
+    }
+
+    fn lease_for(&self, caller: &Caller) -> Result<openmhs_types::lease::Lease, String> {
+        self.engine()
+            .acquire_lease(
+                caller,
+                LeaseRequest {
+                    devices: vec![self.device_id()],
+                    resources: vec![],
+                    ttl_ms: 600_000,
+                    reason: Some("conformance suite".into()),
+                    plan_id: None,
+                },
+            )
+            .map_err(|e| format!("the engine would not lease the device: {e}"))
+    }
+
+    fn release(&self, caller: &Caller, lease: &openmhs_types::lease::Lease) {
+        let _ = self
+            .engine()
+            .release_lease(caller, &lease.id, Some("conformance suite"));
+    }
+
+    async fn lease_check(&mut self, cap: &Capability) -> Finding {
+        let holder = Caller::in_process(PRINCIPAL);
+        let lease = match self.lease_for(&holder) {
+            Ok(l) => l,
+            Err(m) => return Finding::fail(m),
+        };
+        let f = self.under_lease(cap).await;
+        self.release(&holder, &lease);
+        f
+    }
+
+    async fn under_lease(&mut self, cap: &Capability) -> Finding {
+        let request = match self.prepare(cap, None, 0).await {
+            Ok(r) => r,
+            Err(p) => return Finding::untested(p.message().to_owned()),
+        };
+        let before = self.fixture.deliveries();
+        let other = Caller::in_process(OTHER);
+        let blocked = match self.submit_as(&other, cap, &request, deadline(cap)).await {
+            Ok(r) => r,
+            Err(e) => return Finding::fail(format!("the engine refused the command: {e}")),
+        };
+        let reached = match (before, self.fixture.deliveries()) {
+            (Some(b), Some(a)) => Some(a.saturating_sub(b)),
+            _ => None,
+        };
+        let code = blocked.policy.errors.first().map(|e| e.code.as_str());
+        if blocked.state != CommandState::Denied || code != Some("lease.held") {
+            return Finding::fail(format!(
+                "another principal's command ended {}{} while the device was leased",
+                wire(&blocked.state),
+                reasons(&blocked)
+            ))
+            .with(evidence(&blocked));
+        }
+        if let Some(n) = reached.filter(|n| *n > 0) {
+            return Finding::fail(format!(
+                "a command refused for the lease still reached the device {n} time(s)"
+            ))
+            .with(evidence(&blocked));
+        }
+        let held = match self.attempt(cap).await {
+            Ok(r) => r,
+            Err(p) => return Finding::untested(p.message().to_owned()),
+        };
+        if !applied(held.state) {
+            return Finding::fail(format!(
+                "the lease holder's command ended {}{}",
+                wire(&held.state),
+                reasons(&held)
+            ))
+            .with(evidence(&held));
+        }
+        let counted = if reached.is_some() {
+            ", without reaching the device"
+        } else {
+            ""
+        };
+        Finding::pass(format!(
+            "another principal's command was refused (lease.held){counted}; the holder's was carried out"
+        ))
+    }
+
+    /// Submit a plan as the suite and note the command for pacing.
+    async fn run_plan(
+        &mut self,
+        cap: &Capability,
+        steps: serde_json::Value,
+    ) -> Result<Plan, String> {
+        let spec: PlanSpec =
+            serde_json::from_value(json!({ "description": "conformance suite", "steps": steps }))
+                .map_err(|e| format!("the suite built an invalid plan: {e}"))?;
+        let r = self
+            .engine()
+            .submit_plan(&Caller::in_process(PRINCIPAL), spec)
+            .await
+            .map_err(|e| format!("the engine refused the plan: {e}"));
+        self.last.insert(cap.name.clone(), Instant::now());
+        r
+    }
+
+    async fn plan_check(&mut self, cap: &Capability) -> Finding {
+        let with_deadline = |mut r: serde_json::Value, ms: u64| {
+            r["deadline_ms"] = json!(ms);
+            r
+        };
+        // A valid command as the only step.
+        let request = match self.prepare(cap, None, 0).await {
+            Ok(r) => r,
+            Err(p) => return Finding::untested(p.message().to_owned()),
+        };
+        let step = with_deadline(request, deadline(cap));
+        let plan = match self
+            .run_plan(cap, json!([{ "id": "step", "request": step }]))
+            .await
+        {
+            Ok(p) => p,
+            Err(m) => return Finding::fail(m),
+        };
+        let ev = |p: &Plan| serde_json::to_value(p).unwrap_or_default();
+        if plan.state != PlanState::Succeeded {
+            return Finding::fail(format!(
+                "a plan of one valid command ended {}: {}",
+                plan.state.name(),
+                plan.reason.as_deref().unwrap_or("no reason given")
+            ))
+            .with(ev(&plan));
+        }
+        let released = plan
+            .lease_id
+            .as_deref()
+            .and_then(|l| self.engine().lease(l).ok())
+            .is_some_and(|l| l.released_at.is_some());
+        if !released {
+            return Finding::fail("the plan ended but its lease was not released").with(ev(&plan));
+        }
+        let mut notes = vec!["a one-step plan succeeded and released its lease".to_owned()];
+
+        // A refusal halts the plan at that step; nothing after it is sent.
+        if self.fixture.supports(Fault::Refuse) {
+            let request = match self.prepare(cap, None, 0).await {
+                Ok(r) => r,
+                Err(p) => return Finding::untested(p.message().to_owned()),
+            };
+            let step = with_deadline(request, deadline(cap));
+            let before = self.fixture.deliveries();
+            if let Err(e) = self.fixture.inject(Fault::Refuse).await {
+                let _ = self.fixture.clear().await;
+                return Finding::untested(format!("the fixture failed to inject refuse: {e}"));
+            }
+            let plan = self
+                .run_plan(
+                    cap,
+                    json!([
+                        { "id": "first", "request": step },
+                        { "id": "second", "after": ["first"], "request": step }
+                    ]),
+                )
+                .await;
+            let cleared = self.fixture.clear().await;
+            let reached = match (before, self.fixture.deliveries()) {
+                (Some(b), Some(a)) => Some(a.saturating_sub(b)),
+                _ => None,
+            };
+            if let Err(e) = cleared {
+                return Finding::untested(format!("the fixture could not clear refuse: {e}"));
+            }
+            let plan = match plan {
+                Ok(p) => p,
+                Err(m) => return Finding::fail(m),
+            };
+            let first = plan.step("first").map(|s| s.status);
+            let second = plan.step("second");
+            let sent_second = second.is_some_and(|s| !s.commands.is_empty());
+            if plan.state != PlanState::Halted || first != Some(StepStatus::Failed) || sent_second {
+                return Finding::fail(format!(
+                    "under refuse the plan ended {} (first step {}), instead of halting at the refused step",
+                    plan.state.name(),
+                    first.map_or_else(|| "missing".into(), |s| wire(&s))
+                ))
+                .with(ev(&plan));
+            }
+            if let Some(n) = reached.filter(|n| *n > 1) {
+                return Finding::fail(format!(
+                    "under refuse the plan's commands reached the device {n} times; only the first step may"
+                ))
+                .with(ev(&plan));
+            }
+            notes.push("under refuse the plan halted at that step and sent nothing more".into());
+        } else {
+            notes.push("refuse not injected: the fixture cannot".into());
+        }
+
+        // An unknown outcome is never guessed: the plan stops for a person.
+        if self.fixture.supports(Fault::NoResponse) {
+            let request = match self.prepare(cap, None, 0).await {
+                Ok(r) => r,
+                Err(p) => return Finding::untested(p.message().to_owned()),
+            };
+            let step = with_deadline(request, self.fault_deadline(cap));
+            if let Err(e) = self.fixture.inject(Fault::NoResponse).await {
+                let _ = self.fixture.clear().await;
+                return Finding::untested(format!("the fixture failed to inject no_response: {e}"));
+            }
+            self.faulted = true;
+            let plan = self
+                .run_plan(
+                    cap,
+                    json!([{ "id": "step", "request": step, "on_failure": "compensate" }]),
+                )
+                .await;
+            let cleared = self.fixture.clear().await;
+            if let Err(e) = cleared {
+                return Finding::untested(format!("the fixture could not clear no_response: {e}"));
+            }
+            let plan = match plan {
+                Ok(p) => p,
+                Err(m) => return Finding::fail(m),
+            };
+            let status = plan.step("step").map(|s| s.status);
+            let _ = self
+                .engine()
+                .cancel_plan(
+                    &Caller::in_process(PRINCIPAL),
+                    &plan.id,
+                    Some("conformance suite".into()),
+                )
+                .await;
+            if plan.state != PlanState::AwaitingDecision || status != Some(StepStatus::Uncertain) {
+                return Finding::fail(format!(
+                    "under no_response the plan ended {} (step {}); an unknown outcome must stop the plan for a decision",
+                    plan.state.name(),
+                    status.map_or_else(|| "missing".into(), |s| wire(&s))
+                ))
+                .with(ev(&plan));
+            }
+            notes.push("under no_response it stopped for a decision instead of guessing".into());
+        } else {
+            notes.push("no_response not injected: the fixture cannot".into());
+        }
+        Finding::pass(notes.join("; "))
+    }
+
+    async fn stop_check(&mut self) -> Finding {
+        let Some(stop) = self.capabilities(|c| c.stop).into_iter().next() else {
+            return Finding::na("the descriptor declares no stop action");
+        };
+        if stop.side_effect == SideEffect::Hazardous && !self.options.hazardous {
+            return Finding::untested(
+                "hazardous capability not exercised (Options::hazardous is off)",
+            );
+        }
+        let request = match self.build(&stop, None).await {
+            Ok(r) => r,
+            Err(p) => return Finding::untested(p.message().to_owned()),
+        };
+        self.pace(&stop).await;
+        let other = Caller::in_process(OTHER);
+        let lease = match self.lease_for(&other) {
+            Ok(l) => l,
+            Err(m) => return Finding::fail(m),
+        };
+        let r = self.submit(&stop, &request, deadline(&stop)).await;
+        self.release(&other, &lease);
+        match r {
+            Ok(r) if applied(r.state) => Finding::pass(format!(
+                "'{}' was carried out while another principal held the device's lease (the stop lane)",
+                stop.name
+            )),
+            Ok(r) => {
+                let held = r.policy.errors.iter().any(|e| e.code == "lease.held");
+                let msg = if held {
+                    format!(
+                        "'{}' was refused for another principal's lease; a stop must never wait for a lease",
+                        stop.name
+                    )
+                } else {
+                    format!(
+                        "'{}' ended {}{} while another principal held the lease",
+                        stop.name,
+                        wire(&r.state),
+                        reasons(&r)
+                    )
+                };
+                Finding::fail(msg).with(evidence(&r))
+            }
+            Err(e) => Finding::fail(format!("the engine refused the stop: {e}")),
+        }
     }
 
     /// Run every per-capability L2 check on `cap`. Returns whether a valid command was
@@ -1089,12 +1415,21 @@ impl Runner {
         request: &serde_json::Value,
         deadline_ms: u64,
     ) -> Result<Receipt, openmhs_engine::EngineError> {
+        self.submit_as(&Caller::in_process(PRINCIPAL), cap, request, deadline_ms)
+            .await
+    }
+
+    async fn submit_as(
+        &mut self,
+        caller: &Caller,
+        cap: &Capability,
+        request: &serde_json::Value,
+        deadline_ms: u64,
+    ) -> Result<Receipt, openmhs_engine::EngineError> {
         let mut req = request.clone();
         req["deadline_ms"] = json!(deadline_ms);
         self.last.insert(cap.name.clone(), Instant::now());
-        self.engine()
-            .submit(&Caller::in_process(PRINCIPAL), &req)
-            .await
+        self.engine().submit(caller, &req).await
     }
 
     /// Wait out the rate and slew windows since the last command to `cap`.

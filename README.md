@@ -42,7 +42,9 @@ safety systems keep final authority.
 | MCP server (`openmhs mcp`): structured refusals with next steps, preflight checks, unattested-text marking; verified with Claude Code ([docs/mcp.md](docs/mcp.md)) | Implemented |
 | Python client SDK, standard library only, models checked against the schemas ([python/](python/README.md)) | Implemented; unpublished |
 | Agent-loop examples: scripted replanning agent, optional Claude variant ([examples/agent-loop/](examples/agent-loop/README.md)) | Implemented |
-| Conformance suite L0–L2 with fault injection and JSON evidence reports (`openmhs-conformance`, [spec/conformance.md](spec/conformance.md)); L3 defined in M9 | Implemented |
+| Conformance suite L0–L3 with fault injection and JSON evidence reports (`openmhs-conformance`, [spec/conformance.md](spec/conformance.md)) | Implemented |
+| Capability graph (relationships, shared resources, frames), resource leases, and plans: ordered multi-device steps under one lease, each an ordinary command, with halt / compensate / ask, a person deciding every unknown outcome, and twin preflight ([spec/topology.md](spec/topology.md), [spec/plans.md](spec/plans.md), [workcell example](examples/workcell/README.md)) | Implemented; twins have no physics |
+| Priority stop lane: actions marked `stop` skip the device lock and leases, never authorization or validation ([ADR-0010](docs/adr/0010-engine-execution-model.md)) | Implemented; not a safety function |
 | `openmhs adapter new`: a working adapter crate with a fake device and conformance tests ([adapter guide](docs/adapters/README.md)) | Implemented |
 | Protocol adapters for Modbus TCP, MQTT, SCPI (TCP/serial) and HTTP, driven by JSON device profiles, each L2 against an in-repo simulator ([profiles](docs/adapters/profiles.md)) | Implemented; untested on physical hardware |
 | `openmhs profile check`, `serve --profile` / `--profile-sim`, `conformance --profile` | Implemented |
@@ -119,10 +121,14 @@ python -m unittest discover -s python/tests     # Python SDK, examples, CLI/MCP/
 ## Known limitations
 
 - **Single-user trust boundary.** Any process running as your OS user can read the
-  operator token. Scoped, signed credentials come in M8.
-- **Stop commands can't interrupt a move.** A stop waits for the in-flight command on
-  the same device to finish (see the ADR-0010 amendment). Never rely on OpenMHS for
-  emergency stops: those belong to the hardware.
+  operator token in the gateway home. Give agents scoped credentials instead.
+- **A stop is a command, not a safety function.** Actions marked `stop` skip the device
+  lock and leases, so they reach a device while another command runs, but they are
+  still authorized and validated, and only interrupt a move if the adapter and device
+  do (see the ADR-0010 amendment). Never rely on OpenMHS for emergency stops: those
+  belong to the hardware.
+- **Twin preflight has no physics.** A twin does what it is told; `ok` means a plan fits
+  the contract and current readings, not that it will succeed.
 - **Rate and slew limits reset on restart.** Their history is kept in memory.
 - **Simulator state resets on restart.**
 - **Conformance is not certification.** A level says the integration behaves as

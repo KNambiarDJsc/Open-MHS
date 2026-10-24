@@ -158,7 +158,19 @@ pub const REQUIREMENTS: &[Requirement] = &[
         "L3.leases",
         L3,
         None,
-        "Takes part in multi-device plans with resource leases. Defined in M9",
+        "While another principal holds the device's lease, its commands are refused (`lease.held`) before they reach the device; the holder's are carried out",
+    ),
+    req(
+        "L3.plan",
+        L3,
+        None,
+        "A valid command runs as a plan step and the plan releases its lease. Under `refuse` the plan halts at that step and sends nothing more; under `no_response` it stops for a decision and never guesses",
+    ),
+    req(
+        "L3.stop",
+        L3,
+        None,
+        "A declared stop action is carried out while another principal holds the device's lease (the stop lane)",
     ),
 ];
 

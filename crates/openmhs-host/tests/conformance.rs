@@ -49,7 +49,7 @@ async fn python_psu_reaches_the_same_level_as_the_rust_psu() {
         );
     }
     assert!(python.passed, "{}", render(&python));
-    assert_eq!(python.achieved, Some(ConformanceLevel::L2));
+    assert_eq!(python.achieved, Some(ConformanceLevel::L3));
     assert_eq!(python.achieved, rust.achieved);
     // The same checks, with the same results.
     let outcome = |r: &openmhs_conformance::Report| {

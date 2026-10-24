@@ -15,7 +15,7 @@ device is safe to operate, only that its integration behaves as specified.
 | L0 | Discoverable | Valid descriptor; adapter connects, reports health, describes capabilities matching the descriptor; clean shutdown |
 | L1 | Observable | Reads of every readable property return typed values in the declared unit, with timestamp, source and quality; subscriptions deliver updates (deferred, §4); disconnects surface as `BAD` quality or `adapter.disconnected`, never as stale-but-`GOOD` values |
 | L2 | Controllable | Every write/invoke is honoured within declared timing; readback verification behaves as declared; device rejections map to `REJECTED`; timeouts map to `UNKNOWN_OUTCOME`; the adapter never retries a non-idempotent command on its own; malformed responses map to `adapter.malformed_response` |
-| L3 | Coordinated | Participates in multi-device plans with resource leases (defined in M9) |
+| L3 | Coordinated | Takes part in plans and leases: a lease keeps others' commands off the device, its commands work as plan steps, failures stop the plan as declared and an unknown outcome is never guessed, and a declared stop gets through a lease ([plans.md](plans.md), [topology.md](topology.md)) |
 
 Fault behaviour (disconnects, timeouts, malformed data, crashes) is part of every level
 above L0 and is tested by fault injection, not assumed.
@@ -97,15 +97,27 @@ readable property (`L1.read*`, `L1.disconnect.read`) or each writable property a
 | `L2.lost_ack` | L2 | `lost_ack` | A command applied without an answer ends `UNKNOWN_OUTCOME`, and reconciling by readback finds it applied |
 | `L2.no_retry` | L2 | `no_response` | The adapter never retries a non-idempotent command: each reaches the device at most once |
 | `L2.recovery` | L2 | | After faults clear, commands are carried out again without re-registering |
-| `L3.leases` | L3 | | Takes part in multi-device plans with resource leases. Defined in M9 |
+| `L3.leases` | L3 | | While another principal holds the device's lease, its commands are refused (`lease.held`) before they reach the device; the holder's are carried out |
+| `L3.plan` | L3 | | A valid command runs as a plan step and the plan releases its lease. Under `refuse` the plan halts at that step and sends nothing more; under `no_response` it stops for a decision and never guesses |
+| `L3.stop` | L3 | | A declared stop action is carried out while another principal holds the device's lease (the stop lane) |
 
 Notes:
 
 - **`L1.subscribe` is `not_applicable` for now.** The adapter contract (v0.1) has no
   subscription API, so there is nothing to test. It becomes a real check when the
   contract gains one.
-- **`L3.leases` is always `untested`** until M9 defines plans and leases. No adapter can
-  reach L3 yet.
+- **L3 runs on one device.** The suite drives one adapter, so L3 checks what one device
+  contributes to coordination: its commands under a lease, as plan steps, under faults,
+  and its stop. They use the capability whose command L2 showed is carried out, and a
+  second principal, `conformance:other`. Multi-device behaviour (claims through
+  relationships and shared resources, ordering across devices, compensation) is the
+  engine's, and is tested there.
+- **`L3.plan`** injects `refuse` and `no_response` when the fixture supports them, and
+  says in its message which it could not inject. It passes on the one-step plan alone
+  when the fixture supports neither.
+- **`L3.stop`** is `not_applicable` without a capability marked `stop`. It shows that a
+  stop is not blocked by a lease; it does not show that a stop interrupts a command in
+  flight, which the simulators' own tests cover.
 - **`L2.lost_ack` with `verification.mode: none`** passes on `UNKNOWN_OUTCOME` alone: with
   nothing to read back, an operator resolves it. When the expected readback already held
   before the command, the check passes but says that reconciliation could not tell this
@@ -117,10 +129,11 @@ Notes:
 ## 5. How the suite exercises a device
 
 - L0 and L1 call the adapter directly, so the report can show exactly what it returned.
-  L2 goes through a real engine with an in-memory journal: lifecycle states are the
+  L2 and L3 go through a real engine with an in-memory journal: lifecycle states are the
   engine's, and L2 is about the adapter's answers making the engine reach the right ones.
-- The suite acts as principal `conformance:suite`, under a policy that allows every
-  operation, so only the device and the descriptor decide what happens.
+- The suite acts as principal `conformance:suite` (and, for the lease checks,
+  `conformance:other`), under a policy that allows every operation, so only the device
+  and the descriptor decide what happens.
 - **Values come from the descriptor.** A write moves a small step from the current
   reading: 5% of the declared range, at most half the slew limit, and enough to tell
   apart by readback. Booleans toggle; enums move to another declared value. Action

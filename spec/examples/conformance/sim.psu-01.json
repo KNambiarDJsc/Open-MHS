@@ -5,7 +5,7 @@
     "adapter": "openmhs.sim.psu",
     "adapter_version": "0.1.0",
     "device": "sim.psu-01",
-    "descriptor_sha256": "745fd41767868a714841dd11b1b19ee4c95a18213cb3637a75142b1c98ad2677",
+    "descriptor_sha256": "c6e0bd25203b024e45a1906d054d1efc2116e0b7e73e6b7521beda8ade1593f6",
     "sources": [
       "simulator"
     ]
@@ -20,16 +20,16 @@
     ],
     "counts_deliveries": true
   },
-  "declared": "L2",
-  "achieved": "L2",
+  "declared": "L3",
+  "achieved": "L3",
   "passed": true,
-  "started_at": "2026-10-23T17:10:39.615Z",
-  "duration_ms": 11433,
+  "started_at": "2026-10-24T18:52:26.032Z",
+  "duration_ms": 17638,
   "summary": {
-    "pass": 64,
+    "pass": 66,
     "fail": 0,
-    "untested": 1,
-    "not_applicable": 5
+    "untested": 0,
+    "not_applicable": 6
   },
   "checks": [
     {
@@ -37,14 +37,14 @@
       "level": "L0",
       "status": "pass",
       "message": "returned a descriptor",
-      "duration_ms": 0
+      "duration_ms": 1
     },
     {
       "id": "L0.descriptor",
       "level": "L0",
       "status": "pass",
       "message": "valid: device 'sim.psu-01', 7 capabilities",
-      "duration_ms": 33
+      "duration_ms": 55
     },
     {
       "id": "L0.adapter_id",
@@ -65,7 +65,7 @@
       "level": "L0",
       "status": "pass",
       "message": "connected and registered",
-      "duration_ms": 1
+      "duration_ms": 3
     },
     {
       "id": "L0.health",
@@ -91,7 +91,7 @@
         "reading": {
           "quality": "GOOD",
           "source": "simulator",
-          "timestamp": "2026-10-23T17:10:39.652Z",
+          "timestamp": "2026-10-24T18:52:26.093Z",
           "value": {
             "unit": "V",
             "value": 0.0
@@ -118,7 +118,7 @@
         "reading": {
           "quality": "GOOD",
           "source": "simulator",
-          "timestamp": "2026-10-23T17:10:39.652Z",
+          "timestamp": "2026-10-24T18:52:26.093Z",
           "value": {
             "unit": "V",
             "value": 0.0
@@ -145,7 +145,7 @@
         "reading": {
           "quality": "GOOD",
           "source": "simulator",
-          "timestamp": "2026-10-23T17:10:39.652Z",
+          "timestamp": "2026-10-24T18:52:26.093Z",
           "value": {
             "unit": "V",
             "value": 0.0
@@ -172,7 +172,7 @@
         "reading": {
           "quality": "GOOD",
           "source": "simulator",
-          "timestamp": "2026-10-23T17:10:39.652Z",
+          "timestamp": "2026-10-24T18:52:26.093Z",
           "value": {
             "unit": "V",
             "value": 0.0
@@ -199,7 +199,7 @@
         "reading": {
           "quality": "GOOD",
           "source": "simulator",
-          "timestamp": "2026-10-23T17:10:39.652Z",
+          "timestamp": "2026-10-24T18:52:26.093Z",
           "value": {
             "unit": "A",
             "value": 1.0
@@ -226,7 +226,7 @@
         "reading": {
           "quality": "GOOD",
           "source": "simulator",
-          "timestamp": "2026-10-23T17:10:39.652Z",
+          "timestamp": "2026-10-24T18:52:26.093Z",
           "value": {
             "unit": "A",
             "value": 1.0
@@ -253,7 +253,7 @@
         "reading": {
           "quality": "GOOD",
           "source": "simulator",
-          "timestamp": "2026-10-23T17:10:39.652Z",
+          "timestamp": "2026-10-24T18:52:26.093Z",
           "value": {
             "unit": "A",
             "value": 0.0
@@ -280,7 +280,7 @@
         "reading": {
           "quality": "GOOD",
           "source": "simulator",
-          "timestamp": "2026-10-23T17:10:39.652Z",
+          "timestamp": "2026-10-24T18:52:26.093Z",
           "value": {
             "unit": "A",
             "value": 0.0
@@ -307,7 +307,7 @@
         "reading": {
           "quality": "GOOD",
           "source": "simulator",
-          "timestamp": "2026-10-23T17:10:39.652Z",
+          "timestamp": "2026-10-24T18:52:26.093Z",
           "value": false
         }
       },
@@ -331,7 +331,7 @@
         "reading": {
           "quality": "GOOD",
           "source": "simulator",
-          "timestamp": "2026-10-23T17:10:39.652Z",
+          "timestamp": "2026-10-24T18:52:26.093Z",
           "value": false
         }
       },
@@ -355,7 +355,7 @@
         "reading": {
           "quality": "GOOD",
           "source": "simulator",
-          "timestamp": "2026-10-23T17:10:39.652Z",
+          "timestamp": "2026-10-24T18:52:26.093Z",
           "value": false
         }
       },
@@ -379,7 +379,7 @@
         "reading": {
           "quality": "GOOD",
           "source": "simulator",
-          "timestamp": "2026-10-23T17:10:39.652Z",
+          "timestamp": "2026-10-24T18:52:26.093Z",
           "value": false
         }
       },
@@ -467,13 +467,13 @@
       "level": "L2",
       "capability": "power.output.voltage.setpoint",
       "status": "pass",
-      "message": "carried out in 16 ms",
+      "message": "carried out in 14 ms",
       "evidence": {
         "adapter_result": {
           "acknowledged": true,
           "reported_applied": true
         },
-        "command_id": "01a169be-4525-75c4-a6fa-470d61f14fae",
+        "command_id": "01a16f41-ce6f-7321-93ed-a88d36f57874",
         "outcome": "succeeded",
         "policy_errors": [],
         "request": {
@@ -500,7 +500,7 @@
           "observed": {
             "quality": "GOOD",
             "source": "simulator",
-            "timestamp": "2026-10-23T17:10:39.732Z",
+            "timestamp": "2026-10-24T18:52:26.173Z",
             "value": {
               "unit": "V",
               "value": 0.6
@@ -531,7 +531,7 @@
             "message": "simulated rejection"
           }
         },
-        "command_id": "01a169be-491d-73c2-84e3-93fc9ce4eaaa",
+        "command_id": "01a16f41-d26f-737d-aa40-77b13b988841",
         "outcome": "failed",
         "policy_errors": [],
         "request": {
@@ -549,7 +549,7 @@
         "state": "REJECTED",
         "verification": null
       },
-      "duration_ms": 951
+      "duration_ms": 959
     },
     {
       "id": "L2.malformed",
@@ -565,7 +565,7 @@
             "message": "simulated garbled response"
           }
         },
-        "command_id": "01a169be-4d15-7127-9390-43d505659a39",
+        "command_id": "01a16f41-d666-76ea-8a49-9f4058dd2fba",
         "outcome": "uncertain",
         "policy_errors": [],
         "request": {
@@ -598,7 +598,7 @@
             "message": "no result within 999 ms"
           }
         },
-        "command_id": "01a169be-5109-7605-b0ba-7b33468f58f5",
+        "command_id": "01a16f41-da5f-73fb-8689-cdaefbddfd48",
         "outcome": "uncertain",
         "policy_errors": [],
         "request": {
@@ -616,7 +616,7 @@
         "state": "UNKNOWN_OUTCOME",
         "verification": null
       },
-      "duration_ms": 2010
+      "duration_ms": 2014
     },
     {
       "id": "L2.lost_ack",
@@ -629,10 +629,10 @@
           "acknowledged": true,
           "error": {
             "code": "adapter.timeout",
-            "message": "no result within 1000 ms"
+            "message": "no result within 998 ms"
           }
         },
-        "command_id": "01a169be-54ff-7617-8a45-be47c7392a95",
+        "command_id": "01a16f41-de55-7094-a16e-e9e471086aad",
         "outcome": "uncertain",
         "policy_errors": [],
         "request": {
@@ -650,7 +650,7 @@
         "state": "UNKNOWN_OUTCOME",
         "verification": null
       },
-      "duration_ms": 1015
+      "duration_ms": 1013
     },
     {
       "id": "L2.no_retry",
@@ -671,7 +671,7 @@
           "acknowledged": true,
           "reported_applied": true
         },
-        "command_id": "01a169be-58f7-76bb-8a8f-17f440a0187a",
+        "command_id": "01a16f41-e24a-76dc-a943-82c66d22b000",
         "outcome": "succeeded",
         "policy_errors": [],
         "request": {
@@ -698,7 +698,7 @@
           "observed": {
             "quality": "GOOD",
             "source": "simulator",
-            "timestamp": "2026-10-23T17:10:44.755Z",
+            "timestamp": "2026-10-24T18:52:31.205Z",
             "value": {
               "unit": "A",
               "value": 1.15
@@ -729,7 +729,7 @@
             "message": "simulated rejection"
           }
         },
-        "command_id": "01a169be-5914-7526-bf65-5047bb1b1cd6",
+        "command_id": "01a16f41-e268-767e-b4b8-5c14aa9e0111",
         "outcome": "failed",
         "policy_errors": [],
         "request": {
@@ -747,7 +747,7 @@
         "state": "REJECTED",
         "verification": null
       },
-      "duration_ms": 15
+      "duration_ms": 16
     },
     {
       "id": "L2.malformed",
@@ -763,7 +763,7 @@
             "message": "simulated garbled response"
           }
         },
-        "command_id": "01a169be-5923-770b-b2eb-2990ed3297cf",
+        "command_id": "01a16f41-e279-747c-9375-c71d41d0a6bf",
         "outcome": "uncertain",
         "policy_errors": [],
         "request": {
@@ -781,7 +781,7 @@
         "state": "UNKNOWN_OUTCOME",
         "verification": null
       },
-      "duration_ms": 15
+      "duration_ms": 16
     },
     {
       "id": "L2.timeout",
@@ -796,7 +796,7 @@
             "message": "no result within 999 ms"
           }
         },
-        "command_id": "01a169be-5932-707e-9efa-0db4b7c96185",
+        "command_id": "01a16f41-e288-77b4-ab1a-f0cda280b41a",
         "outcome": "uncertain",
         "policy_errors": [],
         "request": {
@@ -814,7 +814,7 @@
         "state": "UNKNOWN_OUTCOME",
         "verification": null
       },
-      "duration_ms": 1010
+      "duration_ms": 1018
     },
     {
       "id": "L2.lost_ack",
@@ -827,10 +827,10 @@
           "acknowledged": true,
           "error": {
             "code": "adapter.timeout",
-            "message": "no result within 1000 ms"
+            "message": "no result within 999 ms"
           }
         },
-        "command_id": "01a169be-5d25-7642-b768-f2d0b3a24561",
+        "command_id": "01a16f41-e683-77da-8d04-6437c6c6dc33",
         "outcome": "uncertain",
         "policy_errors": [],
         "request": {
@@ -848,7 +848,7 @@
         "state": "UNKNOWN_OUTCOME",
         "verification": null
       },
-      "duration_ms": 1006
+      "duration_ms": 1018
     },
     {
       "id": "L2.no_retry",
@@ -863,13 +863,13 @@
       "level": "L2",
       "capability": "power.output.enabled",
       "status": "pass",
-      "message": "carried out in 12 ms",
+      "message": "carried out in 8 ms",
       "evidence": {
         "adapter_result": {
           "acknowledged": true,
           "reported_applied": true
         },
-        "command_id": "01a169be-6114-70fa-aa6c-e8b33675871d",
+        "command_id": "01a16f41-ea7e-7796-bc68-a416aee31db4",
         "outcome": "succeeded",
         "policy_errors": [],
         "request": {
@@ -890,12 +890,12 @@
           "observed": {
             "quality": "GOOD",
             "source": "simulator",
-            "timestamp": "2026-10-23T17:10:46.832Z",
+            "timestamp": "2026-10-24T18:52:33.304Z",
             "value": true
           }
         }
       },
-      "duration_ms": 29
+      "duration_ms": 28
     },
     {
       "id": "L2.verification",
@@ -918,7 +918,7 @@
             "message": "simulated rejection"
           }
         },
-        "command_id": "01a169be-6131-77bc-8380-b7be040edcbc",
+        "command_id": "01a16f41-ea9a-745a-a8a7-ae19b95025a1",
         "outcome": "failed",
         "policy_errors": [],
         "request": {
@@ -933,7 +933,7 @@
         "state": "REJECTED",
         "verification": null
       },
-      "duration_ms": 15
+      "duration_ms": 14
     },
     {
       "id": "L2.malformed",
@@ -949,7 +949,7 @@
             "message": "simulated garbled response"
           }
         },
-        "command_id": "01a169be-6141-72c6-afe4-2644a08e5230",
+        "command_id": "01a16f41-eaa9-7130-81e8-9963511ff278",
         "outcome": "uncertain",
         "policy_errors": [],
         "request": {
@@ -976,10 +976,10 @@
         "adapter_result": {
           "error": {
             "code": "adapter.timeout",
-            "message": "no result within 1000 ms"
+            "message": "no result within 998 ms"
           }
         },
-        "command_id": "01a169be-6151-7452-88c9-7b2efcfdc52a",
+        "command_id": "01a16f41-eab9-746f-940e-5ced4f4cbf10",
         "outcome": "uncertain",
         "policy_errors": [],
         "request": {
@@ -994,7 +994,7 @@
         "state": "UNKNOWN_OUTCOME",
         "verification": null
       },
-      "duration_ms": 1013
+      "duration_ms": 1019
     },
     {
       "id": "L2.lost_ack",
@@ -1010,7 +1010,7 @@
             "message": "no result within 998 ms"
           }
         },
-        "command_id": "01a169be-6546-766d-b898-586436d0a843",
+        "command_id": "01a16f41-eeb5-7479-996f-cea07cc0f721",
         "outcome": "uncertain",
         "policy_errors": [],
         "request": {
@@ -1025,7 +1025,7 @@
         "state": "UNKNOWN_OUTCOME",
         "verification": null
       },
-      "duration_ms": 1006
+      "duration_ms": 1010
     },
     {
       "id": "L2.no_retry",
@@ -1040,13 +1040,13 @@
       "level": "L2",
       "capability": "protection.reset",
       "status": "pass",
-      "message": "carried out in 14 ms (expected about 100 ms, limit 2000 ms)",
+      "message": "carried out in 11 ms (expected about 100 ms, limit 2000 ms)",
       "evidence": {
         "adapter_result": {
           "acknowledged": true,
           "reported_applied": true
         },
-        "command_id": "01a169be-6934-74ed-b050-c08d05b6d458",
+        "command_id": "01a16f41-f2a7-73bc-9db7-d32379f68ed1",
         "outcome": "succeeded",
         "policy_errors": [],
         "request": {
@@ -1067,12 +1067,12 @@
           "observed": {
             "quality": "GOOD",
             "source": "simulator",
-            "timestamp": "2026-10-23T17:10:48.913Z",
+            "timestamp": "2026-10-24T18:52:35.394Z",
             "value": false
           }
         }
       },
-      "duration_ms": 30
+      "duration_ms": 29
     },
     {
       "id": "L2.verification",
@@ -1095,7 +1095,7 @@
             "message": "simulated rejection"
           }
         },
-        "command_id": "01a169be-6952-72ac-8778-cf13e77e90bc",
+        "command_id": "01a16f41-f2c4-74db-86ae-a8af8c781425",
         "outcome": "failed",
         "policy_errors": [],
         "request": {
@@ -1126,7 +1126,7 @@
             "message": "simulated garbled response"
           }
         },
-        "command_id": "01a169be-6961-7203-a624-c1eb948132e7",
+        "command_id": "01a16f41-f2d3-77b8-a666-00aeef9580a4",
         "outcome": "uncertain",
         "policy_errors": [],
         "request": {
@@ -1153,10 +1153,10 @@
         "adapter_result": {
           "error": {
             "code": "adapter.timeout",
-            "message": "no result within 1000 ms"
+            "message": "no result within 998 ms"
           }
         },
-        "command_id": "01a169be-6972-75af-9cfa-03c0b610b650",
+        "command_id": "01a16f41-f2e5-709f-8f78-8a3b9526ab0e",
         "outcome": "uncertain",
         "policy_errors": [],
         "request": {
@@ -1171,7 +1171,7 @@
         "state": "UNKNOWN_OUTCOME",
         "verification": null
       },
-      "duration_ms": 1017
+      "duration_ms": 1018
     },
     {
       "id": "L2.lost_ack",
@@ -1184,10 +1184,10 @@
           "acknowledged": true,
           "error": {
             "code": "adapter.timeout",
-            "message": "no result within 999 ms"
+            "message": "no result within 998 ms"
           }
         },
-        "command_id": "01a169be-6d6c-72e0-bbae-016f331ba868",
+        "command_id": "01a16f41-f6df-72f5-8a31-53ce8e17ec62",
         "outcome": "uncertain",
         "policy_errors": [],
         "request": {
@@ -1202,7 +1202,7 @@
         "state": "UNKNOWN_OUTCOME",
         "verification": null
       },
-      "duration_ms": 1009
+      "duration_ms": 1018
     },
     {
       "id": "L2.no_retry",
@@ -1217,13 +1217,29 @@
       "level": "L2",
       "status": "pass",
       "message": "'power.output.voltage.setpoint' carried out after the faults cleared",
-      "duration_ms": 76
+      "duration_ms": 78
     },
     {
       "id": "L3.leases",
       "level": "L3",
-      "status": "untested",
-      "message": "L3 is defined with multi-device plans in M9; no adapter can claim it yet",
+      "capability": "power.output.voltage.setpoint",
+      "status": "pass",
+      "message": "another principal's command was refused (lease.held), without reaching the device; the holder's was carried out",
+      "duration_ms": 2045
+    },
+    {
+      "id": "L3.plan",
+      "level": "L3",
+      "capability": "power.output.voltage.setpoint",
+      "status": "pass",
+      "message": "a one-step plan succeeded and released its lease; under refuse the plan halted at that step and sent nothing more; under no_response it stopped for a decision instead of guessing",
+      "duration_ms": 4082
+    },
+    {
+      "id": "L3.stop",
+      "level": "L3",
+      "status": "not_applicable",
+      "message": "the descriptor declares no stop action",
       "duration_ms": 0
     }
   ]

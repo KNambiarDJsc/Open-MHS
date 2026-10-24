@@ -8,7 +8,7 @@
     "serial": "SIM-PSU-0001",
     "firmware": "1.0.0"
   },
-  "adapter": { "id": "openmhs.sim.psu", "version": "0.1.0", "config": { "seed": 42 }, "conformance": "L2" },
+  "adapter": { "id": "openmhs.sim.psu", "version": "0.1.0", "config": { "seed": 42 }, "conformance": "L3" },
   "components": [
     { "id": "output", "name": "Output channel 1" },
     { "id": "protection", "name": "Over-voltage / over-current protection" }

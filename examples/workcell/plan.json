@@ -1,0 +1,88 @@
+{
+  "description": "power the stage and move it to the work position",
+  "lease_ttl_ms": 600000,
+  "steps": [
+    {
+      "id": "set-voltage",
+      "description": "0.8 V for the stage driver",
+      "request": {
+        "target": { "device": "sim.psu-01", "capability": "power.output.voltage.setpoint" },
+        "operation": "write",
+        "value": { "value": 0.8, "unit": "V" },
+        "deadline_ms": 5000
+      },
+      "on_failure": "compensate",
+      "compensate": {
+        "target": { "device": "sim.psu-01", "capability": "power.output.voltage.setpoint" },
+        "operation": "write",
+        "value": { "value": 0, "unit": "V" },
+        "deadline_ms": 5000
+      }
+    },
+    {
+      "id": "output-on",
+      "after": ["set-voltage"],
+      "request": {
+        "target": { "device": "sim.psu-01", "capability": "power.output.enabled" },
+        "operation": "write",
+        "value": true,
+        "deadline_ms": 5000
+      },
+      "on_failure": "compensate",
+      "compensate": {
+        "target": { "device": "sim.psu-01", "capability": "power.output.enabled" },
+        "operation": "write",
+        "value": false,
+        "deadline_ms": 5000
+      }
+    },
+    {
+      "id": "home",
+      "after": ["output-on"],
+      "request": {
+        "target": { "device": "sim.axis-01", "capability": "axis.home" },
+        "operation": "invoke",
+        "deadline_ms": 15000
+      },
+      "on_failure": "compensate"
+    },
+    {
+      "id": "move",
+      "description": "to the work position",
+      "after": ["home"],
+      "preconditions": [
+        { "device": "sim.axis-01", "capability": "axis.homed", "op": "eq", "value": true }
+      ],
+      "request": {
+        "target": { "device": "sim.axis-01", "capability": "axis.move_absolute" },
+        "operation": "invoke",
+        "params": {
+          "position": { "value": 50, "unit": "mm" },
+          "speed": { "value": 50, "unit": "mm/s" }
+        },
+        "deadline_ms": 15000
+      },
+      "on_failure": "compensate",
+      "compensate": {
+        "target": { "device": "sim.axis-01", "capability": "axis.move_absolute" },
+        "operation": "invoke",
+        "params": {
+          "position": { "value": 0, "unit": "mm" },
+          "speed": { "value": 50, "unit": "mm/s" }
+        },
+        "deadline_ms": 15000
+      }
+    },
+    {
+      "id": "output-off",
+      "after": ["move"],
+      "request": {
+        "target": { "device": "sim.psu-01", "capability": "power.output.enabled" },
+        "operation": "write",
+        "value": false,
+        "deadline_ms": 5000
+      },
+      "on_failure": "ask"
+    }
+  ]
+}

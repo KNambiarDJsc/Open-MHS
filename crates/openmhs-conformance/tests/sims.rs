@@ -25,7 +25,7 @@ async fn every_virtual_device_reaches_its_declared_level() {
         assert!(report.passed, "{}", render(&report));
         let expected = match report.subject.device.as_deref() {
             Some("sim.thermo-01") => ConformanceLevel::L1,
-            Some("sim.psu-01" | "sim.axis-01") => ConformanceLevel::L2,
+            Some("sim.psu-01" | "sim.axis-01") => ConformanceLevel::L3,
             other => panic!("unexpected device {other:?}"),
         };
         assert_eq!(report.declared, Some(expected));
@@ -52,7 +52,7 @@ async fn every_state_changing_capability_is_exercised_under_every_fault() {
         for c in report
             .checks
             .iter()
-            .filter(|c| c.level <= ConformanceLevel::L2)
+            .filter(|c| c.level <= ConformanceLevel::L3)
         {
             assert_ne!(
                 c.status,

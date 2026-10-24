@@ -293,7 +293,7 @@ async fn an_adapter_with_the_wrong_id_fails_l0_and_stops() {
     assert!(
         r.checks
             .iter()
-            .all(|c| c.level == ConformanceLevel::L0 || c.id == "L3.leases")
+            .all(|c| c.level == ConformanceLevel::L0 || c.level == ConformanceLevel::L3)
     );
 }
 
