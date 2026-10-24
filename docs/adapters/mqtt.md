@@ -35,6 +35,8 @@ such a command as anything but uncertain.
 |---|---|---|
 | `host`, `port` | required, 1883 | the broker |
 | `client_id` | required | must be unique on the broker: a second client with the same id disconnects the first |
+| `tls` | none (plaintext) | switches to TLS: `{}` trusts the system store; `ca_file`, `client_cert_file`, `client_key_file`, `server_name` as in [transport security](../security/transport-security.md). Certificates are always verified |
+| `allow_plaintext` | false | accept plaintext MQTT to a host that is not loopback, including credentials sent in the clear |
 | `username`, `password` | none | `${env:NAME}` is replaced by that environment variable |
 | `keep_alive_s` | 5 | MQTT keep-alive |
 | `reply_timeout_ms` | 1000 | how long to wait for the broker, and for an acknowledgement |
@@ -105,8 +107,9 @@ for tests, not a broker to deploy.
 
 ## Limits
 
-- MQTT 3.1.1 over plain TCP. TLS, websockets and MQTT 5 are not supported yet; keep the
-  broker on a trusted network, or put it behind a local TLS-terminating bridge.
+- MQTT 3.1.1 over TCP, plain or TLS (`connection.tls`, verified; see
+  [transport security](../security/transport-security.md)). Plain MQTT to anything but
+  loopback needs `"allow_plaintext": true`. Websockets and MQTT 5 are not supported yet.
 - No support for the device's last-will (online/offline) topic yet. A device that dies
   shows up as stale readings and commands that are not acknowledged.
 - Payloads are JSON.

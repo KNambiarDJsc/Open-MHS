@@ -1,0 +1,19 @@
+# The OPC UA adapter's dependencies, pinned (docs/adapters/opcua.md). Resolved on
+# 2026-10-24 with `pip install --uploaded-prior-to P14D asyncua==2.1.0`: every release here
+# is at least two weeks old (ADR-0014).
+#
+# asyncua is LGPL-3.0-or-later. It is installed separately with pip and imported at run
+# time by this out-of-process adapter; OpenMHS does not bundle or modify it.
+asyncua==2.1.0
+aiosqlite==0.22.1
+anyio==4.15.1
+cffi==2.1.1
+cryptography==50.0.2
+idna==3.20
+pycparser==3.11
+python-dateutil==2.9.0.post0
+pytz==2026.5
+six==1.17.0
+sortedcontainers==2.4.0
+typing_extensions==4.16.0
+wait_for2==0.4.1; python_version < "3.12"

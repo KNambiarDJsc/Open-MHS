@@ -25,10 +25,13 @@ use openmhs_adapter::{
     AdapterCommand, AdapterError, AdapterErrorKind, ExecuteReport, HardwareAdapter, Health,
     Progress,
 };
+use openmhs_profile::tls::{self, Tls};
 use openmhs_profile::{Loaded, Mapping, ProfileError, codec, template};
 use openmhs_types::descriptor::{Capability, Operation};
 use openmhs_types::{Clock, Quality, Source, StateValue, Timestamp};
-use rumqttc::{AsyncClient, Event, Incoming, MqttOptions, Outgoing, QoS};
+use rumqttc::{
+    AsyncClient, Event, Incoming, MqttOptions, Outgoing, QoS, TlsConfiguration, Transport,
+};
 use serde::Deserialize;
 use tokio::sync::{Notify, oneshot};
 use tokio::task::JoinHandle;
@@ -44,8 +47,17 @@ const RETRY: Duration = Duration::from_millis(200);
 pub struct Connection {
     /// The broker.
     pub host: String,
+    /// Default 1883; 8883 is the usual port for MQTT over TLS.
     #[serde(default = "default_port")]
     pub port: u16,
+    /// Connect over TLS, verifying the broker's certificate (against the system's trust
+    /// store, or `ca_file`), optionally with a client certificate.
+    #[serde(default)]
+    pub tls: Option<Tls>,
+    /// Accept an unencrypted connection to a broker that is not on loopback, including
+    /// sending `username` and `password` in the clear.
+    #[serde(default)]
+    pub allow_plaintext: bool,
     /// Must be unique on the broker: a second client with the same id disconnects the first.
     pub client_id: String,
     /// `${env:NAME}` is replaced by that environment variable.
@@ -294,6 +306,15 @@ struct Shared {
     changed: Notify,
 }
 
+/// Why connecting to `host` is refused, if it is.
+fn refusal(host: &str, tls: bool, allow_plaintext: bool) -> Option<String> {
+    if tls {
+        None
+    } else {
+        tls::check_plaintext(host, allow_plaintext, "MQTT").err()
+    }
+}
+
 impl Shared {
     fn lock(&self) -> MutexGuard<'_, Inner> {
         self.inner.lock().unwrap_or_else(PoisonError::into_inner)
@@ -304,6 +325,9 @@ pub struct MqttAdapter {
     profile: Arc<Profile>,
     broker: (String, u16),
     credentials: Option<(String, String)>,
+    tls: Option<Arc<rustls::ClientConfig>>,
+    /// Why connecting to `broker` is refused, if it is.
+    refusal: Option<String>,
     shared: Arc<Shared>,
     task: Mutex<Option<JoinHandle<()>>>,
     /// One command in flight, so an unreadable acknowledgement belongs to it.
@@ -313,9 +337,15 @@ pub struct MqttAdapter {
 }
 
 impl MqttAdapter {
-    /// An adapter for `profile`. Fails if a credential names an unset environment variable.
+    /// An adapter for `profile`. Fails if a credential names an unset environment variable,
+    /// or a TLS file cannot be used.
     pub fn new(profile: Profile, clock: Arc<dyn Clock>) -> Result<Self, String> {
         let c = &profile.connection;
+        let tls = c
+            .tls
+            .as_ref()
+            .map(|t| t.client_config(&profile.dir))
+            .transpose()?;
         let credentials = match &c.username {
             Some(user) => {
                 let password = c
@@ -328,9 +358,12 @@ impl MqttAdapter {
             }
             None => None,
         };
+        let refusal = refusal(&c.host, tls.is_some(), c.allow_plaintext);
         Ok(Self {
             broker: (c.host.clone(), c.port),
             credentials,
+            tls,
+            refusal,
             profile: Arc::new(profile),
             shared: Arc::new(Shared {
                 inner: Mutex::new(Inner::default()),
@@ -347,7 +380,19 @@ impl MqttAdapter {
     #[must_use]
     pub fn at(mut self, host: impl Into<String>, port: u16) -> Self {
         self.broker = (host.into(), port);
+        self.refusal = refusal(
+            &self.broker.0,
+            self.tls.is_some(),
+            self.profile.connection.allow_plaintext,
+        );
         self
+    }
+
+    fn allowed(&self) -> Result<(), AdapterError> {
+        match &self.refusal {
+            Some(why) => Err(AdapterError::new(AdapterErrorKind::NotSent, why.clone())),
+            None => Ok(()),
+        }
     }
 
     /// Mark readings as coming from a simulator rather than hardware.
@@ -376,6 +421,12 @@ impl MqttAdapter {
         if let Some((user, password)) = &self.credentials {
             options.set_credentials(user.clone(), password.clone());
         }
+        if let Some(config) = &self.tls {
+            // Our own configuration, so rumqttc's PEM and WebPKI code is never used.
+            options.set_transport(Transport::tls_with_config(TlsConfiguration::Rustls(
+                config.clone(),
+            )));
+        }
         *task = Some(tokio::spawn(drive(
             options,
             self.shared.clone(),
@@ -399,6 +450,7 @@ impl MqttAdapter {
 
     /// Wait until connected and subscribed.
     async fn ready(&self) -> Result<(), AdapterError> {
+        self.allowed()?;
         self.start();
         let wait = async {
             loop {
@@ -419,6 +471,7 @@ impl MqttAdapter {
     /// Confirm the broker still answers: subscribe to `topic` again and wait for the
     /// SUBACK. The broker then also sends the topic's retained message again.
     async fn probe(&self, topic: &str) -> Result<(), AdapterError> {
+        self.allowed()?;
         self.start();
         let (tx, rx) = oneshot::channel();
         {
@@ -597,7 +650,7 @@ async fn drive(
             let mut inner = shared.lock();
             inner.ready = false;
             inner.client = None;
-            inner.last_error = Some(error.to_string());
+            inner.last_error = Some(tls::chain(&error));
             inner.unsent.clear();
             inner.probes.clear();
             inner.initial_pkid = None;
@@ -754,6 +807,7 @@ impl HardwareAdapter for MqttAdapter {
         command: AdapterCommand,
         progress: Progress,
     ) -> Result<ExecuteReport, AdapterError> {
+        self.allowed()?;
         let (topic, payload) = self.message(&command)?;
         let topic = topic.to_owned();
         let _one = self.commands.lock().await;

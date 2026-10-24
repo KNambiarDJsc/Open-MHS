@@ -1,0 +1,85 @@
+{
+  "openmhs_manifest": "0.1",
+  "adapter": { "id": "openmhs.py.ros2", "version": "0.1.0" },
+  "runtime": {
+    "command": [
+      "docker", "run", "--rm", "-i",
+      "--network", "none", "--read-only", "--tmpfs", "/tmp",
+      "-e", "ROS_DOMAIN_ID", "-e", "ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST", "-e", "ROS_LOG_DIR=/tmp/ros",
+      "-v", "{manifest_dir}:/openmhs/adapters/python/ros2:ro",
+      "-v", "{manifest_dir}/../../../python:/openmhs/python:ro",
+      "ros@sha256:066420e07f60aa18262f2479981def87ebcfcec42eefb0c0c57c4a46098348ca",
+      "python3", "-u", "/openmhs/adapters/python/ros2/ros2_adapter.py"
+    ],
+    "env": { "ROS_DOMAIN_ID": "42" },
+    "protocol": ["0.1"]
+  },
+  "capabilities": {
+    "allow": [{ "name": "battery.*", "operations": ["read", "subscribe"] }]
+  },
+  "limits": { "start_timeout_ms": 60000, "call_timeout_ms": 5000 },
+  "config": {
+    "simulate": true,
+    "descriptor": {
+      "openmhs": "0.1",
+      "device": {
+        "id": "ros2.robot-01",
+        "name": "Mobile robot battery (simulated ROS 2 publisher)",
+        "manufacturer": "OpenMHS",
+        "model": "ROS2-BASE-SIM",
+        "description": "A mobile base's battery as it publishes sensor_msgs/BatteryState on /battery_state. Observation only."
+      },
+      "adapter": { "id": "openmhs.py.ros2", "version": "0.1.0", "conformance": "L1" },
+      "capabilities": [
+        {
+          "name": "battery.voltage",
+          "kind": "property",
+          "description": "Battery voltage.",
+          "operations": ["read"],
+          "value": { "type": "number", "quantity": "electric_potential", "unit": "V", "range": { "min": 0, "max": 60 } },
+          "side_effect": "none",
+          "freshness": { "max_age_ms": 1000 }
+        },
+        {
+          "name": "battery.current",
+          "kind": "property",
+          "description": "Battery current; negative while discharging.",
+          "operations": ["read"],
+          "value": { "type": "number", "quantity": "electric_current", "unit": "A", "range": { "min": -100, "max": 100 } },
+          "side_effect": "none",
+          "freshness": { "max_age_ms": 1000 }
+        },
+        {
+          "name": "battery.charge",
+          "kind": "property",
+          "description": "State of charge, from 0 (empty) to 1 (full).",
+          "operations": ["read"],
+          "value": { "type": "number", "quantity": "dimensionless", "unit": "1", "range": { "min": 0, "max": 1 } },
+          "side_effect": "none",
+          "freshness": { "max_age_ms": 1000 }
+        },
+        {
+          "name": "battery.temperature",
+          "kind": "property",
+          "description": "Battery temperature.",
+          "operations": ["read"],
+          "value": { "type": "number", "quantity": "temperature", "unit": "Cel", "range": { "min": -40, "max": 100 } },
+          "side_effect": "none",
+          "freshness": { "max_age_ms": 1000 }
+        }
+      ]
+    },
+    "topics": {
+      "/battery_state": {
+        "type": "sensor_msgs/msg/BatteryState",
+        "stale_after_ms": 1000,
+        "fields": {
+          "battery.voltage": "voltage",
+          "battery.current": "current",
+          "battery.charge": "percentage",
+          "battery.temperature": "temperature"
+        }
+      }
+    }
+  }
+}

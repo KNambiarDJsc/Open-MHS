@@ -3,11 +3,12 @@
 An open, model-agnostic, supervisory interface between AI agents and programmable
 hardware.
 
-> **Status: pre-alpha (M6: protocol adapters).** A local gateway serves devices to AI
+> **Status: pre-alpha (M7: out-of-process adapters).** A local gateway serves devices to AI
 > agents over MCP, to scripts through a Python SDK, and to people through a CLI. Modbus
-> TCP, MQTT, SCPI and HTTP devices are described by JSON profiles. Each protocol adapter
-> reaches L2 conformance against an in-repo simulator. None has been run against
-> physical hardware by the project.
+> TCP, MQTT, SCPI and HTTP devices are described by JSON profiles; adapters in other
+> languages run as supervised child processes. Each adapter reaches its declared
+> conformance level against an in-repo simulator. None has been run against physical
+> hardware by the project.
 >
 > OpenMHS is an independent project. It is not affiliated with or endorsed by
 > Anthropic, and it does not claim compatibility with Anthropic's Model Hardware
@@ -34,7 +35,7 @@ safety systems keep final authority.
 | Deterministic policy: grants, approvals, units/ranges, rate and slew limits, preconditions, freshness (`openmhs-policy`) | Implemented |
 | Command engine: full lifecycle, idempotency, timeouts → `UNKNOWN_OUTCOME`, readback verification, reconciliation, crash recovery (`openmhs-engine`) | Implemented |
 | SQLite journal and hash-chained, tamper-evident audit log | Implemented |
-| Adapter contract (`openmhs-adapter`) | Implemented; may change before M7 |
+| Adapter contract (`openmhs-adapter`) | Implemented; may still change |
 | Virtual lab: temperature sensor, power supply, linear stage, with fault injection (`openmhs-sim`) | Implemented |
 | Gateway process with local JSON-RPC API, per-principal tokens, operator/agent roles (`openmhs-gateway`, [spec/api.md](spec/api.md)) | Implemented |
 | CLI and guided demo (`openmhs`, `openmhsd`; [docs/cli.md](docs/cli.md)) | Implemented |
@@ -46,7 +47,10 @@ safety systems keep final authority.
 | Protocol adapters for Modbus TCP, MQTT, SCPI (TCP/serial) and HTTP, driven by JSON device profiles, each L2 against an in-repo simulator ([profiles](docs/adapters/profiles.md)) | Implemented; untested on physical hardware |
 | `openmhs profile check`, `serve --profile` / `--profile-sim`, `conformance --profile` | Implemented |
 | Dependency policy: licences, advisories and sources checked by cargo-deny ([deny.toml](deny.toml)) | Implemented |
-| OPC UA, ROS 2, out-of-process adapters | Planned (M7) |
+| Adapter host: out-of-process adapters over JSON-RPC/stdio with heartbeats, bounded restarts, quarantine and `UNKNOWN_OUTCOME` for in-flight commands; Python adapter SDK; permission manifests ([protocol](spec/adapter-protocol.md), [manifest](spec/permission-manifest.md)) | Implemented; no OS sandbox |
+| OPC UA adapter (read-only, asyncua; L1 against a simulated server) and ROS 2 Jazzy adapter (observation only, in a pinned container; L1 against a simulated publisher) ([OPC UA](docs/adapters/opcua.md), [ROS 2](docs/adapters/ros2.md)) | Implemented; untested on real equipment |
+| Verified TLS for MQTT and HTTP; plaintext beyond loopback refused unless `allow_plaintext` ([transport security](docs/security/transport-security.md)) | Implemented |
+| Writes and methods over OPC UA; ROS 2 services and actions | Planned |
 
 ## Try it
 

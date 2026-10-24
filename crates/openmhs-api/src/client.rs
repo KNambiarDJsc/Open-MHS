@@ -47,6 +47,9 @@ pub struct Client {
 
 impl Client {
     pub fn new(base_url: &str, token: &str) -> Result<Self, ClientError> {
+        // reqwest needs a rustls provider to build any client; ring is OpenMHS's
+        // (docs/security/transport-security.md). A no-op if one is installed already.
+        let _ = rustls::crypto::ring::default_provider().install_default();
         // No overall timeout: a submit waits for the command's own deadline and
         // verification, which the gateway enforces.
         let http = reqwest::Client::builder()

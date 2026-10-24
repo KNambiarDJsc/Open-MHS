@@ -7,6 +7,10 @@
 //! `{"ok": false}` when the profile says how success looks) ends `REJECTED`; no answer,
 //! a dropped connection, a server error or an unreadable answer leave the outcome
 //! uncertain (`UNKNOWN_OUTCOME`). See `docs/adapters/http.md`.
+//!
+//! `https://` URLs verify the device's certificate, against the system's trust store or
+//! `connection.tls.ca_file`. Plain `http://` to anything but loopback is refused unless
+//! the profile sets `connection.allow_plaintext` (docs/security/transport-security.md).
 
 pub mod sim;
 
@@ -19,6 +23,7 @@ use openmhs_adapter::{
     AdapterCommand, AdapterError, AdapterErrorKind, ExecuteReport, HardwareAdapter, Health,
     Progress,
 };
+use openmhs_profile::tls::{self, Tls};
 use openmhs_profile::{Loaded, Mapping, ProfileError, codec, template};
 use openmhs_types::descriptor::{Capability, Operation};
 use openmhs_types::{Clock, Quality, Source, StateValue, Timestamp};
@@ -30,8 +35,14 @@ pub const PROTOCOL: &str = "http";
 #[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Connection {
-    /// Where the device's API is, e.g. `http://192.168.1.60`.
+    /// Where the device's API is, e.g. `https://192.168.1.60`.
     pub base_url: String,
+    /// Certificate trust for `https://` URLs. Default: the system's trust store.
+    #[serde(default)]
+    pub tls: Option<Tls>,
+    /// Accept unencrypted `http://` to a device that is not on loopback.
+    #[serde(default)]
+    pub allow_plaintext: bool,
     /// How long to wait for any one response.
     #[serde(default = "default_timeout")]
     pub timeout_ms: u64,
@@ -212,10 +223,28 @@ pub struct HttpAdapter {
     headers: reqwest::header::HeaderMap,
     source: Source,
     clock: Arc<dyn Clock>,
+    /// Why requests to `base_url` are refused, if they are.
+    refusal: Option<String>,
+}
+
+/// Why `base_url` may not be used, if it may not.
+fn refusal(base_url: &str, allow_plaintext: bool) -> Option<String> {
+    match reqwest::Url::parse(base_url) {
+        Ok(u) if u.scheme() == "https" => None,
+        Ok(u) if u.scheme() == "http" => {
+            tls::check_plaintext(u.host_str().unwrap_or(""), allow_plaintext, "HTTP").err()
+        }
+        Ok(u) => Some(format!(
+            "unsupported URL scheme {:?}; use https or http",
+            u.scheme()
+        )),
+        Err(e) => Some(format!("base_url {base_url:?}: {e}")),
+    }
 }
 
 impl HttpAdapter {
-    /// An adapter for `profile`. Fails if a header names an unset environment variable.
+    /// An adapter for `profile`. Fails if a header names an unset environment variable,
+    /// or a TLS file cannot be used.
     pub fn new(profile: Profile, clock: Arc<dyn Clock>) -> Result<Self, String> {
         let mut headers = reqwest::header::HeaderMap::new();
         for (k, v) in &profile.connection.headers {
@@ -225,14 +254,29 @@ impl HttpAdapter {
                 .map_err(|e| format!("header '{k}': {e}"))?;
             headers.insert(name, value);
         }
+        let c = &profile.connection;
+        let https = c.base_url.starts_with("https://");
+        let tls_config = match (&c.tls, https) {
+            (Some(_), false) => {
+                return Err("connection.tls is set, but base_url is not https://".into());
+            }
+            (Some(t), true) => t.client_config(&profile.dir)?,
+            (None, true) => Tls::default().client_config(&profile.dir)?,
+            // A plaintext device: no TLS connection may ever succeed.
+            (None, false) => tls::refuse_all(),
+        };
+        tls::install_provider();
         let client = reqwest::Client::builder()
             // A redirect would send the command again, elsewhere.
             .redirect(reqwest::redirect::Policy::none())
             .user_agent(concat!("openmhs-http/", env!("CARGO_PKG_VERSION")))
+            .use_preconfigured_tls((*tls_config).clone())
             .build()
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| tls::chain(&e))?;
+        let base_url = c.base_url.trim_end_matches('/').to_owned();
         Ok(Self {
-            base_url: profile.connection.base_url.trim_end_matches('/').to_owned(),
+            refusal: refusal(&base_url, c.allow_plaintext),
+            base_url,
             profile,
             client,
             headers,
@@ -245,7 +289,15 @@ impl HttpAdapter {
     #[must_use]
     pub fn at(mut self, base_url: impl Into<String>) -> Self {
         self.base_url = base_url.into().trim_end_matches('/').to_owned();
+        self.refusal = refusal(&self.base_url, self.profile.connection.allow_plaintext);
         self
+    }
+
+    fn allowed(&self) -> Result<(), AdapterError> {
+        match &self.refusal {
+            Some(why) => Err(AdapterError::new(AdapterErrorKind::NotSent, why.clone())),
+            None => Ok(()),
+        }
     }
 
     /// Mark readings as coming from a simulator rather than hardware.
@@ -264,6 +316,7 @@ impl HttpAdapter {
     }
 
     async fn get(&self, path: &str) -> Result<serde_json::Value, AdapterError> {
+        self.allowed()?;
         let response = self
             .client
             .get(self.url(path))
@@ -277,7 +330,7 @@ impl HttpAdapter {
                 } else {
                     AdapterErrorKind::Disconnected
                 };
-                AdapterError::new(kind, format!("GET {path}: {e}"))
+                AdapterError::new(kind, format!("GET {path}: {}", tls::chain(&e)))
             })?;
         let status = response.status();
         let body = response.bytes().await.map_err(|e| {
@@ -487,6 +540,7 @@ impl HardwareAdapter for HttpAdapter {
         command: AdapterCommand,
         progress: Progress,
     ) -> Result<ExecuteReport, AdapterError> {
+        self.allowed()?;
         let (rule, body) = self.request(&command)?;
         let what = format!("{} {}", rule.method.as_str(), rule.path);
         // Sent once, never redirected. Whatever happens next is reported, never retried.
@@ -506,7 +560,7 @@ impl HardwareAdapter for HttpAdapter {
                 } else {
                     AdapterErrorKind::Disconnected
                 };
-                AdapterError::new(kind, format!("{what}: {e}"))
+                AdapterError::new(kind, format!("{what}: {}", tls::chain(&e)))
             })?;
         let status = response.status();
         let bytes = response.bytes().await.map_err(|e| {
@@ -536,6 +590,17 @@ impl HardwareAdapter for HttpAdapter {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn plaintext_is_refused_beyond_loopback_unless_allowed() {
+        assert_eq!(refusal("https://device.lab", false), None);
+        assert_eq!(refusal("http://127.0.0.1:8080", false), None);
+        assert_eq!(refusal("http://localhost", false), None);
+        let why = refusal("http://192.168.1.60", false).unwrap();
+        assert!(why.contains("allow_plaintext"), "{why}");
+        assert_eq!(refusal("http://192.168.1.60", true), None);
+        assert!(refusal("ftp://device.lab", true).is_some());
+    }
 
     fn rule() -> ResponseRule {
         ResponseRule {

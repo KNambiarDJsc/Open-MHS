@@ -75,6 +75,8 @@ async fn client_disconnect_does_not_abandon_the_command() {
 async fn requests_need_a_token_and_json() {
     let home = tempfile::tempdir().unwrap();
     let gw = start(home.path()).await;
+    // reqwest needs a rustls provider to build a client (openmhs_api::Client installs it).
+    let _ = rustls::crypto::ring::default_provider().install_default();
     let http = reqwest::Client::new();
     let url = format!("{}/rpc", gw.url);
     let body = json!({ "jsonrpc": "2.0", "id": 1, "method": "gateway.info" });

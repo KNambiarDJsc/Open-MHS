@@ -180,7 +180,8 @@ the gateway is a second layer, not a replacement for limits in the device.
 
    ```sh
    cp adapters/openmhs-http/profiles/led-controller.json my-led.json
-   # edit my-led.json: "base_url": "http://192.168.1.60"
+   # edit my-led.json: "base_url": "http://192.168.1.60" and add "allow_plaintext": true
+   # (the board speaks plain HTTP; without it the adapter refuses a non-loopback http:// URL)
    openmhs profile check my-led.json
    openmhs conformance --profile my-led.json   # against the simulator, not the board
    ```

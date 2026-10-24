@@ -1,6 +1,6 @@
 # `openmhs` command line
 
-All commands except `serve`, `demo`, `conformance`, `profile check` and `adapter new` are clients of a running gateway. They find it
+All commands except `serve`, `demo`, `conformance`, `profile check`, `adapter check` and `adapter new` are clients of a running gateway. They find it
 through the runtime file in the gateway home: `--home`, else `$OPENMHS_HOME`, else the
 per-user local data directory.
 
@@ -25,6 +25,7 @@ openmhs read sim.thermo-01 temperature.ambient
 |---|---|
 | `serve [--sim] [--port N] [--listen ADDR --allow-remote] [--operator P] [--seed N]` | Run the gateway (same as `openmhsd`) |
 | `serve --profile FILE`… | Also register the real device each protocol profile describes; connects to it ([profiles](adapters/profiles.md)) |
+| `serve --adapter-manifest FILE`… | Also register an out-of-process adapter, started from its [permission manifest](../spec/permission-manifest.md) and supervised ([adapter host](architecture/adapter-host.md)) |
 | `serve --profile-sim FILE`… | Also register each profile's simulated device, served in-process on a loopback port |
 | `profile check FILE…` | Validate protocol profiles; connects to nothing. Exit 0 when all are valid |
 | `demo [--keep]` | Guided scenario; exits non-zero if anything behaves unexpectedly |
@@ -42,7 +43,8 @@ openmhs read sim.thermo-01 temperature.ambient
 | `tokens create <principal> [--role agent\|operator]` / `tokens list` / `tokens revoke <id>` | API tokens (operator) |
 | `audit verify` / `audit tail [--limit N]` | Audit log (operator) |
 | `sim fault <device> <fault>` / `sim faults` | Fault injection (operator, `serve --sim` only) |
-| `conformance [--device ID]… [--profile FILE]… [--report-dir DIR] [--seed N]` | Run the conformance suite against the built-in simulators, or against protocol profiles' simulators (never the real device); no gateway needed. Exit 0 when each reaches its declared level ([spec/conformance.md](../spec/conformance.md)) |
+| `conformance [--device ID]… [--profile FILE]… [--adapter-manifest FILE]… [--report-dir DIR] [--seed N]` | Run the conformance suite against the built-in simulators, protocol profiles' simulators, or out-of-process adapters started in fixture mode (their manifests must point at a simulator, never a real device); no gateway needed. Exit 0 when each reaches its declared level ([spec/conformance.md](../spec/conformance.md)) |
+| `adapter check FILE…` | Validate adapter permission manifests; starts nothing. Exit 0 when all are valid |
 | `adapter new <name> [--path DIR] [--openmhs-path CHECKOUT]` | Create an adapter crate with a fake device and conformance tests ([adapters/README.md](adapters/README.md)) |
 | `mcp [--url U] [--allow-operator]` | Serve MCP on stdin/stdout for an AI agent; needs an agent `--token` ([mcp.md](mcp.md)) |
 

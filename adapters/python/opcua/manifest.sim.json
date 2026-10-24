@@ -1,0 +1,73 @@
+{
+  "openmhs_manifest": "0.1",
+  "adapter": { "id": "openmhs.py.opcua", "version": "0.1.0" },
+  "runtime": {
+    "command": ["python", "{manifest_dir}/opcua_adapter.py"],
+    "env": { "PYTHONPATH": "{manifest_dir}/../../../python" },
+    "protocol": ["0.1"]
+  },
+  "capabilities": {
+    "allow": [
+      { "name": "chamber.*", "operations": ["read", "subscribe"] },
+      { "name": "door.closed", "operations": ["read", "subscribe"] }
+    ]
+  },
+  "config": {
+    "simulate": true,
+    "endpoint": "opc.tcp://127.0.0.1:0/openmhs/chamber",
+    "timeout_ms": 1000,
+    "descriptor": {
+      "openmhs": "0.1",
+      "device": {
+        "id": "opcua.chamber-01",
+        "name": "Climate chamber (simulated OPC UA server)",
+        "manufacturer": "OpenMHS",
+        "model": "UA-CHAMBER-SIM",
+        "description": "A test chamber's controller exposing temperature, humidity, the door switch and its operating mode as OPC UA variables. Read-only."
+      },
+      "adapter": { "id": "openmhs.py.opcua", "version": "0.1.0", "conformance": "L1" },
+      "capabilities": [
+        {
+          "name": "chamber.temperature",
+          "kind": "property",
+          "description": "Air temperature inside the chamber.",
+          "operations": ["read"],
+          "value": { "type": "number", "quantity": "temperature", "unit": "Cel", "range": { "min": -40, "max": 150 } },
+          "side_effect": "none",
+          "freshness": { "max_age_ms": 2000 }
+        },
+        {
+          "name": "chamber.humidity",
+          "kind": "property",
+          "description": "Relative humidity inside the chamber.",
+          "operations": ["read"],
+          "value": { "type": "number", "quantity": "dimensionless", "unit": "%", "range": { "min": 0, "max": 100 } },
+          "side_effect": "none",
+          "freshness": { "max_age_ms": 2000 }
+        },
+        {
+          "name": "door.closed",
+          "kind": "property",
+          "description": "Whether the door is closed.",
+          "operations": ["read"],
+          "value": { "type": "boolean" },
+          "side_effect": "none"
+        },
+        {
+          "name": "chamber.mode",
+          "kind": "property",
+          "description": "What the controller is doing.",
+          "operations": ["read"],
+          "value": { "type": "enum", "values": ["idle", "running", "fault"] },
+          "side_effect": "none"
+        }
+      ]
+    },
+    "nodes": {
+      "chamber.temperature": "nsu=urn:openmhs:sim:chamber;s=Chamber.Temperature",
+      "chamber.humidity": "nsu=urn:openmhs:sim:chamber;s=Chamber.Humidity",
+      "door.closed": "nsu=urn:openmhs:sim:chamber;s=Chamber.DoorClosed",
+      "chamber.mode": { "node": "nsu=urn:openmhs:sim:chamber;s=Chamber.Mode", "enum": ["idle", "running", "fault"] }
+    }
+  }
+}

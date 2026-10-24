@@ -18,8 +18,8 @@ use openmhs_types::{Clock, SystemClock};
 use rumqttc::{
     ConnAck, ConnectReturnCode, Packet, PubAck, Publish, QoS, SubAck, SubscribeReasonCode, UnsubAck,
 };
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::net::{TcpListener, TcpStream};
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
+use tokio::net::TcpListener;
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
 
@@ -91,17 +91,21 @@ impl MqttSim {
         self.broker.lock().unwrap_or_else(PoisonError::into_inner)
     }
 
-    /// Serve on `listener` until the task is dropped.
-    pub async fn serve(self: Arc<Self>, listener: TcpListener) {
+    fn telemetry(self: &Arc<Self>) -> Stop {
         let sim = self.clone();
-        let _telemetry = Stop(tokio::spawn(async move {
+        Stop(tokio::spawn(async move {
             loop {
                 if !sim.device.link_down() {
                     sim.publish_state();
                 }
                 tokio::time::sleep(TELEMETRY).await;
             }
-        }));
+        }))
+    }
+
+    /// Serve on `listener` until the task is dropped.
+    pub async fn serve(self: Arc<Self>, listener: TcpListener) {
+        let _telemetry = self.telemetry();
         while let Ok((stream, _)) = listener.accept().await {
             if self.device.link_down() {
                 continue;
@@ -111,7 +115,29 @@ impl MqttSim {
         }
     }
 
-    async fn connection(&self, stream: TcpStream) {
+    /// Serve MQTT over TLS on `listener` with `config` (for the TLS tests). A client
+    /// whose TLS handshake fails is dropped.
+    pub async fn serve_tls(
+        self: Arc<Self>,
+        listener: TcpListener,
+        config: Arc<rustls::ServerConfig>,
+    ) {
+        let _telemetry = self.telemetry();
+        let acceptor = tokio_rustls::TlsAcceptor::from(config);
+        while let Ok((stream, _)) = listener.accept().await {
+            if self.device.link_down() {
+                continue;
+            }
+            let (sim, acceptor) = (self.clone(), acceptor.clone());
+            tokio::spawn(async move {
+                if let Ok(stream) = acceptor.accept(stream).await {
+                    sim.connection(stream).await;
+                }
+            });
+        }
+    }
+
+    async fn connection<S: AsyncRead + AsyncWrite + Unpin>(&self, stream: S) {
         let (tx, mut rx) = mpsc::unbounded_channel();
         let id = {
             let mut b = self.broker();
@@ -126,7 +152,7 @@ impl MqttSim {
             );
             id
         };
-        let (mut rd, mut wr) = stream.into_split();
+        let (mut rd, mut wr) = tokio::io::split(stream);
         let mut buf = BytesMut::with_capacity(4096);
         let mut out = BytesMut::new();
         let mut link = tokio::time::interval(LINK_CHECK);

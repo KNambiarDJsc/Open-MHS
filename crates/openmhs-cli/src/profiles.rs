@@ -82,6 +82,7 @@ fn unknown(path: &Path, protocol: &str) -> String {
 pub async fn open(path: &Path, simulate: bool, clock: Arc<dyn Clock>) -> Result<Opened, String> {
     let text = std::fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
     let protocol = protocol_of(&text).map_err(|e| invalid(path, &e))?;
+    let dir = path.parent().unwrap_or(Path::new("."));
     let listener = if simulate {
         let l = TcpListener::bind("127.0.0.1:0")
             .await
@@ -96,7 +97,9 @@ pub async fn open(path: &Path, simulate: bool, clock: Arc<dyn Clock>) -> Result<
     let (adapter, device_id, target): (Arc<dyn HardwareAdapter>, String, String) =
         match protocol.as_str() {
             openmhs_modbus::PROTOCOL => {
-                let p = openmhs_modbus::load(&text).map_err(|e| invalid(path, &e))?;
+                let p = openmhs_modbus::load(&text)
+                    .map_err(|e| invalid(path, &e))?
+                    .in_dir(dir);
                 let id = p.descriptor.device.id.clone();
                 let mut a = openmhs_modbus::ModbusAdapter::new(p.clone(), clock);
                 let target = match listener {
@@ -112,7 +115,9 @@ pub async fn open(path: &Path, simulate: bool, clock: Arc<dyn Clock>) -> Result<
                 (Arc::new(a), id, target)
             }
             openmhs_mqtt::PROTOCOL => {
-                let p = openmhs_mqtt::load(&text).map_err(|e| invalid(path, &e))?;
+                let p = openmhs_mqtt::load(&text)
+                    .map_err(|e| invalid(path, &e))?
+                    .in_dir(dir);
                 let id = p.descriptor.device.id.clone();
                 let mut a = openmhs_mqtt::MqttAdapter::new(p.clone(), clock)
                     .map_err(|e| format!("{}: {e}", path.display()))?;
@@ -130,7 +135,9 @@ pub async fn open(path: &Path, simulate: bool, clock: Arc<dyn Clock>) -> Result<
             }
             openmhs_scpi::PROTOCOL => {
                 use openmhs_scpi::link::StreamLink;
-                let p = openmhs_scpi::load(&text).map_err(|e| invalid(path, &e))?;
+                let p = openmhs_scpi::load(&text)
+                    .map_err(|e| invalid(path, &e))?
+                    .in_dir(dir);
                 let id = p.descriptor.device.id.clone();
                 let (a, target) = match listener {
                     Some((l, addr)) => {
@@ -154,7 +161,9 @@ pub async fn open(path: &Path, simulate: bool, clock: Arc<dyn Clock>) -> Result<
                 (Arc::new(a), id, target)
             }
             openmhs_http::PROTOCOL => {
-                let p = openmhs_http::load(&text).map_err(|e| invalid(path, &e))?;
+                let p = openmhs_http::load(&text)
+                    .map_err(|e| invalid(path, &e))?
+                    .in_dir(dir);
                 let id = p.descriptor.device.id.clone();
                 let mut a = openmhs_http::HttpAdapter::new(p.clone(), clock)
                     .map_err(|e| format!("{}: {e}", path.display()))?;

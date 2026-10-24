@@ -7,7 +7,20 @@ all-features = false
 [advisories]
 # Known vulnerabilities and unmaintained crates (RustSec) fail the check.
 yanked = "deny"
-ignore = []
+# rumqttc 0.25.1 (the newest release) links rustls-webpki 0.102 and rustls-pemfile when
+# its rustls feature is on, but OpenMHS always passes its own rustls ClientConfig
+# (TlsConfiguration::Rustls): certificates are then verified by rustls 0.23 with
+# rustls-webpki 0.103, and rumqttc uses webpki 0.102 only for an error type and
+# rustls-pemfile only for TlsConfiguration::Simple, which OpenMHS never builds
+# (docs/security/transport-security.md, ADR-0016). Remove these when rumqttc moves on.
+ignore = [
+    { id = "RUSTSEC-2026-0049", reason = "rustls-webpki 0.102 via rumqttc; not used for verification" },
+    { id = "RUSTSEC-2026-0098", reason = "rustls-webpki 0.102 via rumqttc; not used for verification" },
+    { id = "RUSTSEC-2026-0099", reason = "rustls-webpki 0.102 via rumqttc; not used for verification" },
+    { id = "RUSTSEC-2026-0104", reason = "rustls-webpki 0.102 via rumqttc; not used for verification" },
+    { id = "RUSTSEC-2026-0382", reason = "rustls-webpki 0.102 via rumqttc; 0.103.16, which verifies, is fixed" },
+    { id = "RUSTSEC-2025-0134", reason = "rustls-pemfile via rumqttc, only for TlsConfiguration::Simple" },
+]
 
 [licenses]
 confidence-threshold = 0.9
@@ -20,6 +33,8 @@ allow = [
     "BSD-2-Clause",
     "BSD-3-Clause",
     "Zlib",
+    # ring, rustls-webpki, untrusted (TLS, ADR-0016).
+    "ISC",
     "Unicode-3.0",
 ]
 
@@ -34,12 +49,18 @@ allow = ["MPL-2.0"]
 crate = "option-ext"
 allow = ["MPL-2.0"]
 
+# Mozilla's root certificates as data (via reqwest's rustls-platform-verifier). OpenMHS
+# trusts the system store or a CA file instead (docs/security/transport-security.md).
+[[licenses.exceptions]]
+crate = "webpki-root-certs"
+allow = ["CDLA-Permissive-2.0"]
+
 [bans]
 multiple-versions = "warn"
-# The workspace's crates depend on each other by path, which cargo-deny counts as a
-# wildcard for any crate not marked `publish = false`. No crate is published yet; when
-# one is, its path dependencies need versions and this can become "deny".
-wildcards = "allow"
+wildcards = "deny"
+# Internal crates (`publish = false`) may use bare path dependencies; publishable ones
+# get versions from the workspace (Cargo.toml).
+allow-wildcard-paths = true
 
 [sources]
 unknown-registry = "deny"

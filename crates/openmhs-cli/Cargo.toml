@@ -6,6 +6,7 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 authors.workspace = true
+publish = false
 
 [lib]
 path = "src/lib.rs"
@@ -24,6 +25,7 @@ openmhs-adapter.workspace = true
 openmhs-api.workspace = true
 openmhs-conformance.workspace = true
 openmhs-gateway.workspace = true
+openmhs-host.workspace = true
 openmhs-http.workspace = true
 openmhs-mcp.workspace = true
 openmhs-modbus.workspace = true

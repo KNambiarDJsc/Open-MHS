@@ -14,6 +14,7 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use clap::{Args, Parser, Subcommand};
+use openmhs_adapter::HardwareAdapter;
 use openmhs_api::runtime::default_home;
 use openmhs_api::{Client, ClientError, Role};
 use openmhs_gateway::{DEFAULT_OPERATOR, DEFAULT_PORT, GatewayConfig};
@@ -117,13 +118,19 @@ enum Cmd {
 
 #[derive(Args)]
 struct ConformanceArgs {
-    /// Simulator to test, repeatable. Default: all of them, unless --profile is given.
+    /// Simulator to test, repeatable. Default: all of them, unless --profile or
+    /// --adapter-manifest is given.
     #[arg(long = "device")]
     devices: Vec<String>,
     /// Test a protocol profile's adapter against the profile's simulator, over real
     /// loopback sockets. Repeatable. Never touches the real device.
     #[arg(long = "profile")]
     profiles: Vec<PathBuf>,
+    /// Test an out-of-process adapter from its permission manifest, in fixture mode:
+    /// the adapter drives its own simulator. Refused if the adapter offers no fixture.
+    /// Repeatable (docs/architecture/adapter-host.md).
+    #[arg(long = "adapter-manifest")]
+    manifests: Vec<PathBuf>,
     /// Write each report as <device>.json into this directory.
     #[arg(long)]
     report_dir: Option<PathBuf>,
@@ -155,6 +162,12 @@ enum AdapterCmd {
         #[arg(long)]
         openmhs_path: Option<PathBuf>,
     },
+    /// Validate adapter permission manifests without starting anything
+    /// (spec/permission-manifest.md).
+    Check {
+        #[arg(required = true)]
+        files: Vec<PathBuf>,
+    },
 }
 
 #[derive(Args)]
@@ -181,6 +194,10 @@ pub struct ServeArgs {
     /// simulator runs in this process on a loopback port. Repeatable.
     #[arg(long = "profile-sim")]
     profile_sims: Vec<PathBuf>,
+    /// Run an adapter as a separate process from its permission manifest. It connects
+    /// to whatever its manifest configures. Repeatable (docs/architecture/adapter-host.md).
+    #[arg(long = "adapter-manifest")]
+    manifests: Vec<PathBuf>,
     /// Port to listen on (0 picks a free one; the runtime file records it).
     #[arg(long, default_value_t = DEFAULT_PORT)]
     port: u16,
@@ -382,6 +399,23 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
             }
         }
     }
+    let mut hosted = Vec::new();
+    for path in &args.manifests {
+        match start_hosted(path, false).await {
+            Ok(a) => hosted.push(a),
+            Err(e) => {
+                eprintln!("error: {e}");
+                return exit::ERROR;
+            }
+        }
+    }
+    let mut adapters: Vec<std::sync::Arc<dyn HardwareAdapter>> =
+        opened.iter().map(|o| o.adapter.clone()).collect();
+    adapters.extend(
+        hosted
+            .iter()
+            .map(|a| a.clone() as std::sync::Arc<dyn HardwareAdapter>),
+    );
     let config = GatewayConfig {
         home,
         listen: SocketAddr::new(args.listen, args.port),
@@ -389,7 +423,7 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
         operator: args.operator,
         simulation: args.sim,
         seed: args.seed,
-        adapters: opened.iter().map(|o| o.adapter.clone()).collect(),
+        adapters,
     };
     let gateway = match openmhs_gateway::start(config).await {
         Ok(g) => g,
@@ -402,7 +436,9 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
     println!("  home     {}", gateway.home().display());
     let devices = gateway.engine().devices();
     if devices.is_empty() {
-        println!("  devices  none (use --sim for the virtual lab, or --profile for a device)");
+        println!(
+            "  devices  none (use --sim for the virtual lab, --profile or --adapter-manifest for a device)"
+        );
     } else {
         for d in &devices {
             match opened.iter().find(|o| o.device_id == d.device.id) {
@@ -413,6 +449,10 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
                 Some(o) => println!(
                     "  device   {} ({}, {} at {})",
                     d.device.id, d.adapter.id, o.protocol, o.target
+                ),
+                None if hosted.iter().any(|a| a.adapter_id() == d.adapter.id) => println!(
+                    "  device   {} ({}, adapter process)",
+                    d.device.id, d.adapter.id
                 ),
                 None => println!("  device   {} ({})", d.device.id, d.adapter.id),
             }
@@ -431,6 +471,7 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
     }
     let stopped = gateway.shutdown().await;
     drop(opened);
+    drop(hosted);
     match stopped {
         Ok(()) => exit::OK,
         Err(e) => {
@@ -532,6 +573,67 @@ fn profile_check(json: bool, files: &[PathBuf]) -> u8 {
     }
 }
 
+/// Start an adapter process from its manifest. With `fixture`, for the conformance suite:
+/// refused unless the adapter offers a fixture, so test commands never reach a device.
+async fn start_hosted(
+    path: &Path,
+    fixture: bool,
+) -> Result<std::sync::Arc<openmhs_host::ProcessAdapter>, String> {
+    let resolved = openmhs_host::Resolved::load(path)?;
+    let adapter =
+        openmhs_host::ProcessAdapter::start(resolved, openmhs_host::HostOptions { fixture })
+            .await
+            .map_err(|e| format!("{}: {e}", path.display()))?;
+    if fixture && adapter.fixture().is_none() {
+        let _ = adapter.shutdown().await;
+        return Err(format!(
+            "{}: the adapter offers no conformance fixture; refusing to send test commands to whatever it is connected to",
+            path.display()
+        ));
+    }
+    Ok(std::sync::Arc::new(adapter))
+}
+
+/// Validate adapter manifests; starts nothing.
+fn manifest_check(json: bool, files: &[PathBuf]) -> u8 {
+    let results: Vec<(&Path, Result<openmhs_host::Resolved, String>)> = files
+        .iter()
+        .map(|f| (f.as_path(), openmhs_host::Resolved::load(f)))
+        .collect();
+    if json {
+        let v: Vec<serde_json::Value> = results
+            .iter()
+            .map(|(f, r)| match r {
+                Ok(r) => serde_json::json!({
+                    "file": f.display().to_string(), "valid": true,
+                    "adapter": r.manifest.adapter.id, "command": r.manifest.runtime.command,
+                }),
+                Err(e) => serde_json::json!({
+                    "file": f.display().to_string(), "valid": false, "error": e,
+                }),
+            })
+            .collect();
+        output::json(&v);
+    } else {
+        for (f, r) in &results {
+            match r {
+                Ok(r) => println!(
+                    "ok       {}: adapter {}, runs {}",
+                    f.display(),
+                    r.manifest.adapter.id,
+                    r.manifest.runtime.command.join(" ")
+                ),
+                Err(e) => println!("invalid  {e}"),
+            }
+        }
+    }
+    if results.iter().all(|(_, r)| r.is_ok()) {
+        exit::OK
+    } else {
+        exit::ERROR
+    }
+}
+
 /// Run the suite against the virtual lab, in this process: no gateway needed.
 async fn conformance(json: bool, args: ConformanceArgs) -> u8 {
     let clock: std::sync::Arc<dyn openmhs_types::Clock> =
@@ -548,7 +650,7 @@ async fn conformance(json: bool, args: ConformanceArgs) -> u8 {
         );
         return exit::ERROR;
     }
-    let all = args.devices.is_empty() && args.profiles.is_empty();
+    let all = args.devices.is_empty() && args.profiles.is_empty() && args.manifests.is_empty();
     let chosen: Vec<_> = lab
         .into_iter()
         .filter(|d| all || args.devices.iter().any(|x| x == d.control.device_id()))
@@ -563,10 +665,20 @@ async fn conformance(json: bool, args: ConformanceArgs) -> u8 {
             }
         }
     }
+    let mut hosted = Vec::new();
+    for path in &args.manifests {
+        match start_hosted(path, true).await {
+            Ok(a) => hosted.push(a),
+            Err(e) => {
+                eprintln!("error: {e}");
+                return exit::ERROR;
+            }
+        }
+    }
     if !json {
         eprintln!(
             "Testing {} simulator(s). The suite sends real commands and injects faults; this takes about 15 seconds.",
-            chosen.len() + opened.len()
+            chosen.len() + opened.len() + hosted.len()
         );
     }
     let mut runs: Vec<_> = chosen
@@ -584,6 +696,20 @@ async fn conformance(json: bool, args: ConformanceArgs) -> u8 {
         let options = openmhs_conformance::Options::new(clock.clone());
         runs.push(tokio::spawn(async move {
             openmhs_conformance::run(adapter, fixture, options).await
+        }));
+    }
+    for adapter in &hosted {
+        let Some(fixture) = adapter.fixture() else {
+            continue;
+        };
+        let adapter = adapter.clone();
+        let options = openmhs_conformance::Options::new(clock.clone());
+        runs.push(tokio::spawn(async move {
+            let report =
+                openmhs_conformance::run(adapter.clone(), std::sync::Arc::new(fixture), options)
+                    .await;
+            let _ = adapter.shutdown().await;
+            report
         }));
     }
     let mut reports = Vec::new();
@@ -725,6 +851,9 @@ async fn run(cli: Cli) -> u8 {
                     openmhs_path,
                 },
         } => return adapter_new(&name, path, openmhs_path),
+        Cmd::Adapter {
+            command: AdapterCmd::Check { files },
+        } => return manifest_check(cli.json, &files),
         Cmd::Sim {
             command: SimCmd::Faults,
         } => {

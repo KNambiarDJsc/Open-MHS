@@ -16,6 +16,8 @@ Rust reference implementation in `crates/` — follow it, and tests keep them in
 | [errors.md](errors.md) | Error object and the registry of stable error codes |
 | [conformance.md](conformance.md) | Conformance levels L0–L3 |
 | [api.md](api.md) | Local gateway API: transport, authentication, roles, methods |
+| [adapter-protocol.md](adapter-protocol.md) | Adapter-host protocol: JSON-RPC over stdio, lifecycle, errors, supervision |
+| [permission-manifest.md](permission-manifest.md) | Adapter permission manifest: what is host-enforced, cooperative, OS-enforced |
 
 Machine-readable contracts (JSON Schema Draft 2020-12) live in [`schemas/`](schemas/):
 
@@ -27,6 +29,7 @@ Machine-readable contracts (JSON Schema Draft 2020-12) live in [`schemas/`](sche
 | `receipt.schema.json` | `urn:openmhs:schema:0.1:receipt` |
 | `event.schema.json` | `urn:openmhs:schema:0.1:event` |
 | `error.schema.json` | `urn:openmhs:schema:0.1:error` |
+| `adapter-manifest.schema.json` | `urn:openmhs:schema:0.1:adapter-manifest` |
 
 Schema IDs are URNs because the project does not own a domain; they are identifiers,
 not URLs to fetch.
