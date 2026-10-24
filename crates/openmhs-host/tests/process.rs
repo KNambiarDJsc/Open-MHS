@@ -5,6 +5,7 @@
 
 mod common;
 
+use openmhs_policy::Caller;
 use std::collections::BTreeMap;
 use std::sync::Arc;
 use std::time::Duration;
@@ -109,7 +110,7 @@ async fn a_crash_after_dispatch_is_unknown_outcome_and_never_retried() {
     engine.register(adapter.clone()).await.unwrap();
     let receipt = engine
         .submit(
-            "test:agent",
+            &Caller::in_process("test:agent"),
             &json!({
                 "target": {"device": "test.misbehave-01", "capability": "dose.run"},
                 "operation": "invoke",

@@ -19,6 +19,7 @@ openmhs-sim.workspace = true
 openmhs-types.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+subtle.workspace = true
 thiserror.workspace = true
 tokio = { workspace = true, features = ["net", "signal"] }
 tracing.workspace = true

@@ -364,14 +364,43 @@ pub fn tokens(tokens: &[TokenInfo]) {
         return;
     }
     for t in tokens {
+        let status = if t.revoked_at.is_some() {
+            "revoked".to_owned()
+        } else {
+            t.expires_at
+                .map_or_else(|| "no expiry".to_owned(), |e| format!("expires {e}"))
+        };
         println!(
-            "{:<18} {:<9} {:<24} created {}",
+            "{:<21} {:<9} {:<24} {} scope(s), {status}",
             t.id,
             name(&t.role),
             t.principal,
-            t.created_at
+            t.scopes.len(),
         );
     }
+}
+
+pub fn created_token(t: &openmhs_api::CreatedToken) {
+    println!(
+        "created {} for {} ({})",
+        t.info.id,
+        t.info.principal,
+        name(&t.info.role)
+    );
+    for s in &t.info.scopes {
+        let ops: Vec<String> = s.operations.iter().map(|o| name(o).to_owned()).collect();
+        println!(
+            "scope: {} / {} [{}]",
+            s.device,
+            s.capability,
+            ops.join(", ")
+        );
+    }
+    if let Some(e) = t.info.expires_at {
+        println!("expires: {e}");
+    }
+    println!("token: {}", t.token);
+    println!("This is shown once. Pass it with --token or OPENMHS_TOKEN.");
 }
 
 pub fn audit_verify(v: &AuditVerifyResult) {

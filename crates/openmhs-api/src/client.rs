@@ -96,7 +96,19 @@ impl Client {
                 message: e.to_string(),
             })?;
         if response.status() == reqwest::StatusCode::UNAUTHORIZED {
-            return Err(ClientError::Unauthorized);
+            // An expired or revoked credential says so; anything else is just rejected.
+            let specific = response
+                .json::<RpcResponse>()
+                .await
+                .ok()
+                .and_then(|b| b.error)
+                .filter(|e| {
+                    matches!(
+                        e.data.as_ref().map(|d| d.code.as_str()),
+                        Some("credential.expired" | "credential.revoked")
+                    )
+                });
+            return Err(specific.map_or(ClientError::Unauthorized, ClientError::Rpc));
         }
         let body: RpcResponse = response
             .json()
@@ -199,21 +211,30 @@ impl Client {
 
     pub async fn create_token(
         &self,
-        principal: &str,
-        role: Role,
+        params: CreateTokenParams,
     ) -> Result<CreatedToken, ClientError> {
-        self.call(
-            method::TOKENS_CREATE,
-            CreateTokenParams {
-                principal: principal.into(),
-                role,
-            },
-        )
-        .await
+        self.call(method::TOKENS_CREATE, params).await
     }
 
     pub async fn tokens(&self) -> Result<Vec<TokenInfo>, ClientError> {
         self.call(method::TOKENS_LIST, serde_json::json!({})).await
+    }
+
+    /// Replace a credential with a fresh secret for the same principal and scopes; the old
+    /// one stops working immediately.
+    pub async fn rotate_token(
+        &self,
+        token_id: &str,
+        ttl_ms: Option<u64>,
+    ) -> Result<CreatedToken, ClientError> {
+        self.call(
+            method::TOKENS_ROTATE,
+            RotateTokenParams {
+                id: token_id.into(),
+                ttl_ms,
+            },
+        )
+        .await
     }
 
     pub async fn revoke_token(&self, token_id: &str) -> Result<TokenInfo, ClientError> {

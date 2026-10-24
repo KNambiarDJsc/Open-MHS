@@ -6,7 +6,7 @@
 
 use std::net::{Ipv4Addr, SocketAddr};
 
-use openmhs_api::{Client, Role};
+use openmhs_api::{Client, CreateTokenParams, Role};
 use openmhs_gateway::{GatewayConfig, RunningGateway};
 use openmhs_mcp::OpenMhsServer;
 use openmhs_policy::{Effect, Grant};
@@ -36,7 +36,7 @@ async fn lab(grants: Vec<Grant>) -> Lab {
         operator.add_grant(g).await.unwrap();
     }
     let agent_token = operator
-        .create_token("agent:mcp", Role::Agent)
+        .create_token(CreateTokenParams::unrestricted("agent:mcp", Role::Agent))
         .await
         .unwrap()
         .token;

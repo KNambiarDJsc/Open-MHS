@@ -4,6 +4,7 @@ mod common;
 
 use common::*;
 use openmhs_engine::EngineError;
+use openmhs_policy::Caller;
 use openmhs_policy::{Effect, Policy};
 use openmhs_sim::ExecFault;
 use openmhs_types::descriptor::Operation;
@@ -17,7 +18,7 @@ async fn write_is_dispatched_applied_and_verified_with_evidence() {
     let (engine, psu) = setup(allow_all()).await;
     let r = engine
         .submit(
-            AGENT,
+            &Caller::in_process(AGENT),
             &with(
                 write(SETPOINT, volts(1.5)),
                 "correlation_id",
@@ -48,7 +49,7 @@ async fn values_are_converted_to_declared_units() {
     let (engine, psu) = setup(allow_all()).await;
     let r = engine
         .submit(
-            AGENT,
+            &Caller::in_process(AGENT),
             &write(SETPOINT, json!({ "value": 1500, "unit": "mV" })),
         )
         .await
@@ -65,7 +66,7 @@ async fn readback_mismatch_is_verification_failed() {
     let (engine, psu) = setup(allow_all()).await;
     psu.update_faults(|f| f.readback_offset = 0.5);
     let r = engine
-        .submit(AGENT, &write(SETPOINT, volts(1.0)))
+        .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
         .await
         .unwrap();
     assert_eq!(r.state, VerificationFailed);
@@ -87,7 +88,7 @@ async fn unreadable_readback_is_unverifiable_not_success() {
         p.update_faults(|f| f.bad_quality = true);
     });
     let r = engine
-        .submit(AGENT, &write(SETPOINT, volts(1.0)))
+        .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
         .await
         .unwrap();
     assert_eq!(r.state, Unverifiable);
@@ -98,7 +99,7 @@ async fn unreadable_readback_is_unverifiable_not_success() {
 async fn slew_and_rate_limits_are_enforced() {
     let (engine, psu) = setup(allow_all()).await;
     let r = engine
-        .submit(AGENT, &write(SETPOINT, volts(3.0)))
+        .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(3.0)))
         .await
         .unwrap();
     assert_eq!(
@@ -110,13 +111,16 @@ async fn slew_and_rate_limits_are_enforced() {
     // Rate limit: 5 per second.
     for i in 1..=5 {
         let r = engine
-            .submit(AGENT, &write(SETPOINT, volts(0.1 * f64::from(i))))
+            .submit(
+                &Caller::in_process(AGENT),
+                &write(SETPOINT, volts(0.1 * f64::from(i))),
+            )
             .await
             .unwrap();
         assert_eq!(r.state, Verified, "write {i}");
     }
     let r = engine
-        .submit(AGENT, &write(SETPOINT, volts(0.6)))
+        .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(0.6)))
         .await
         .unwrap();
     assert_eq!(codes(&r), ["command.rate_limited"]);
@@ -124,7 +128,7 @@ async fn slew_and_rate_limits_are_enforced() {
 
     tokio::time::sleep(std::time::Duration::from_secs(2)).await;
     let r = engine
-        .submit(AGENT, &write(SETPOINT, volts(0.6)))
+        .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(0.6)))
         .await
         .unwrap();
     assert_eq!(r.state, Verified, "window has passed");
@@ -135,7 +139,7 @@ async fn failed_precondition_denies_with_rule_id() {
     let (engine, psu) = setup(allow_all()).await;
     psu.set_truth(|t| t.tripped = true);
     let r = engine
-        .submit(AGENT, &write(SETPOINT, volts(1.0)))
+        .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
         .await
         .unwrap();
     assert_eq!(codes(&r), ["command.precondition.failed"]);
@@ -151,7 +155,10 @@ async fn actions_verify_against_their_declared_property() {
     let (engine, psu) = setup(allow_all()).await;
     psu.set_truth(|t| t.tripped = true);
     let reset = json!({ "target": { "device": PSU, "capability": "protection.reset" }, "operation": "invoke", "params": {} });
-    let r = engine.submit(AGENT, &reset).await.unwrap();
+    let r = engine
+        .submit(&Caller::in_process(AGENT), &reset)
+        .await
+        .unwrap();
     assert_eq!(r.state, Verified);
     assert!(!psu.truth().tripped);
 }
@@ -171,7 +178,7 @@ async fn approval_flow() {
     let (engine, psu) = setup(policy).await;
 
     let r = engine
-        .submit(AGENT, &write(ENABLED, json!(true)))
+        .submit(&Caller::in_process(AGENT), &write(ENABLED, json!(true)))
         .await
         .unwrap();
     assert_eq!(r.state, AwaitingApproval);
@@ -179,7 +186,7 @@ async fn approval_flow() {
 
     assert_eq!(
         engine
-            .approve(AGENT, &r.command_id)
+            .approve(&Caller::in_process(AGENT), &r.command_id)
             .await
             .unwrap_err()
             .code(),
@@ -190,14 +197,17 @@ async fn approval_flow() {
     engine.set_policy(self_approving).unwrap();
     assert_eq!(
         engine
-            .approve(AGENT, &r.command_id)
+            .approve(&Caller::in_process(AGENT), &r.command_id)
             .await
             .unwrap_err()
             .code(),
         "policy.approval.self"
     );
 
-    let done = engine.approve(OPERATOR, &r.command_id).await.unwrap();
+    let done = engine
+        .approve(&Caller::in_process(OPERATOR), &r.command_id)
+        .await
+        .unwrap();
     assert_eq!(done.state, Verified);
     assert_eq!(done.policy.approved_by.as_deref(), Some(OPERATOR));
     assert!(psu.truth().enabled);
@@ -218,14 +228,18 @@ async fn waiting_commands_can_be_cancelled_and_never_execute() {
     );
     let (engine, psu) = setup(policy).await;
     let r = engine
-        .submit(AGENT, &write(ENABLED, json!(true)))
+        .submit(&Caller::in_process(AGENT), &write(ENABLED, json!(true)))
         .await
         .unwrap();
-    let c = engine.cancel(AGENT, &r.command_id).unwrap();
+    let c = engine
+        .cancel(&Caller::in_process(AGENT), &r.command_id)
+        .unwrap();
     assert_eq!(c.state, Cancelled);
     assert_eq!(c.outcome, Outcome::NotExecuted);
     assert!(matches!(
-        engine.approve(OPERATOR, &r.command_id).await,
+        engine
+            .approve(&Caller::in_process(OPERATOR), &r.command_id)
+            .await,
         Err(EngineError::InvalidState { .. })
     ));
     assert_eq!(psu.execute_calls(), 0);
@@ -236,7 +250,7 @@ async fn device_rejection_is_rejected() {
     let (engine, psu) = setup(allow_all()).await;
     psu.update_faults(|f| f.execute = Some(ExecFault::Reject));
     let r = engine
-        .submit(AGENT, &write(SETPOINT, volts(1.0)))
+        .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
         .await
         .unwrap();
     assert_eq!(r.state, Rejected);
@@ -249,7 +263,7 @@ async fn lost_acknowledgement_reconciles_to_applied() {
     psu.update_faults(|f| f.execute = Some(ExecFault::ApplyThenHang));
     let r = engine
         .submit(
-            AGENT,
+            &Caller::in_process(AGENT),
             &with(write(SETPOINT, volts(1.0)), "deadline_ms", json!(2_000)),
         )
         .await
@@ -273,7 +287,7 @@ async fn lost_command_reconciles_to_not_applied() {
     psu.update_faults(|f| f.execute = Some(ExecFault::Hang));
     let r = engine
         .submit(
-            AGENT,
+            &Caller::in_process(AGENT),
             &with(write(SETPOINT, volts(1.0)), "deadline_ms", json!(2_000)),
         )
         .await
@@ -295,7 +309,7 @@ async fn garbled_response_and_disconnect_are_uncertain() {
         let (engine, psu) = setup(allow_all()).await;
         psu.update_faults(|f| f.execute = Some(fault));
         let r = engine
-            .submit(AGENT, &write(SETPOINT, volts(1.0)))
+            .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
             .await
             .unwrap();
         assert_eq!(r.state, UnknownOutcome, "{fault:?}");
@@ -311,7 +325,7 @@ async fn adapter_panic_is_contained() {
     let (engine, psu) = setup(allow_all()).await;
     psu.update_faults(|f| f.execute = Some(ExecFault::Crash));
     let r = engine
-        .submit(AGENT, &write(SETPOINT, volts(1.0)))
+        .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
         .await
         .unwrap();
     assert_eq!(r.state, UnknownOutcome);
@@ -322,7 +336,7 @@ async fn adapter_panic_is_contained() {
 
     psu.clear_faults();
     let r = engine
-        .submit(AGENT, &write(SETPOINT, volts(1.0)))
+        .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
         .await
         .unwrap();
     assert_eq!(
@@ -334,20 +348,23 @@ async fn adapter_panic_is_contained() {
 #[tokio::test(start_paused = true)]
 async fn reads_are_authorized_audited_and_cached() {
     let (engine, _psu) = setup(allow_all()).await;
-    let v = engine.read(AGENT, PSU, SETPOINT).await.unwrap();
+    let v = engine
+        .read(&Caller::in_process(AGENT), PSU, SETPOINT)
+        .await
+        .unwrap();
     assert_eq!(engine.last_known(PSU, SETPOINT), Some(v));
     let audit = engine.journal().audit_records().unwrap();
     assert!(audit.iter().any(|a| a.kind == "read" && a.subject == PSU));
 
     let err = engine
-        .read(AGENT, PSU, "protection.reset")
+        .read(&Caller::in_process(AGENT), PSU, "protection.reset")
         .await
         .unwrap_err();
     assert_eq!(err.code(), "command.operation.unsupported");
     let read_cmd =
         json!({ "target": { "device": PSU, "capability": SETPOINT }, "operation": "read" });
     assert!(matches!(
-        engine.submit(AGENT, &read_cmd).await,
+        engine.submit(&Caller::in_process(AGENT), &read_cmd).await,
         Err(EngineError::NotACommand)
     ));
 }
@@ -356,12 +373,15 @@ async fn reads_are_authorized_audited_and_cached() {
 async fn unknown_device_and_capability_are_denied_with_receipts() {
     let (engine, _) = setup(allow_all()).await;
     let r = engine
-        .submit(AGENT, &json!({ "target": { "device": "nope", "capability": SETPOINT }, "operation": "write", "value": volts(1.0) }))
+        .submit(&Caller::in_process(AGENT), &json!({ "target": { "device": "nope", "capability": SETPOINT }, "operation": "write", "value": volts(1.0) }))
         .await
         .unwrap();
     assert_eq!(codes(&r), ["command.device.unknown"]);
     let r = engine
-        .submit(AGENT, &write("power.output.turbo", json!(true)))
+        .submit(
+            &Caller::in_process(AGENT),
+            &write("power.output.turbo", json!(true)),
+        )
         .await
         .unwrap();
     assert_eq!(codes(&r), ["command.capability.unknown"]);
@@ -382,7 +402,7 @@ async fn side_effect_ceiling_on_grants() {
     })
     .await;
     let r = engine
-        .submit(AGENT, &write(SETPOINT, volts(1.0)))
+        .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
         .await
         .unwrap();
     assert_eq!(codes(&r), ["policy.denied.side_effect"]);

@@ -3,6 +3,7 @@
 
 mod common;
 
+use openmhs_policy::Caller;
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 
@@ -25,14 +26,14 @@ async fn inv01_discovered_device_is_not_writable() {
     );
 
     let r = engine
-        .submit(AGENT, &write(SETPOINT, volts(1.0)))
+        .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
         .await
         .unwrap();
     assert_eq!(r.state, CommandState::Denied);
     assert_eq!(codes(&r), ["policy.denied.no_grant"]);
     assert_eq!(psu.execute_calls(), 0);
 
-    let read = engine.read(AGENT, PSU, SETPOINT).await;
+    let read = engine.read(&Caller::in_process(AGENT), PSU, SETPOINT).await;
     assert!(matches!(read, Err(EngineError::Denied(e)) if e.code == "policy.denied.no_grant"));
     assert_schema_valid(&r);
 }
@@ -49,7 +50,7 @@ async fn inv02_unauthorized_commands_never_reach_adapter() {
     engine.register(Arc::new(trap)).await.unwrap();
 
     let r = engine
-        .submit(AGENT, &write(SETPOINT, volts(1.0)))
+        .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
         .await
         .unwrap();
     assert_eq!(r.state, CommandState::Denied);
@@ -66,7 +67,7 @@ async fn inv02_unauthorized_commands_never_reach_adapter() {
     ));
     engine.set_policy(explicit).unwrap();
     let r = engine
-        .submit(AGENT, &write(SETPOINT, volts(1.0)))
+        .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
         .await
         .unwrap();
     assert_eq!(codes(&r), ["policy.denied.explicit"]);
@@ -94,7 +95,7 @@ async fn inv03_invalid_values_rejected_before_dispatch() {
     ];
     for (value, code) in cases {
         let r = engine
-            .submit(AGENT, &write(SETPOINT, value.clone()))
+            .submit(&Caller::in_process(AGENT), &write(SETPOINT, value.clone()))
             .await
             .unwrap();
         assert_eq!(r.state, CommandState::Denied, "{value}");
@@ -103,7 +104,7 @@ async fn inv03_invalid_values_rejected_before_dispatch() {
     }
     let bad = json!({ "target": { "device": PSU, "capability": SETPOINT }, "operation": "write" });
     assert!(matches!(
-        engine.submit(AGENT, &bad).await,
+        engine.submit(&Caller::in_process(AGENT), &bad).await,
         Err(EngineError::InvalidRequest(_))
     ));
 
@@ -136,7 +137,7 @@ async fn inv04_stale_or_bad_telemetry_blocks_commands() {
     ] {
         psu.set_faults(faults.clone());
         let r = engine
-            .submit(AGENT, &write(SETPOINT, volts(1.0)))
+            .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
             .await
             .unwrap();
         assert_eq!(r.state, CommandState::Denied, "{faults:?}");
@@ -150,7 +151,7 @@ async fn inv04_stale_or_bad_telemetry_blocks_commands() {
 
     psu.clear_faults();
     let r = engine
-        .submit(AGENT, &write(SETPOINT, volts(1.0)))
+        .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
         .await
         .unwrap();
     assert_eq!(r.state, CommandState::Verified);
@@ -166,8 +167,14 @@ async fn inv05_duplicates_dispatch_once() {
         json!("step-1"),
     );
 
-    let first = engine.submit(AGENT, &req).await.unwrap();
-    let second = engine.submit(AGENT, &req).await.unwrap();
+    let first = engine
+        .submit(&Caller::in_process(AGENT), &req)
+        .await
+        .unwrap();
+    let second = engine
+        .submit(&Caller::in_process(AGENT), &req)
+        .await
+        .unwrap();
     assert_eq!(first.command_id, second.command_id);
     assert_eq!(second.state, CommandState::Verified);
     assert_eq!(psu.execute_calls(), 1);
@@ -178,7 +185,10 @@ async fn inv05_duplicates_dispatch_once() {
         "idempotency_key",
         json!("step-1"),
     );
-    let err = engine.submit(AGENT, &changed).await.unwrap_err();
+    let err = engine
+        .submit(&Caller::in_process(AGENT), &changed)
+        .await
+        .unwrap_err();
     assert_eq!(err.code(), "command.idempotency.conflict");
     assert_eq!(psu.execute_calls(), 1);
 }
@@ -194,7 +204,7 @@ async fn inv05_concurrent_duplicates_dispatch_once() {
     let tasks: Vec<_> = (0..8)
         .map(|_| {
             let (e, r) = (engine.clone(), req.clone());
-            tokio::spawn(async move { e.submit(AGENT, &r).await.unwrap() })
+            tokio::spawn(async move { e.submit(&Caller::in_process(AGENT), &r).await.unwrap() })
         })
         .collect();
     let mut ids = std::collections::HashSet::new();
@@ -212,7 +222,7 @@ async fn inv06_timeout_is_uncertain_and_not_retried() {
     psu.update_faults(|f| f.execute = Some(ExecFault::Hang));
     let r = engine
         .submit(
-            AGENT,
+            &Caller::in_process(AGENT),
             &with(write(SETPOINT, volts(1.0)), "deadline_ms", json!(3_000)),
         )
         .await
@@ -238,7 +248,10 @@ async fn inv07_crash_mid_dispatch_recovers_to_unknown_outcome() {
     engine.register(Arc::new(psu)).await.unwrap();
 
     let e = engine.clone();
-    let task = tokio::spawn(async move { e.submit(AGENT, &write(SETPOINT, volts(1.0))).await });
+    let task = tokio::spawn(async move {
+        e.submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
+            .await
+    });
     let id = loop {
         tokio::time::sleep(std::time::Duration::from_millis(1)).await;
         let in_flight = engine
@@ -313,15 +326,18 @@ async fn inv11_every_command_has_receipt_and_audit_trail() {
     let (engine, psu) = setup(allow_all()).await;
     let mut receipts = vec![
         engine
-            .submit(AGENT, &write(SETPOINT, volts(1.0)))
+            .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
             .await
             .unwrap(),
         engine
-            .submit(AGENT, &write(SETPOINT, volts(99.0)))
+            .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(99.0)))
             .await
             .unwrap(),
         engine
-            .submit("agent.stranger", &write(SETPOINT, volts(1.0)))
+            .submit(
+                &Caller::in_process("agent.stranger"),
+                &write(SETPOINT, volts(1.0)),
+            )
             .await
             .unwrap(),
     ];
@@ -329,7 +345,7 @@ async fn inv11_every_command_has_receipt_and_audit_trail() {
     receipts.push(
         engine
             .submit(
-                AGENT,
+                &Caller::in_process(AGENT),
                 &with(write(SETPOINT, volts(1.2)), "deadline_ms", json!(500)),
             )
             .await
@@ -365,7 +381,7 @@ async fn inv12_unreadable_precondition_fails_closed() {
     let (engine, psu) = setup(allow_all()).await;
     psu.update_faults(|f| f.disconnected = true);
     let r = engine
-        .submit(AGENT, &write(ENABLED, json!(true)))
+        .submit(&Caller::in_process(AGENT), &write(ENABLED, json!(true)))
         .await
         .unwrap();
     assert_eq!(r.state, CommandState::Denied);
@@ -381,10 +397,13 @@ async fn inv12_unreadable_precondition_fails_closed() {
 async fn inv14_audit_chain_verifies_and_detects_tampering() {
     let (engine, _psu) = setup(allow_all()).await;
     engine
-        .submit(AGENT, &write(SETPOINT, volts(1.0)))
+        .submit(&Caller::in_process(AGENT), &write(SETPOINT, volts(1.0)))
         .await
         .unwrap();
-    engine.read(AGENT, PSU, SETPOINT).await.unwrap();
+    engine
+        .read(&Caller::in_process(AGENT), PSU, SETPOINT)
+        .await
+        .unwrap();
     let v = engine.verify_audit().unwrap();
     assert!(v.is_valid() && v.records > 5);
 

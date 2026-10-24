@@ -16,9 +16,9 @@ use std::process::ExitCode;
 use clap::{Args, Parser, Subcommand};
 use openmhs_adapter::HardwareAdapter;
 use openmhs_api::runtime::default_home;
-use openmhs_api::{Client, ClientError, Role};
+use openmhs_api::{Client, ClientError, CreateTokenParams, Role};
 use openmhs_gateway::{DEFAULT_OPERATOR, DEFAULT_PORT, GatewayConfig};
-use openmhs_policy::{Effect, Grant};
+use openmhs_policy::{Effect, Grant, Scope};
 use openmhs_types::descriptor::{CapabilityKind, Operation, SideEffect};
 use openmhs_types::receipt::Decision;
 use openmhs_types::{CommandState, Outcome, Receipt};
@@ -309,15 +309,36 @@ struct GrantArgs {
 
 #[derive(Subcommand)]
 enum TokensCmd {
-    /// Create a token for a principal. The secret is shown once.
+    /// Create a credential for a principal. The secret is shown once.
+    ///
+    /// A credential can do nothing outside its scopes, and a scope only lets it reach
+    /// what the policy grants also allow. Give at least one `--scope`, or `--any-scope`.
     Create {
         principal: String,
         #[arg(long, default_value = "agent", value_parser = parse_enum::<Role>)]
         role: Role,
+        /// `DEVICE:CAPABILITY:OPS`, e.g. `sim.psu-01:power.output.*:read,write`. `*`
+        /// matches any run of characters. Repeat for several scopes.
+        #[arg(long = "scope", value_parser = parse_scope)]
+        scopes: Vec<Scope>,
+        /// No limit beyond the policy's grants. Use sparingly.
+        #[arg(long)]
+        any_scope: bool,
+        /// Lifetime, e.g. `30m`, `12h`, `7d`. Without it the credential does not expire.
+        #[arg(long, value_parser = parse_duration_ms)]
+        ttl: Option<u64>,
     },
     List,
+    /// Revoke a credential now. It stays on record, marked revoked.
     Revoke {
         id: String,
+    },
+    /// Replace a credential: a new secret, same principal and scopes; the old one stops.
+    Rotate {
+        id: String,
+        /// Lifetime of the replacement; default is the old credential's lifetime.
+        #[arg(long, value_parser = parse_duration_ms)]
+        ttl: Option<u64>,
     },
 }
 
@@ -338,6 +359,46 @@ enum SimCmd {
     Fault { device: String, fault: String },
     /// List the fault names.
     Faults,
+}
+
+/// `DEVICE:CAPABILITY:read,write`.
+fn parse_scope(s: &str) -> Result<Scope, String> {
+    let parts: Vec<&str> = s.split(':').collect();
+    let [device, capability, ops] = parts.as_slice() else {
+        return Err("expected DEVICE:CAPABILITY:OPS, e.g. sim.psu-01:power.*:read".into());
+    };
+    let operations = ops
+        .split(',')
+        .map(parse_enum::<Operation>)
+        .collect::<Result<Vec<_>, _>>()?;
+    let scope = Scope {
+        device: (*device).into(),
+        capability: (*capability).into(),
+        operations,
+    };
+    if scope.device.is_empty() || scope.capability.is_empty() {
+        return Err("device and capability must not be empty".into());
+    }
+    Ok(scope)
+}
+
+/// `30m`, `12h`, `7d`, `90s`, in milliseconds.
+fn parse_duration_ms(s: &str) -> Result<u64, String> {
+    let s = s.trim();
+    let split = s.find(|c: char| !c.is_ascii_digit()).unwrap_or(s.len());
+    let (digits, unit) = s.split_at(split);
+    let n: u64 = digits
+        .parse()
+        .map_err(|_| format!("'{s}' is not a duration like 30m, 12h or 7d"))?;
+    let unit_ms: u64 = match unit {
+        "s" => 1_000,
+        "m" => 60_000,
+        "h" => 3_600_000,
+        "d" => 86_400_000,
+        _ => return Err(format!("'{s}' needs a unit: s, m, h or d")),
+    };
+    n.checked_mul(unit_ms)
+        .ok_or_else(|| format!("'{s}' is too long"))
 }
 
 fn parse_enum<T: serde::de::DeserializeOwned>(s: &str) -> Result<T, String> {
@@ -802,7 +863,7 @@ async fn mcp(home: &std::path::Path, token: Option<&str>, args: McpArgs) -> u8 {
     if token.is_none() && !args.allow_operator {
         eprintln!(
             "error: `openmhs mcp` needs an agent token (--token or OPENMHS_TOKEN). Create one \
-             with `openmhs tokens create agent:<name>`; without it the server would act with \
+             with `openmhs tokens create agent:<name> --scope DEVICE:CAPABILITY:OPS`; without it the server would act with \
              the operator token."
         );
         return exit::ERROR;
@@ -993,23 +1054,42 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
             }
         },
         Cmd::Tokens { command } => match command {
-            TokensCmd::Create { principal, role } => {
-                let t = client.create_token(&principal, role).await?;
-                show(json, &t, |t| {
-                    println!(
-                        "created {} for {} ({})",
-                        t.info.id,
-                        t.info.principal,
-                        output::name(&t.info.role)
+            TokensCmd::Create {
+                principal,
+                role,
+                mut scopes,
+                any_scope,
+                ttl,
+            } => {
+                if any_scope {
+                    scopes.push(Scope::any());
+                }
+                if scopes.is_empty() {
+                    eprintln!(
+                        "error: a credential with no scope can do nothing; give --scope DEVICE:CAPABILITY:OPS (repeatable) or --any-scope"
                     );
-                    println!("token: {}", t.token);
-                    println!("This is shown once. Pass it with --token or OPENMHS_TOKEN.");
-                });
+                    return Ok(exit::ERROR);
+                }
+                let params = CreateTokenParams {
+                    principal,
+                    role,
+                    scopes,
+                    ttl_ms: ttl,
+                };
+                let t = client.create_token(params).await?;
+                show(json, &t, output::created_token);
             }
             TokensCmd::List => show(json, &client.tokens().await?, |t| output::tokens(t)),
             TokensCmd::Revoke { id } => {
                 let t = client.revoke_token(&id).await?;
                 show(json, &t, |t| println!("revoked {} ({})", t.id, t.principal));
+            }
+            TokensCmd::Rotate { id, ttl } => {
+                let t = client.rotate_token(&id, ttl).await?;
+                show(json, &t, |t| {
+                    println!("{id} is revoked and replaced:");
+                    output::created_token(t);
+                });
             }
         },
         Cmd::Audit { command } => match command {

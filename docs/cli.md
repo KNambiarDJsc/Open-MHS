@@ -40,7 +40,7 @@ openmhs read sim.thermo-01 temperature.ambient
 | `approve <id>` (or `commands approve <id>`) | Approve a held command (operator) |
 | `commands cancel <id>` / `commands reconcile <id>` | Cancel before dispatch / resolve `UNKNOWN_OUTCOME` by readback |
 | `grants list` / `grants add …` / `grants revoke <id>` | Policy (operator) |
-| `tokens create <principal> [--role agent\|operator]` / `tokens list` / `tokens revoke <id>` | API tokens (operator) |
+| `tokens create <principal> [--role agent\|operator] (--scope DEVICE:CAPABILITY:OPS … \| --any-scope) [--ttl 12h]` / `tokens list` / `tokens revoke <id>` / `tokens rotate <id> [--ttl …]` | Credentials (operator). A credential reaches only its scopes, and only what grants also allow; it expires at `--ttl`; revoked credentials stay listed ([spec/authorization.md](../spec/authorization.md) §7) |
 | `audit verify` / `audit tail [--limit N]` | Audit log (operator) |
 | `sim fault <device> <fault>` / `sim faults` | Fault injection (operator, `serve --sim` only) |
 | `conformance [--device ID]… [--profile FILE]… [--adapter-manifest FILE]… [--report-dir DIR] [--seed N]` | Run the conformance suite against the built-in simulators, protocol profiles' simulators, or out-of-process adapters started in fixture mode (their manifests must point at a simulator, never a real device); no gateway needed. Exit 0 when each reaches its declared level ([spec/conformance.md](../spec/conformance.md)) |

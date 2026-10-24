@@ -6,7 +6,7 @@
 use std::net::{Ipv4Addr, SocketAddr};
 use std::time::Duration;
 
-use openmhs_api::{Client, Role};
+use openmhs_api::{Client, CreateTokenParams, Role};
 use openmhs_gateway::GatewayConfig;
 use openmhs_policy::{Effect, Grant};
 use openmhs_types::CommandState;
@@ -42,7 +42,10 @@ async fn client_disconnect_does_not_abandon_the_command() {
     let gw = start(home.path()).await;
     let operator = Client::new(&gw.url, &gw.operator_token).unwrap();
     operator.add_grant(psu_write_grant()).await.unwrap();
-    let agent = operator.create_token("agent:t", Role::Agent).await.unwrap();
+    let agent = operator
+        .create_token(CreateTokenParams::unrestricted("agent:t", Role::Agent))
+        .await
+        .unwrap();
     operator.sim_fault("sim.psu-01", "hang").await.unwrap();
 
     let impatient = reqwest::Client::builder()

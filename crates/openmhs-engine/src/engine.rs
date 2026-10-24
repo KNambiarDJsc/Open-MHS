@@ -9,7 +9,7 @@ use openmhs_adapter::{
     AdapterCommand, AdapterError, AdapterErrorKind, ExecuteReport, HardwareAdapter, Progress,
     ProgressEvent,
 };
-use openmhs_policy::{Expectation, Live, Mutation, Policy, Prepared};
+use openmhs_policy::{Caller, Expectation, Live, Mutation, Policy, Prepared, PrincipalKind};
 use openmhs_types::descriptor::{Capability, Operation};
 use openmhs_types::receipt::{
     AdapterResult, Decision, PolicyRecord, PreflightResult, RuleMatch, VerificationMode,
@@ -306,22 +306,32 @@ impl Engine {
 
     // ---------------------------------------------------------------- reads
 
-    /// Authorized, audited read straight from the device.
+    /// Authorized, audited read straight from the device. The caller's credential must
+    /// scope the read and a grant must allow it.
     pub async fn read(
         &self,
-        principal: &str,
+        caller: &Caller,
         device_id: &str,
         capability: &str,
     ) -> Result<StateValue, EngineError> {
         let now = self.now();
+        let principal = caller.principal();
         let audit_denied = |e: &ErrorObject| {
             self.inner.journal.append_audit(
                 now,
                 "read.denied",
                 device_id,
-                &serde_json::json!({ "principal": principal, "capability": capability, "error": e }),
+                &serde_json::json!({
+                    "principal": principal, "credential_id": caller.credential_id(), "capability": capability, "error": e,
+                }),
             )
         };
+        // Before any lookup, so a credential cannot probe which devices exist.
+        if !caller.in_scope(device_id, capability, Operation::Read) {
+            let e = scope_denied(caller, device_id, capability, Operation::Read);
+            audit_denied(&e)?;
+            return Err(EngineError::Denied(e));
+        }
         let Some(device) = self.device(device_id) else {
             let e = ErrorObject::new(
                 "command.device.unknown",
@@ -358,8 +368,8 @@ impl Engine {
             "read",
             device_id,
             &match &result {
-                Ok(v) => serde_json::json!({ "principal": principal, "capability": capability, "state": v }),
-                Err(e) => serde_json::json!({ "principal": principal, "capability": capability, "error": e.kind.code(), "message": e.message }),
+                Ok(v) => serde_json::json!({ "principal": principal, "credential_id": caller.credential_id(), "capability": capability, "state": v }),
+                Err(e) => serde_json::json!({ "principal": principal, "credential_id": caller.credential_id(), "capability": capability, "error": e.kind.code(), "message": e.message }),
             },
         )?;
         result.map_err(EngineError::Adapter)
@@ -401,10 +411,11 @@ impl Engine {
     /// or `AWAITING_APPROVAL`, and returns its receipt.
     pub async fn submit(
         &self,
-        principal: &str,
+        caller: &Caller,
         request: &serde_json::Value,
     ) -> Result<Receipt, EngineError> {
         let now = self.now();
+        let principal = caller.principal();
         let issues = schema::validate(Schema::Command, request);
         if !issues.is_empty() {
             let errors: Vec<ErrorObject> = issues.into_iter().map(Into::into).collect();
@@ -412,7 +423,7 @@ impl Engine {
                 now,
                 "request.rejected",
                 principal,
-                &serde_json::json!({ "errors": errors }),
+                &serde_json::json!({ "errors": errors, "credential_id": caller.credential_id() }),
             )?;
             return Err(EngineError::InvalidRequest(errors));
         }
@@ -431,20 +442,25 @@ impl Engine {
             req,
             now,
         );
-        let receipt = match self.inner.journal.insert_command(&receipt, &request_hash)? {
-            Inserted::New(r) => r,
-            Inserted::Existing {
-                receipt,
-                request_hash: existing,
-            } => {
-                return if existing == request_hash {
-                    Ok(receipt)
-                } else {
-                    Err(EngineError::IdempotencyConflict(receipt.command_id))
-                };
-            }
-        };
-        self.run(receipt).await
+        let receipt =
+            match self
+                .inner
+                .journal
+                .insert_command(&receipt, &request_hash, &origin(caller))?
+            {
+                Inserted::New(r) => r,
+                Inserted::Existing {
+                    receipt,
+                    request_hash: existing,
+                } => {
+                    return if existing == request_hash {
+                        Ok(receipt)
+                    } else {
+                        Err(EngineError::IdempotencyConflict(receipt.command_id))
+                    };
+                }
+            };
+        self.run(caller, receipt).await
     }
 
     fn transition(
@@ -481,11 +497,23 @@ impl Engine {
 
     /// Validation order of spec/lifecycle.md §3a, shared by submission and preflight so
     /// the two can never disagree.
-    async fn evaluate(&self, principal: &str, req: &CommandRequest) -> Evaluation {
+    async fn evaluate(&self, caller: &Caller, req: &CommandRequest) -> Evaluation {
+        let principal = caller.principal();
         let denied = |e: ErrorObject| Evaluation::Denied {
             errors: vec![e],
             rules: vec![],
         };
+        // The credential's ceiling comes first and before any lookup, so it can neither
+        // be widened by a grant nor used to probe for devices it cannot reach.
+        let operation: Operation = req.operation.into();
+        if !caller.in_scope(&req.target.device, &req.target.capability, operation) {
+            return denied(scope_denied(
+                caller,
+                &req.target.device,
+                &req.target.capability,
+                operation,
+            ));
+        }
         let Some(device) = self.device(&req.target.device) else {
             return denied(ErrorObject::new(
                 "command.device.unknown",
@@ -544,12 +572,12 @@ impl Engine {
         }
     }
 
-    async fn run(&self, receipt: Receipt) -> Result<Receipt, EngineError> {
+    async fn run(&self, caller: &Caller, receipt: Receipt) -> Result<Receipt, EngineError> {
         let id = receipt.command_id.clone();
         self.transition(&id, Validating, None, |_| {})?;
         // `_guard` keeps the device locked from the live checks through verification.
         let (device, cap, decision, rules, prepared, _guard) =
-            match self.evaluate(&receipt.principal, &receipt.request).await {
+            match self.evaluate(caller, &receipt.request).await {
                 Evaluation::Denied { errors, rules } => return self.deny(&id, errors, rules),
                 Evaluation::Ready {
                     device,
@@ -591,9 +619,10 @@ impl Engine {
     /// a command or contacting the device beyond those reads. Audited.
     pub async fn preflight(
         &self,
-        principal: &str,
+        caller: &Caller,
         request: &serde_json::Value,
     ) -> Result<PreflightResult, EngineError> {
+        let principal = caller.principal();
         let issues = schema::validate(Schema::Command, request);
         if !issues.is_empty() {
             return Err(EngineError::InvalidRequest(
@@ -606,7 +635,7 @@ impl Engine {
         if req.operation == RequestOperation::Read {
             return Err(EngineError::NotACommand);
         }
-        let (decision, rules, errors) = match self.evaluate(principal, &req).await {
+        let (decision, rules, errors) = match self.evaluate(caller, &req).await {
             Evaluation::Denied { errors, rules } => (Decision::Deny, rules, errors),
             Evaluation::Ready {
                 decision, rules, ..
@@ -624,6 +653,7 @@ impl Engine {
             &req.target.device,
             &serde_json::json!({
                 "principal": principal,
+                "credential_id": caller.credential_id(),
                 "request": req,
                 "decision": result.decision,
                 "errors": result.errors,
@@ -960,7 +990,18 @@ impl Engine {
 
     /// Approve a command waiting in `AWAITING_APPROVAL`. Authorization and live checks
     /// are re-run, because policy and device state may have changed while it waited.
-    pub async fn approve(&self, approver: &str, command_id: &str) -> Result<Receipt, EngineError> {
+    pub async fn approve(
+        &self,
+        approver_caller: &Caller,
+        command_id: &str,
+    ) -> Result<Receipt, EngineError> {
+        let approver = approver_caller.principal();
+        if approver_caller.kind() == PrincipalKind::Agent {
+            return Err(EngineError::Denied(ErrorObject::new(
+                "policy.approval.not_human",
+                "an agent credential cannot approve commands",
+            )));
+        }
         if !self.policy().is_approver(approver) {
             return Err(EngineError::Denied(ErrorObject::new(
                 "policy.approval.not_approver",
@@ -970,6 +1011,17 @@ impl Engine {
         let receipt = self
             .receipt(command_id)?
             .ok_or_else(|| EngineError::UnknownCommand(command_id.into()))?;
+        // An approver's credential must reach what it approves.
+        let target = &receipt.request.target;
+        let operation: Operation = receipt.request.operation.into();
+        if !approver_caller.in_scope(&target.device, &target.capability, operation) {
+            return Err(EngineError::Denied(scope_denied(
+                approver_caller,
+                &target.device,
+                &target.capability,
+                operation,
+            )));
+        }
         if receipt.state != AwaitingApproval {
             return Err(EngineError::InvalidState {
                 id: command_id.into(),
@@ -1050,7 +1102,8 @@ impl Engine {
     }
 
     /// Cancel a command that has not been dispatched. Allowed for the requester and approvers.
-    pub fn cancel(&self, principal: &str, command_id: &str) -> Result<Receipt, EngineError> {
+    pub fn cancel(&self, caller: &Caller, command_id: &str) -> Result<Receipt, EngineError> {
+        let principal = caller.principal();
         let receipt = self
             .receipt(command_id)?
             .ok_or_else(|| EngineError::UnknownCommand(command_id.into()))?;
@@ -1216,6 +1269,32 @@ impl Engine {
         )?;
         Ok(report)
     }
+}
+
+/// The denial for a call outside its credential's scopes. Says what was refused, never
+/// what other scopes or devices exist.
+fn scope_denied(
+    caller: &Caller,
+    device: &str,
+    capability: &str,
+    operation: Operation,
+) -> ErrorObject {
+    ErrorObject::new(
+        "auth.scope.denied",
+        format!(
+            "credential {} of '{}' has no scope for {operation:?} on {device} / {capability}",
+            caller.credential_id().unwrap_or("(in-process)"),
+            caller.principal(),
+        ),
+    )
+}
+
+/// How the caller proved who they are, for the `command.created` audit record.
+fn origin(caller: &Caller) -> serde_json::Value {
+    serde_json::json!({
+        "credential_id": caller.credential_id(),
+        "auth_method": caller.method(),
+    })
 }
 
 fn describe_value(v: &openmhs_types::Value) -> String {

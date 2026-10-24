@@ -22,7 +22,6 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use openmhs_adapter::HardwareAdapter;
-use openmhs_api::Role;
 use openmhs_api::runtime::{RuntimeInfo, runtime_path};
 use openmhs_engine::journal::sha256_hex;
 use openmhs_engine::{Engine, EngineError, RecoveryReport};
@@ -174,7 +173,7 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
 
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let (policy_store, policy) = PolicyStore::open(&config.home, &config.operator)?;
-    let tokens = TokenStore::open(&config.home)?;
+    let tokens = TokenStore::open(&config.home, &config.operator)?;
     let engine = Engine::open(&config.home.join(JOURNAL_FILE), clock.clone(), policy)?;
     engine
         .journal()
@@ -213,12 +212,10 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
         engine: engine.clone(),
         clock: clock.clone(),
         simulation: config.simulation,
-        operator: Session {
-            principal: config.operator.clone(),
-            role: Role::Operator,
-        },
+        operator: Session::operator(&config.operator),
         operator_token_sha256: sha256_hex(&operator_token),
         tokens: Mutex::new(tokens),
+        reported: Mutex::new(std::collections::HashSet::new()),
         policy_store: tokio::sync::Mutex::new(policy_store),
         sims,
     });

@@ -180,11 +180,13 @@ impl Journal {
     }
 
     /// Insert a new command in `CREATED`, or return the existing one for the same
-    /// (principal, device, idempotency key).
+    /// (principal, device, idempotency key). `origin` records how the requester was
+    /// authenticated and goes into the `command.created` audit record.
     pub fn insert_command(
         &self,
         receipt: &Receipt,
         request_hash: &str,
+        origin: &serde_json::Value,
     ) -> Result<Inserted, JournalError> {
         let mut conn = self.lock();
         let tx = conn.transaction()?;
@@ -210,7 +212,7 @@ impl Journal {
             r.created_at,
             "command.created",
             &r.command_id,
-            &serde_json::json!({ "principal": r.principal, "request": r.request, "request_hash": request_hash }),
+            &serde_json::json!({ "principal": r.principal, "request": r.request, "request_hash": request_hash, "origin": origin }),
         )?;
         r.audit_hash = Some(hash);
         tx.execute(

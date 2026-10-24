@@ -6,7 +6,7 @@
 pub mod client;
 pub mod runtime;
 
-use openmhs_policy::Grant;
+use openmhs_policy::{Grant, PrincipalKind, Scope};
 use openmhs_types::{CommandState, ErrorObject, StateValue};
 use serde::{Deserialize, Serialize};
 
@@ -34,6 +34,7 @@ pub mod method {
     pub const TOKENS_CREATE: &str = "tokens.create";
     pub const TOKENS_LIST: &str = "tokens.list";
     pub const TOKENS_REVOKE: &str = "tokens.revoke";
+    pub const TOKENS_ROTATE: &str = "tokens.rotate";
     pub const AUDIT_VERIFY: &str = "audit.verify";
     pub const AUDIT_TAIL: &str = "audit.tail";
     pub const SIM_FAULT: &str = "sim.fault";
@@ -107,6 +108,12 @@ pub struct GatewayInfo {
     pub spec_version: String,
     pub principal: String,
     pub role: Role,
+    /// The credential this call authenticated with; absent for the operator runtime token.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub credential_id: Option<String>,
+    /// What the credential may reach (spec/authorization.md §7).
+    #[serde(default)]
+    pub scopes: Vec<Scope>,
     pub simulation: bool,
     pub devices: usize,
 }
@@ -170,22 +177,90 @@ pub struct IdParams {
 pub struct CreateTokenParams {
     pub principal: String,
     pub role: Role,
+    /// The credential's ceiling (spec/authorization.md §7). Without scopes it can
+    /// authenticate but cannot read or command anything.
+    #[serde(default)]
+    pub scopes: Vec<Scope>,
+    /// Lifetime from now. Absent means the credential does not expire.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ttl_ms: Option<u64>,
 }
 
+impl CreateTokenParams {
+    /// A credential limited to `scopes`.
+    pub fn scoped(principal: &str, role: Role, scopes: Vec<Scope>) -> Self {
+        Self {
+            principal: principal.into(),
+            role,
+            scopes,
+            ttl_ms: None,
+        }
+    }
+
+    /// A credential whose ceiling is open: policy grants alone limit it. Convenient for
+    /// tests and demos; prefer [`CreateTokenParams::scoped`] for anything real.
+    pub fn unrestricted(principal: &str, role: Role) -> Self {
+        Self::scoped(principal, role, vec![Scope::any()])
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RotateTokenParams {
+    pub id: String,
+    /// Lifetime of the replacement; absent keeps the old credential's remaining lifetime
+    /// policy (no expiry if it had none).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ttl_ms: Option<u64>,
+}
+
+/// What the gateway knows about a credential. Never contains the secret or its hash.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TokenInfo {
     pub id: String,
     pub principal: String,
     pub role: Role,
+    #[serde(default = "default_kind")]
+    pub kind: PrincipalKind,
     pub created_at: openmhs_types::Timestamp,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expires_at: Option<openmhs_types::Timestamp>,
+    /// Absent in credentials issued before M8, which therefore authorize nothing.
+    #[serde(default)]
+    pub scopes: Vec<Scope>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub revoked_at: Option<openmhs_types::Timestamp>,
+}
+
+fn default_kind() -> PrincipalKind {
+    PrincipalKind::Human
+}
+
+impl TokenInfo {
+    pub fn is_revoked(&self) -> bool {
+        self.revoked_at.is_some()
+    }
+
+    pub fn is_expired(&self, now: openmhs_types::Timestamp) -> bool {
+        self.expires_at.is_some_and(|t| now >= t)
+    }
 }
 
 /// Returned once by `tokens.create`; the secret is not stored and cannot be shown again.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct CreatedToken {
     #[serde(flatten)]
     pub info: TokenInfo,
     pub token: String,
+}
+
+// The secret must never reach a log through `{:?}`.
+impl std::fmt::Debug for CreatedToken {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CreatedToken")
+            .field("info", &self.info)
+            .field("token", &"<redacted>")
+            .finish()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

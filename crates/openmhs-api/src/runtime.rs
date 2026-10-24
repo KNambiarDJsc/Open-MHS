@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 pub const RUNTIME_FILE: &str = "gateway.json";
 pub const HOME_ENV: &str = "OPENMHS_HOME";
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct RuntimeInfo {
     /// Base URL, e.g. `http://127.0.0.1:7400`.
     pub url: String,
@@ -20,6 +20,19 @@ pub struct RuntimeInfo {
     pub principal: String,
     pub token: String,
     pub started_at: openmhs_types::Timestamp,
+}
+
+// The operator token must never reach a log through `{:?}`.
+impl std::fmt::Debug for RuntimeInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RuntimeInfo")
+            .field("url", &self.url)
+            .field("pid", &self.pid)
+            .field("principal", &self.principal)
+            .field("token", &"<redacted>")
+            .field("started_at", &self.started_at)
+            .finish()
+    }
 }
 
 /// `$OPENMHS_HOME`, else the platform's per-user local data directory + `openmhs`.
