@@ -30,7 +30,7 @@ REPO_URL = "https://github.com/KNambiarDJsc/Open-MHS"
 IMAGES = {".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"}
 
 MD_LINK = re.compile(r"(\]\()([^)\s]+)((?:\s+\"[^\"]*\")?\))")
-HTML_ATTR = re.compile(r"""((?:src|href)=")([^"]+)(")""")
+HTML_ATTR = re.compile(r"""((?:src|srcset|href)=")([^"]+)(")""")
 CODE_SPAN = re.compile(r"(`+[^`]*`+)")
 SUMMARY_LINK = re.compile(r"\]\(([^)\s#]+\.md)\)")
 

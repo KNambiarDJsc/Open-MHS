@@ -1,4 +1,9 @@
-<h1 align="center">OpenMHS</h1>
+<h1 align="center">
+<picture>
+<source media="(prefers-color-scheme: dark)" srcset="docs/assets/openmhs-logo-dark.png">
+<img alt="OpenMHS" src="docs/assets/openmhs-logo-light.png" width="420">
+</picture>
+</h1>
 
 <p align="center"><strong>Connect AI agents to programmable hardware.</strong></p>
 
