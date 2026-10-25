@@ -21,6 +21,7 @@ If your device speaks something else, write an adapter instead ([README.md](READ
 ## Using a profile
 
 ```sh
+openmhs profile new mqtt --id my.device-01       # start from the tested example
 openmhs profile check my-device.json             # validate; connects to nothing
 openmhs conformance --profile my-device.json     # test the adapter against the profile's simulator
 openmhs serve --profile-sim my-device.json       # gateway with the simulated device

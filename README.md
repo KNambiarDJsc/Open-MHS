@@ -15,6 +15,7 @@ OpenMHS is an open-source gateway that sits between an AI agent and the instrume
 
 <p align="center">
 <a href="#quickstart">Quickstart</a> ·
+<a href="docs/connect-a-device.md">Connect your device</a> ·
 <a href="#documentation">Documentation</a> ·
 <a href="docs/compatibility.md">Compatibility</a> ·
 <a href="CONTRIBUTING.md">Contributing</a>
@@ -111,6 +112,10 @@ openmhs audit verify
 
 The simulated devices are `sim.thermo-01` (temperature sensor), `sim.psu-01` (power
 supply) and `sim.axis-01` (linear stage). State resets when the gateway restarts.
+
+**Your own device:** `openmhs profile new mqtt --id my.device-01` writes a starter profile
+for a Modbus TCP, MQTT, SCPI or HTTP device, and [Connect your own device](docs/connect-a-device.md)
+takes it from there to an agent, with each step tried against a simulator first.
 
 ## Features
 
@@ -248,6 +253,7 @@ Vulnerabilities: [SECURITY.md](SECURITY.md). Threat model: [docs/security/](docs
 ## Documentation
 
 - [Specification](spec/README.md) and the [local API](spec/api.md)
+- [Connect your own device](docs/connect-a-device.md): from a profile to an agent, step by step
 - [CLI reference](docs/cli.md) · [Connecting an agent over MCP](docs/mcp.md) · [Python SDK](python/README.md)
 - [Writing an adapter](docs/adapters/README.md), [conformance](spec/conformance.md) and [device profiles](docs/adapters/profiles.md)
 - [Compatibility matrix](docs/compatibility.md) and the [adapter registry](registry/README.md)

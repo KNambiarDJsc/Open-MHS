@@ -1,6 +1,6 @@
 # `openmhs` command line
 
-All commands except `serve`, `demo`, `conformance`, `profile check`, `adapter check` and `adapter new` are clients of a running gateway. They find it
+All commands except `serve`, `demo`, `conformance`, `profile new`, `profile check`, `adapter check` and `adapter new` are clients of a running gateway. They find it
 through the runtime file in the gateway home: `--home`, else `$OPENMHS_HOME`, else the
 per-user local data directory.
 
@@ -27,6 +27,7 @@ openmhs read sim.thermo-01 temperature.ambient
 | `serve --profile FILE`… | Also register the real device each protocol profile describes; connects to it ([profiles](adapters/profiles.md)) |
 | `serve --adapter-manifest FILE`… | Also register an out-of-process adapter, started from its [permission manifest](../spec/permission-manifest.md) and supervised ([adapter host](architecture/adapter-host.md)) |
 | `serve --profile-sim FILE`… | Also register each profile's simulated device, served in-process on a loopback port |
+| `profile new PROTOCOL [--id ID] [--out FILE]` | Start a profile for your device from the tested example of `modbus-tcp` (or `modbus`), `mqtt`, `scpi` or `http`, and check it. Never overwrites ([connect a device](connect-a-device.md)) |
 | `profile check FILE…` | Validate protocol profiles; connects to nothing. Exit 0 when all are valid |
 | `demo [--keep]` | Guided scenario; exits non-zero if anything behaves unexpectedly |
 | `info` | Your principal and role, gateway version, device count |

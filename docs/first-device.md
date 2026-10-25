@@ -68,5 +68,6 @@ Every grant, read, command and transition is recorded, and the records are hash-
 ## Where next
 
 - [Connecting an AI agent](mcp.md) puts a model in the agent's seat
+- [Connect your own device](connect-a-device.md) does the same with your hardware
 - [Concepts](concepts.md) explains the words used here
 - [Simulators and fault injection](simulators.md) shows how to make the supply misbehave

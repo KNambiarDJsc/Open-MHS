@@ -133,8 +133,28 @@ pub fn preflight(p: &PreflightResult) {
             .map(|id| format!(" [rule {id}]"))
             .unwrap_or_default();
         println!("  denied {}: {}{rule}", e.code, e.message);
+        if let Some(hint) = unit_hint(&e.code, &e.message) {
+            println!("  hint   {hint}");
+        }
     }
     println!("(advisory: nothing was run; a real submission is checked again)");
+}
+
+/// A bare number where a quantity is required is refused on purpose (units are never
+/// guessed); say how to give the unit.
+fn unit_hint(code: &str, message: &str) -> Option<String> {
+    if code != "command.value.type_mismatch" {
+        return None;
+    }
+    let key = "\"unit\": \"";
+    let start = message.find(key)? + key.len();
+    let unit = message[start..]
+        .split('"')
+        .next()
+        .filter(|u| !u.is_empty())?;
+    Some(format!(
+        "give the unit: --value 5{unit}, or --value 5 --unit {unit}"
+    ))
 }
 
 pub fn receipt(r: &Receipt) {
@@ -164,6 +184,9 @@ pub fn receipt(r: &Receipt) {
             .map(|id| format!(" [rule {id}]"))
             .unwrap_or_default();
         println!("  denied {}: {}{rule}", e.code, e.message);
+        if let Some(hint) = unit_hint(&e.code, &e.message) {
+            println!("  hint   {hint}");
+        }
     }
     if let Some(a) = &r.adapter_result {
         let mut parts = Vec::new();
@@ -668,5 +691,19 @@ mod tests {
         assert_eq!(at("2026-10-23T17:00:09Z"), "17:00:09.000");
         assert_eq!(at("2026-10-23T00:00:00.001Z"), "00:00:00.001");
         assert_eq!(at("1969-12-31T23:59:59.999Z"), "23:59:59.999");
+    }
+
+    #[test]
+    fn a_bare_number_for_a_quantity_gets_a_unit_hint() {
+        let m = r#"expected a quantity {"value": …, "unit": "%"}, got integer"#;
+        assert_eq!(
+            unit_hint("command.value.type_mismatch", m).as_deref(),
+            Some("give the unit: --value 5%, or --value 5 --unit %")
+        );
+        assert_eq!(unit_hint("command.value.out_of_range", m), None);
+        assert_eq!(
+            unit_hint("command.value.type_mismatch", "expected a boolean"),
+            None
+        );
     }
 }

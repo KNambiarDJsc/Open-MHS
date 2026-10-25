@@ -69,6 +69,96 @@ pub fn check(path: &Path) -> Result<Checked, String> {
     })
 }
 
+/// Starting points for `openmhs profile new`: the tested example profile of each protocol.
+const TEMPLATES: [(&str, &str, &str); 4] = [
+    (
+        openmhs_modbus::PROTOCOL,
+        "climate chamber",
+        include_str!("../../../adapters/openmhs-modbus/profiles/climate-chamber.json"),
+    ),
+    (
+        openmhs_mqtt::PROTOCOL,
+        "greenhouse node",
+        include_str!("../../../adapters/openmhs-mqtt/profiles/greenhouse-node.json"),
+    ),
+    (
+        openmhs_scpi::PROTOCOL,
+        "bench power supply",
+        include_str!("../../../adapters/openmhs-scpi/profiles/bench-psu.json"),
+    ),
+    (
+        openmhs_http::PROTOCOL,
+        "LED controller",
+        include_str!("../../../adapters/openmhs-http/profiles/led-controller.json"),
+    ),
+];
+
+/// A protocol's name as `profile new` accepts it: the profile's own name, or `modbus`.
+pub fn protocol_named(name: &str) -> Option<&'static str> {
+    let name = if name == "modbus" { "modbus-tcp" } else { name };
+    TEMPLATES.iter().find(|t| t.0 == name).map(|t| t.0)
+}
+
+/// What `profile new` wrote.
+pub struct Created {
+    pub checked: Checked,
+    /// Which example it was copied from.
+    pub example: &'static str,
+}
+
+/// Write a new profile at `path` from the protocol's example, with `id` as its device id,
+/// and check it. Never overwrites; a file that does not check is removed again.
+pub fn create(path: &Path, protocol: &str, id: Option<&str>) -> Result<Created, String> {
+    let (protocol, example, template) = TEMPLATES
+        .iter()
+        .find(|t| Some(t.0) == protocol_named(protocol))
+        .copied()
+        .ok_or_else(|| {
+            format!(
+                "unknown protocol '{protocol}'; known: {}",
+                PROTOCOLS.join(", ")
+            )
+        })?;
+    let text = match id {
+        // The device id is the first "id" in every example (descriptor.device.id).
+        Some(id) => {
+            let key = "\"id\": ";
+            let start = template.find(key).ok_or("the template has no device id")? + key.len();
+            let len = template[start + 1..]
+                .find('"')
+                .ok_or("the template has no device id")?
+                + 2;
+            let quoted = serde_json::to_string(id).map_err(|e| e.to_string())?;
+            format!("{}{quoted}{}", &template[..start], &template[start + len..])
+        }
+        None => template.to_string(),
+    };
+    use std::io::Write as _;
+    let mut f = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(path)
+        .map_err(|e| match e.kind() {
+            std::io::ErrorKind::AlreadyExists => {
+                format!("{} already exists; choose another --out", path.display())
+            }
+            _ => format!("{}: {e}", path.display()),
+        })?;
+    f.write_all(text.as_bytes())
+        .map_err(|e| format!("{}: {e}", path.display()))?;
+    drop(f);
+    match check(path) {
+        Ok(checked) => {
+            debug_assert_eq!(checked.protocol, protocol);
+            Ok(Created { checked, example })
+        }
+        Err(e) => {
+            let _ = std::fs::remove_file(path);
+            Err(e)
+        }
+    }
+}
+
 fn unknown(path: &Path, protocol: &str) -> String {
     format!(
         "{}: unknown protocol '{protocol}'; known: {}",
@@ -233,6 +323,50 @@ mod tests {
             assert_eq!(c.protocol, protocol);
             assert!(c.capabilities > 0);
         }
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn a_new_profile_checks_carries_the_id_and_runs_against_its_simulator() {
+        let dir = tempfile::tempdir().unwrap();
+        let clock: Arc<dyn Clock> = Arc::new(openmhs_types::SystemClock);
+        for (name, protocol) in [
+            ("modbus", "modbus-tcp"),
+            ("mqtt", "mqtt"),
+            ("scpi", "scpi"),
+            ("http", "http"),
+        ] {
+            let path = dir.path().join(format!("{name}.json"));
+            let id = format!("lab.{name}-01");
+            let c = create(&path, name, Some(&id)).unwrap();
+            assert_eq!(c.checked.protocol, protocol);
+            assert_eq!(c.checked.device_id, id);
+            let o = open(&path, true, clock.clone()).await.unwrap();
+            assert_eq!(o.device_id, id);
+            o.adapter.connect().await.unwrap();
+            // Writing again never overwrites.
+            let e = create(&path, name, None).err().unwrap();
+            assert!(e.contains("already exists"), "{e}");
+        }
+    }
+
+    #[test]
+    fn a_new_profile_without_an_id_keeps_the_examples_and_bad_input_leaves_nothing() {
+        let dir = tempfile::tempdir().unwrap();
+        let p = dir.path().join("p.json");
+        assert_eq!(
+            create(&p, "mqtt", None).unwrap().checked.device_id,
+            "mqtt.greenhouse-01"
+        );
+        assert!(
+            create(&dir.path().join("x.json"), "zigbee", None)
+                .err()
+                .unwrap()
+                .contains("unknown protocol")
+        );
+        // An id the descriptor schema refuses: the file is removed, not left half-valid.
+        let bad = dir.path().join("bad.json");
+        assert!(create(&bad, "http", Some("Not An Id\"")).is_err());
+        assert!(!bad.exists());
     }
 
     #[tokio::test(flavor = "multi_thread")]

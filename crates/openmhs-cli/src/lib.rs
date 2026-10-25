@@ -153,11 +153,10 @@ enum TrustCmd {
         #[arg(long = "adapter")]
         adapters: Vec<String>,
     },
+    /// List the trusted signing keys.
     List,
     /// Stop trusting a key. Adapters already running keep running until the gateway restarts.
-    Revoke {
-        key_id: String,
-    },
+    Revoke { key_id: String },
 }
 
 #[derive(Args)]
@@ -185,6 +184,17 @@ struct ConformanceArgs {
 
 #[derive(Subcommand)]
 enum ProfileCmd {
+    /// Start a profile for your device from the tested example of a protocol.
+    New {
+        /// modbus-tcp (or modbus), mqtt, scpi or http.
+        protocol: String,
+        /// Your device's id, e.g. lab.psu-01 (default: the example's).
+        #[arg(long)]
+        id: Option<String>,
+        /// File to write (default: <id>.json). Never overwritten.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
     /// Validate profiles without connecting to anything.
     Check {
         #[arg(required = true)]
@@ -293,7 +303,9 @@ struct DemoArgs {
 
 #[derive(Subcommand)]
 enum DevicesCmd {
+    /// List the devices this gateway has registered.
     List,
+    /// Show a device's descriptor: its capabilities, units, ranges and limits.
     Inspect { device: String },
 }
 
@@ -348,13 +360,17 @@ enum CommandsCmd {
 
 #[derive(Subcommand)]
 enum GrantsCmd {
+    /// List the grants: who may do what, on which devices.
     List,
+    /// Allow (or deny, or require approval for) operations by a principal on devices.
     Add(GrantArgs),
+    /// Remove a grant by its id.
     Revoke { id: String },
 }
 
 #[derive(Args)]
 struct GrantArgs {
+    /// A name for this grant, used to list and revoke it.
     #[arg(long)]
     id: String,
     /// Principal or pattern, e.g. `agent:*`.
@@ -375,6 +391,7 @@ struct GrantArgs {
     /// Highest side-effect class this grant covers: none, reversible, irreversible, hazardous.
     #[arg(long, value_parser = parse_enum::<SideEffect>)]
     max_side_effect: Option<SideEffect>,
+    /// Why this grant exists, recorded in the audit log.
     #[arg(long)]
     reason: Option<String>,
 }
@@ -507,11 +524,10 @@ enum TokensCmd {
         #[arg(long, value_parser = parse_duration_ms)]
         ttl: Option<u64>,
     },
+    /// List credentials (ids, principals, scopes and expiry; never secrets).
     List,
     /// Revoke a credential now. It stays on record, marked revoked.
-    Revoke {
-        id: String,
-    },
+    Revoke { id: String },
     /// Replace a credential: a new secret, same principal and scopes; the old one stops.
     Rotate {
         id: String,
@@ -693,6 +709,28 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
         Ok(g) => g,
         Err(e) => {
             eprintln!("error: {e}");
+            // The gateway connects to every device before it listens; say which real
+            // devices it was reaching and how to try the profile without one.
+            let real: Vec<_> = args.profiles.iter().zip(&opened).collect();
+            if !real.is_empty() && matches!(e, openmhs_gateway::GatewayError::Engine(_)) {
+                eprintln!("  the gateway connects to each device before it starts:");
+                for (path, o) in &real {
+                    eprintln!(
+                        "    {} ({} at {}, from {})",
+                        o.device_id,
+                        o.protocol,
+                        o.target,
+                        path.display()
+                    );
+                }
+                eprintln!(
+                    "  check \"connection\" in the profile and that the device is on and reachable;"
+                );
+                eprintln!(
+                    "  to try the profile without the device: openmhs serve --profile-sim {}",
+                    real[0].0.display()
+                );
+            }
             return exit::ERROR;
         }
     };
@@ -721,6 +759,9 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
                 None => println!("  device   {} ({})", d.device.id, d.adapter.id),
             }
         }
+        println!(
+            "  access   deny by default; `openmhs grants list` shows what is allowed (docs/connect-a-device.md)"
+        );
     }
     let r = &gateway.recovery;
     if !r.unknown_outcome.is_empty() {
@@ -837,6 +878,58 @@ fn plan_preflight_exit(p: &openmhs_types::plan::PlanPreflight) -> u8 {
 fn read_topology(path: &Path) -> Result<openmhs_types::Topology, String> {
     let text = std::fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
     openmhs_types::Topology::parse(&text).map_err(|e| format!("{}: {e}", path.display()))
+}
+
+/// Write a starter profile; connects to nothing.
+fn profile_new(json: bool, protocol: &str, id: Option<&str>, out: Option<PathBuf>) -> u8 {
+    let path = out.unwrap_or_else(|| {
+        let stem = match id {
+            Some(id) => id.to_string(),
+            None => format!(
+                "{}-device",
+                profiles::protocol_named(protocol).unwrap_or(protocol)
+            ),
+        };
+        PathBuf::from(format!("{stem}.json"))
+    });
+    let created = match profiles::create(&path, protocol, id) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("error: {e}");
+            return exit::ERROR;
+        }
+    };
+    let c = &created.checked;
+    if json {
+        output::json(&serde_json::json!({
+            "file": path.display().to_string(), "protocol": c.protocol,
+            "device": c.device_id, "capabilities": c.capabilities, "example": created.example,
+        }));
+        return exit::OK;
+    }
+    let f = path.display();
+    println!(
+        "Created {f}: {} profile for device {}, copied from the {} example ({} capabilities).",
+        c.protocol, c.device_id, created.example, c.capabilities
+    );
+    println!();
+    println!("Next:");
+    println!(
+        "  1. Edit it: \"connection\" is where your device is; \"descriptor\".\"capabilities\" and \"mapping\""
+    );
+    println!(
+        "     are what it can do and how. Reference: docs/adapters/{}.md",
+        if c.protocol == "modbus-tcp" {
+            "modbus"
+        } else {
+            &c.protocol
+        }
+    );
+    println!("  2. openmhs profile check {f}");
+    println!("  3. openmhs serve --profile-sim {f}    try it against the profile's simulator");
+    println!("  4. openmhs serve --profile {f}        connect to the real device");
+    println!("  Then grant access and connect an agent: docs/connect-a-device.md");
+    exit::OK
 }
 
 /// Validate profiles; connects to nothing.
@@ -1296,6 +1389,9 @@ async fn run(cli: Cli) -> u8 {
         Cmd::Profile {
             command: ProfileCmd::Check { files },
         } => return profile_check(cli.json, &files),
+        Cmd::Profile {
+            command: ProfileCmd::New { protocol, id, out },
+        } => return profile_new(cli.json, &protocol, id.as_deref(), out),
         Cmd::Adapter {
             command:
                 AdapterCmd::New {

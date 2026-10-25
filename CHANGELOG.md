@@ -31,6 +31,10 @@ Work towards the first public release (0.1.0). Milestones M0–M9 are described 
 - Experiment 01: a read-only OctoPrint adapter tested against OctoPrint's Virtual Printer, with
   a harness, fault-injecting proxy, demo and L1 conformance report. Simulated peer only; no
   physical printer has been tested ([docs/experiments/01-octoprint](docs/experiments/01-octoprint/README.md)).
+- `openmhs profile new <protocol>`: a starter profile for your device from the tested example
+  of each protocol, checked on creation; `serve` says access is deny-by-default; a hint when a
+  bare number is given where a unit is required; help text for every subcommand; and a
+  [Connect your own device](docs/connect-a-device.md) guide from install to an agent.
 - Experiment 02: ESP32 firmware for the MQTT profile run in Espressif's QEMU beside Mosquitto, with
   a harness, 18 tests and a demo covering state-changing commands, acknowledgements, late
   application, reconciliation and failures. Simulated only; no physical ESP32 has been tested

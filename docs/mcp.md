@@ -6,8 +6,9 @@ client of a running gateway. It holds one **agent** token, so whatever the agent
 is authorized, checked, journaled and audited by the gateway like any other client's.
 It never sees hardware credentials. Design: [ADR-0012](adr/0012-mcp-server-and-sdk.md).
 
-> Simulated devices only until real adapters arrive in M6. OpenMHS is not a safety
-> system: hardware interlocks and emergency stops keep final authority.
+> The examples use the virtual lab. For your own device, start the gateway with its
+> profile or adapter instead ([Connect your own device](connect-a-device.md)). OpenMHS is
+> not a safety system: hardware interlocks and emergency stops keep final authority.
 
 ## 1. Start a gateway and give the agent a token
 

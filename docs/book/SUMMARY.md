@@ -8,6 +8,7 @@
 - [Five-minute tutorial](docs/tutorial.md)
 - [First simulated device](docs/first-device.md)
 - [Connecting an AI agent](docs/mcp.md)
+- [Connect your own device](docs/connect-a-device.md)
 
 # Core Concepts
 
