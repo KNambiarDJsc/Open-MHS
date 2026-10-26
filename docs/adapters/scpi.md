@@ -60,8 +60,34 @@ queue; after it, the adapter reads the queue.
 | cannot be reached, or the error queue could not be cleared | not sent |
 | does not answer in time, drops the connection, or answers something other than `1` | `UNKNOWN_OUTCOME`; reconciled by readback where declared |
 
-After a timeout, input that arrives late is discarded before the next request, so a late
-answer is never taken for the next one.
+## Timeouts, cancellation and retries
+
+An instrument answers in order and finishes a slow command before it reads the next
+line, so after a timeout its answer can still arrive. The adapter makes sure that answer
+is never read as the reply to anything else:
+
+1. **Every exchange runs to completion or its own timeout.** If the caller stops waiting
+   (a command deadline, a client that disconnects), the line is still written whole and
+   the reply is still read. A half-written command or an unread reply never stays on the
+   link.
+2. **After a timeout, the link resynchronizes before sending anything else.** It sends
+   `identify` (`*IDN?`) and discards every line until that query's answer. Late answers
+   to earlier requests are dropped there, including late answers to an earlier `*IDN?`.
+3. **A busy instrument is sent nothing new.** If the resync answer does not come within
+   `reply_timeout_ms`, the instrument is still working on the earlier command. The new
+   command is **not sent** and fails with `adapter.not_sent`, so the gateway knows for
+   certain it had no effect. The next request tries the resync again.
+4. **The command that timed out is never re-sent.** It ends `UNKNOWN_OUTCOME`. If the
+   capability has a readback, `openmhs commands reconcile <id>` reads the instrument and
+   settles it as `RECONCILED_APPLIED` or `RECONCILED_NOT_APPLIED`; if not, an operator
+   checks the instrument and runs `openmhs commands resolve`. Until then, a new command
+   to the same capability is refused with `command.outcome_unresolved`, unless the
+   capability is declared `idempotent` (setting a level twice is the same as once;
+   triggering twice is not).
+
+A `stop` capability skips the device lock, but on SCPI it still waits its turn on the
+link, up to `reply_timeout_ms` behind the command in flight. An instrument that is
+wedged mid-command has to be stopped by its own front panel or interlock.
 
 ## Serial ports
 
@@ -74,4 +100,6 @@ has opened a Windows serial port.
 
 - No IEEE 488.2 status-byte polling and no binary block data (`#…`).
 - No VXI-11 or HiSLIP; use the instrument's raw socket port.
-- One command in flight at a time per instrument.
+- One command in flight at a time per instrument. A `stop` waits behind it on the link.
+- The resync needs an `identify` query with a fixed answer; `*IDN?` is fixed on every
+  instrument the project knows of.

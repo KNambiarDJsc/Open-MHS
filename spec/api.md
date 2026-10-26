@@ -71,6 +71,7 @@ apply to everyone. A role never bypasses authorization for device access.
 | `commands.list` | any¹ | `states?`, `limit?` (default 50, max 500) | receipts, newest first |
 | `commands.cancel` | any² | `command_id` | receipt |
 | `commands.reconcile` | any¹ | `command_id` | receipt |
+| `commands.resolve` | op⁷ | `command_id`, `applied` (bool), `reason` | receipt: `RECONCILED_APPLIED` or `RECONCILED_NOT_APPLIED` on the operator's word, with the reason recorded. Contacts no device ([lifecycle.md](lifecycle.md) §5) |
 | `commands.approve` | op | `command_id` | receipt (runs the command) |
 | `approvals.request` | any | `request`, `ttl_ms?` | approval (`PENDING`); only for commands policy holds for approval ([authorization.md](authorization.md) §5) |
 | `approvals.get` / `approvals.list` | any³ | `id` / `statuses?`, `limit?` | approval / approvals |
@@ -95,6 +96,8 @@ reach the command.
 grant short of `deny` for some write or invoke on each claimed device.
 
 ⁶ And a human approver configured in policy ([plans.md](plans.md) §5).
+
+⁷ A human (not an `agent:` principal) whose credential's scopes reach the command.
 
 The principal of a command always comes from the token, never from the request body.
 

@@ -202,6 +202,22 @@ class Approval(unittest.TestCase):
             self.assertEqual(statuses, {ApprovalStatus.DENIED, ApprovalStatus.REVOKED})
 
 
+class UnknownOutcome(unittest.TestCase):
+    def test_an_operator_resolves_what_an_agent_cannot(self) -> None:
+        with Gateway() as gw:
+            agent, _ = gw.agent("agent:py")
+            op = gw.operator()
+            op.sim_fault(PSU, "hang")
+            r = agent.write(PSU, SETPOINT, Quantity(1, "V"), deadline_ms=800)
+            self.assertIs(r.state, CommandState.UNKNOWN_OUTCOME)
+            with self.assertRaises(GatewayError) as e:
+                agent.resolve(r.command_id, applied=False, reason="looks fine")
+            self.assertEqual(e.exception.code, "gateway.forbidden")
+            settled = op.resolve(r.command_id, applied=False, reason="panel shows 0 V")
+            self.assertIs(settled.state, CommandState.RECONCILED_NOT_APPLIED)
+            self.assertTrue(settled.transitions[-1].detail.endswith(": panel shows 0 V"))
+
+
 class Credentials(unittest.TestCase):
     def test_a_credential_needs_scopes(self) -> None:
         with Gateway() as gw:

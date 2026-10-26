@@ -34,6 +34,7 @@ pub mod method {
     pub const COMMANDS_APPROVE: &str = "commands.approve";
     pub const COMMANDS_CANCEL: &str = "commands.cancel";
     pub const COMMANDS_RECONCILE: &str = "commands.reconcile";
+    pub const COMMANDS_RESOLVE: &str = "commands.resolve";
     pub const APPROVALS_REQUEST: &str = "approvals.request";
     pub const APPROVALS_GET: &str = "approvals.get";
     pub const APPROVALS_LIST: &str = "approvals.list";
@@ -233,6 +234,15 @@ pub struct ListLeasesParams {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CommandIdParams {
     pub command_id: String,
+}
+
+/// An operator's account of an `UNKNOWN_OUTCOME` command: whether it took effect, and how
+/// that was established.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResolveParams {
+    pub command_id: String,
+    pub applied: bool,
+    pub reason: String,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

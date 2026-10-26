@@ -242,6 +242,7 @@ async fn every_method_requires_authentication() {
         method::COMMANDS_APPROVE,
         method::COMMANDS_CANCEL,
         method::COMMANDS_RECONCILE,
+        method::COMMANDS_RESOLVE,
         method::APPROVALS_REQUEST,
         method::APPROVALS_GET,
         method::APPROVALS_LIST,

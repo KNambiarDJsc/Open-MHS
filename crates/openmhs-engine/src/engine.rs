@@ -43,6 +43,11 @@ pub struct EngineOptions {
     pub read_timeout_ms: u64,
     /// Interval between readback attempts during verification.
     pub verify_poll_ms: u64,
+    /// Refuse a non-idempotent write or invoke while an earlier one to the same
+    /// capability is `UNKNOWN_OUTCOME` (spec/lifecycle.md §3 rule 3). Only the conformance
+    /// suite turns this off: it tests adapters against simulators, and sends again after
+    /// the faults it injects on purpose.
+    pub hold_unresolved: bool,
 }
 
 impl Default for EngineOptions {
@@ -50,6 +55,7 @@ impl Default for EngineOptions {
         Self {
             read_timeout_ms: 1_000,
             verify_poll_ms: 50,
+            hold_unresolved: true,
         }
     }
 }
@@ -643,6 +649,18 @@ impl Engine {
         } else {
             Some(device.lock.clone().lock_owned().await)
         };
+        // No blind retries (spec/lifecycle.md §3 rule 3). Checked under the lock, so a
+        // command that has just ended uncertain is seen.
+        if self.inner.options.hold_unresolved
+            && !cap.stop
+            && cap.idempotent != Some(true)
+            && let Some(e) = self.unresolved_refusal(&req.target.device, &req.target.capability)
+        {
+            return Evaluation::Denied {
+                errors: vec![e],
+                rules: authz.rules,
+            };
+        }
         match self.check_live(&device, &cap, req).await {
             Ok(prepared) => Evaluation::Ready {
                 device,
@@ -778,6 +796,29 @@ impl Engine {
             }),
         )?;
         Ok(result)
+    }
+
+    /// The refusal for a non-idempotent write while an earlier one to the same capability
+    /// may or may not have taken effect: sending it again could do it twice. If the
+    /// journal cannot be read, nothing runs.
+    fn unresolved_refusal(&self, device: &str, capability: &str) -> Option<ErrorObject> {
+        match self.inner.journal.unresolved_commands(device, capability) {
+            Ok(ids) => ids.first().map(|first| {
+                ErrorObject::new(
+                    "command.outcome_unresolved",
+                    format!(
+                        "command {first} on '{device}' '{capability}' may or may not have taken \
+                         effect; reconcile it, or have an operator resolve it, before sending \
+                         this again"
+                    ),
+                )
+                .detail("unresolved", ids.clone())
+            }),
+            Err(e) => Some(ErrorObject::new(
+                "gateway.journal",
+                format!("could not check for unresolved commands: {e}"),
+            )),
+        }
     }
 
     /// Stateful checks against fresh readings taken now. Only readings taken during this
@@ -1345,7 +1386,7 @@ impl Engine {
         }) = self.inner.journal.expectation(command_id)?
         else {
             return Err(EngineError::NotReconcilable(
-                "no readback is declared for this capability; an operator must resolve it".into(),
+                "no readback is declared for this capability; an operator can check the device and resolve it (commands.resolve)".into(),
             ));
         };
         let device = self
@@ -1377,6 +1418,66 @@ impl Engine {
                 reason: None,
             });
         })
+    }
+
+    /// Settle an `UNKNOWN_OUTCOME` command on a person's word, with the reason recorded
+    /// (spec/lifecycle.md §5): for a capability without readback, or a device that cannot
+    /// be read. The device is not contacted, and the command is never re-sent.
+    pub fn resolve(
+        &self,
+        caller: &Caller,
+        command_id: &str,
+        applied: bool,
+        reason: &str,
+    ) -> Result<Receipt, EngineError> {
+        let principal = caller.principal();
+        if caller.kind() == PrincipalKind::Agent {
+            return Err(EngineError::Denied(ErrorObject::new(
+                "policy.resolve.not_human",
+                "an agent credential cannot resolve an unknown outcome; a person must check the device",
+            )));
+        }
+        let reason = reason.trim();
+        if reason.is_empty() {
+            return Err(EngineError::InvalidRequest(vec![
+                ErrorObject::new(
+                    "command.resolve.reason",
+                    "say how the outcome was established, e.g. 'checked the display: 5.00 V'",
+                )
+                .at("/reason"),
+            ]));
+        }
+        let receipt = self
+            .receipt(command_id)?
+            .ok_or_else(|| EngineError::UnknownCommand(command_id.into()))?;
+        let target = &receipt.request.target;
+        let operation: Operation = receipt.request.operation.into();
+        if !caller.in_scope(&target.device, &target.capability, operation) {
+            return Err(EngineError::Denied(scope_denied(
+                caller,
+                &target.device,
+                &target.capability,
+                operation,
+            )));
+        }
+        if receipt.state != UnknownOutcome {
+            return Err(EngineError::InvalidState {
+                id: command_id.into(),
+                state: receipt.state,
+                action: "resolve",
+            });
+        }
+        let to = if applied {
+            ReconciledApplied
+        } else {
+            ReconciledNotApplied
+        };
+        self.transition(
+            command_id,
+            to,
+            Some(format!("resolved by {principal}: {reason}")),
+            |_| {},
+        )
     }
 
     /// Bring unfinished commands to a safe state after a restart (spec/lifecycle.md §4).

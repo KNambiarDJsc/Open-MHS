@@ -40,6 +40,13 @@ Work towards the first public release (0.1.0). Milestones M0–M9 are described 
   application, reconciliation and failures. Simulated only; no physical ESP32 has been tested
   ([docs/experiments/02-esp32-qemu-mqtt](docs/experiments/02-esp32-qemu-mqtt/README.md)).
 - Leases, plans with twin preflight, compensation and a stop lane.
+- No blind retries, enforced: while a write or invoke is `UNKNOWN_OUTCOME`, a new one to
+  the same capability is refused (`command.outcome_unresolved`) unless the capability is
+  idempotent or a stop. `commands.resolve` / `openmhs commands resolve` lets an operator
+  settle an outcome that cannot be read back, with the reason recorded.
+- SCPI: a timed-out request can no longer desynchronize the link. Exchanges run to
+  completion even if the caller gives up, the link resynchronizes with `*IDN?` before
+  the next request, and a request is not sent while the instrument is still busy.
 - Release engineering: cargo-dist configuration, Python packaging, a documentation site,
   an adapter registry, a generated compatibility matrix, and governance files.
 

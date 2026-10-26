@@ -356,6 +356,21 @@ enum CommandsCmd {
     Cancel { command_id: String },
     /// Resolve an UNKNOWN_OUTCOME command by reading the device.
     Reconcile { command_id: String },
+    /// Operator only: record whether an UNKNOWN_OUTCOME command took effect, for one
+    /// that cannot be read back. Nothing is sent to the device.
+    #[command(group(clap::ArgGroup::new("outcome").required(true).args(["applied", "not_applied"])))]
+    Resolve {
+        command_id: String,
+        /// It took effect.
+        #[arg(long)]
+        applied: bool,
+        /// It did not take effect.
+        #[arg(long)]
+        not_applied: bool,
+        /// How you know, e.g. "front panel shows 5.00 V". Recorded in the receipt and audit log.
+        #[arg(long)]
+        reason: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -1639,6 +1654,16 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
             }
             CommandsCmd::Reconcile { command_id } => {
                 let r = client.reconcile(&command_id).await?;
+                show(json, &r, output::receipt);
+                return Ok(receipt_exit(&r));
+            }
+            CommandsCmd::Resolve {
+                command_id,
+                applied,
+                reason,
+                ..
+            } => {
+                let r = client.resolve(&command_id, applied, &reason).await?;
                 show(json, &r, output::receipt);
                 return Ok(receipt_exit(&r));
             }

@@ -188,6 +188,20 @@ pub fn steps_for_reason(r: &Reason) -> Vec<String> {
              operator which permission is missing."
                 .into(),
         ),
+        "command.outcome_unresolved" => {
+            let first = r
+                .details
+                .as_ref()
+                .and_then(|d| d.get("unresolved")?.get(0)?.as_str())
+                .unwrap_or("the earlier command");
+            step(format!(
+                "An earlier command ({first}) to this capability may or may not have taken                  effect, so sending it again could do it twice. Do not resubmit. Call                  reconcile_command on {first}; if it cannot be read back, ask the human                  operator to check the device and resolve it, then plan from the result."
+            ))
+        }
+        "command.not_reconcilable" => step(
+            "The device cannot confirm whether it happened. Do not resubmit. Ask the human              operator to check the device and resolve the command (openmhs commands resolve)."
+                .into(),
+        ),
         "gateway.restarted" => step(
             "The gateway restarted before this command was checked; nothing was sent. \
              Submit it again if it is still needed."
@@ -390,6 +404,16 @@ mod tests {
     fn permission_denials_say_not_to_work_around() {
         let s = steps_for_reason(&reason("policy.denied.no_grant", json!({})));
         assert!(s[0].contains("Do not retry"));
+    }
+
+    #[test]
+    fn an_unresolved_earlier_command_is_named() {
+        let s = steps_for_reason(&reason(
+            "command.outcome_unresolved",
+            json!({"unresolved": ["cmd-1", "cmd-2"]}),
+        ));
+        assert!(s[0].contains("reconcile_command on cmd-1"), "{s:?}");
+        assert!(s[0].contains("Do not resubmit"), "{s:?}");
     }
 
     #[test]

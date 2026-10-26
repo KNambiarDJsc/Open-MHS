@@ -72,8 +72,11 @@ Agents usually only need the coarse class:
 2. **Timeouts are uncertain, not failed.** `TIMED_OUT` MUST move to
    `UNKNOWN_OUTCOME`, never to `FAILED`.
 3. **No blind retries.** A command in `UNKNOWN_OUTCOME` MUST NOT be re-dispatched
-   automatically. Resolution is by readback only. A client may submit a *new* command
-   after reconciliation.
+   automatically. It is resolved by readback, or by an operator (§5). Until it is, a new
+   write or invoke to the same capability is `DENIED` with
+   `command.outcome_unresolved`, unless the capability is declared `idempotent` (doing
+   it twice is the same as once) or `stop`. Checked under the device lock, before any
+   device traffic.
 4. **Idempotency.** `(principal, device, idempotency_key)` identifies a request. A
    repeated submission with the same key returns the existing command and receipt and
    MUST NOT dispatch again. Reusing a key with a different request body is an error
@@ -138,4 +141,22 @@ operator, via an explicit request) reads the readback source:
 - cannot be read → stays `UNKNOWN_OUTCOME`
 
 Commands with `verification: none` cannot be reconciled automatically; they stay
-`UNKNOWN_OUTCOME` until an operator resolves them with a recorded reason.
+`UNKNOWN_OUTCOME` until an operator resolves them with a recorded reason
+(`commands.resolve`): `RECONCILED_APPLIED` or `RECONCILED_NOT_APPLIED`, with the
+transition detail `resolved by <principal>: <reason>`. An operator may also resolve a
+command whose readback cannot be taken. Agent credentials cannot resolve, and resolving
+never contacts the device.
+
+### What the gateway reports after a timeout or cancellation
+
+| Situation | Reported | Sent again? |
+|---|---|---|
+| Cancelled before dispatch | `CANCELLED`, never sent | — |
+| Never left the gateway (link down, instrument still busy with an earlier request) | `FAILED` with `adapter.not_sent` | No |
+| Sent, no answer within the deadline | `TIMED_OUT` → `UNKNOWN_OUTCOME` (`adapter.timeout`) | No; a retry is refused until resolved (rule 3) |
+| Sent, link lost or answer unreadable | `UNKNOWN_OUTCOME` | No |
+| Device refused it | `REJECTED`, with the device's error | — |
+| Gateway restarted mid-command | `UNKNOWN_OUTCOME` (§4) | No |
+
+A caller that stops waiting (a client disconnect, a cancelled request) does not cut the
+command short: it runs to one of these states, and its receipt is fetched later.

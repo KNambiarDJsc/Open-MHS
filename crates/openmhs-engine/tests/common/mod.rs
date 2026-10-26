@@ -155,3 +155,56 @@ impl HardwareAdapter for TrapAdapter {
         Ok(())
     }
 }
+
+/// The simulated supply, with `capability` declared not idempotent: sending it twice
+/// would do it twice.
+pub struct NotIdempotent {
+    pub inner: VirtualPsu,
+    pub capability: &'static str,
+}
+
+#[async_trait]
+impl HardwareAdapter for NotIdempotent {
+    fn adapter_id(&self) -> &str {
+        self.inner.adapter_id()
+    }
+    async fn describe(&self) -> Result<Json, AdapterError> {
+        let mut d = self.inner.describe().await?;
+        for c in d["capabilities"].as_array_mut().into_iter().flatten() {
+            if c["name"] == self.capability {
+                c["idempotent"] = json!(false);
+            }
+        }
+        Ok(d)
+    }
+    async fn connect(&self) -> Result<(), AdapterError> {
+        self.inner.connect().await
+    }
+    async fn health(&self) -> Health {
+        self.inner.health().await
+    }
+    async fn read(&self, capability: &str) -> Result<StateValue, AdapterError> {
+        self.inner.read(capability).await
+    }
+    async fn execute(&self, c: AdapterCommand, p: Progress) -> Result<ExecuteReport, AdapterError> {
+        self.inner.execute(c, p).await
+    }
+    async fn shutdown(&self) -> Result<(), AdapterError> {
+        self.inner.shutdown().await
+    }
+}
+
+/// [`setup`], with `capability` declared not idempotent.
+pub async fn setup_not_idempotent(policy: Policy, capability: &'static str) -> (Engine, PsuHandle) {
+    let clock = clock();
+    let (psu, handle) = VirtualPsu::new(clock.clone(), 42);
+    let engine = Engine::in_memory(clock, policy).unwrap();
+    engine
+        .register(Arc::new(NotIdempotent {
+            inner: psu,
+            capability,
+        }))
+        .await
+        .unwrap();
+    (engine, handle)
+}

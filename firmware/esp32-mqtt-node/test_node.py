@@ -284,6 +284,20 @@ class ThroughTheGateway(unittest.TestCase):
         self.assertIn("command.not_reconcilable", out)
         rc, out = self.cli("commands", "show", cid, token=None)
         self.assertRegex(out, r"state\s+UNKNOWN_OUTCOME")
+        # The agent tries again. A pulse is not idempotent and the first may or may not
+        # have happened, so the retry is refused before anything is published.
+        with h.Tap(self.broker, f"{h.PREFIX}/+") as tap:
+            state, _, out = self.exec("led.pulse", "--param", "n=1")
+            time.sleep(1)
+        self.assertEqual(state, "DENIED", out)
+        self.assertIn("command.outcome_unresolved", out)
+        self.assertIn(cid, out)
+        self.assertEqual(tap.on("pulse"), [], "the retry never reached the broker")
+        # An operator, who can see the counter restarted at 0, settles it with a reason.
+        rc, out = self.cli("commands", "resolve", cid, "--not-applied", "--reason", "node rebooted; pulse counter is 0", token=None)
+        self.assertRegex(out, r"state\s+RECONCILED_NOT_APPLIED", out)
+        state, _, out = self.exec("led.pulse", "--param", "n=1")
+        self.assertEqual(state, "UNVERIFIABLE", out)
 
     def test_08_a_hung_node_s_readings_age_out_instead_of_staying_good(self):
         self.wait_recovered()
@@ -342,6 +356,9 @@ class ThroughTheGateway(unittest.TestCase):
         delta = self.broker.state()["pulses"] - before
         OBSERVED["pulse_applied_after_hang"] = delta
         self.assertIn(delta, (0, 1), "applied late at most once; never twice")
+        outcome = "--applied" if delta == 1 else "--not-applied"
+        rc, out = self.cli("commands", "resolve", cid, outcome, "--reason", f"pulse counter moved by {delta}", token=None)
+        self.assertIn(rc, (0, 3), out)
 
     def test_11_broker_down_reads_fail_loudly_and_a_command_is_not_sent(self):
         self.wait_recovered()

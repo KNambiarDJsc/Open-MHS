@@ -73,7 +73,7 @@ Produced by the engine (M2). Errors that deny a command appear in the receipt's
 | `command.schema` | Structural violation of the command schema; no command is created |
 | `command.not_a_command` | A `read` was submitted as a command; reads use the read API |
 | `command.unknown` | No command with that id |
-| `command.invalid_state` | The command's state does not allow the requested action (approve, cancel, reconcile) |
+| `command.invalid_state` | The command's state does not allow the requested action (approve, cancel, reconcile, resolve) |
 | `command.idempotency.conflict` | Idempotency key reused with a different request |
 | `command.device.unknown` | Target device not registered |
 | `command.capability.unknown` | Target capability not on the device |
@@ -91,6 +91,9 @@ Produced by the engine (M2). Errors that deny a command appear in the receipt's
 | `command.state.stale` | Required state is missing, stale, or not `GOOD`; `rule_id` names the precondition when there is one |
 | `command.verification.invalid` | The descriptor's verification cannot be applied to this request (indicates a descriptor defect) |
 | `command.not_reconcilable` | `UNKNOWN_OUTCOME` cannot be resolved automatically (no readback declared, or no usable reading) |
+| `command.outcome_unresolved` | An earlier write or invoke to this capability is still `UNKNOWN_OUTCOME`; reconcile or resolve it first ([lifecycle.md](lifecycle.md) §3 rule 3). `details.unresolved` lists the command ids |
+| `command.resolve.reason` | `commands.resolve` without a reason |
+| `policy.resolve.not_human` | An agent credential tried to resolve an unknown outcome |
 
 A deadline that passes before dispatch is reported by the `EXPIRED` state, not an error code.
 

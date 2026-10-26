@@ -11,7 +11,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use openmhs_adapter::{AdapterErrorKind, HardwareAdapter, Health};
-use openmhs_engine::{Engine, LeaseRequest};
+use openmhs_engine::{Engine, EngineOptions, Journal, LeaseRequest};
 use openmhs_policy::{Effect, Grant, Policy};
 use openmhs_types::descriptor::{
     Capability, CapabilityKind, CompareOp, ConformanceLevel, Operation, PreconditionValue,
@@ -433,7 +433,19 @@ impl Runner {
         self.record("L0.describe_stable", None, t, f);
 
         let t = Instant::now();
-        let engine = match Engine::in_memory(self.options.clock.clone(), policy()) {
+        // The suite sends again after the faults it injects on purpose; holding those
+        // capabilities until an operator resolves them would leave nothing to test.
+        let engine = match Journal::open_in_memory().map(|journal| {
+            Engine::with_journal(
+                journal,
+                self.options.clock.clone(),
+                policy(),
+                EngineOptions {
+                    hold_unresolved: false,
+                    ..EngineOptions::default()
+                },
+            )
+        }) {
             Ok(e) => e,
             Err(e) => {
                 self.record(

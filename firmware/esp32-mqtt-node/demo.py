@@ -155,6 +155,12 @@ def main() -> int:
             h_rig.clock.sync_now()
             time.sleep(4)
             say(f"  after power-on: {json.dumps(broker.state())}  (the counter restarted; nothing was applied late)")
+            say("  the agent retries; a pulse is not idempotent, so it is refused until the first is settled:")
+            with h.Tap(broker, f"{h.PREFIX}/+") as tap:
+                cli("exec", DEVICE, "led.pulse", "--param", "n=1", agent=True, tail=6)
+            say(f"  (pulse messages the gateway published: {len(tap.on('pulse'))})")
+            say("  the operator has seen the counter restart at 0 and records that, with the reason:")
+            cli("commands", "resolve", cid, "--not-applied", "--reason", "node rebooted; pulse counter is 0", tail=8)
 
             step(10, "The audit log is intact")
             cli("audit", "verify")

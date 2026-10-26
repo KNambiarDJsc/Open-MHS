@@ -411,6 +411,25 @@ impl Client {
         self.call(method::COMMANDS_RECONCILE, id(command_id)).await
     }
 
+    /// Operator only: record whether an `UNKNOWN_OUTCOME` command took effect, and how
+    /// that was established. The device is not contacted.
+    pub async fn resolve(
+        &self,
+        command_id: &str,
+        applied: bool,
+        reason: &str,
+    ) -> Result<Receipt, ClientError> {
+        self.call(
+            method::COMMANDS_RESOLVE,
+            ResolveParams {
+                command_id: command_id.into(),
+                applied,
+                reason: reason.into(),
+            },
+        )
+        .await
+    }
+
     pub async fn grants(&self) -> Result<Vec<Grant>, ClientError> {
         self.call(method::GRANTS_LIST, serde_json::json!({})).await
     }

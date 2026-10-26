@@ -29,7 +29,11 @@ async fn bench_psu_over_tcp_reaches_its_declared_level() {
     let server = tokio::spawn(sim.clone().serve_tcp(listener));
 
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
-    let link = Arc::new(StreamLink::tcp(addr.to_string()).simulated());
+    let link = Arc::new(
+        StreamLink::tcp(addr.to_string())
+            .synced_by(profile.connection.identify.clone())
+            .simulated(),
+    );
     let adapter = Arc::new(ScpiAdapter::with_link(profile, link, clock.clone()));
     let report = openmhs_conformance::run(adapter, sim.device(), Options::new(clock)).await;
     server.abort();
@@ -55,6 +59,7 @@ async fn bench_psu_over_a_serial_line_reaches_its_declared_level() {
         let taken = port.lock().unwrap().take();
         async move { taken.ok_or_else(|| std::io::Error::other("the port is already open")) }
     })
+    .synced_by(profile.connection.identify.clone())
     .simulated();
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let adapter = Arc::new(ScpiAdapter::with_link(

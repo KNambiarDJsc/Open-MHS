@@ -205,7 +205,8 @@ openmhs audit verify               # audit log intact: N records, hash chain ver
 | `command.value.type_mismatch` with a `hint` | A bare number where a unit is required; units are never guessed | `--value 40%` or `--value 40 --unit %` |
 | `command.value.out_of_range`, `command.slew_exceeded` | Outside the limits your profile declares | Working as intended; change the request or the profile |
 | `STALE … not usable for decisions` | The last reading is older than `freshness.max_age_ms` | Check the device is publishing; readings carry the device's own time |
-| `UNKNOWN_OUTCOME` | The command was sent but no answer came; it may or may not have happened. It is never retried | `openmhs commands reconcile <id>` reads the device to settle it |
+| `UNKNOWN_OUTCOME` | The command was sent but no answer came; it may or may not have happened. It is never retried | `openmhs commands reconcile <id>` reads the device to settle it; without a readback, an operator checks the device and runs `openmhs commands resolve <id> --applied\|--not-applied --reason …` |
+| `command.outcome_unresolved` | An earlier command to this capability is still `UNKNOWN_OUTCOME`, so a repeat could act twice | Reconcile or resolve that command first. Declare a capability `idempotent` only if doing it twice is the same as once |
 | `serve --profile` stops with `error: engine: adapter: …` | The gateway connects to each device before it starts, and this one did not answer as the profile says (the message names it) | Check `connection` and that the device is on; `--profile-sim` runs without it |
 | `adapter.disconnected`, `adapter.not_sent` | The gateway cannot reach the device or broker | Check `connection`; nothing was sent |
 | `gateway.forbidden` | An agent token tried an operator action | Grants, tokens and approvals need the operator |

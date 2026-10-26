@@ -14,7 +14,7 @@ use openmhs_api::{
     AuditVerifyResult, CancelPlanParams, CommandIdParams, CreateTokenParams, CreatedToken,
     DecidePlanParams, DeviceParams, ErrorData, GatewayInfo, GrantParams, IdParams,
     ListApprovalsParams, ListCommandsParams, ListLeasesParams, ListPlansParams, PlanParams,
-    RPC_PATH, ReadParams, ReadResult, ReleaseLeaseParams, RenewLeaseParams, Role,
+    RPC_PATH, ReadParams, ReadResult, ReleaseLeaseParams, RenewLeaseParams, ResolveParams, Role,
     RotateTokenParams, RpcError, RpcRequest, RpcResponse, SimFaultParams, SimFaultResult,
     SubmitParams, method, rpc_code,
 };
@@ -574,6 +574,14 @@ async fn dispatch(
             }
             let engine = engine.clone();
             ok(detached(async move { engine.reconcile(&p.command_id).await }).await?)
+        }
+
+        method::COMMANDS_RESOLVE => {
+            require_operator("resolving an unknown outcome")?;
+            let p: ResolveParams = params(raw)?;
+            ok(engine
+                .resolve(&session.caller, &p.command_id, p.applied, &p.reason)
+                .map_err(engine_error)?)
         }
 
         method::GRANTS_LIST => {

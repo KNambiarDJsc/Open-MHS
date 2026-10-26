@@ -54,6 +54,7 @@ openmhs read sim.thermo-01 temperature.ambient
 | `approvals revoke <id> [--reason R]` | Withdraw an approval that has not been used: your own, or any as approver |
 | `exec … --approval <id>` | Submit the command an approved request covers. The approval is spent once, and only for exactly that command |
 | `commands cancel <id>` / `commands reconcile <id>` | Cancel before dispatch / resolve `UNKNOWN_OUTCOME` by readback |
+| `commands resolve <id> (--applied \| --not-applied) --reason R` | Operator: settle an `UNKNOWN_OUTCOME` that cannot be read back, on your word, with the reason recorded. Sends nothing |
 | `grants list` / `grants add …` / `grants revoke <id>` | Policy (operator) |
 | `tokens create <principal> [--role agent\|operator] (--scope DEVICE:CAPABILITY:OPS … \| --any-scope) [--ttl 12h]` / `tokens list` / `tokens revoke <id>` / `tokens rotate <id> [--ttl …]` | Credentials (operator). A credential reaches only its scopes, and only what grants also allow; it expires at `--ttl`; revoked credentials stay listed ([spec/authorization.md](../spec/authorization.md) §7) |
 | `audit verify` / `audit tail [--limit N]` | Audit log (operator) |

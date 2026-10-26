@@ -17,6 +17,7 @@ const SETPOINT: &str = "power.output.voltage.setpoint";
 const OK: i32 = 0;
 const ERROR: i32 = 1;
 const DENIED: i32 = 2;
+const FAILED: i32 = 3;
 const UNCERTAIN: i32 = 4;
 const PENDING: i32 = 5;
 
@@ -269,6 +270,53 @@ fn timeout_becomes_unknown_outcome_and_reconciles() {
     let (code, rec) = gw.cli(Some(&agent), &["commands", "reconcile", id]);
     assert_eq!(code, OK, "{rec}");
     assert_eq!(rec["state"], "RECONCILED_APPLIED");
+}
+
+/// An outcome nobody can read back is settled by an operator, with the reason recorded;
+/// an agent cannot do it, and nothing is sent to the device.
+#[test]
+fn an_operator_resolves_an_unknown_outcome_with_a_reason() {
+    let gw = Gateway::start();
+    let agent = gw.agent_token();
+    gw.grant_psu("allow");
+    gw.fault("hang");
+    let (code, r) = set_volts(&gw, &agent, "1V", &["--deadline-ms", "800"]);
+    assert_eq!(code, UNCERTAIN, "{r}");
+    let id = r["command_id"].as_str().unwrap();
+    let resolve = [
+        "commands",
+        "resolve",
+        id,
+        "--not-applied",
+        "--reason",
+        "panel shows 0 V",
+    ];
+
+    let (code, err) = gw.cli(Some(&agent), &resolve);
+    assert_eq!(code, DENIED);
+    assert_eq!(err["error"]["data"]["code"], "gateway.forbidden");
+    let (code, _) = gw.op(&["commands", "resolve", id, "--reason", "which way?"]);
+    assert_ne!(code, OK, "--applied or --not-applied is required");
+
+    let (code, rec) = gw.op(&resolve);
+    assert_eq!(code, FAILED, "{rec}");
+    assert_eq!(rec["state"], "RECONCILED_NOT_APPLIED");
+    let last = rec["transitions"]
+        .as_array()
+        .unwrap()
+        .last()
+        .unwrap()
+        .clone();
+    assert!(
+        last["detail"]
+            .as_str()
+            .unwrap()
+            .ends_with(": panel shows 0 V"),
+        "{last}"
+    );
+    let (code, again) = gw.op(&resolve);
+    assert_eq!(code, ERROR);
+    assert_eq!(again["error"]["data"]["code"], "command.invalid_state");
 }
 
 /// Invariant 13: misbehaving adapters are contained; the gateway keeps serving and

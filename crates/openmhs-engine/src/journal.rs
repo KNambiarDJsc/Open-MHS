@@ -685,6 +685,28 @@ impl Journal {
         Ok(out)
     }
 
+    /// Ids of the commands on `device`'s `capability` still in `UNKNOWN_OUTCOME`, oldest
+    /// first.
+    pub fn unresolved_commands(
+        &self,
+        device: &str,
+        capability: &str,
+    ) -> Result<Vec<String>, JournalError> {
+        let conn = self.lock();
+        let mut stmt = conn.prepare(
+            "SELECT command_id FROM commands
+             WHERE state = ?1 AND device = ?2 AND capability = ?3
+             ORDER BY created_ms, command_id",
+        )?;
+        let ids = stmt
+            .query_map(
+                params![state_name(CommandState::UnknownOutcome), device, capability],
+                |r| r.get(0),
+            )?
+            .collect::<Result<Vec<String>, _>>()?;
+        Ok(ids)
+    }
+
     /// Most recent commands first, optionally filtered by principal and state (an empty
     /// `states` means any state).
     pub fn list_commands(

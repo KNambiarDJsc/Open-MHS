@@ -131,6 +131,9 @@ Notes:
 - L0 and L1 call the adapter directly, so the report can show exactly what it returned.
   L2 and L3 go through a real engine with an in-memory journal: lifecycle states are the
   engine's, and L2 is about the adapter's answers making the engine reach the right ones.
+  That engine does not hold back a capability whose earlier command is `UNKNOWN_OUTCOME`
+  ([lifecycle.md](lifecycle.md) §3 rule 3): the suite injects those faults itself and
+  sends again to test recovery. Gateways always hold it back.
 - The suite acts as principal `conformance:suite` (and, for the lease checks,
   `conformance:other`), under a policy that allows every operation, so only the device
   and the descriptor decide what happens.

@@ -208,9 +208,14 @@ pub struct ScpiAdapter {
 impl ScpiAdapter {
     /// An adapter for `profile`, reaching the instrument through its declared transport.
     pub fn new(profile: Profile, clock: Arc<dyn Clock>) -> Self {
+        let identify = profile.connection.identify.clone();
         let link: Arc<dyn LineLink> = match &profile.connection.transport {
-            Transport::Tcp { address } => Arc::new(StreamLink::tcp(address.clone())),
-            Transport::Serial { port, baud } => Arc::new(StreamLink::serial(port.clone(), *baud)),
+            Transport::Tcp { address } => {
+                Arc::new(StreamLink::tcp(address.clone()).synced_by(identify))
+            }
+            Transport::Serial { port, baud } => {
+                Arc::new(StreamLink::serial(port.clone(), *baud).synced_by(identify))
+            }
         };
         Self::with_link(profile, link, clock)
     }

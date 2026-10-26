@@ -106,7 +106,9 @@
       <li><strong>Timeouts are uncertain, not failed.</strong> <code>TIMED_OUT</code> always
       moves to <code>UNKNOWN_OUTCOME</code>.</li>
       <li><strong>No blind retries.</strong> A command in <code>UNKNOWN_OUTCOME</code> is
-      never sent again automatically.</li>
+      never sent again automatically. Until it is settled, a new write or action to the same
+      capability is refused (<code>command.outcome_unresolved</code>), unless the capability
+      is declared idempotent or is a stop.</li>
       <li><strong>Idempotency.</strong> The same principal, device and idempotency key
       return the existing command instead of running it again. Reusing a key with a
       different request is an error.</li>
@@ -140,6 +142,13 @@
     effect) or <code>RECONCILED_NOT_APPLIED</code> (it did not). An adapter crash after
     dispatch is handled the same way. Both cases appear in the
     <a href="reports.html#demo">demo report</a>.</p>
+    <p>An agent that retries anyway is refused before anything reaches the device: a
+    second write to the same capability waits until the first is settled. If the device
+    has no readback, an operator checks it and records the answer with a reason
+    (<code>openmhs commands resolve</code>); agents cannot. On SCPI instruments, a reply
+    that arrives after its timeout is discarded by a <code>*IDN?</code> resync, never read
+    as the answer to the next request, and nothing new is sent while the instrument is
+    still busy.</p>
 
     <h2 id="policy">Principals, grants and approvals</h2>
     <ul>

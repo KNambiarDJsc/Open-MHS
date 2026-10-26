@@ -234,7 +234,11 @@ pub async fn open(path: &Path, simulate: bool, clock: Arc<dyn Clock>) -> Result<
                         let sim = openmhs_scpi::sim::ScpiSim::new(p.clone());
                         fixture = Some(sim.device());
                         server = Some(tokio::spawn(sim.serve_tcp(l)));
-                        let link = Arc::new(StreamLink::tcp(addr.to_string()).simulated());
+                        let link = Arc::new(
+                            StreamLink::tcp(addr.to_string())
+                                .synced_by(p.connection.identify.clone())
+                                .simulated(),
+                        );
                         let a = openmhs_scpi::ScpiAdapter::with_link(p, link, clock);
                         (a, addr.to_string())
                     }

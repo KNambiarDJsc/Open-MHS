@@ -228,6 +228,12 @@ class Client:
         """Settle an ``UNKNOWN_OUTCOME`` command by reading the device. Never re-sends."""
         return Receipt.from_dict(self.call("commands.reconcile", {"command_id": command_id}))
 
+    def resolve(self, command_id: str, *, applied: bool, reason: str) -> Receipt:
+        """Operator only. Record whether an ``UNKNOWN_OUTCOME`` command took effect, and
+        how that was established. Nothing is sent to the device."""
+        params = {"command_id": command_id, "applied": applied, "reason": reason}
+        return Receipt.from_dict(self.call("commands.resolve", params))
+
     # -------------------------------------------------------------- operator
 
     def grants(self) -> list[dict[str, Any]]:

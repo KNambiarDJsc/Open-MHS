@@ -70,6 +70,20 @@ openmhs commands reconcile <command id>
 The result is `RECONCILED_APPLIED` or `RECONCILED_NOT_APPLIED`. See
 [Core concepts](concepts.md#command-outcomes).
 
+If the capability has no readback (`command.not_reconcilable`), look at the device and
+record what you found, as an operator:
+
+```sh
+openmhs commands resolve <command id> --not-applied --reason "counter still at 0"
+```
+
+### `command.outcome_unresolved`
+
+A write or invoke was refused because an earlier one to the same capability is still
+`UNKNOWN_OUTCOME`: sending it again could do it twice. Nothing was sent. Reconcile or
+resolve the command the message names, then submit again. Capabilities declared
+`idempotent` are not held back.
+
 ## `AWAITING_APPROVAL`
 
 The grant requires a human. An operator approves it (`openmhs approve <id>`); the agent

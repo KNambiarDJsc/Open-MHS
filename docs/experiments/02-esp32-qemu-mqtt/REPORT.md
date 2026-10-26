@@ -10,6 +10,7 @@ is in [`evidence/`](evidence):
 | [`demo-transcript.txt`](evidence/demo-transcript.txt) | Output of `demo.py`: ten steps with the real CLI, tokens redacted |
 | [`test-run.txt`](evidence/test-run.txt) | `python -W error::ResourceWarning -m unittest test_node -v`: 18 tests, OK, exit 0 |
 | [`node-serial.log`](evidence/node-serial.log) | The node's serial console across that test run (every command it applied, every reconnect, every boot) |
+| [`test-run-2026-10-26.txt`](evidence/test-run-2026-10-26.txt) | Rerun after the unresolved-outcome rule was added: `python test_node.py -v`, 18 tests, OK. The demo transcript is from the same day |
 
 > **Simulated vs physically verified.** Every result below is *simulated*: the firmware is real
 > ESP-IDF code, the ESP32 is QEMU's model, the broker is real Mosquitto. Nothing is *physically
@@ -44,6 +45,8 @@ is in [`evidence/`](evidence):
 | Same command, later | `commands reconcile`: `RECONCILED_APPLIED`, readback `true` matches | led on |
 | Node frozen, reading | value flagged `STALE: older than 4000 ms; not usable for decisions`, quality still `GOOD` | n/a |
 | Node powered off, action | `UNKNOWN_OUTCOME`, `adapter.timeout`; published once, never retried; `commands reconcile` is `command.not_reconcilable` (no readback to compare) | gone; after power-on the counter is 0, nothing applied late |
+| The agent pulses again (since 2026-10-26) | `DENIED` `command.outcome_unresolved`, naming the first command; nothing published (broker tap: 0 messages) | received nothing |
+| Operator: `commands resolve <id> --not-applied --reason "node rebooted; pulse counter is 0"` | `RECONCILED_NOT_APPLIED`, reason in the receipt and audit log; the next pulse runs | counter 0 to 1 |
 | Broker stopped | reads `adapter.disconnected`; a command is `FAILED` `adapter.not_sent`; recovers when the broker returns | reconnects by itself |
 
 ## Findings
@@ -59,7 +62,11 @@ Things the run showed that reading the profile and the MQTT adapter documentatio
    every run; the test asserts that the gateway's conclusion matches the node's actual state.
 2. **A pulse that may have been applied cannot be reconciled.** With no readback the gateway
    says so (`command.not_reconcilable`) and leaves it to the operator. That follows from the
-   design, and this run is the first test of it against a device that does apply late.
+   design, and this run is the first test of it against a device that does apply late. In the
+   first run nothing then stopped an agent from simply pulsing again. Since 2026-10-26 the
+   gateway refuses that (`command.outcome_unresolved`) until the first pulse is reconciled or
+   an operator resolves it with a recorded reason (`commands resolve`); test 07 and step 9 of
+   the demo show it.
 3. **QEMU's `stop` freezes the guest clock.** The node resumed minutes behind real time, so its
    timestamps were wrong. The harness re-sends the time after a freeze and the firmware steps its
    clock if it is more than a second out. A physical board that hangs does not lose its clock
