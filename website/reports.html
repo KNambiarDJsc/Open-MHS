@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenMHS reports</title>
+<meta name="description" content="OpenMHS status, the M10 release-readiness report and blockers, the compatibility matrix, the OctoPrint and ESP32 experiments, the guided demo step by step, limitations and the roadmap.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="img/logo.png" alt="OpenMHS" width="104" height="28"></a>
+    <nav>
+      <a href="index.html">home</a>
+      <a href="about.html">what it is</a>
+      <a href="how-it-works.html">how it works</a>
+      <a href="docs.html">docs</a>
+      <a href="reports.html" aria-current="page">reports</a>
+      <a href="guidelines.html">guidelines</a>
+      <a href="https://github.com/KNambiarDJsc/Open-MHS">github</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <h1>Reports</h1>
+    <p class="lead">What has been built, what was run, and what the results were. Every
+    result on this page comes from simulators or simulated peers. Nothing here is a
+    physical-hardware result.</p>
+
+    <div class="toc">
+      On this page
+      <ol>
+        <li><a href="#status">Project status</a></li>
+        <li><a href="#m10">M10: release readiness</a></li>
+        <li><a href="#matrix">Compatibility matrix</a></li>
+        <li><a href="#experiments">Experiments: OctoPrint and ESP32</a></li>
+        <li><a href="#demo">Guided demo, step by step</a></li>
+        <li><a href="#conformance">Simulator conformance</a></li>
+        <li><a href="#agent">Agent replanning run</a></li>
+        <li><a href="#limits">Known limitations</a></li>
+        <li><a href="#roadmap">Roadmap</a></li>
+      </ol>
+    </div>
+
+    <h2 id="status">Project status</h2>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Item</th><th>Value</th></tr>
+      <tr><td>Version</td><td>0.1.0, pre-alpha. <strong>No release published yet.</strong></td></tr>
+      <tr><td>Specification</td><td>v0.1 draft; may change incompatibly before 1.0</td></tr>
+      <tr><td>Milestones</td><td>M0 to M9 done (M7 to M9 pending review). M10 built, not published. M11+ planned.</td></tr>
+      <tr><td>Languages</td><td>Rust (gateway, engine, adapters), Python (SDK, Python adapters, examples, tools)</td></tr>
+      <tr><td>Interfaces</td><td>MCP over stdio, local JSON-RPC API, CLI, Python SDK</td></tr>
+      <tr><td>Platforms</td><td>Windows 11 and Linux (Ubuntu) tested; macOS arm64 configured in CI; macOS x86_64 untested</td></tr>
+      <tr><td>Physical hardware</td><td>Not yet tested by the project</td></tr>
+      <tr><td>Maintainer</td><td>Maintainer-led; see <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/GOVERNANCE.md">GOVERNANCE.md</a></td></tr>
+      <tr><td>License</td><td>Apache-2.0</td></tr>
+    </table>
+    </div>
+
+    <h2 id="m10">M10: release readiness</h2>
+    <p><strong>Status: built and verified locally on Windows; not releasable until the
+    blockers below are cleared.</strong> No release, PyPI upload or documentation site has
+    been published. Source: <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/release/M10_TEST_REPORT.md">M10 test report</a>.</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Deliverable</th><th>Verified by</th><th>State</th></tr>
+      <tr><td>README rewrite with quickstart</td><td>Quickstart run from a release binary in PowerShell</td><td><span class="tag ok">done</span></td></tr>
+      <tr><td>Release binaries (cargo-dist, four targets)</td><td>Windows zip built, checksum matched, demo and quickstart ran from it</td><td><span class="tag warn">Windows only</span> Linux and macOS never built</td></tr>
+      <tr><td>Python package</td><td>sdist and wheel built, <code>twine check</code>, installed in a clean venv, smoke test</td><td><span class="tag warn">not uploaded</span></td></tr>
+      <tr><td>Documentation site (mdBook)</td><td>Built: 80 pages, 2247 links checked offline, 0 errors</td><td><span class="tag warn">not deployed</span></td></tr>
+      <tr><td>Adapter registry</td><td><code>check_registry.py</code>, 23 tests</td><td><span class="tag ok">done</span></td></tr>
+      <tr><td>Generated compatibility matrix</td><td>Generated from committed reports; checked in CI</td><td><span class="tag ok">done</span></td></tr>
+      <tr><td>Governance and community files</td><td>CONTRIBUTING, SECURITY, SUPPORT, CODE_OF_CONDUCT, GOVERNANCE, issue and PR templates, RFC template</td><td><span class="tag ok">done</span></td></tr>
+      <tr><td>Demo recording</td><td>Terminal SVG and transcript from a real run</td><td><span class="tag warn">video not rendered</span></td></tr>
+      <tr><td>Installation guide</td><td>Windows steps run; Linux and macOS steps written</td><td><span class="tag warn">partly tested</span></td></tr>
+    </table>
+    </div>
+    <h3>Gate results on Windows</h3>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Step</th><th>Result</th></tr>
+      <tr><td><code>cargo fmt</code>, <code>cargo clippy -D warnings</code>, <code>cargo deny check</code></td><td><span class="tag ok">pass</span></td></tr>
+      <tr><td><code>cargo test --workspace</code></td><td><span class="tag ok">pass</span> 354 tests, 0 failed, 67 test binaries</td></tr>
+      <tr><td>Schema, registry, matrix and release-version checks</td><td><span class="tag ok">pass</span> 78 schema documents, 11 registry entries, 9 reports</td></tr>
+      <tr><td>Python SDK tests and tool tests</td><td><span class="tag ok">pass</span></td></tr>
+      <tr><td>Documentation build with link check</td><td><span class="tag ok">pass</span> 0 broken links</td></tr>
+    </table>
+    </div>
+    <h3>Release blockers</h3>
+    <ol>
+      <li><strong>Nothing has run on Linux or macOS.</strong> Only the Windows build was made.</li>
+      <li><strong>CI has not run on the M10 work.</strong> Two new CI jobs have never executed.</li>
+      <li><strong>Owner actions:</strong> private vulnerability reporting, code-of-conduct
+      contact, PyPI trusted publisher, GitHub Pages, repository settings.</li>
+      <li><strong>The demo video is not rendered.</strong></li>
+      <li><strong>The <code>openmhs</code> name on PyPI</strong> was free on 2026-10-25; that can change.</li>
+      <li><strong>crates.io is blocked:</strong> <code>openmhs-types</code> embeds files from
+      <code>spec/</code>, which a published crate cannot reach.</li>
+    </ol>
+
+    <h2 id="matrix">Compatibility matrix</h2>
+    <p>Generated by <code>tools/gen_matrix.py</code> from the adapter registry and the
+    conformance reports committed in <code>conformance/reports/</code>. CI fails if it is
+    stale. Source: <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/compatibility.md">docs/compatibility.md</a>.</p>
+    <div class="note warn"><strong>Simulation is not physical validation.</strong> Every row
+    was tested against a simulator; no row is "physically validated". A level is not a
+    safety certification.</div>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Adapter</th><th>Protocol</th><th>Category</th><th>Evidence</th><th>Level reached</th><th>Checks</th><th>Result</th></tr>
+      <tr><td><code>openmhs.http</code></td><td>HTTP</td><td>official</td><td>Integration-tested (simulated peer)</td><td>L3 (declares L2)</td><td>46 pass, 0 fail, 4 n/a</td><td><span class="tag ok">Pass</span></td></tr>
+      <tr><td><code>openmhs.modbus</code></td><td>Modbus TCP</td><td>official</td><td>Integration-tested (simulated peer)</td><td>L3 (declares L2)</td><td>78 pass, 0 fail, 6 n/a</td><td><span class="tag ok">Pass</span></td></tr>
+      <tr><td><code>openmhs.mqtt</code></td><td>MQTT</td><td>official</td><td>Integration-tested (simulated peer)</td><td>L3 (declares L2)</td><td>56 pass, 0 fail, 4 n/a</td><td><span class="tag ok">Pass</span></td></tr>
+      <tr><td><code>openmhs.scpi</code></td><td>SCPI</td><td>official</td><td>Integration-tested (simulated peer)</td><td>L3 (declares L2)</td><td>73 pass, 0 fail, 6 n/a</td><td><span class="tag ok">Pass</span></td></tr>
+      <tr><td><code>openmhs.py.psu-sim</code></td><td>other</td><td>official</td><td>Simulated</td><td>L3 (declares L3)</td><td>66 pass, 0 fail, 6 n/a</td><td><span class="tag ok">Pass</span></td></tr>
+      <tr><td><code>openmhs.sim.axis</code></td><td>built-in</td><td>official</td><td>Simulated</td><td>L3 (declares L3)</td><td>51 pass, 0 fail, 4 n/a</td><td><span class="tag ok">Pass</span></td></tr>
+      <tr><td><code>openmhs.sim.psu</code></td><td>built-in</td><td>official</td><td>Simulated</td><td>L3 (declares L3)</td><td>66 pass, 0 fail, 6 n/a</td><td><span class="tag ok">Pass</span></td></tr>
+      <tr><td><code>openmhs.sim.thermo</code></td><td>built-in</td><td>official</td><td>Simulated</td><td>L1 (declares L1)</td><td>19 pass, 0 fail, 6 n/a</td><td><span class="tag ok">Pass</span></td></tr>
+      <tr><td><code>openmhs.py.octoprint</code></td><td>HTTP</td><td>experimental</td><td>Integration-tested (simulated peer)</td><td>L1 (declares L1)</td><td>34 pass, 0 fail, 6 n/a</td><td><span class="tag ok">Pass</span></td></tr>
+      <tr><td><code>openmhs.py.opcua</code></td><td>OPC UA</td><td>experimental</td><td>Not verified</td><td>none on file (declares L1)</td><td>-</td><td><span class="tag warn">Not verified</span></td></tr>
+      <tr><td><code>openmhs.py.ros2</code></td><td>ROS 2</td><td>experimental</td><td>Not verified</td><td>none on file (declares L1)</td><td>-</td><td><span class="tag warn">Not verified</span></td></tr>
+    </table>
+    </div>
+    <p class="small muted">All reports: OpenMHS 0.1.0, Windows x86_64, 2026-10-24. Every
+    report's source is "simulator".</p>
+
+    <h2 id="experiments">Experiments: OctoPrint and ESP32</h2>
+    <h3>Experiment 01: read-only OctoPrint adapter</h3>
+    <p>A read-only adapter for OctoPrint, the 3D-printer server, tested against a real
+    OctoPrint 1.11.8 driving its <em>Virtual Printer</em> plugin. Simulated peer only; no
+    physical printer.
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/experiments/01-octoprint/REPORT.md">Full report</a>.</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Check</th><th>Result</th></tr>
+      <tr><td>Adapter</td><td>5 capabilities, 2 request paths, GET only, standard library only</td></tr>
+      <tr><td>Adapter tests</td><td><span class="tag ok">pass</span> 42 run, 41 passed, 1 skipped (abstract base), 0 failed</td></tr>
+      <tr><td>Conformance</td><td><span class="tag ok">PASS</span> L1 reached, declared L1, 34 pass, 0 fail, 0 untested</td></tr>
+      <tr><td>End-to-end demo</td><td>11 steps, exit 0, 17 requests, all GET</td></tr>
+    </table>
+    </div>
+    <p>What the real OctoPrint showed that its documentation did not: right after the printer
+    connects, temperature fields are missing and then <code>null</code> before real numbers;
+    an unplugged printer is a <code>409</code> on one endpoint but a <code>200</code> on
+    another. The adapter now reports these honestly instead of serving a stale or malformed
+    value.</p>
+
+    <h3>Experiment 02: ESP32 over MQTT, in QEMU</h3>
+    <p>Real ESP-IDF firmware for an ESP32 node, run in Espressif's QEMU beside a real
+    Mosquitto broker, driven through the stock MQTT adapter with state-changing commands.
+    Simulated only; no physical ESP32.
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/experiments/02-esp32-qemu-mqtt/REPORT.md">Full report</a>.</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Situation</th><th>Gateway result</th><th>What the node did</th></tr>
+      <tr><td>Turn the LED on, with a grant</td><td><span class="tag ok">VERIFIED</span> acknowledged, read back true</td><td>Applied and published state</td></tr>
+      <tr><td>Pulse twice (no readback declared)</td><td><span class="tag warn">UNVERIFIABLE</span> device says applied; not confirmed</td><td>Counter 0 to 2</td></tr>
+      <tr><td>No grant</td><td><span class="tag bad">DENIED</span> nothing sent</td><td>Received nothing (0 messages)</td></tr>
+      <tr><td>Pulse count 11 (range 1 to 10)</td><td><span class="tag bad">DENIED</span> out of range</td><td>Received nothing</td></tr>
+      <tr><td>Node frozen, write</td><td><span class="tag warn">UNKNOWN_OUTCOME</span> timeout, not retried</td><td>Applied it <strong>after</strong> being released</td></tr>
+      <tr><td>Same command, reconciled later</td><td><span class="tag ok">RECONCILED_APPLIED</span> readback matches</td><td>LED on</td></tr>
+      <tr><td>Node powered off, action</td><td><span class="tag warn">UNKNOWN_OUTCOME</span> sent once, never retried</td><td>Nothing applied late</td></tr>
+      <tr><td>Broker stopped</td><td>Reads disconnected; command <span class="tag bad">FAILED</span> not sent</td><td>Reconnected by itself</td></tr>
+    </table>
+    </div>
+    <p>Tests: <span class="tag ok">18 passed</span> of 18. Demo: 10 steps, audit chain
+    verified (53 records). The key finding: <strong>a node that stops answering may still
+    apply the command later.</strong> That is exactly what <code>UNKNOWN_OUTCOME</code> is for,
+    and why the gateway never retries: a retried pulse would have run twice.</p>
+
+    <h2 id="demo">Guided demo, step by step</h2>
+    <p>Command: <code>openmhs demo</code>. A real gateway with three simulated devices
+    (<code>sim.thermo-01</code>, <code>sim.psu-01</code>, <code>sim.axis-01</code>), driven
+    over its API. <strong>Result: every step behaved as expected.</strong></p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>#</th><th>What happens</th><th>Result</th></tr>
+      <tr><td>1</td><td>Gateway starts with three simulated devices, loopback only</td><td><span class="tag ok">ok</span></td></tr>
+      <tr><td>2</td><td>Operator issues a token for <code>agent:demo</code></td><td><span class="tag ok">ok</span></td></tr>
+      <tr><td>3</td><td>Agent asks for 5 V with no grants</td><td><span class="tag bad">DENIED</span> <code>policy.denied.no_grant</code></td></tr>
+      <tr><td>4</td><td>Agent tries to grant itself access</td><td><span class="tag bad">refused</span> only operators change policy</td></tr>
+      <tr><td>5</td><td>Operator grants read, power output, homing, and approval-gated moves</td><td><span class="tag ok">ok</span></td></tr>
+      <tr><td>6</td><td>Agent reads the temperature</td><td><span class="tag ok">GOOD</span> fresh, timestamped, audited</td></tr>
+      <tr><td>7</td><td>Agent asks for 48 V on a 0 to 12 V supply</td><td><span class="tag bad">DENIED</span> <code>command.value.out_of_range</code></td></tr>
+      <tr><td>8</td><td>Agent sends a bare 5 with no unit</td><td><span class="tag bad">DENIED</span> <code>command.value.type_mismatch</code></td></tr>
+      <tr><td>9</td><td>Agent jumps from 0 V to 5 V (limit 2 V per second)</td><td><span class="tag bad">DENIED</span> <code>command.slew_exceeded</code></td></tr>
+      <tr><td>10</td><td>Agent ramps 2 V, 4 V, 5 V, one second apart</td><td><span class="tag ok">VERIFIED</span> each by readback</td></tr>
+      <tr><td>11</td><td>Agent retries 5 V with the same idempotency key</td><td><span class="tag ok">ok</span> original command returned, not run again</td></tr>
+      <tr><td>12</td><td>Supply telemetry goes stale; agent asks for 6 V</td><td><span class="tag bad">DENIED</span> <code>command.state.stale</code></td></tr>
+      <tr><td>13</td><td>Agent homes the axis</td><td><span class="tag ok">VERIFIED</span></td></tr>
+      <tr><td>14</td><td>Agent requests a hazardous move to 120 mm</td><td><span class="tag warn">AWAITING_APPROVAL</span> nothing moved</td></tr>
+      <tr><td>15</td><td>Agent tries to approve its own move</td><td><span class="tag bad">refused</span> agents cannot approve</td></tr>
+      <tr><td>16</td><td>Operator approves; preconditions re-checked; carriage moves</td><td><span class="tag ok">VERIFIED</span> readback 120 mm</td></tr>
+      <tr><td>17</td><td>Supply applies 7 V but the acknowledgement is lost (3 s deadline)</td><td><span class="tag warn">UNKNOWN_OUTCOME</span> not failed, not retried</td></tr>
+      <tr><td>18</td><td>Fault clears; agent reconciles by reading the device</td><td><span class="tag ok">RECONCILED_APPLIED</span> readback 7 V</td></tr>
+      <tr><td>19</td><td>Supply adapter crashes while handling 6 V</td><td><span class="tag warn">UNKNOWN_OUTCOME</span>, then <span class="tag bad">RECONCILED_NOT_APPLIED</span> readback still 7 V; gateway kept serving</td></tr>
+      <tr><td>20</td><td>Operator verifies the audit log</td><td><span class="tag ok">ok</span> 89 records, hash chain intact</td></tr>
+    </table>
+    </div>
+    <p class="small muted">Recorded on 26 October 2026 on Windows 11 with Rust 1.99.1, from
+    the latest <code>main</code> (openmhs 0.1.0).</p>
+
+    <h2 id="conformance">Simulator conformance</h2>
+    <p>Command: <code>openmhs conformance</code>, with all five faults injected
+    (<code>link_down</code>, <code>no_response</code>, <code>lost_ack</code>,
+    <code>garbled</code>, <code>refuse</code>). Same run, same date as the demo.</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Device</th><th>Declared</th><th>Reached</th><th>Pass</th><th>Fail</th><th>Untested</th><th>N/A</th><th>Time</th><th>Result</th></tr>
+      <tr><td><code>sim.thermo-01</code> sensor</td><td>L1</td><td>L1</td><td>19</td><td>0</td><td>0</td><td>6</td><td>0.03 s</td><td><span class="tag ok">PASS</span></td></tr>
+      <tr><td><code>sim.psu-01</code> power supply</td><td>L3</td><td>L3</td><td>66</td><td>0</td><td>0</td><td>6</td><td>17.6 s</td><td><span class="tag ok">PASS</span></td></tr>
+      <tr><td><code>sim.axis-01</code> linear stage</td><td>L3</td><td>L3</td><td>51</td><td>0</td><td>0</td><td>4</td><td>13.8 s</td><td><span class="tag ok">PASS</span></td></tr>
+    </table>
+    </div>
+    <p>The temperature sensor is read-only, so L1 is its correct ceiling.</p>
+
+    <h2 id="agent">Agent replanning run</h2>
+    <p>Command: <code>python examples/agent-loop/mock_agent.py</code>. A scripted agent
+    connects over MCP, with no model and no API key.</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Task</th><th>What the gateway said</th><th>What the agent did</th><th>End</th></tr>
+      <tr><td>Set the supply to 5 V</td><td>Refused: slew limit. Suggested steps of at most 2 V, one second apart, with readback between.</td><td>Ramped 2 V, 4 V, 5 V, checking each step first</td><td><span class="tag ok">VERIFIED</span> 5 V</td></tr>
+      <tr><td>Set the supply to 15 V</td><td>Refused: outside 0 to 12 V. Advised not to exceed the range to compensate.</td><td>Did not retry; reported to the human</td><td><span class="tag bad">DENIED</span> as expected</td></tr>
+      <tr><td>Home the linear stage</td><td>Refused: no grant</td><td>Asked the human for permission</td><td><span class="tag bad">DENIED</span> as expected</td></tr>
+    </table>
+    </div>
+    <p>Final setpoint 5 V; audit chain valid with 50 records. All tasks ended as
+    expected. (Recorded 25 October 2026.)</p>
+
+    <h2 id="limits">Known limitations</h2>
+    <p>The single list is <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/limitations.md">docs/limitations.md</a>. The main points:</p>
+    <ul>
+      <li><strong>Not a safety system.</strong> A stop is a command, not a safety function.
+      Emergency stops and interlocks belong to the hardware.</li>
+      <li><strong>No physical hardware tested.</strong> Passing against a simulator shows the
+      contract and adapter agree, not that a real device works. The hardware guides are
+      unverified.</li>
+      <li><strong>OPC UA is read-only, ROS 2 observation-only,</strong> and neither has a
+      committed report. No Modbus RTU.</li>
+      <li><strong>Twin preflight has no physics.</strong> Plans run steps in order; there are
+      no parallel steps.</li>
+      <li><strong>MCP is stdio only:</strong> no HTTP transport, resources or approval
+      notifications.</li>
+      <li><strong>Single-user trust boundary.</strong> Any process running as your OS user can
+      read the operator token. The adapter host has no OS sandbox.</li>
+      <li><strong>No signed descriptors or signed audit export.</strong> Rate and slew
+      history, and simulator state, reset on restart.</li>
+    </ul>
+
+    <h2 id="roadmap">Roadmap</h2>
+    <div class="table-scroll">
+    <table>
+      <tr><th>#</th><th>Milestone</th><th>Status</th></tr>
+      <tr><td>M0</td><td>Research, positioning, naming, decision records</td><td><span class="tag ok">done</span></td></tr>
+      <tr><td>M1</td><td>Specification v0.1: schemas, lifecycle, units, errors, authorization, example devices</td><td><span class="tag ok">done</span></td></tr>
+      <tr><td>M2</td><td>Core engine, journal with crash recovery, audit, adapter trait, virtual power supply</td><td><span class="tag ok">done</span></td></tr>
+      <tr><td>M3</td><td>Gateway, local API, CLI, three virtual devices, demo, CI on three systems</td><td><span class="tag ok">done</span></td></tr>
+      <tr><td>M4</td><td>MCP server, Python SDK, replanning agent example</td><td><span class="tag ok">done</span></td></tr>
+      <tr><td>M5</td><td>Conformance suite, adapter scaffolding, adapter author guide</td><td><span class="tag ok">done</span></td></tr>
+      <tr><td>M6</td><td>Protocol adapters: Modbus TCP, MQTT, SCPI, HTTP</td><td><span class="tag ok">done</span></td></tr>
+      <tr><td>M7</td><td>Out-of-process adapter host, Python adapter SDK, OPC UA and ROS 2, verified TLS</td><td><span class="tag ok">done</span> pending review</td></tr>
+      <tr><td>M8</td><td>Identity and trust: scoped credentials, approval records, signed manifests, threat model</td><td><span class="tag ok">done</span> pending review</td></tr>
+      <tr><td>M9</td><td>Capability graph, leases, plans with twin preflight, stop lane, L3 conformance</td><td><span class="tag ok">done</span> pending review</td></tr>
+      <tr><td>M10</td><td>Release readiness: binaries, PyPI, docs site, adapter registry, compatibility matrix, governance</td><td><span class="tag warn">built</span> nothing published; see <a href="#m10">blockers</a></td></tr>
+      <tr><td>M11+</td><td>Advanced track, design documents first: WASM-sandboxed adapters, OpenTelemetry, remote and federated gateways, fleets, assisted adapter generation, hardware-in-the-loop rigs, OPC UA, ros2_control and SiLA 2 bridges, device attestation</td><td><span class="tag info">planned</span></td></tr>
+    </table>
+    </div>
+    <p>Source: <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/roadmap.md">docs/roadmap.md</a>,
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/IMPLEMENTATION_STATUS.md">docs/IMPLEMENTATION_STATUS.md</a>
+    and <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/CHANGELOG.md">CHANGELOG.md</a>.</p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>OpenMHS is an independent open-source project. It is not affiliated with, endorsed by,
+    or compatible with Anthropic or its Model Hardware Standard, whose specification is not
+    public.</p>
+    <p>Apache-2.0 · <a href="https://github.com/KNambiarDJsc/Open-MHS">github.com/KNambiarDJsc/Open-MHS</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

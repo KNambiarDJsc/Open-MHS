@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How OpenMHS works</title>
+<meta name="description" content="The OpenMHS architecture: the gateway, policy, the command lifecycle, unknown outcomes and readback, descriptors, adapters, simulators, conformance levels, plans and leases.">
+<link rel="icon" href="img/favicon.svg?v=3" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="img/logo.png" alt="OpenMHS" width="104" height="28"></a>
+    <nav>
+      <a href="index.html">home</a>
+      <a href="about.html">what it is</a>
+      <a href="how-it-works.html" aria-current="page">how it works</a>
+      <a href="docs.html">docs</a>
+      <a href="reports.html">reports</a>
+      <a href="guidelines.html">guidelines</a>
+      <a href="https://github.com/KNambiarDJsc/Open-MHS">github</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <h1>How it works</h1>
+    <p class="lead">One gateway sits between everything that asks and everything that
+    acts. This page walks through its parts, and follows one command from request to
+    verified result.</p>
+
+    <div class="toc">
+      On this page
+      <ol>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#journey">The life of one command</a></li>
+        <li><a href="#lifecycle">Command states</a></li>
+        <li><a href="#unknown">Unknown outcomes and readback</a></li>
+        <li><a href="#policy">Principals, grants and approvals</a></li>
+        <li><a href="#descriptors">Device descriptors</a></li>
+        <li><a href="#adapters">Adapters, profiles and the registry</a></li>
+        <li><a href="#sim">Simulators and fault injection</a></li>
+        <li><a href="#conformance">Conformance levels</a></li>
+        <li><a href="#plans">Plans, leases and the stop lane</a></li>
+        <li><a href="#code">Where things are in the code</a></li>
+      </ol>
+    </div>
+
+    <h2 id="architecture">Architecture</h2>
+    <figure>
+      <img src="img/architecture.svg?v=3" alt="Diagram: AI agents over MCP, scripts over the Python SDK and people over the CLI all call the OpenMHS gateway. The gateway contains the local API, policy, the command engine, the journal and audit log, and the adapter host. Adapters for Modbus TCP, MQTT, SCPI, HTTP, OPC UA and ROS 2 connect it to machines.">
+      <figcaption>Every interface calls the same local API, so an agent, a script and a person are held to the same rules.</figcaption>
+    </figure>
+    <ul>
+      <li><strong>Gateway</strong> (<code>openmhsd</code>, or <code>openmhs serve</code>).
+      A single process that owns the devices. It listens on loopback only, and each client
+      authenticates with its own token.</li>
+      <li><strong>Interfaces.</strong> The MCP server for agents, a Python SDK using only
+      the standard library, and the <code>openmhs</code> CLI. All three are clients of the
+      same JSON-RPC API.</li>
+      <li><strong>Roles.</strong> An <em>operator</em> manages devices, grants, tokens and
+      approvals. An <em>agent</em> can read and submit commands within what it has been
+      granted, and nothing more.</li>
+    </ul>
+
+    <h2 id="journey">The life of one command</h2>
+    <p>An agent asks the simulated power supply for 2 V.</p>
+    <ol>
+      <li><strong>Request.</strong> The agent calls <code>submit_command</code> with the
+      device, the capability <code>power.output.voltage.setpoint</code>, the value
+      <code>{"value": 2, "unit": "V"}</code> and an idempotency key.</li>
+      <li><strong>Journal.</strong> The gateway records the request before doing anything
+      else (<code>CREATED</code>).</li>
+      <li><strong>Authorize.</strong> Policy looks for a grant that lets this principal
+      write this capability on this device. No grant means <code>DENIED</code>.</li>
+      <li><strong>Validate.</strong> The value must have the right unit and be inside
+      0 to 12 V. The change from the current value must respect the slew limit of 2 V per
+      second. The precondition "protection not tripped" must hold on a reading no older
+      than one second.</li>
+      <li><strong>Approve, if needed.</strong> If the grant says
+      <code>require_approval</code>, the command waits in
+      <code>AWAITING_APPROVAL</code> until an operator decides. Preconditions are checked
+      again after approval.</li>
+      <li><strong>Dispatch.</strong> The intent is journaled, then the adapter sends the
+      write to the device (<code>DISPATCHED</code>, then <code>ACCEPTED</code> and
+      <code>APPLIED</code> as the device reports).</li>
+      <li><strong>Verify.</strong> After a short settle time the gateway reads the setpoint
+      back. Within tolerance (±0.005 V here) it becomes <code>VERIFIED</code>.</li>
+      <li><strong>Record.</strong> A receipt with the full history, the policy decision and
+      the readback evidence is returned, and the audit log gains linked records.</li>
+    </ol>
+
+    <h2 id="lifecycle">Command states</h2>
+    <figure>
+      <img src="img/lifecycle.svg?v=3" alt="Command state diagram: CREATED, VALIDATING, APPROVED, DISPATCHED, ACCEPTED, APPLIED, VERIFIED, with branches to DENIED, AWAITING_APPROVAL, TIMED_OUT, UNKNOWN_OUTCOME, RECONCILED_APPLIED, RECONCILED_NOT_APPLIED and VERIFICATION_FAILED.">
+      <figcaption>The main states. The full table, including <code>REJECTED</code>, <code>FAILED</code>, <code>EXPIRED</code>, <code>CANCELLED</code> and <code>UNVERIFIABLE</code>, is in <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/spec/lifecycle.md">spec/lifecycle.md</a>.</figcaption>
+    </figure>
+    <p>The rules that matter most:</p>
+    <ol>
+      <li><strong>Acknowledgement is not effect.</strong> <code>ACCEPTED</code> and
+      <code>APPLIED</code> are not success. Only a readback (<code>VERIFIED</code>), or a
+      declared <code>UNVERIFIABLE</code>, is.</li>
+      <li><strong>Timeouts are uncertain, not failed.</strong> <code>TIMED_OUT</code> always
+      moves to <code>UNKNOWN_OUTCOME</code>.</li>
+      <li><strong>No blind retries.</strong> A command in <code>UNKNOWN_OUTCOME</code> is
+      never sent again automatically.</li>
+      <li><strong>Idempotency.</strong> The same principal, device and idempotency key
+      return the existing command instead of running it again. Reusing a key with a
+      different request is an error.</li>
+      <li><strong>Every command gets a receipt</strong>, including the ones that were
+      denied.</li>
+    </ol>
+    <p>Agents usually only need the coarse outcome:</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Outcome</th><th>States</th><th>Physical effect</th></tr>
+      <tr><td><span class="tag ok">succeeded</span></td><td><code>VERIFIED</code>, <code>RECONCILED_APPLIED</code></td><td>Confirmed by readback</td></tr>
+      <tr><td><span class="tag warn">unverified</span></td><td><code>UNVERIFIABLE</code></td><td>Device says yes; not independently confirmed</td></tr>
+      <tr><td><span class="tag bad">failed</span></td><td><code>REJECTED</code>, <code>FAILED</code>, <code>VERIFICATION_FAILED</code>, <code>RECONCILED_NOT_APPLIED</code></td><td>Not as requested</td></tr>
+      <tr><td><span class="tag bad">denied</span></td><td><code>DENIED</code></td><td>None, never sent</td></tr>
+      <tr><td><span class="tag info">not_executed</span></td><td><code>EXPIRED</code>, <code>CANCELLED</code></td><td>None, never sent</td></tr>
+      <tr><td><span class="tag warn">uncertain</span></td><td><code>TIMED_OUT</code>, <code>UNKNOWN_OUTCOME</code></td><td>Unknown</td></tr>
+    </table>
+    </div>
+
+    <h2 id="unknown">Unknown outcomes and readback</h2>
+    <p>Suppose the gateway asks the supply for 7 V and the reply never arrives. Two things
+    could have happened: the command was lost, or it was applied and only the answer was
+    lost. From the gateway's side these look the same.</p>
+    <ul>
+      <li>Reporting <em>failed</em> would be wrong if the voltage did change.</li>
+      <li>Retrying would be wrong if it did change and the action is not idempotent.</li>
+    </ul>
+    <p>So OpenMHS reports <code>UNKNOWN_OUTCOME</code>, and nothing else is sent for that
+    command. When the device can be read again, the command is <em>reconciled</em>: the
+    gateway reads the device and records <code>RECONCILED_APPLIED</code> (it did take
+    effect) or <code>RECONCILED_NOT_APPLIED</code> (it did not). An adapter crash after
+    dispatch is handled the same way. Both cases appear in the
+    <a href="reports.html#demo">demo report</a>.</p>
+
+    <h2 id="policy">Principals, grants and approvals</h2>
+    <ul>
+      <li><strong>Principals</strong> are identities such as <code>operator:local</code>
+      or <code>agent:claude</code>.</li>
+      <li><strong>Grants</strong> match a principal, a device, a capability and operations
+      (read, write, invoke), with an effect: <code>allow</code>, <code>deny</code> or
+      <code>require_approval</code>. Patterns such as <code>sim.*</code> or
+      <code>power.output.*</code> are allowed.</li>
+      <li><strong>Deny by default.</strong> With no matching grant, the answer is no.</li>
+      <li><strong>Credentials</strong> are scoped, expiring and revocable. A token's scope
+      is a ceiling: the grants must also allow the call.</li>
+      <li><strong>Approvals</strong> are durable, single-use records bound to the exact
+      command. Agents cannot grant themselves access or approve their own commands.</li>
+      <li><strong>Descriptors cannot grant.</strong> A device description declares limits,
+      but permissions come only from the operator's policy.</li>
+    </ul>
+    <p>Example: what an agent may do, set by the operator from the CLI.</p>
+<pre><code>openmhs grants add --id agent-read --principal 'agent:*' --device '*' --capability '*' --ops read --effect allow
+openmhs grants add --id agent-psu  --principal 'agent:*' --device sim.psu-01 --capability '*' --ops write --effect allow
+openmhs tokens create agent:claude --scope 'sim.*:*:read' --scope 'sim.psu-01:*:write' --ttl 7d</code></pre>
+
+    <h2 id="descriptors">Device descriptors</h2>
+    <p>A descriptor is the device's contract. It is validated against JSON Schemas with
+    stable error codes. An excerpt from the simulated power supply:</p>
+<pre><code>{
+  "name": "power.output.voltage.setpoint",
+  "kind": "property",
+  "operations": ["read", "write"],
+  "value": { "type": "number", "quantity": "electric_potential", "unit": "V",
+             "range": { "min": 0, "max": 12 } },
+  "side_effect": "reversible",
+  "idempotent": true,
+  "slew": { "max_change": 2, "per_ms": 1000 },
+  "rate_limit": { "max": 5, "per_ms": 1000 },
+  "preconditions": [
+    { "id": "protection-not-tripped", "capability": "protection.tripped",
+      "op": "eq", "value": false, "max_age_ms": 1000 }
+  ],
+  "verification": { "mode": "readback", "tolerance": { "abs": 0.005 },
+                    "settle_ms": 50, "timeout_ms": 2000 }
+}</code></pre>
+    <p>Units use UCUM codes and are never guessed: a bare number where a quantity is
+    expected is refused. Readings carry a timestamp, a source and a quality
+    (<code>GOOD</code>, <code>UNCERTAIN</code> or <code>BAD</code>).</p>
+
+    <h2 id="adapters">Adapters, profiles and the registry</h2>
+    <p>An adapter translates between the gateway's contract and a device's protocol.</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Adapter</th><th>What it does</th><th>Evidence</th><th>Level reached</th></tr>
+      <tr><td>Modbus TCP</td><td>Registers and coils, from a JSON profile</td><td>Integration-tested (simulated peer)</td><td>L3 (declares L2)</td></tr>
+      <tr><td>MQTT</td><td>Topics, with verified TLS</td><td>Integration-tested (simulated peer)</td><td>L3 (declares L2)</td></tr>
+      <tr><td>SCPI (TCP or serial)</td><td>Bench instruments such as power supplies</td><td>Integration-tested (simulated peer)</td><td>L3 (declares L2)</td></tr>
+      <tr><td>HTTP</td><td>Devices with a web API, with verified TLS</td><td>Integration-tested (simulated peer)</td><td>L3 (declares L2)</td></tr>
+      <tr><td>OctoPrint (Python, experimental)</td><td>Read-only 3D printer status over OctoPrint's HTTP API</td><td>Integration-tested against OctoPrint's Virtual Printer</td><td>L1 (declares L1)</td></tr>
+      <tr><td>OPC UA (Python, experimental)</td><td>Read-only, using asyncua</td><td>Not verified: checked at L1 in CI, no report on file</td><td>none on file</td></tr>
+      <tr><td>ROS 2 Jazzy (Python, experimental)</td><td>Observation only, in a pinned container</td><td>Not verified: checked at L1 in CI, no report on file</td><td>none on file</td></tr>
+    </table>
+    </div>
+    <p>"Integration-tested" means the adapter spoke its real protocol, over real sockets, to
+    a simulated device. It does not mean any particular real device works. The full,
+    generated table is the <a href="reports.html#matrix">compatibility matrix</a>.</p>
+    <p>Modbus, MQTT, SCPI and HTTP devices need no code: a <strong>profile</strong>
+    (JSON) maps the device's registers, topics, commands or endpoints to capabilities.
+    <code>openmhs profile new mqtt --id my.device-01</code> writes a starter profile from
+    the tested example of each protocol. Adapters written in other languages run as
+    <strong>out-of-process</strong> child processes over JSON-RPC on stdio. The adapter host
+    supervises them with heartbeats and bounded restarts, quarantines one that keeps
+    failing, and marks in-flight commands <code>UNKNOWN_OUTCOME</code> if it dies. Adapter
+    manifests declare permissions and can be signed with Ed25519.</p>
+
+    <h3 id="registry">The adapter registry</h3>
+    <p>A git-based list of adapters, one JSON file each, in
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/tree/main/registry">registry/</a>.
+    Each entry points at the conformance report that supports it, pinned by SHA-256, and the
+    compatibility matrix is generated from the entries and reports. Categories describe
+    evidence, not endorsement:</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Category</th><th>Meaning</th></tr>
+      <tr><td><code>official</code></td><td>Maintained in this repository, with a passing report</td></tr>
+      <tr><td><code>community</code></td><td>Maintained elsewhere, with a passing report and an https source</td></tr>
+      <tr><td><code>experimental</code></td><td>Partial, or the evidence is incomplete</td></tr>
+      <tr><td><code>unverified</code></td><td>Listed without evidence</td></tr>
+    </table>
+    </div>
+
+    <h2 id="sim">Simulators and fault injection</h2>
+    <p>The virtual lab has three devices: a temperature sensor, a power supply and a
+    linear stage. Each can be made to misbehave on request:</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Fault</th><th>What the simulator does</th></tr>
+      <tr><td><code>link_down</code></td><td>All communication fails, reads included</td></tr>
+      <tr><td><code>no_response</code></td><td>Commands get no answer and are not applied</td></tr>
+      <tr><td><code>lost_ack</code></td><td>Commands are applied, but the answer never arrives</td></tr>
+      <tr><td><code>garbled</code></td><td>Commands are applied, and the answer cannot be parsed</td></tr>
+      <tr><td><code>refuse</code></td><td>The device refuses commands and applies nothing</td></tr>
+    </table>
+    </div>
+
+    <h2 id="conformance">Conformance levels</h2>
+    <p>The conformance suite tests an adapter together with its descriptor, sending real
+    commands and injecting the faults above. Levels are cumulative.</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Level</th><th>Name</th><th>Means</th></tr>
+      <tr><td>L0</td><td>Discoverable</td><td>Identity and capabilities can be inspected</td></tr>
+      <tr><td>L1</td><td>Observable</td><td>State can be read with timestamps and quality; disconnects show as <code>BAD</code>, never as stale-but-good</td></tr>
+      <tr><td>L2</td><td>Controllable</td><td>Authorized commands execute with verified outcomes; timeouts become <code>UNKNOWN_OUTCOME</code>; no retries of non-idempotent commands</td></tr>
+      <tr><td>L3</td><td>Coordinated</td><td>Takes part in plans and leases; a stop gets through a lease</td></tr>
+    </table>
+    </div>
+    <p>A level is reached only when every check at that level and below passed or did not
+    apply. A check that could not run blocks the level. <strong>A conformance level is not
+    a safety certification</strong>: it says the integration behaves as specified under the
+    tested faults, not that a device is safe to operate.</p>
+
+    <h2 id="plans">Plans, leases and the stop lane</h2>
+    <ul>
+      <li><strong>Capability graph.</strong> Devices declare relationships and shared
+      resources, and the operator can add a topology file, so the gateway knows which
+      devices affect each other.</li>
+      <li><strong>Leases.</strong> A lease claims a set of devices, all or nothing, and
+      keeps other principals' commands off them while it is held.</li>
+      <li><strong>Plans.</strong> Ordered steps across devices under one lease. Each step is
+      an ordinary command, with the same checks. When a step fails, the plan does what it
+      declared: halt, compensate (undo earlier steps), or ask a person. A person decides
+      every unknown outcome.</li>
+      <li><strong>Twin preflight.</strong> A plan can be checked against digital twins
+      first. The twins have no physics, so <code>ok</code> means the plan fits the contract
+      and current readings, not that it will succeed.</li>
+      <li><strong>Stop lane.</strong> Actions marked <code>stop</code> skip the device lock
+      and leases, so they reach a busy device. They are still authorized and validated, and
+      they are not a safety function.</li>
+    </ul>
+
+    <h2 id="code">Where things are in the code</h2>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Path</th><th>Contents</th></tr>
+      <tr><td><code>spec/</code></td><td>The specification and JSON Schemas. The source of truth.</td></tr>
+      <tr><td><code>crates/openmhs-types</code></td><td>Descriptors, values, units, lifecycle, validation with stable error codes</td></tr>
+      <tr><td><code>crates/openmhs-policy</code></td><td>Grants, credentials, constraints</td></tr>
+      <tr><td><code>crates/openmhs-engine</code></td><td>Command engine, journal, approvals, leases, plans, twins</td></tr>
+      <tr><td><code>crates/openmhs-gateway</code>, <code>openmhs-api</code></td><td>Gateway process and local JSON-RPC API</td></tr>
+      <tr><td><code>crates/openmhs-cli</code></td><td>The <code>openmhs</code> and <code>openmhsd</code> binaries, demo, scaffolding</td></tr>
+      <tr><td><code>crates/openmhs-mcp</code></td><td>MCP server</td></tr>
+      <tr><td><code>crates/openmhs-host</code></td><td>Out-of-process adapter host, manifests, signatures</td></tr>
+      <tr><td><code>crates/openmhs-sim</code></td><td>Virtual lab with fault injection</td></tr>
+      <tr><td><code>crates/openmhs-conformance</code></td><td>Conformance suite and reports</td></tr>
+      <tr><td><code>adapters/</code></td><td>Modbus, MQTT, SCPI, HTTP, profiles, and Python adapters (OPC UA, ROS 2, OctoPrint)</td></tr>
+      <tr><td><code>registry/</code>, <code>conformance/reports/</code></td><td>Adapter registry entries and the committed conformance reports behind the matrix</td></tr>
+      <tr><td><code>firmware/</code></td><td>ESP32 test firmware used in Experiment 02 (run in QEMU)</td></tr>
+      <tr><td><code>python/</code></td><td>Python client SDK</td></tr>
+      <tr><td><code>docs/adr/</code></td><td>Architecture decision records: why each design was chosen</td></tr>
+    </table>
+    </div>
+
+    <p>Next: <a href="docs.html">get started</a>.</p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>OpenMHS is an independent open-source project. It is not affiliated with, endorsed by,
+    or compatible with Anthropic or its Model Hardware Standard, whose specification is not
+    public.</p>
+    <p>Apache-2.0 · <a href="https://github.com/KNambiarDJsc/Open-MHS">github.com/KNambiarDJsc/Open-MHS</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

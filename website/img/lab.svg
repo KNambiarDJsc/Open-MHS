@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330" role="img" aria-labelledby="t d">
+  <title id="t">A person in a lab controlling machines through OpenMHS</title>
+  <desc id="d">A person sits at a lab desk in front of a screen. A cable runs from the desk to the OpenMHS gateway, which connects to a robot arm, a power supply, a linear stage and a temperature sensor.</desc>
+  <style>
+    text { font-family: Consolas, "DejaVu Sans Mono", monospace; }
+    .ink { stroke: #2b2b2b; }
+    .wire { fill: none; stroke: #8fb0d9; stroke-width: 2; stroke-dasharray: 5 5; }
+  </style>
+
+  <!-- floor -->
+  <line x1="20" y1="300" x2="700" y2="300" stroke="#d6d6d0" stroke-width="2"/>
+
+  <!-- wall shelf with glassware -->
+  <line x1="40" y1="72" x2="240" y2="72" class="ink" stroke-width="3"/>
+  <path d="M60 72 v10 h10" fill="none" class="ink" stroke-width="2"/>
+  <path d="M220 72 v10 h-10" fill="none" class="ink" stroke-width="2"/>
+  <!-- conical flask -->
+  <path d="M77 40 h10 v14 l9 18 h-28 l9 -18 z" fill="#ffffff" class="ink" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M72 64 h20 l3 7 h-26 z" fill="#cfe6d2"/>
+  <!-- beaker -->
+  <rect x="114" y="46" width="24" height="26" fill="#ffffff" class="ink" stroke-width="2"/>
+  <rect x="115" y="58" width="22" height="13" fill="#d7e6f7"/>
+  <!-- round flask -->
+  <rect x="166" y="34" width="9" height="16" fill="#ffffff" class="ink" stroke-width="2"/>
+  <circle cx="170.5" cy="58" r="13" fill="#ffffff" class="ink" stroke-width="2"/>
+  <path d="M158 60 a13 13 0 0 0 25 0 z" fill="#f6d7c8"/>
+  <!-- test tubes -->
+  <rect x="198" y="44" width="6" height="26" rx="3" fill="#ffffff" class="ink" stroke-width="1.5"/>
+  <rect x="208" y="44" width="6" height="26" rx="3" fill="#ffffff" class="ink" stroke-width="1.5"/>
+  <rect x="199.5" y="56" width="3" height="12" rx="1.5" fill="#e08a1e"/>
+  <rect x="209.5" y="60" width="3" height="8" rx="1.5" fill="#1f5fa8"/>
+
+  <!-- desk (far leg drawn first, behind the person) -->
+  <rect x="192" y="212" width="8" height="86" fill="#8a6e52"/>
+  <rect x="362" y="212" width="8" height="86" fill="#8a6e52"/>
+  <rect x="170" y="204" width="210" height="8" rx="1" fill="#9c7d5e"/>
+
+  <!-- stool -->
+  <rect x="78" y="232" width="64" height="8" rx="3" fill="#2b2b2b"/>
+  <line x1="110" y1="240" x2="110" y2="296" class="ink" stroke-width="4"/>
+  <line x1="86" y1="298" x2="134" y2="298" class="ink" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- person: legs -->
+  <line x1="106" y1="226" x2="168" y2="230" stroke="#3b3d4a" stroke-width="18" stroke-linecap="round"/>
+  <line x1="170" y1="232" x2="174" y2="288" stroke="#3b3d4a" stroke-width="15" stroke-linecap="round"/>
+  <ellipse cx="184" cy="294" rx="15" ry="6" fill="#2b2b2b"/>
+
+  <!-- person: torso, neck, head -->
+  <path d="M100 152 Q 92 192 98 232 L 126 232 Q 134 192 130 154 Q 116 146 100 152 Z" fill="#1f5fa8"/>
+  <rect x="111" y="136" width="11" height="18" fill="#d9a47a"/>
+  <circle cx="120" cy="120" r="19" fill="#d9a47a"/>
+  <path d="M101 120 Q 100 98 121 99 Q 138 100 139 115 Q 130 107 118 109 Q 108 111 106 126 Z" fill="#2b2b2b"/>
+  <circle cx="132" cy="119" r="1.8" fill="#2b2b2b"/>
+
+  <!-- person: arm reaching the keyboard -->
+  <line x1="118" y1="162" x2="150" y2="194" stroke="#184c86" stroke-width="13" stroke-linecap="round"/>
+  <line x1="150" y1="195" x2="200" y2="197" stroke="#d9a47a" stroke-width="9" stroke-linecap="round"/>
+
+  <!-- keyboard and screen -->
+  <rect x="194" y="199" width="64" height="5" rx="1" fill="#555555"/>
+  <rect x="314" y="176" width="8" height="24" fill="#2b2b2b"/>
+  <rect x="300" y="199" width="36" height="5" rx="1" fill="#2b2b2b"/>
+  <rect x="272" y="114" width="92" height="64" rx="3" fill="#2b2b2b"/>
+  <rect x="277" y="119" width="82" height="54" fill="#f4f8fd"/>
+  <text x="282" y="132" font-size="8" fill="#5c5c5c">sim.psu-01</text>
+  <text x="282" y="146" font-size="11" fill="#1c1c1c" font-weight="600">5.00 V</text>
+  <rect x="282" y="152" width="38" height="10" rx="2" fill="#eaf4ea"/>
+  <text x="285" y="160" font-size="7" fill="#2e7d32">VERIFIED</text>
+  <polyline points="326,166 332,160 338,163 344,152 352,155" fill="none" stroke="#1f5fa8" stroke-width="1.5"/>
+
+  <!-- cable from the desk to the gateway -->
+  <path class="wire" d="M372 200 C 392 200, 392 186, 412 186"/>
+
+  <!-- gateway -->
+  <rect x="412" y="152" width="120" height="68" rx="4" fill="#ffffff" stroke="#1f5fa8" stroke-width="2"/>
+  <text x="472" y="182" font-size="15" font-weight="600" fill="#1c1c1c" text-anchor="middle">OpenMHS</text>
+  <text x="472" y="200" font-size="11" fill="#5c5c5c" text-anchor="middle">gateway</text>
+  <text x="472" y="240" font-size="11" fill="#5c5c5c" text-anchor="middle">rules · approvals · log</text>
+
+  <!-- wires to the machines -->
+  <path class="wire" d="M532 186 C 562 186, 566 96, 596 96"/>
+  <path class="wire" d="M532 186 C 560 186, 566 164, 592 164"/>
+  <path class="wire" d="M532 186 C 560 186, 564 224, 586 224"/>
+  <path class="wire" d="M532 186 C 562 186, 566 276, 598 276"/>
+
+  <!-- robot arm -->
+  <rect x="598" y="100" width="44" height="10" rx="2" fill="#2b2b2b"/>
+  <line x1="620" y1="98" x2="652" y2="62" stroke="#e08a1e" stroke-width="9" stroke-linecap="round"/>
+  <line x1="652" y1="62" x2="690" y2="76" stroke="#e08a1e" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="620" cy="98" r="6" fill="#2b2b2b"/>
+  <circle cx="652" cy="62" r="5" fill="#2b2b2b"/>
+  <path d="M690 76 l9 -7 M690 76 l9 7" class="ink" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- power supply -->
+  <rect x="592" y="142" width="98" height="46" rx="3" fill="#ffffff" class="ink" stroke-width="2"/>
+  <rect x="600" y="149" width="48" height="18" rx="1" fill="#1c1c1c"/>
+  <text x="624" y="162" font-size="11" fill="#7fd18b" text-anchor="middle" font-family="Consolas, &quot;DejaVu Sans Mono&quot;, monospace">5.00V</text>
+  <circle cx="664" cy="158" r="6" fill="#ffffff" class="ink" stroke-width="2"/>
+  <circle cx="680" cy="158" r="6" fill="#ffffff" class="ink" stroke-width="2"/>
+  <circle cx="606" cy="178" r="4" fill="#c0392b"/>
+  <circle cx="620" cy="178" r="4" fill="#2b2b2b"/>
+
+  <!-- linear stage -->
+  <rect x="586" y="216" width="8" height="18" fill="#2b2b2b"/>
+  <rect x="690" y="216" width="8" height="18" fill="#2b2b2b"/>
+  <rect x="592" y="222" width="100" height="8" fill="#a8a8a8"/>
+  <rect x="628" y="209" width="30" height="15" rx="2" fill="#1f5fa8"/>
+
+  <!-- temperature sensor -->
+  <rect x="598" y="258" width="44" height="36" rx="3" fill="#ffffff" class="ink" stroke-width="2"/>
+  <text x="620" y="280" font-size="10" fill="#1c1c1c" text-anchor="middle">21.9°C</text>
+  <rect x="656" y="250" width="9" height="38" rx="4.5" fill="#ffffff" class="ink" stroke-width="2"/>
+  <rect x="659" y="264" width="3" height="24" fill="#c0392b"/>
+  <circle cx="660.5" cy="291" r="7" fill="#c0392b"/>
+</svg>

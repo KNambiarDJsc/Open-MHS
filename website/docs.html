@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenMHS docs</title>
+<meta name="description" content="Getting started with OpenMHS: install it, run the demo, start a gateway, connect your own device, connect an AI agent over MCP, use the Python SDK and write an adapter.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="img/logo.png" alt="OpenMHS" width="104" height="28"></a>
+    <nav>
+      <a href="index.html">home</a>
+      <a href="about.html">what it is</a>
+      <a href="how-it-works.html">how it works</a>
+      <a href="docs.html" aria-current="page">docs</a>
+      <a href="reports.html">reports</a>
+      <a href="guidelines.html">guidelines</a>
+      <a href="https://github.com/KNambiarDJsc/Open-MHS">github</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <h1>Docs</h1>
+    <p class="lead">Install it, watch the demo, run a gateway, then connect a device and an
+    agent. Everything here works with simulated devices first.</p>
+
+    <div class="toc">
+      On this page
+      <ol>
+        <li><a href="#install">Install</a></li>
+        <li><a href="#quickstart">Quickstart</a></li>
+        <li><a href="#connect">Connect your own device</a></li>
+        <li><a href="#mcp">Connect an AI agent over MCP</a></li>
+        <li><a href="#python">Python SDK</a></li>
+        <li><a href="#check">Check what happened</a></li>
+        <li><a href="#agent-loop">Watch an agent replan</a></li>
+        <li><a href="#conformance">Run conformance</a></li>
+        <li><a href="#adapter">Write an adapter</a></li>
+        <li><a href="#tests">Run the tests</a></li>
+        <li><a href="#reference">Reference documents</a></li>
+      </ol>
+    </div>
+
+    <h2 id="install">Install</h2>
+    <p>OpenMHS ships two programs: <code>openmhs</code> (the command line, which can also run
+    the gateway) and <code>openmhsd</code> (the gateway only). Both are one self-contained
+    binary with the virtual lab built in.</p>
+    <div class="note warn"><strong>No release has been published yet.</strong> Until one is,
+    build from source. Release archives for Windows, Linux and macOS, and the Python package
+    on PyPI, are prepared but not published.</div>
+    <p>You need Rust 1.89 or newer from <a href="https://rustup.rs">rustup.rs</a>, and Git.
+    Python 3.10+ is needed for the Python SDK, examples and Python adapters.</p>
+<pre><code>git clone https://github.com/KNambiarDJsc/Open-MHS
+cd Open-MHS
+cargo install --locked --path crates/openmhs-cli    # installs openmhs and openmhsd
+openmhs --version</code></pre>
+    <p>To work on OpenMHS rather than use it, build in place and run from
+    <code>target/</code>:</p>
+<pre><code>cargo build -p openmhs-cli
+./target/debug/openmhs --version         # Windows: .\target\debug\openmhs.exe</code></pre>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Platform</th><th>Status</th></tr>
+      <tr><td>Windows 11 x86_64</td><td>Built and tested locally and in CI</td></tr>
+      <tr><td>Linux x86_64 (Ubuntu)</td><td>Built and tested in CI</td></tr>
+      <tr><td>macOS arm64</td><td>Configured in CI and the release build; not yet confirmed</td></tr>
+      <tr><td>macOS x86_64</td><td>In the release build; untested</td></tr>
+    </table>
+    </div>
+    <div class="note"><strong>Windows:</strong> install the Microsoft C++ Build Tools
+    ("Desktop development with C++") first; Rust needs its linker. Build from PowerShell, not
+    Git Bash: Git's own <code>link</code> command hides Microsoft's <code>link.exe</code> and
+    the build fails with <code>link: extra operand</code>.</div>
+    <p>Full guide: <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/installation.md">docs/installation.md</a>.</p>
+
+    <h2 id="quickstart">Quickstart</h2>
+    <p><strong>1. See it work (about 10 seconds).</strong> A guided run of a real gateway over
+    its API:</p>
+<pre><code>openmhs demo</code></pre>
+    <p><strong>2. Run the gateway yourself.</strong> In terminal 1:</p>
+<pre><code>openmhs serve --sim</code></pre>
+    <p>In terminal 2, as the operator, allow an agent to use the simulated power supply and
+    create its credential. The token is printed once.</p>
+<pre><code>openmhs devices list
+openmhs grants add --id agent-psu --principal agent:demo --device sim.psu-01 --capability '*' --ops read,write --effect allow
+openmhs tokens create agent:demo --any-scope</code></pre>
+    <p>Then act as the agent.</p>
+<pre><code># Linux / macOS
+export OPENMHS_TOKEN=omhs_...
+openmhs exec sim.psu-01 power.output.voltage.setpoint --value 5V     # refused: jumps too fast
+openmhs exec sim.psu-01 power.output.voltage.setpoint --value 2V     # applied and read back
+
+# PowerShell
+$env:OPENMHS_TOKEN = "omhs_..."
+openmhs exec sim.psu-01 power.output.voltage.setpoint --value 5V
+openmhs exec sim.psu-01 power.output.voltage.setpoint --value 2V</code></pre>
+    <p>The 5 V request ends <code>DENIED command.slew_exceeded</code> and nothing is sent to
+    the device. The 2 V request ends <code>VERIFIED -&gt; succeeded (confirmed by
+    readback)</code>. Last, as the operator (without the token):</p>
+<pre><code>openmhs audit verify</code></pre>
+    <p>The simulated devices are <code>sim.thermo-01</code> (temperature sensor),
+    <code>sim.psu-01</code> (power supply) and <code>sim.axis-01</code> (linear stage). State
+    resets when the gateway restarts.</p>
+
+    <h2 id="connect">Connect your own device</h2>
+    <p>The gateway knows a device from a <strong>profile</strong> (a JSON file) or an
+    <strong>adapter</strong> (a small program). Nothing reaches it unless a grant allows it.</p>
+    <h3>1. Pick how OpenMHS talks to it</h3>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Your device</th><th>Use</th><th>Start with</th></tr>
+      <tr><td>Speaks Modbus TCP (PLCs, meters, drives, chambers)</td><td>a profile</td><td><code>openmhs profile new modbus</code></td></tr>
+      <tr><td>Speaks MQTT (ESP32, Raspberry Pi, IoT nodes)</td><td>a profile</td><td><code>openmhs profile new mqtt</code></td></tr>
+      <tr><td>Speaks SCPI over TCP or serial (power supplies, meters, scopes)</td><td>a profile</td><td><code>openmhs profile new scpi</code></td></tr>
+      <tr><td>Serves a JSON HTTP API (your own firmware, a small web service)</td><td>a profile</td><td><code>openmhs profile new http</code></td></tr>
+      <tr><td>Has its own API or SDK (for example OctoPrint)</td><td>a Python adapter</td><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/adapters/python-sdk.md">Python adapter SDK</a></td></tr>
+      <tr><td>Needs Rust, or a protocol not listed</td><td>a Rust adapter</td><td><code>openmhs adapter new my-device</code></td></tr>
+      <tr><td>OPC UA server, ROS 2 topics</td><td>the bundled adapters (read-only, observe-only)</td><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/adapters/opcua.md">OPC UA</a>, <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/adapters/ros2.md">ROS 2</a></td></tr>
+    </table>
+    </div>
+    <p>A bare microcontroller has to run firmware that speaks one of these first;
+    <code>firmware/esp32-mqtt-node</code> is a complete ESP32 example with its profile.</p>
+    <h3>2. Describe it</h3>
+<pre><code>openmhs profile new mqtt --id lab.node-01      # a working starter profile
+openmhs profile check lab.node-01.json         # checks the file; connects to nothing</code></pre>
+    <p>Edit three parts: <code>connection</code> (where the device is),
+    <code>descriptor.capabilities</code> (what it can do: type, <strong>unit</strong>,
+    <strong>range</strong>, side effect, readback, freshness; be strict, these are enforced),
+    and <code>mapping</code> (register, topic, command or URL for each capability).</p>
+    <h3>3. Start the gateway, simulator first</h3>
+<pre><code>openmhs serve --profile-sim lab.node-01.json     # simulated: safe to experiment
+openmhs serve --profile lab.node-01.json         # the real device at "connection"</code></pre>
+    <h3>4. Decide what is allowed</h3>
+    <p>Nothing is allowed at first, not even for the operator. Give an agent exactly what it
+    needs:</p>
+<pre><code>openmhs grants add --id agent-node --principal agent:demo --device lab.node-01 \
+  --capability '*' --ops read,write --effect allow --max-side-effect reversible --reason "first device"
+openmhs tokens create agent:demo --scope 'lab.node-01:*:read' --scope 'lab.node-01:*:write' --ttl 7d</code></pre>
+    <p>Use <code>--effect require_approval</code> when a person should confirm each command
+    (<code>openmhs approve &lt;id&gt;</code>). The token's scopes are a second ceiling: it can
+    do nothing the grants do not also allow.</p>
+    <h3>5. Use it</h3>
+<pre><code>openmhs read lab.node-01 air.temperature
+openmhs exec lab.node-01 fan.on --value true          # VERIFIED, confirmed by readback
+openmhs exec lab.node-01 vent.position --value 140%   # DENIED, outside 0..100 %</code></pre>
+    <div class="note warn">Before a real device, read
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/tree/main/docs/hardware">docs/hardware</a>
+    and the <a href="guidelines.html#hardware">hardware guidelines</a>. Those guides are
+    unverified.</div>
+    <p>Full guide: <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/connect-a-device.md">docs/connect-a-device.md</a>.</p>
+
+    <h2 id="mcp">Connect an AI agent over MCP</h2>
+    <p><code>openmhs mcp</code> is an MCP server on stdin and stdout. It is a client of a
+    running gateway and holds one agent token, never the operator's. For Claude Code:</p>
+<pre><code>claude mcp add openmhs -e OPENMHS_TOKEN=&lt;token&gt; -- openmhs mcp</code></pre>
+    <p>Any other MCP host: a stdio server, command <code>openmhs</code>, argument
+    <code>mcp</code>, environment <code>OPENMHS_TOKEN</code>.</p>
+<pre><code>{
+  "mcpServers": {
+    "openmhs": {
+      "command": "openmhs",
+      "args": ["mcp"],
+      "env": { "OPENMHS_TOKEN": "&lt;token&gt;" }
+    }
+  }
+}</code></pre>
+    <p>The agent then sees tools such as <code>list_devices</code>,
+    <code>describe_device</code>, <code>read_state</code>, <code>check_command</code>,
+    <code>submit_command</code>, <code>get_command</code>,
+    <code>reconcile_command</code> and the plan tools. Refusals come back as structured
+    results with a suggested next step. Details:
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/mcp.md">docs/mcp.md</a>.</p>
+
+    <h2 id="python">Python SDK</h2>
+    <p>Standard library only, Python 3.10+. Not on PyPI yet; install it from the checkout.</p>
+<pre><code>pip install ./python</code></pre>
+<pre><code>from openmhs import Client, Quantity
+
+gw = Client.from_home(token="&lt;agent token&gt;")       # finds the running gateway
+r = gw.read("sim.thermo-01", "temperature.ambient")
+if r.usable:                                       # fresh enough to act on
+    print(r.value)
+receipt = gw.write("sim.psu-01", "power.output.voltage.setpoint", Quantity(2, "V"),
+                   idempotency_key="step-1")
+if receipt.confirmed:                              # verified by reading the device back
+    print("done")
+elif receipt.denied:                               # a refusal is a receipt, not an exception
+    for reason in receipt.reasons:
+        print(reason.code, reason.details)</code></pre>
+    <p>Leases and plans are available too. See
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/python/README.md">python/README.md</a>.</p>
+
+    <h2 id="check">Check what happened</h2>
+    <p>As the operator (no <code>OPENMHS_TOKEN</code>):</p>
+<pre><code>openmhs commands list              # every command, its state and why
+openmhs audit tail                 # the latest audit records
+openmhs audit verify               # audit log intact: N records, hash chain verified</code></pre>
+    <p>When something says no, the error code says why, and
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/troubleshooting.md">troubleshooting</a>
+    says what to do.</p>
+
+    <h2 id="agent-loop">Watch an agent replan</h2>
+    <p>A scripted agent, with no model and no API key, connects over MCP, hits a slew limit,
+    reads the gateway's advice, and ramps instead:</p>
+<pre><code>cargo build -p openmhs-cli
+python examples/agent-loop/mock_agent.py</code></pre>
+    <p>An optional variant drives the same loop with Claude; see
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/tree/main/examples/agent-loop">examples/agent-loop</a>.</p>
+
+    <h2 id="conformance">Run conformance</h2>
+<pre><code>openmhs conformance --report-dir reports       # simulators, about 15 seconds, one JSON report each
+openmhs conformance --profile adapters/openmhs-scpi/profiles/bench-psu.json
+openmhs conformance --adapter-manifest adapters/python/psu-sim/manifest.json</code></pre>
+    <div class="note warn">The suite really sends commands and injects faults. Run it
+    against fixtures and simulators only, never against equipment in use.</div>
+    <p>To list an adapter in the registry and the compatibility matrix, commit its report and
+    an entry; see <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/registry/README.md">registry/README.md</a>.</p>
+
+    <h2 id="adapter">Write an adapter</h2>
+<pre><code>openmhs adapter new bench-lamp --openmhs-path .</code></pre>
+    <p>This creates a working adapter crate with a fake device and conformance tests. Follow
+    the <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/adapters/README.md">adapter guide</a>
+    and the <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/adapters/walkthrough.md">walkthrough</a>.
+    Adapters in Python use the
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/adapters/python-sdk.md">Python adapter SDK</a>
+    and run out of process; the <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/adapters/octoprint.md">OctoPrint adapter</a>
+    is a complete example.</p>
+
+    <h2 id="tests">Run the tests</h2>
+    <p>The full list CI runs is on the <a href="guidelines.html#checks">guidelines</a> page.
+    The main ones:</p>
+<pre><code>cargo test --workspace                          # spec fixtures, policy, engine, gateway, CLI, MCP
+python tools/check_schemas.py                   # schemas in Python (pip install jsonschema)
+python -m unittest discover -s python/tests     # Python SDK, examples, parity (cargo build first)</code></pre>
+
+    <h2 id="reference">Reference documents</h2>
+    <p>These live in the repository and are the authoritative versions. An mdBook
+    documentation site is built from them but not yet published.</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Document</th><th>Covers</th></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/concepts.md">Concepts</a></td><td>The ideas in one page</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/tutorial.md">Tutorial</a> and <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/first-device.md">first device</a></td><td>Step-by-step introductions</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/cli.md">CLI reference</a></td><td>Every command</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/configuration.md">Configuration</a></td><td>The gateway home, settings</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/simulators.md">Simulators</a></td><td>The virtual lab and its faults</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/spec/README.md">Specification</a></td><td>Index of the v0.1 draft and its JSON Schemas</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/spec/descriptor.md">Descriptors</a>, <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/spec/units.md">units</a></td><td>Devices, capabilities, constraints; the UCUM unit table</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/spec/lifecycle.md">Lifecycle</a>, <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/spec/errors.md">errors</a></td><td>Command states, idempotency, recovery; stable error codes</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/spec/authorization.md">Authorization</a></td><td>Principals, grants, approvals, defaults</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/spec/api.md">Local API</a></td><td>Transport, authentication, roles, methods</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/spec/conformance.md">Conformance</a></td><td>Levels L0 to L3, fixtures, faults, requirements</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/spec/topology.md">Topology</a>, <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/spec/plans.md">plans</a></td><td>Capability graph, leases, multi-device plans</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/adapters/profiles.md">Device profiles</a></td><td>Modbus TCP, MQTT, SCPI, HTTP</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/compatibility.md">Compatibility matrix</a></td><td>Generated evidence per adapter</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/limitations.md">Limitations</a></td><td>What it does not do, and what is untested</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/security/transport-security.md">Transport security</a></td><td>TLS for MQTT and HTTP; when plaintext is refused</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/adr/README.md">Architecture decisions</a></td><td>Why each design was chosen</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/CHANGELOG.md">Changelog</a></td><td>What changed; no release yet</td></tr>
+    </table>
+    </div>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>OpenMHS is an independent open-source project. It is not affiliated with, endorsed by,
+    or compatible with Anthropic or its Model Hardware Standard, whose specification is not
+    public.</p>
+    <p>Apache-2.0 · <a href="https://github.com/KNambiarDJsc/Open-MHS">github.com/KNambiarDJsc/Open-MHS</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
