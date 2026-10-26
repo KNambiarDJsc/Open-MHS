@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenMHS</title>
+<meta name="description" content="OpenMHS connects AI agents to programmable hardware through one gateway with deterministic policy, human approval, readback verification and a tamper-evident audit log.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="img/logo.png" alt="OpenMHS" width="104" height="28"></a>
+    <nav>
+      <a href="index.html" aria-current="page">home</a>
+      <a href="about.html">what it is</a>
+      <a href="how-it-works.html">how it works</a>
+      <a href="docs.html">docs</a>
+      <a href="reports.html">reports</a>
+      <a href="guidelines.html">guidelines</a>
+      <a href="https://github.com/KNambiarDJsc/Open-MHS">github</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <h1>Connect AI agents to programmable hardware.</h1>
+    <p class="lead">OpenMHS is an open-source gateway that sits between an AI agent and the
+    instruments it wants to use: power supplies, motion stages, sensors, lab instruments.
+    Every command is checked against a written contract and a deny-by-default policy,
+    journaled, and verified by reading the device back. Anything hazardous waits for a
+    person, and every step is kept in a log that cannot be changed without it showing.</p>
+
+    <figure>
+      <img src="img/lab.svg?v=3" alt="A person at a lab desk. A cable from the desk runs to the OpenMHS gateway, which connects to a robot arm, a power supply, a linear stage and a temperature sensor.">
+      <figcaption>One person, one gateway, many machines. The agent asks; the gateway decides what reaches the hardware.</figcaption>
+    </figure>
+
+    <h2>Why it exists</h2>
+    <p>Letting a language model drive real equipment goes wrong in three predictable ways.</p>
+    <div class="points">
+      <div>
+        <h3>1. Nothing says what a device accepts</h3>
+        <p>A model guesses at units, ranges and ordering, and a bare <code>5</code> can mean
+        volts, millivolts or a mistake. OpenMHS describes each device in a descriptor with
+        units, limits, preconditions and side effects, and refuses what does not fit.</p>
+      </div>
+      <div>
+        <h3>2. Permission lives in the prompt</h3>
+        <p>Telling a model "don't exceed 12 V" is only a request. In OpenMHS a deterministic
+        policy decides, deny by default, with scoped credentials and human approval for
+        hazardous actions. A model cannot grant itself access.</p>
+      </div>
+      <div>
+        <h3>3. Timeouts are ambiguous</h3>
+        <p>If a write goes unanswered, the device may or may not have changed. OpenMHS
+        records <code>UNKNOWN_OUTCOME</code>, never retries blindly, and reconciles by
+        reading the device. Every command is journaled; the audit log is hash-chained.</p>
+      </div>
+    </div>
+
+    <h2>See it work</h2>
+    <p>A real gateway with simulated devices. The agent is refused a 5 V jump (too fast),
+    gets 2 V confirmed by readback, is refused 48 V (out of range), and the audit log
+    verifies. Recorded from a real run; no hardware.</p>
+    <figure>
+      <img src="img/terminal-demo.svg?v=3" alt="Terminal recording: an agent asks a simulated power supply for 5 V and is refused for changing too fast, sets 2 V and has it confirmed by readback, is refused 48 V as out of range, and the audit log verifies." style="max-width:900px;padding:0;border:0">
+      <figcaption>From the project repository (docs/assets/demo.svg), recorded by tools/record_demo.py.</figcaption>
+    </figure>
+
+    <h2>Try it in a minute</h2>
+    <p>No release is published yet, so build from source with Rust 1.89 or newer.</p>
+<pre><code>git clone https://github.com/KNambiarDJsc/Open-MHS
+cd Open-MHS
+cargo install --locked --path crates/openmhs-cli    # installs openmhs and openmhsd
+openmhs demo                                        # guided tour, about 10 seconds</code></pre>
+    <p>Then run the gateway yourself, or connect your own device, from the
+    <a href="docs.html">docs</a>. The full demo run is on the <a href="reports.html">reports</a> page.</p>
+
+    <h2>Where it fits</h2>
+    <p>AI agents already use software tools through the
+    <a href="about.html#mcp">Model Context Protocol (MCP)</a>. OpenMHS speaks MCP to agents,
+    and Modbus TCP, MQTT, SCPI, HTTP, OPC UA and ROS 2 to machines. In between it adds what
+    physical work needs: units, limits, approvals, uncertain outcomes and evidence. Read
+    <a href="about.html">what it is</a> for the background, or
+    <a href="how-it-works.html">how it works</a> for the details.</p>
+
+    <div class="note warn">
+      <strong>Status: pre-alpha.</strong> Release engineering (milestone M10) is built but
+      nothing is published yet. Every adapter has been tested against simulators; none has
+      been run against physical hardware by the project. OpenMHS is a supervisory layer, not
+      a safety system: emergency stops and interlocks belong to the hardware.
+    </div>
+
+    <div class="links-row">
+      <a href="docs.html">Get started</a>
+      <a href="docs.html#connect">Connect your device</a>
+      <a href="reports.html#matrix">Compatibility</a>
+      <a href="guidelines.html">Contribute</a>
+      <a href="https://github.com/KNambiarDJsc/Open-MHS">Source on GitHub</a>
+    </div>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>OpenMHS is an independent open-source project. It is not affiliated with, endorsed by,
+    or compatible with Anthropic or its Model Hardware Standard, whose specification is not
+    public.</p>
+    <p>Apache-2.0 · <a href="https://github.com/KNambiarDJsc/Open-MHS">github.com/KNambiarDJsc/Open-MHS</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

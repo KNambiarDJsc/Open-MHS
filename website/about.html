@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What is OpenMHS</title>
+<meta name="description" content="What OpenMHS is, the background on AI agents, MCP and Anthropic's Model Hardware Standard, and why a supervising gateway is needed between agents and machines.">
+<link rel="icon" href="img/favicon.svg?v=3" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="img/logo.png" alt="OpenMHS" width="104" height="28"></a>
+    <nav>
+      <a href="index.html">home</a>
+      <a href="about.html" aria-current="page">what it is</a>
+      <a href="how-it-works.html">how it works</a>
+      <a href="docs.html">docs</a>
+      <a href="reports.html">reports</a>
+      <a href="guidelines.html">guidelines</a>
+      <a href="https://github.com/KNambiarDJsc/Open-MHS">github</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <h1>What OpenMHS is</h1>
+    <p class="lead">OpenMHS is an open, model-agnostic, supervisory interface between AI
+    agents and programmable hardware. It is one trusted program, the gateway, that every
+    agent, script and person goes through to reach a machine.</p>
+
+    <div class="toc">
+      On this page
+      <ol>
+        <li><a href="#simply">The idea, simply</a></li>
+        <li><a href="#background">Background: agents, tools, MCP and MHS</a></li>
+        <li><a href="#problem">Why machines need a supervisor</a></li>
+        <li><a href="#does">What OpenMHS does</a></li>
+        <li><a href="#not">What it is not</a></li>
+        <li><a href="#who">Who it is for</a></li>
+        <li><a href="#different">How it differs from similar projects</a></li>
+        <li><a href="#independent">Independence and the name</a></li>
+      </ol>
+    </div>
+
+    <h2 id="simply">The idea, simply</h2>
+    <p>Imagine a lab hires a very fast, very capable new assistant. The assistant is
+    clever, but sometimes misunderstands an instruction and is occasionally too sure of
+    itself. You would like it to help run the lab's machines.</p>
+    <p>You would not hand over the keys. You would put a supervisor between the assistant
+    and the machines, and the supervisor would:</p>
+    <ul>
+      <li>let the assistant touch nothing until you say which machines it may use;</li>
+      <li>know each machine's limits, and refuse "48 volts" on a supply that only goes to 12;</li>
+      <li>ask "5 what?" when told "set it to 5", instead of guessing the unit;</li>
+      <li>make it change things gradually, not jump from zero to full power;</li>
+      <li>call you before anything dangerous, and never let the assistant approve itself;</li>
+      <li>look at the machine afterwards to confirm the job really happened;</li>
+      <li>say "I don't know yet" when a reply is lost, then go and check, rather than guess;</li>
+      <li>keep a logbook in which a torn-out page is noticed.</li>
+    </ul>
+    <p>OpenMHS is that supervisor, written as software. The assistant is an AI agent. The
+    machines are real devices, or simulated ones while you test.</p>
+
+    <h2 id="background">Background: agents, tools, MCP and MHS</h2>
+
+    <h3>AI agents and tools</h3>
+    <p>A large language model on its own only produces text. An <strong>agent</strong> is
+    a model running in a loop that can also take actions: it decides on a step, calls a
+    <strong>tool</strong> (a function such as "read the temperature"), looks at the
+    result, and decides the next step. The tool is ordinary code; the model only chooses
+    when to call it and with which inputs.</p>
+
+    <h3 id="mcp">MCP, the Model Context Protocol</h3>
+    <p>MCP is an open standard for connecting agents to tools. A program called an MCP
+    server lists the tools it offers and how to call them; any MCP host (Claude Code,
+    Claude Desktop, an IDE agent, your own client) can use them. Write a tool once, and
+    every compatible agent can call it.</p>
+    <p>OpenMHS includes an MCP server, <code>openmhs mcp</code>. Through it an agent sees
+    tools such as <code>list_devices</code>, <code>describe_device</code>,
+    <code>read_state</code>, <code>check_command</code>, <code>submit_command</code> and
+    <code>submit_plan</code>. The server holds only an agent's token, so everything the
+    agent does is checked and recorded by the gateway like any other client.</p>
+
+    <h3 id="mhs">MHS, the Model Hardware Standard</h3>
+    <p>MCP was designed for software. Machines add problems software does not have: units,
+    physical limits, slow or lost replies, and actions that cannot be undone. In August
+    2026 Anthropic announced the <strong>Model Hardware Standard</strong> as a limited
+    research preview: per-device drivers that describe a machine's operations and safety
+    limits in a common, discoverable format, so that any model can work with any device
+    that has a programmable interface.</p>
+    <p>The MHS specification has not been published. Many community projects appeared
+    afterwards with "open MHS" in their names. OpenMHS is one of them, but it does not
+    imitate a format it cannot see. It defines its
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/tree/main/spec">own specification</a>,
+    and is structured so that an MHS-compatible front end can be added if the standard is
+    published.</p>
+
+    <div class="table-scroll">
+    <table>
+      <tr><th></th><th>What it connects</th><th>Status</th></tr>
+      <tr><td>MCP</td><td>Agents to software tools</td><td>Open standard, widely used</td></tr>
+      <tr><td>MHS</td><td>Agents to hardware (Anthropic)</td><td>Research preview, no public specification</td></tr>
+      <tr><td>OpenMHS</td><td>Agents, scripts and people to hardware, through one supervising gateway</td><td>Independent, open source, pre-alpha</td></tr>
+    </table>
+    </div>
+
+    <h2 id="problem">Why machines need a supervisor</h2>
+    <p>Connecting an agent to a machine is the easy part. The hard part is what happens
+    when something goes wrong, because with hardware the consequences are physical.</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Problem</th><th>What can happen without a supervisor</th></tr>
+      <tr><td>Out-of-range values</td><td>A model asks for 48 V on a 12 V supply and the device is damaged.</td></tr>
+      <tr><td>Missing units</td><td>"Move 5" is read as 5 cm instead of 5 mm.</td></tr>
+      <tr><td>Sudden changes</td><td>A jump from 0 to full output stresses the equipment or the sample.</td></tr>
+      <tr><td>Stale readings</td><td>A decision is made from a temperature that is several seconds old.</td></tr>
+      <tr><td>Lost replies</td><td>The device acted but the answer never came back. A naive client retries, and the action happens twice.</td></tr>
+      <tr><td>Crashes</td><td>A driver or the gateway dies mid-command, and nobody knows what state the machine is in.</td></tr>
+      <tr><td>No oversight</td><td>A hazardous move runs with no person in the loop, and afterwards there is no trustworthy record.</td></tr>
+    </table>
+    </div>
+
+    <h2 id="does">What OpenMHS does</h2>
+    <ul>
+      <li><strong>Describes devices.</strong> Each device has a descriptor: a JSON document
+      listing its capabilities, units, ranges, rate and slew limits, preconditions and how
+      to verify a change.</li>
+      <li><strong>Authorizes every request.</strong> Identities (principals) get grants from
+      an operator: allow, deny, or require approval. Access is denied by default, and
+      agents cannot change policy or approve their own requests.</li>
+      <li><strong>Validates every value.</strong> Units, ranges, slew and rate limits,
+      preconditions and freshness are checked before anything is sent.</li>
+      <li><strong>Tracks each command through a lifecycle.</strong> Accepted is not
+      applied, and applied is not verified. Success means the device was read back.</li>
+      <li><strong>Handles uncertainty explicitly.</strong> A timeout or crash after a
+      command was sent becomes <code>UNKNOWN_OUTCOME</code>, which is never retried
+      blindly and is settled by reading the device.</li>
+      <li><strong>Survives restarts.</strong> A SQLite journal records intent before
+      dispatch, so the gateway recovers after a crash. Idempotency keys make retries safe.</li>
+      <li><strong>Keeps evidence.</strong> A hash-chained audit log makes tampering
+      detectable, and every command produces a receipt.</li>
+      <li><strong>Connects to real protocols.</strong> Modbus TCP, MQTT, SCPI and HTTP
+      devices are described by JSON profiles. OPC UA and ROS 2 adapters observe
+      equipment. Adapters in other languages run as supervised child processes.</li>
+      <li><strong>Coordinates several devices.</strong> Plans run ordered steps under one
+      lease, and say what to do when a step fails: halt, compensate, or ask a person.</li>
+      <li><strong>Tests integrations.</strong> A conformance suite checks an adapter
+      against levels L0 to L3 with injected faults, and writes a JSON report.</li>
+    </ul>
+
+    <h2 id="not">What it is not</h2>
+    <ul>
+      <li><strong>Not a safety system.</strong> Emergency stops, interlocks and protection
+      circuits belong to the hardware and keep final authority.</li>
+      <li><strong>Not a real-time controller.</strong> Fast control loops stay in the
+      device's own controller. OpenMHS supervises; it does not drive motors directly.</li>
+      <li><strong>Not tied to one model.</strong> Any agent that speaks MCP, or any program
+      that uses the API, can use it.</li>
+      <li><strong>Not proven on physical hardware yet.</strong> Everything is tested
+      against simulators or simulated peers. Two experiments went further, still without
+      physical hardware: a read-only adapter against a real OctoPrint server driving its
+      Virtual Printer, and real ESP32 firmware running in QEMU over a real MQTT broker
+      (<a href="reports.html#experiments">results</a>).</li>
+    </ul>
+
+    <h2 id="who">Who it is for</h2>
+    <ul>
+      <li><strong>Labs</strong> that want agents to help run instruments and experiments
+      with a person approving the risky parts.</li>
+      <li><strong>Automation and integration developers</strong> who connect equipment
+      over Modbus, MQTT, SCPI, HTTP, OPC UA or ROS 2.</li>
+      <li><strong>Makers and researchers</strong> who want to try agent-driven hardware
+      safely against simulators first.</li>
+      <li><strong>Adapter authors</strong> who want a clear contract and a test suite that
+      says whether their integration behaves.</li>
+    </ul>
+
+    <h2 id="different">How it differs from similar projects</h2>
+    <p>Most of the community "open MHS" projects the maintainers looked at share one
+    feature set: a device manifest with limits, MCP tools, read, write and stop, and an
+    audit log. OpenMHS focuses on what happens under real-world failure:</p>
+    <ul>
+      <li>a durable command journal with crash recovery and idempotency keys;</li>
+      <li>an explicit lifecycle where <code>ACCEPTED</code>, <code>APPLIED</code> and
+      <code>VERIFIED</code> are different states;</li>
+      <li><code>UNKNOWN_OUTCOME</code> with reconciliation by readback;</li>
+      <li>an implementation-neutral conformance suite with fault injection;</li>
+      <li>a single gateway binary written in Rust, which every interface goes through.</li>
+    </ul>
+    <p>The comparison is in the repository's
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/research/landscape.md">landscape research</a>,
+    with sources.</p>
+
+    <h2 id="independent">Independence and the name</h2>
+    <p>OpenMHS is not affiliated with or endorsed by Anthropic, and does not claim
+    compatibility with the Model Hardware Standard. Other unrelated projects also use the
+    name "OpenMHS"; this one keeps it knowingly. The reasoning is in
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/research/naming.md">naming.md</a>
+    and
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/adr/0007-mhs-independence.md">ADR-0007</a>.</p>
+
+    <p>Next: <a href="how-it-works.html">how it works</a>.</p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>OpenMHS is an independent open-source project. It is not affiliated with, endorsed by,
+    or compatible with Anthropic or its Model Hardware Standard, whose specification is not
+    public.</p>
+    <p>Apache-2.0 · <a href="https://github.com/KNambiarDJsc/Open-MHS">github.com/KNambiarDJsc/Open-MHS</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

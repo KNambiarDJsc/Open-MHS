@@ -1,0 +1,274 @@
+/* OpenMHS website. Old-fashioned on purpose: full width, one monospace font, no scripts. */
+
+:root {
+  --text: #111111;
+  --muted: #555555;
+  --line: #999999;
+  --soft: #f2f2f2;
+  --link: #0000ee;
+  --visited: #551a8b;
+  --accent: #1f5fa8;
+  --ok: #1b6e20;
+  --bad: #b3261e;
+  --warn: #8a5a00;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: #ffffff;
+  color: var(--text);
+  font-family: Consolas, "DejaVu Sans Mono", "Liberation Mono", "Courier New", monospace;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.wrap {
+  width: 100%;
+  padding: 0 24px;
+}
+
+/* Header and navigation */
+
+header.site {
+  border-bottom: 3px double var(--text);
+  background: var(--soft);
+}
+
+header.site .wrap {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.brand {
+  font-weight: bold;
+  font-size: 20px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.brand span { color: var(--accent); }
+
+nav {
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+nav a { margin-right: 6px; }
+
+nav a::before { content: "["; color: var(--text); }
+nav a::after { content: "]"; color: var(--text); }
+
+nav a[aria-current="page"] {
+  color: var(--text);
+  font-weight: bold;
+  text-decoration: none;
+}
+
+/* Content */
+
+main { padding: 18px 0 40px; }
+
+h1 {
+  font-size: 24px;
+  line-height: 1.3;
+  margin: 6px 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--text);
+}
+
+h2 {
+  font-size: 18px;
+  margin: 36px 0 10px;
+  padding: 3px 8px;
+  background: #e6e6e6;
+  border: 1px solid var(--line);
+}
+
+h3 {
+  font-size: 15px;
+  margin: 22px 0 6px;
+  text-decoration: underline;
+}
+
+p, ul, ol { margin: 0 0 12px; }
+
+li { margin-bottom: 3px; }
+
+a { color: var(--link); text-decoration: underline; }
+a:visited { color: var(--visited); }
+a:hover { color: #ee0000; }
+
+.lead { font-size: 16px; }
+
+.muted { color: var(--muted); }
+
+.small { font-size: 13px; }
+
+figure {
+  margin: 20px 0;
+}
+
+figure img {
+  display: block;
+  width: 100%;
+  max-width: 1000px;
+  height: auto;
+  border: 1px solid var(--line);
+  padding: 8px;
+  background: #ffffff;
+}
+
+figcaption {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+code, pre {
+  font-family: inherit;
+  font-size: 14px;
+}
+
+code {
+  background: var(--soft);
+  padding: 0 3px;
+}
+
+pre {
+  background: var(--soft);
+  border: 1px solid var(--line);
+  padding: 10px 12px;
+  overflow-x: auto;
+  line-height: 1.4;
+}
+
+pre code { background: none; padding: 0; }
+
+/* Tables */
+
+.table-scroll { overflow-x: auto; margin: 0 0 16px; }
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+  border: 1px solid var(--line);
+}
+
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+}
+
+th {
+  font-weight: bold;
+  background: #e6e6e6;
+}
+
+tr:nth-child(even) td { background: #fafafa; }
+
+/* Small labels for results */
+
+.tag {
+  font-size: 13px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.tag::before { content: "["; }
+.tag::after { content: "]"; }
+
+.tag.ok { color: var(--ok); }
+.tag.bad { color: var(--bad); }
+.tag.warn { color: var(--warn); }
+.tag.info { color: var(--accent); }
+
+/* Notes */
+
+.note {
+  border: 1px solid var(--line);
+  background: #eef3ff;
+  padding: 8px 12px;
+  margin: 16px 0;
+  font-size: 14px;
+}
+
+.note.warn { background: #ffffe0; }
+
+/* Three short points on the home page */
+
+.points {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0;
+  margin: 8px 0 10px;
+  border: 1px solid var(--line);
+}
+
+.points > div {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  margin: -1px 0 0 -1px;
+}
+
+.points h3 { margin-top: 0; }
+
+.points p { font-size: 14px; margin: 0; }
+
+.links-row {
+  margin: 16px 0 0;
+  font-size: 14px;
+}
+
+.links-row a { margin-right: 14px; }
+
+/* Page-local contents list */
+
+.toc {
+  font-size: 14px;
+  border: 1px solid var(--line);
+  background: var(--soft);
+  padding: 8px 14px;
+  margin: 16px 0 8px;
+  display: inline-block;
+  min-width: 300px;
+}
+
+.toc ol { margin: 4px 0 0; padding-left: 24px; }
+
+.toc li { margin: 0; }
+
+/* Footer */
+
+footer.site {
+  border-top: 3px double var(--text);
+  background: var(--soft);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+footer.site .wrap { padding-top: 12px; padding-bottom: 16px; }
+
+footer.site p { margin: 0 0 4px; }
+
+@media (max-width: 560px) {
+  .wrap { padding: 0 16px; }
+  h1 { font-size: 20px; }
+  body { font-size: 14px; }
+  .toc { display: block; min-width: 0; }
+}
+
+/* Karthik's wordmark (docs/assets/openmhs-logo-light.png); multiply drops its white box on the grey bar. */
+.brand img {
+  display: block;
+  height: 28px;
+  width: auto;
+  mix-blend-mode: multiply;
+}

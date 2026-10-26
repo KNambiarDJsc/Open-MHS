@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 358" role="img" aria-labelledby="t d">
+  <title id="t">OpenMHS architecture</title>
+  <desc id="d">AI agents over MCP, Python scripts over the SDK, and people over the CLI all talk to one OpenMHS gateway. Inside the gateway are the local API, policy, the command engine, the journal and audit log, and the adapter host. Adapters for Modbus TCP, MQTT, SCPI, HTTP, OPC UA and ROS 2 connect the gateway to machines, real or simulated.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#5c5c5c"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: Consolas, "DejaVu Sans Mono", monospace; fill: #1c1c1c; }
+    .box { fill: #ffffff; stroke: #2b2b2b; stroke-width: 1.5; }
+    .row { fill: #eaf1fa; stroke: #b9cde6; stroke-width: 1; }
+    .arrow { stroke: #5c5c5c; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+    .t { font-size: 13px; font-weight: 600; }
+    .s { font-size: 11px; fill: #5c5c5c; }
+  </style>
+
+  <!-- clients -->
+  <text x="95" y="24" class="s" text-anchor="middle">who asks</text>
+  <rect x="20" y="40" width="150" height="58" rx="4" class="box"/>
+  <text x="95" y="65" class="t" text-anchor="middle">AI agent</text>
+  <text x="95" y="83" class="s" text-anchor="middle">over MCP</text>
+  <rect x="20" y="146" width="150" height="58" rx="4" class="box"/>
+  <text x="95" y="171" class="t" text-anchor="middle">Script</text>
+  <text x="95" y="189" class="s" text-anchor="middle">Python SDK</text>
+  <rect x="20" y="252" width="150" height="58" rx="4" class="box"/>
+  <text x="95" y="277" class="t" text-anchor="middle">Person</text>
+  <text x="95" y="295" class="s" text-anchor="middle">openmhs CLI</text>
+
+  <path class="arrow" d="M170 69 L208 69"/>
+  <path class="arrow" d="M170 175 L208 175"/>
+  <path class="arrow" d="M170 281 L208 281"/>
+
+  <!-- gateway -->
+  <rect x="210" y="16" width="290" height="320" rx="5" fill="#ffffff" stroke="#1f5fa8" stroke-width="2"/>
+  <text x="355" y="38" class="t" text-anchor="middle" style="fill:#1f5fa8">OpenMHS gateway</text>
+  <rect x="224" y="50" width="262" height="46" rx="3" class="row"/>
+  <text x="236" y="69" class="t">Local API</text>
+  <text x="236" y="86" class="s">JSON-RPC, tokens, roles</text>
+  <rect x="224" y="106" width="262" height="46" rx="3" class="row"/>
+  <text x="236" y="125" class="t">Policy</text>
+  <text x="236" y="142" class="s">grants, limits, approvals</text>
+  <rect x="224" y="162" width="262" height="46" rx="3" class="row"/>
+  <text x="236" y="181" class="t">Command engine</text>
+  <text x="236" y="198" class="s">lifecycle, readback, plans</text>
+  <rect x="224" y="218" width="262" height="46" rx="3" class="row"/>
+  <text x="236" y="237" class="t">Journal and audit log</text>
+  <text x="236" y="254" class="s">SQLite, hash-chained log</text>
+  <rect x="224" y="274" width="262" height="46" rx="3" class="row"/>
+  <text x="236" y="293" class="t">Adapter host</text>
+  <text x="236" y="310" class="s">runs and supervises adapters</text>
+
+  <!-- adapters -->
+  <text x="590" y="24" class="s" text-anchor="middle">adapters</text>
+  <g>
+    <rect x="540" y="34" width="100" height="34" rx="3" class="box"/>
+    <text x="590" y="55" font-size="12" text-anchor="middle">Modbus TCP</text>
+    <rect x="540" y="80" width="100" height="34" rx="3" class="box"/>
+    <text x="590" y="101" font-size="12" text-anchor="middle">MQTT</text>
+    <rect x="540" y="126" width="100" height="34" rx="3" class="box"/>
+    <text x="590" y="147" font-size="12" text-anchor="middle">SCPI</text>
+    <rect x="540" y="172" width="100" height="34" rx="3" class="box"/>
+    <text x="590" y="193" font-size="12" text-anchor="middle">HTTP</text>
+    <rect x="540" y="218" width="100" height="34" rx="3" class="box"/>
+    <text x="590" y="239" font-size="12" text-anchor="middle">OPC UA</text>
+    <rect x="540" y="264" width="100" height="34" rx="3" class="box"/>
+    <text x="590" y="285" font-size="12" text-anchor="middle">ROS 2</text>
+  </g>
+  <path class="arrow" d="M500 51 L538 51"/>
+  <path class="arrow" d="M500 97 L538 97"/>
+  <path class="arrow" d="M500 143 L538 143"/>
+  <path class="arrow" d="M500 189 L538 189"/>
+  <path class="arrow" d="M500 235 L538 235"/>
+  <path class="arrow" d="M500 281 L538 281"/>
+
+  <!-- machines -->
+  <text x="711" y="24" class="s" text-anchor="middle">machines</text>
+  <rect x="672" y="34" width="78" height="264" rx="4" fill="#f6f6f3" stroke="#2b2b2b" stroke-width="1.5"/>
+  <text x="711" y="150" font-size="12" text-anchor="middle">real or</text>
+  <text x="711" y="166" font-size="12" text-anchor="middle">simulated</text>
+  <text x="711" y="182" font-size="12" text-anchor="middle">devices</text>
+  <path class="arrow" d="M640 51 L670 51"/>
+  <path class="arrow" d="M640 97 L670 97"/>
+  <path class="arrow" d="M640 143 L670 143"/>
+  <path class="arrow" d="M640 189 L670 189"/>
+  <path class="arrow" d="M640 235 L670 235"/>
+  <path class="arrow" d="M640 281 L670 281"/>
+
+  <text x="380" y="352" class="s" text-anchor="middle">Real-time control stays in each machine's own controller. Hardware safety systems keep final authority.</text>
+</svg>

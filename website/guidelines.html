@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenMHS guidelines</title>
+<meta name="description" content="How to contribute to OpenMHS: ground rules, setup, the checks CI runs, RFCs, commits and pull requests, good first issues, governance, security reports, AI assistants and trying real hardware.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="img/logo.png" alt="OpenMHS" width="104" height="28"></a>
+    <nav>
+      <a href="index.html">home</a>
+      <a href="about.html">what it is</a>
+      <a href="how-it-works.html">how it works</a>
+      <a href="docs.html">docs</a>
+      <a href="reports.html">reports</a>
+      <a href="guidelines.html" aria-current="page">guidelines</a>
+      <a href="https://github.com/KNambiarDJsc/Open-MHS">github</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <h1>Guidelines</h1>
+    <p class="lead">OpenMHS sits between software that can be wrong and machines that can be
+    damaged. These guidelines summarise the project's
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>,
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/SECURITY.md">SECURITY.md</a> and
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/GOVERNANCE.md">GOVERNANCE.md</a>;
+    those files are the authoritative versions.</p>
+
+    <div class="toc">
+      On this page
+      <ol>
+        <li><a href="#best">The most useful contribution</a></li>
+        <li><a href="#rules">Ground rules</a></li>
+        <li><a href="#principles">Principles that do not change lightly</a></li>
+        <li><a href="#setup">Setting up</a></li>
+        <li><a href="#checks">Checks before a pull request</a></li>
+        <li><a href="#larger">Larger changes: RFCs</a></li>
+        <li><a href="#pr">Commits and pull requests</a></li>
+        <li><a href="#first">Good first issues</a></li>
+        <li><a href="#governance">How decisions are made</a></li>
+        <li><a href="#ai">Using AI coding assistants</a></li>
+        <li><a href="#hardware">Trying real hardware</a></li>
+        <li><a href="#security">Reporting security problems</a></li>
+        <li><a href="#license">License and conduct</a></li>
+      </ol>
+    </div>
+
+    <h2 id="best">The most useful contribution</h2>
+    <p><strong>Want to connect a new device? Build an adapter.</strong> Start with the
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/adapters/README.md">adapter guide</a>,
+    run <code>openmhs adapter new &lt;name&gt;</code> (or <code>openmhs profile new
+    &lt;protocol&gt;</code> for Modbus, MQTT, SCPI or HTTP), make the conformance suite pass,
+    and list it in the <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/registry/README.md">adapter registry</a>.
+    Small, focused changes are the easiest to review.</p>
+
+    <h2 id="rules">Ground rules</h2>
+    <ol>
+      <li><strong>Safety claims need evidence.</strong> Do not write that something is safe,
+      certified or validated unless a test or report in the repository shows it. Simulated is
+      not physical; say which one you tested.</li>
+      <li><strong>No real hardware in CI or tests.</strong> Tests run against simulators and
+      in-process fixtures. Anything that could move or power a real device must be opt-in and
+      say so loudly.</li>
+      <li><strong>Do not weaken security tests</strong> to make a change pass. If a test is
+      wrong, say why in the pull request.</li>
+      <li><strong>Be honest about scope.</strong> OpenMHS is independent and unaffiliated with
+      Anthropic. Do not claim compatibility with the Model Hardware Standard.</li>
+      <li><strong>The specification is the source of truth.</strong> If you change a schema or
+      a spec, change the examples in <code>spec/examples/</code> too.</li>
+      <li><strong>Dependencies</strong> need a reason, a licence that <code>deny.toml</code>
+      allows, and should be at least two weeks old. Prefer not adding one.</li>
+      <li><strong>Do not hand-write cryptography.</strong> The workspace also forbids
+      <code>unsafe</code> Rust.</li>
+    </ol>
+
+    <h2 id="principles">Principles that do not change lightly</h2>
+    <p>From the governance document. Changing one needs an RFC, and the bar is high.</p>
+    <ul>
+      <li>Deterministic policy decides what an agent may do; a model never does.</li>
+      <li>Hardware safety systems keep final authority. OpenMHS is not a safety function.</li>
+      <li>Claims need evidence. Simulated is never reported as physically validated.</li>
+      <li>The project stays independent and does not claim compatibility with standards whose
+      specifications are not public.</li>
+      <li>Minimal dependencies; no hand-written cryptography.</li>
+    </ul>
+
+    <h2 id="setup">Setting up</h2>
+<pre><code>git clone https://github.com/KNambiarDJsc/Open-MHS
+cd Open-MHS
+git config user.email "you@example.com"     # the email on your GitHub account, so commits are credited to you
+git switch -c your-branch-name              # never commit straight to main
+cargo build -p openmhs-cli
+cargo run -p openmhs-cli --bin openmhs -- demo</code></pre>
+    <p>You need Rust 1.89 or newer, and Python 3.10+ for the Python SDK, the schema check and
+    some examples. On Windows, see the <a href="docs.html#install">install notes</a>.</p>
+
+    <h2 id="checks">Checks before a pull request</h2>
+    <p>Run what CI runs (on Windows, macOS and Linux, warnings as errors):</p>
+<pre><code>cargo fmt --all -- --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
+cargo deny check                                # https://github.com/EmbarkStudios/cargo-deny
+python tools/check_schemas.py                   # pip install jsonschema
+(cd python/tests &amp;&amp; PYTHONPATH=.. python -m unittest discover -s . -v)
+python tools/check_registry.py                  # adapter registry
+python tools/gen_matrix.py --check              # compatibility matrix is current</code></pre>
+    <ul>
+      <li>Add or update tests for behaviour you change. Prefer a test that fails without your
+      change.</li>
+      <li>Update the documentation next to the code (<code>docs/</code>, <code>spec/</code>).</li>
+    </ul>
+
+    <h2 id="larger">Larger changes: RFCs</h2>
+    <p>For changes to the specification, the adapter contract, the API or the safety model,
+    open an RFC first: copy
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/rfcs/0000-template.md">docs/rfcs/0000-template.md</a>
+    and open a pull request with it. Decisions that stick become an ADR in
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/adr/README.md">docs/adr/</a>.</p>
+
+    <h2 id="pr">Commits and pull requests</h2>
+    <ul>
+      <li>One logical change per pull request. Explain what changed and why; link the issue.</li>
+      <li>Commit messages: a short imperative subject, then a body when the reason is not
+      obvious.</li>
+      <li>Say plainly what you did not test, for example "not run on macOS".</li>
+      <li>Use the issue and pull-request templates in the repository.</li>
+    </ul>
+
+    <h2 id="first">Good first issues</h2>
+    <p>Small, testable without hardware, and away from the safety model. Ask on the issue
+    before you start so work is not duplicated. From
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/good-first-issues.md">docs/good-first-issues.md</a>:</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Idea</th><th>Notes</th></tr>
+      <tr><td>Run the quickstart on macOS or a Linux distribution other than Ubuntu, and report what differs</td><td>macOS x86_64 has never been tested</td></tr>
+      <tr><td>Add an example descriptor for a fourth kind of device (a pump, a relay board) with valid and invalid fixtures</td><td><code>python tools/check_schemas.py</code> must pass</td></tr>
+      <tr><td>Write a device profile for a common instrument against an existing protocol simulator</td><td>Must pass <code>openmhs conformance --profile</code>; label it simulated</td></tr>
+      <tr><td>Improve an error message that does not say what to do next</td><td>Add a test that asserts the text</td></tr>
+      <tr><td>Tighten a doc page: stale statements, missing examples, broken links</td><td>Links are checked in CI</td></tr>
+      <tr><td>Add a shell-completion command to the CLI</td><td>Check <code>cargo deny</code> first</td></tr>
+      <tr><td>Try serial SCPI on Windows with a USB-serial loopback and report</td><td>Currently untested on Windows</td></tr>
+      <tr><td>Write a second example agent loop in another language, using the MCP server</td><td>Must run with no API key</td></tr>
+    </table>
+    </div>
+
+    <h2 id="governance">How decisions are made</h2>
+    <ul>
+      <li><strong>Everyday changes:</strong> a pull request, review, merge when CI is green and
+      the change fits the project.</li>
+      <li><strong>Specification, adapter contract, API, security model:</strong> an RFC first,
+      discussed in public; lasting decisions are recorded as an ADR.</li>
+      <li><strong>Roles:</strong> the maintainer merges changes, cuts releases and has the last
+      word on scope and the safety model. Contributors open issues, pull requests, adapters
+      and RFCs. Adapter maintainers are responsible for their registry entries.</li>
+    </ul>
+
+    <h2 id="ai">Using AI coding assistants</h2>
+    <p>Our advice, not a project rule. AI assistants make it easy to produce code you have not
+    understood, and in this project that is risky.</p>
+    <ul>
+      <li><strong>You own every line you submit.</strong> Read it and be able to explain it in
+      review.</li>
+      <li><strong>Give the assistant the rules.</strong> Point it at the relevant spec file,
+      decision record and the ground rules above.</li>
+      <li><strong>Watch for loosened checks.</strong> The most common bad suggestion is making a
+      failing test pass by weakening the code or the test.</li>
+      <li><strong>Run the checks yourself</strong> and read the output.</li>
+      <li><strong>Never let an assistant run commands against real equipment.</strong></li>
+    </ul>
+
+    <h2 id="hardware">Trying real hardware</h2>
+    <div class="note warn">OpenMHS is a supervisory layer, not a safety system. Hardware
+    interlocks and emergency stops keep final authority.</div>
+    <ul>
+      <li>Read <a href="https://github.com/KNambiarDJsc/Open-MHS/tree/main/docs/hardware">docs/hardware</a>
+      first. Those guides have not been verified on real devices.</li>
+      <li>Try every profile with <code>--profile-sim</code> before <code>--profile</code>.</li>
+      <li>Start with something harmless, such as a single LED.</li>
+      <li>Keep the device's own physical stop within reach, and know how to cut power.</li>
+      <li>Set ranges in the profile tighter than the device's real limits.</li>
+      <li>Grant agents read access first. Use <code>--max-side-effect reversible</code>, and
+      <code>require_approval</code> for anything that moves or heats.</li>
+      <li>Do not run the conformance suite against equipment in use; it sends real commands
+      and injects faults.</li>
+      <li>Keep MQTT and HTTP on TLS. Plaintext beyond loopback is refused unless you set
+      <code>allow_plaintext</code>; only do that on an isolated test network.</li>
+    </ul>
+
+    <h2 id="security">Reporting security problems</h2>
+    <p><strong>Do not open a public issue for a vulnerability.</strong> On the repository, open
+    the <strong>Security</strong> tab and choose <strong>Report a vulnerability</strong> (a
+    private security advisory). Include what you found, how to reproduce it, the version or
+    commit, and what an attacker gains. If that option is not available, open a public issue
+    that says only that you have a security report and want a private channel.</p>
+    <p>Expect an acknowledgement within about 7 days. There is no bug bounty. OpenMHS has not
+    been security audited; the threat model is in
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/tree/main/docs/security">docs/security</a>.</p>
+
+    <h2 id="license">License and conduct</h2>
+    <p>OpenMHS is licensed under Apache-2.0. By submitting a contribution you agree to license
+    it under the same terms; there is no separate CLA. By taking part you agree to follow the
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a>.
+    For help, see <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/SUPPORT.md">SUPPORT.md</a>.</p>
+  </div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>OpenMHS is an independent open-source project. It is not affiliated with, endorsed by,
+    or compatible with Anthropic or its Model Hardware Standard, whose specification is not
+    public.</p>
+    <p>Apache-2.0 · <a href="https://github.com/KNambiarDJsc/Open-MHS">github.com/KNambiarDJsc/Open-MHS</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
