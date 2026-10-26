@@ -1,0 +1,5 @@
+# Never upload local credentials or tooling files.
+.env*
+.vercel
+.gitignore
+README.md
