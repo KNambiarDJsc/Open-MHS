@@ -19,6 +19,7 @@ OpenMHS is an open-source gateway that sits between an AI agent and the instrume
 </p>
 
 <p align="center">
+<a href="https://openmhs.vercel.app">Website</a> ·
 <a href="#quickstart">Quickstart</a> ·
 <a href="docs/connect-a-device.md">Connect your device</a> ·
 <a href="#documentation">Documentation</a> ·
