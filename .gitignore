@@ -17,3 +17,6 @@ build/
 # Generated documentation site (tools/build_docs.py)
 /docs/book/src/
 /docs/book/build/
+
+# Vercel CLI project link (local)
+.vercel/

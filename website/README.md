@@ -32,5 +32,13 @@ are dated; re-run and re-date them rather than editing numbers by hand.
 
 ## Publishing
 
-It can be served from GitHub Pages (Settings → Pages, deploy from the `website/`
-folder through a workflow) or any static host. Not set up yet.
+Deployed on Vercel as a static site, from this folder (no build step). `vercel.json`
+sets security headers: no scripts, no frames, nothing loaded from other origins.
+
+```sh
+cd website
+vercel deploy            # a preview URL
+vercel deploy --prod     # the production URL
+```
+
+Any other static host works too (GitHub Pages, Netlify, a plain web server).
