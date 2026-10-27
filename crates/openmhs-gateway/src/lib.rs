@@ -38,6 +38,9 @@ pub const DEFAULT_PORT: u16 = 7400;
 pub const DEFAULT_OPERATOR: &str = "operator:local";
 pub const JOURNAL_FILE: &str = "journal.sqlite";
 pub const LOCK_FILE: &str = "gateway.lock";
+/// The reserve below a journal size limit, a starting hypothesis for controlled testing
+/// (ADR-0021), not a sizing recommendation.
+pub const DEFAULT_JOURNAL_RESERVE_BYTES: u64 = 256 * 1024 * 1024;
 /// How often devices are probed for availability by default (ADR-0019).
 pub const DEFAULT_HEALTH_INTERVAL_MS: u64 = 5_000;
 
@@ -81,6 +84,13 @@ pub struct GatewayConfig {
     /// How often to probe devices for availability, in milliseconds. `0` turns the probes
     /// off; commands to an `OFFLINE` device still probe it before they are refused.
     pub health_interval_ms: u64,
+    /// How far behind the gateway's clock a device's reading may be stamped and still count
+    /// as taken after a command was sent (ADR-0020). Zero accepts nothing stamped earlier.
+    pub readback_skew_ms: u64,
+    /// A hard limit on the journal's size in bytes (ADR-0021). `None`: unlimited.
+    pub journal_max_bytes: Option<u64>,
+    /// With a limit set, the reserve below it kept for critical writes.
+    pub journal_reserve_bytes: u64,
 }
 
 impl std::fmt::Debug for GatewayConfig {
@@ -94,6 +104,8 @@ impl std::fmt::Debug for GatewayConfig {
             .field("seed", &self.seed)
             .field("require_devices", &self.require_devices)
             .field("health_interval_ms", &self.health_interval_ms)
+            .field("readback_skew_ms", &self.readback_skew_ms)
+            .field("journal_max_bytes", &self.journal_max_bytes)
             .field(
                 "adapters",
                 &self
@@ -119,6 +131,9 @@ impl GatewayConfig {
             topology: None,
             require_devices: false,
             health_interval_ms: DEFAULT_HEALTH_INTERVAL_MS,
+            readback_skew_ms: 0,
+            journal_max_bytes: None,
+            journal_reserve_bytes: DEFAULT_JOURNAL_RESERVE_BYTES,
         }
     }
 }
@@ -195,7 +210,24 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let (policy_store, policy) = PolicyStore::open(&config.home, &config.operator)?;
     let tokens = TokenStore::open(&config.home, &config.operator)?;
-    let engine = Engine::open(&config.home.join(JOURNAL_FILE), clock.clone(), policy)?;
+    let engine = Engine::with_journal(
+        openmhs_engine::Journal::open(&config.home.join(JOURNAL_FILE))
+            .map_err(EngineError::from)?,
+        clock.clone(),
+        policy,
+        openmhs_engine::EngineOptions {
+            readback_skew_ms: config.readback_skew_ms,
+            ..openmhs_engine::EngineOptions::default()
+        },
+    );
+    if let Some(max_bytes) = config.journal_max_bytes {
+        engine
+            .set_storage_limits(openmhs_engine::StorageLimits {
+                max_bytes,
+                reserve_bytes: config.journal_reserve_bytes,
+            })
+            .map_err(|e| GatewayError::Config(format!("journal limits: {e}")))?;
+    }
     engine
         .journal()
         .append_audit(

@@ -52,6 +52,11 @@ pub struct EngineOptions {
     pub hold_unresolved: bool,
     /// Upper bound for one availability probe (`connect` or `health`, ADR-0019).
     pub probe_timeout_ms: u64,
+    /// How much older than the moment of dispatch a reading may be stamped and still count
+    /// as taken after it. Only for the gap between a device's clock and the gateway's; a
+    /// reading older than this cannot show that a command took effect and is not used to
+    /// verify or reconcile it (ADR-0020). Zero trusts nothing a device stamps earlier.
+    pub readback_skew_ms: u64,
 }
 
 impl Default for EngineOptions {
@@ -61,8 +66,19 @@ impl Default for EngineOptions {
             verify_poll_ms: 50,
             hold_unresolved: true,
             probe_timeout_ms: 2_000,
+            readback_skew_ms: 0,
         }
     }
+}
+
+/// A hard limit on the journal and the reserve below it (ADR-0021).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct StorageLimits {
+    /// SQLite refuses any write past this size.
+    pub max_bytes: u64,
+    /// Within this much of `max_bytes`, new physical commands and audited reads are
+    /// refused, so that stops, recovery and a person's resolutions still fit.
+    pub reserve_bytes: u64,
 }
 
 /// What [`Engine::recover`] did.
@@ -102,6 +118,7 @@ struct Inner {
     /// The operator's installation-specific relationships (spec/topology.md).
     topology: RwLock<Vec<TopologyRelationship>>,
     state: Mutex<HashMap<(String, String), StateValue>>,
+    storage: Mutex<Option<StorageLimits>>,
     options: EngineOptions,
     plans: plans::PlanRuntime,
 }
@@ -175,6 +192,7 @@ impl Engine {
                 devices: RwLock::new(HashMap::new()),
                 topology: RwLock::new(Vec::new()),
                 state: Mutex::new(HashMap::new()),
+                storage: Mutex::new(None),
                 options,
                 plans: plans::PlanRuntime::default(),
             }),
@@ -183,6 +201,60 @@ impl Engine {
 
     fn now(&self) -> Timestamp {
         self.inner.clock.now()
+    }
+
+    /// Limit the journal's size and keep a reserve below the limit for critical writes
+    /// (ADR-0021). The reserve must be smaller than the limit, and the journal must
+    /// already fit in it.
+    pub fn set_storage_limits(&self, limits: StorageLimits) -> Result<(), EngineError> {
+        if limits.reserve_bytes >= limits.max_bytes {
+            return Err(EngineError::InvalidRequest(vec![ErrorObject::new(
+                "storage.limits",
+                "the reserve must be smaller than the journal's size limit",
+            )]));
+        }
+        let used = self.inner.journal.size_bytes()?;
+        if used > limits.max_bytes {
+            // SQLite would quietly keep the larger size as the limit.
+            return Err(EngineError::InvalidRequest(vec![ErrorObject::new(
+                "storage.limits",
+                format!(
+                    "the journal is already {used} bytes, above the limit of {} bytes",
+                    limits.max_bytes
+                ),
+            )]));
+        }
+        self.inner.journal.set_max_bytes(limits.max_bytes)?;
+        *lock(&self.inner.storage) = Some(limits);
+        Ok(())
+    }
+
+    /// `Some` once the journal is within its reserve of its limit: the refusal for work
+    /// that is not critical. If the size cannot be read, nothing non-critical runs.
+    fn storage_refusal(&self) -> Option<ErrorObject> {
+        let limits = (*lock(&self.inner.storage))?;
+        match self.inner.journal.size_bytes() {
+            Ok(used) if used.saturating_add(limits.reserve_bytes) < limits.max_bytes => None,
+            Ok(used) => Some(
+                ErrorObject::new(
+                    "storage.exhausted",
+                    format!(
+                        "the journal is within its critical reserve of its size limit \
+                         ({used} of {} bytes used), so nothing was sent; new commands and \
+                         reads are refused until an operator frees space or raises the \
+                         limit. Stops are still accepted",
+                        limits.max_bytes
+                    ),
+                )
+                .detail("used_bytes", used)
+                .detail("limit_bytes", limits.max_bytes)
+                .detail("reserve_bytes", limits.reserve_bytes),
+            ),
+            Err(e) => Some(ErrorObject::new(
+                "gateway.journal",
+                format!("could not read the journal's size: {e}"),
+            )),
+        }
     }
 
     pub fn journal(&self) -> &Journal {
@@ -477,6 +549,10 @@ impl Engine {
             audit_denied(&e)?;
             return Err(EngineError::Denied(e));
         }
+        // An audited read writes a record; once only the reserve is left, it must not.
+        if let Some(e) = self.storage_refusal() {
+            return Err(EngineError::Denied(e));
+        }
         let result = self.read_device(&device, capability).await;
         self.inner.journal.append_audit(
             self.now(),
@@ -616,6 +692,31 @@ impl Engine {
         Ok(r)
     }
 
+    /// When the command was handed to the adapter (its `DISPATCHED` transition).
+    fn dispatched_at(&self, id: &str) -> Result<Option<Timestamp>, EngineError> {
+        Ok(self.receipt(id)?.and_then(|r| {
+            r.transitions
+                .iter()
+                .find(|t| t.state == Dispatched)
+                .map(|t| t.at)
+        }))
+    }
+
+    /// Whether a reading was measured at or after `since`, allowing the configured clock
+    /// gap. With no `since` (a command that was never dispatched) there is nothing to be
+    /// older than.
+    fn measured_since(&self, reading: &StateValue, since: Option<Timestamp>) -> bool {
+        match since {
+            Some(at) => {
+                reading
+                    .timestamp
+                    .plus_ms(self.inner.options.readback_skew_ms)
+                    >= at
+            }
+            None => true,
+        }
+    }
+
     fn deny(
         &self,
         id: &str,
@@ -697,6 +798,17 @@ impl Engine {
         if let Err(errors) = openmhs_policy::check_command(&device.descriptor, &cap, req, None) {
             return Evaluation::Denied {
                 errors,
+                rules: authz.rules,
+            };
+        }
+
+        // Within the critical reserve of the journal's limit, only critical work runs
+        // (ADR-0021). Never a stop.
+        if !cap.stop
+            && let Some(e) = self.storage_refusal()
+        {
+            return Evaluation::Denied {
+                errors: vec![e],
                 rules: authz.rules,
             };
         }
@@ -853,6 +965,11 @@ impl Engine {
             errors,
             checked_at: self.now(),
         };
+        // A check refused for want of space does not write its own audit record: that
+        // would spend the reserve it is refused to protect.
+        if result.errors.iter().any(|e| e.code == "storage.exhausted") {
+            return Ok(result);
+        }
         self.inner.journal.append_audit(
             result.checked_at,
             "command.preflight",
@@ -1151,12 +1268,18 @@ impl Engine {
 
         tokio::time::sleep(Duration::from_millis(settle_ms)).await;
         let started = self.now();
+        let since = self.dispatched_at(id)?;
         let mut last: Option<StateValue> = None;
+        let mut too_old = false;
         loop {
             if let Ok(v) = self.read_device(device, &capability).await
                 && v.is_usable(self.now(), None)
             {
-                if openmhs_policy::readback_matches(&expected, &v.value, tolerance) {
+                if !self.measured_since(&v, since) {
+                    // Measured before the command was sent: it cannot show its effect,
+                    // whether it matches or not.
+                    too_old = true;
+                } else if openmhs_policy::readback_matches(&expected, &v.value, tolerance) {
                     let detail = format!("readback {} matches", describe_value(&v.value));
                     return self.transition(id, Verified, Some(detail), |r| {
                         r.verification = Some(VerificationRecord {
@@ -1168,8 +1291,9 @@ impl Engine {
                             reason: None,
                         });
                     });
+                } else {
+                    last = Some(v);
                 }
-                last = Some(v);
             }
             let elapsed = u64::try_from(started.ms_until(self.now())).unwrap_or(0);
             if elapsed >= timeout_ms {
@@ -1205,7 +1329,11 @@ impl Engine {
             None => self.transition(
                 id,
                 Unverifiable,
-                Some("no usable readback within the verification timeout".into()),
+                Some(if too_old {
+                    "readings were older than the command; none can show its effect".into()
+                } else {
+                    "no usable readback within the verification timeout".into()
+                }),
                 |r| {
                     r.verification = Some(VerificationRecord {
                         mode: VerificationMode::Readback,
@@ -1213,7 +1341,12 @@ impl Engine {
                         expected: Some(expected),
                         observed: None,
                         matched: None,
-                        reason: Some("readback source unavailable or not GOOD quality".into()),
+                        reason: Some(if too_old {
+                            "every reading was older than the command, so none can show its effect"
+                                .into()
+                        } else {
+                            "readback source unavailable or not GOOD quality".into()
+                        }),
                     });
                 },
             ),
@@ -1336,6 +1469,14 @@ impl Engine {
             });
         }
 
+        if !cap.stop
+            && let Some(e) = self.storage_refusal()
+        {
+            return self.transition(command_id, Denied, Some(e.message.clone()), |r| {
+                r.policy.decision = Decision::Deny;
+                r.policy.errors = vec![e];
+            });
+        }
         if !cap.stop
             && let Some(e) = self.unavailable_refusal(&device).await
         {
@@ -1485,7 +1626,27 @@ impl Engine {
             .ok_or_else(|| {
                 EngineError::NotReconcilable(format!("no usable reading of '{capability}'"))
             })?;
+        // A reading from before the command was sent says nothing about it. One from before
+        // the gateway gave up waiting cannot rule out a device that was merely slow, so it
+        // cannot support "not applied", the conclusion that invites a resend.
         let matched = openmhs_policy::readback_matches(&expected, &observed.value, tolerance);
+        let since = self.dispatched_at(command_id)?;
+        let gave_up = receipt
+            .transitions
+            .iter()
+            .rev()
+            .find(|t| t.state == UnknownOutcome)
+            .map(|t| t.at);
+        let floor = if matched { since } else { gave_up.or(since) };
+        if !self.measured_since(&observed, floor) {
+            return Err(EngineError::NotReconcilable(format!(
+                "the only reading of '{capability}' available was measured at {}, older than the \
+                 command ({}); it cannot show whether the command took effect. Try again when \
+                 the device reports a current value, or have an operator resolve it",
+                observed.timestamp.to_rfc3339(),
+                if matched { "sent" } else { "given up on" },
+            )));
+        }
         let to = if matched {
             ReconciledApplied
         } else {

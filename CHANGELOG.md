@@ -52,6 +52,17 @@ Work towards the first public release (0.1.0). Milestones M0–M9 are described 
   MCP `list_devices` (`availability`, `reason`, `busy`, `lease_holder`) and
   `Client.device_status` in the Python SDK. `serve --require-devices` keeps the strict
   start; `--health-interval-ms` sets the probe interval.
+- Readback freshness ([ADR-0020](docs/adr/0020-readback-must-follow-dispatch.md)): a reading
+  measured before a command was sent no longer verifies it or reconciles it, so a cached or
+  retained value cannot produce `VERIFIED` or a false `RECONCILED_NOT_APPLIED` (which invites
+  a duplicate physical effect). Such commands end `UNVERIFIABLE`; reconciliation is refused.
+  `serve --readback-skew-ms` allows for a device clock behind the gateway's.
+- Journal quota ([ADR-0021](docs/adr/0021-journal-quota-and-reserve.md)):
+  `serve --journal-max-mib` / `--journal-reserve-mib` limit the journal; within the reserve
+  new commands and audited reads are refused (`storage.exhausted`) and only stops and
+  recovery may write. Segments, retention and archives are still a draft RFC.
+- An unconfirmed stop is never reported as stopped; MCP advises the equipment's own emergency
+  stop and that resending the stop is safe.
 - SCPI: a timed-out request can no longer desynchronize the link. Exchanges run to
   completion even if the caller gives up, the link resynchronizes with `*IDN?` before
   the next request, and a request is not sent while the instrument is still busy.

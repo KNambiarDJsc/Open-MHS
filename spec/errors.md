@@ -177,6 +177,13 @@ code the descriptor relationship rule uses (see Descriptor validation above).
 |---|---|
 | `device.unavailable` | The device did not answer a probe made just before the command, so nothing was sent. Writes and invokes are refused until it answers; stops never are. `details.since` is when it went offline |
 
+### Storage (ADR-0021)
+
+| Code | Meaning |
+|---|---|
+| `storage.exhausted` | The journal is within its critical reserve of its size limit, so nothing was sent: writes and invokes (not stops), audited reads and approvals that would dispatch are refused until an operator frees space or raises the limit. `details`: `used_bytes`, `limit_bytes`, `reserve_bytes` |
+| `storage.limits` | The configured limits cannot work: the reserve is not smaller than the limit, or the journal is already larger than the limit |
+
 ### Leases (M9)
 
 | Code | Meaning |

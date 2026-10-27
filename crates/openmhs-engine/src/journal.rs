@@ -118,6 +118,27 @@ impl Journal {
         Self::init(Connection::open_in_memory()?)
     }
 
+    /// Size of the database in bytes: page count times page size, free pages included.
+    /// The write-ahead log, which SQLite checkpoints into the file, is not counted.
+    pub fn size_bytes(&self) -> Result<u64, JournalError> {
+        let conn = self.lock();
+        let pages: i64 = conn.query_row("PRAGMA page_count", [], |r| r.get(0))?;
+        let page_size: i64 = conn.query_row("PRAGMA page_size", [], |r| r.get(0))?;
+        Ok(u64::try_from(pages.saturating_mul(page_size)).unwrap_or(0))
+    }
+
+    /// Make SQLite refuse any write that would grow the database past `bytes` (rounded up
+    /// to whole pages; never below its current size). A hard limit: it applies to every
+    /// write, critical or not.
+    pub fn set_max_bytes(&self, bytes: u64) -> Result<(), JournalError> {
+        let conn = self.lock();
+        let page_size: i64 = conn.query_row("PRAGMA page_size", [], |r| r.get(0))?;
+        let bytes = i64::try_from(bytes).unwrap_or(i64::MAX);
+        let pages = bytes.saturating_add(page_size - 1) / page_size;
+        conn.pragma_update_and_check(None, "max_page_count", pages, |r| r.get::<_, i64>(0))?;
+        Ok(())
+    }
+
     fn init(conn: Connection) -> Result<Self, JournalError> {
         // FULL: an intent record must survive power loss once the call returns.
         conn.pragma_update(None, "synchronous", "FULL")?;
