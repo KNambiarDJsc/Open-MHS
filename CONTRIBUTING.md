@@ -50,6 +50,23 @@ python tools/check_registry.py                  # adapter registry
 python tools/gen_matrix.py --check              # compatibility matrix is current
 ```
 
+While you work, test only what you touched. The whole workspace takes about ten minutes to
+build from cold and needs a few GB of disk (`target/`; the workspace's dev and test
+profiles are set to keep this small, see `Cargo.toml`):
+
+| You changed | Run |
+|---|---|
+| The engine, lifecycle, availability | `cargo test -p openmhs-engine` |
+| An API method, the gateway | `cargo test -p openmhs-gateway -p openmhs-api` |
+| A protocol adapter | `cargo test -p openmhs-scpi` (or `-modbus`, `-mqtt`, `-http`, `-profile`) |
+| The MCP server | `cargo test -p openmhs-mcp` |
+| The CLI | `cargo test -p openmhs-cli` |
+| A schema or a spec example | `python tools/check_schemas.py` and `cargo test -p openmhs-types` |
+| The Python SDK | the `python/tests` command above, after `cargo build -p openmhs-cli` |
+
+Run the full set before you open the pull request. If your disk is small, `cargo clean`
+frees everything under `target/` and nothing else.
+
 Also:
 
 - Add or update tests for behaviour you change. Prefer a test that fails without your

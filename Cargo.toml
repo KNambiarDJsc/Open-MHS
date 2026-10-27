@@ -94,3 +94,16 @@ unwrap_used = "warn"
 [profile.dist]
 inherits = "release"
 lto = "thin"
+
+# Development and test builds keep line tables, not full variable debug information, and do
+# not keep an incremental cache. A full workspace test build on Windows MSVC wrote about
+# 17 GB of target/ with the defaults and filled a laptop disk, and once hit the linker's
+# PDB size limit (LNK1140); with these two settings it was 3.9 GB. Set
+# CARGO_PROFILE_DEV_DEBUG=2 and CARGO_INCREMENTAL=1 for step-through debugging.
+[profile.dev]
+debug = 1
+incremental = false
+
+[profile.test]
+debug = 1
+incremental = false
