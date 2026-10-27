@@ -623,3 +623,46 @@ async fn an_offline_device_is_visible_and_refused_with_a_next_step() {
     client.cancel().await.unwrap();
     lab.gw.shutdown().await.unwrap();
 }
+
+/// A stop that cannot be confirmed is never reported as having stopped anything, and the
+/// advice is the opposite of a write's: sending it again is fine, and the equipment's own
+/// emergency stop is what to use. A write in the same state is told never to resubmit.
+#[tokio::test(flavor = "multi_thread")]
+async fn an_unconfirmed_stop_is_not_reported_as_stopped() {
+    let lab = lab(vec![
+        grant("read-all", "*", "*", &[Operation::Read], Effect::Allow),
+        grant(
+            "axis-invoke",
+            "sim.axis-01",
+            "*",
+            &[Operation::Invoke],
+            Effect::Allow,
+        ),
+    ])
+    .await;
+    let operator = Client::new(&lab.gw.url, &lab.gw.operator_token).unwrap();
+    let client = connect(&lab.gw.url, &lab.agent_token, false).await;
+    // The link breaks after the gateway last saw the stage answer, so the stop is sent.
+    operator
+        .sim_fault("sim.axis-01", "link-down")
+        .await
+        .unwrap();
+
+    let r = call(
+        &client,
+        "submit_command",
+        json!({ "device": "sim.axis-01", "capability": "axis.stop", "params": {}, "idempotency_key": "stop-1" }),
+    )
+    .await;
+    assert!(is_error(&r), "an unconfirmed stop is flagged as an error");
+    let v = structured(&r);
+    assert_eq!(v["confirmed"], false);
+    assert_ne!(v["state"], "VERIFIED");
+    let steps = v["next_steps"].to_string();
+    assert!(steps.contains("NOT confirmed"), "{steps}");
+    assert!(steps.contains("emergency stop"), "{steps}");
+    assert!(steps.contains("safe"), "{steps}");
+    assert!(!steps.contains("Do NOT resubmit"), "{steps}");
+    client.cancel().await.unwrap();
+    lab.gw.shutdown().await.unwrap();
+}

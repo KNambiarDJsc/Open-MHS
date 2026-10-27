@@ -25,7 +25,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 
-use crate::guidance::{CheckView, CommandView, Reason, check_view, command_view};
+use crate::guidance::{CheckView, CommandView, Reason, check_view, command_view, command_view_for};
 use crate::plans::{
     CancelPlanArgs, GetPlanArgs, PlanArgs, PlanCheckView, PlanView, plan_check_view, plan_view,
 };
@@ -365,6 +365,19 @@ impl OpenMhsServer {
         }
     }
 
+    /// A command as the agent should see it. Whether its capability is a stop decides
+    /// the advice for an unconfirmed result; if the descriptor cannot be read, the
+    /// ordinary advice stands.
+    async fn view(&self, r: &openmhs_types::Receipt) -> CommandView {
+        let is_stop = match self.client.describe(&r.request.target.device).await {
+            Ok(d) => d
+                .capability(&r.request.target.capability)
+                .is_some_and(|c| c.stop),
+            Err(_) => false,
+        };
+        command_view_for(r, is_stop)
+    }
+
     async fn request(
         &self,
         device: &str,
@@ -571,7 +584,7 @@ impl OpenMhsServer {
             req["deadline_ms"] = d.into();
         }
         Ok(match self.client.submit(req).await {
-            Ok(r) => structured(&command_view(&r), guidance::is_error(&r)),
+            Ok(r) => structured(&self.view(&r).await, guidance::is_error(&r)),
             Err(e) => client_error(&e),
         })
     }
@@ -598,7 +611,7 @@ impl OpenMhsServer {
                 Err(e) => return Ok(client_error(&e)),
             };
             if r.outcome != Outcome::Pending || started.elapsed() >= wait {
-                return Ok(structured(&command_view(&r), guidance::is_error(&r)));
+                return Ok(structured(&self.view(&r).await, guidance::is_error(&r)));
             }
             tokio::time::sleep(Duration::from_millis(POLL_MS)).await;
         }
@@ -653,7 +666,7 @@ impl OpenMhsServer {
             return Ok(r);
         }
         Ok(match self.client.reconcile(&args.0.command_id).await {
-            Ok(r) => structured(&command_view(&r), guidance::is_error(&r)),
+            Ok(r) => structured(&self.view(&r).await, guidance::is_error(&r)),
             Err(e) => client_error(&e),
         })
     }
@@ -678,7 +691,7 @@ impl OpenMhsServer {
         }
         Ok(match self.client.cancel(&args.0.command_id).await {
             // A cancellation that worked is not an error, even though nothing executes.
-            Ok(r) => structured(&command_view(&r), false),
+            Ok(r) => structured(&self.view(&r).await, false),
             Err(e) => client_error(&e),
         })
     }

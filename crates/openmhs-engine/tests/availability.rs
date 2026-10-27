@@ -195,6 +195,16 @@ async fn a_stop_is_never_refused_for_availability() {
     let stop = engine.submit(&agent(), &invoke("axis.stop")).await.unwrap();
     assert_ne!(stop.state, CommandState::Denied, "{stop:?}");
     assert_eq!(handle.execute_calls(), 1);
+
+    // Bypassing the gate is not a claim that anything stopped. The stop reached a dead
+    // link, so whether the stage stopped is unknown, and the receipt says so.
+    assert_eq!(stop.state, CommandState::UnknownOutcome, "{stop:?}");
+    assert_eq!(stop.outcome, openmhs_types::Outcome::Uncertain);
+    assert!(stop.verification.is_none(), "nothing confirmed it");
+    // And a second stop is not held back by the first one's unknown outcome.
+    let again = engine.submit(&agent(), &invoke("axis.stop")).await.unwrap();
+    assert_ne!(codes(&again), ["command.outcome_unresolved"], "{again:?}");
+    assert_eq!(handle.execute_calls(), 2);
 }
 
 #[tokio::test(start_paused = true)]

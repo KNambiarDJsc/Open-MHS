@@ -63,6 +63,26 @@ bookkeeping must not stand between an operator and a stop; if the device really 
 unreachable, the stop fails on the link as it would without status. A gateway stop is not
 an emergency stop, which belongs to the hardware.
 
+**What a stop's receipt means.** Skipping the gate is not a claim that anything stopped.
+The existing lifecycle already distinguishes what a stop needs, and no new states are added:
+
+| Question | State |
+|---|---|
+| The gateway accepted the request | `APPROVED` (authenticated, authorized, validated) |
+| Transmission was attempted | `DISPATCHED` (intent journaled first) |
+| The device acknowledged | `ACCEPTED` |
+| The relevant state was confirmed | `VERIFIED`, only by readback |
+| The gateway cannot say whether the device stopped | `UNKNOWN_OUTCOME` (timeout, disconnect, crash) |
+| It reported applied but nothing confirmed it | `UNVERIFIABLE` |
+
+A stop to an unreachable device ends `UNKNOWN_OUTCOME`, never `VERIFIED`
+(`a_stop_is_never_refused_for_availability`). A stop is exempt from the unresolved-outcome
+hold, so it can be sent again at once. MCP therefore gives an unconfirmed stop different
+advice from any other command: it is not confirmed, treat the equipment as still moving or
+energized, use its own emergency stop, and sending the stop again is safe
+(`an_unconfirmed_stop_is_not_reported_as_stopped`). An independent emergency stop or
+interlock must remain available for hazardous equipment; nothing here replaces it.
+
 `DEGRADED` gates nothing. Availability never makes anything more permissive: every other
 check still runs and still fails closed on its own readings.
 
