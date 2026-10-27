@@ -109,17 +109,17 @@ See the inventory in [NEXT_MILESTONE_ROADMAP.md](NEXT_MILESTONE_ROADMAP.md) §3.
 
 ## 7. What was implemented on this branch
 
-Branch `strategy/availability` in `C:\Users\HP\Open-MHS`. **Nothing is pushed; one commit
-exists, the rest is uncommitted** pending review.
+Branch `strategy/availability`, five commits on top of `main` (`git log main..`).
+**Nothing is pushed or merged**, pending review.
 
 | Change | Files | Status |
 |---|---|---|
 | **SCPI serial CI fix** with a portable regression test that fails on the old code | `adapters/openmhs-scpi/src/link.rs` | Committed (`0dc4199`) |
-| **Device availability** ([ADR-0019](../adr/0019-device-availability.md)): offline registration, bounded connect, probes with bounded concurrency and one outstanding probe per device, passive observation, `device.unavailable` gate that never applies to stops, `devices.status` | `openmhs-types/src/availability.rs`, `openmhs-engine/src/engine/availability.rs`, `engine.rs`, `openmhs-api`, `openmhs-gateway` | Uncommitted |
-| Propagation | CLI `devices status`, `serve --require-devices --health-interval-ms`, offline lines in the startup banner; MCP `list_devices` fields and instructions; Python `Client.device_status`, `DeviceStatus`, `Availability` | Uncommitted |
-| Specs and docs | `spec/api.md`, `spec/errors.md`, `docs/cli.md`, `docs/mcp.md`, `docs/limitations.md`, `CHANGELOG.md`, ADR index | Uncommitted |
-| **Lean build profile** (`debug = 1`, `incremental = false`) | `Cargo.toml` | Uncommitted. Measured: full workspace test build 3.9 GB in 511 s, against 17 GB with defaults |
-| Strategy documents (10) | `docs/strategy/` | Uncommitted |
+| **Device availability** ([ADR-0019](../adr/0019-device-availability.md)): offline registration, bounded connect, probes with bounded concurrency and one outstanding probe per device, passive observation, `device.unavailable` gate that never applies to stops, `devices.status` | `openmhs-types/src/availability.rs`, `openmhs-engine/src/engine/availability.rs`, `engine.rs`, `openmhs-api`, `openmhs-gateway` | Committed |
+| Propagation | CLI `devices status`, `serve --require-devices --health-interval-ms`, offline lines in the startup banner; MCP `list_devices` fields and instructions; Python `Client.device_status`, `DeviceStatus`, `Availability` | Committed |
+| Specs and docs | `spec/api.md`, `spec/errors.md`, `docs/cli.md`, `docs/mcp.md`, `docs/limitations.md`, `CHANGELOG.md`, ADR index | Committed |
+| **Lean build profile** (`debug = 1`, `incremental = false`) | `Cargo.toml` | Committed. Measured: full workspace test build 3.9 GB in 511 s, against 17 GB with defaults |
+| Strategy documents (10) | `docs/strategy/` | Committed |
 | Storage and scaling RFC | `docs/strategy/STORAGE_AND_SCALING_RFC.md` | **Draft for review; no destructive rotation implemented** |
 
 Security boundaries: none changed. A stop is still authenticated, scoped, authorized and
