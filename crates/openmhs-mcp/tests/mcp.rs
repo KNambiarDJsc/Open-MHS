@@ -209,6 +209,10 @@ async fn discovery_and_reads_return_structured_results() {
         .unwrap();
     assert_eq!(setpoint["value"]["unit"], "V");
     assert_eq!(setpoint["side_effect"], "reversible");
+    // Availability travels with the summary (ADR-0019).
+    assert_eq!(psu["availability"], "ONLINE");
+    assert_eq!(psu["busy"], false);
+    assert!(psu.get("lease_holder").is_none());
     // Descriptor prose reaches the model marked as unattested; identifiers do not.
     let quoted = |v: &Value| {
         let t = v.as_str().unwrap();
@@ -576,6 +580,89 @@ async fn plans_check_run_and_explain_a_failure() {
     .await;
     assert!(is_error(&r));
     assert!(text(&r).contains("plan.invalid"), "{}", text(&r));
+    client.cancel().await.unwrap();
+    lab.gw.shutdown().await.unwrap();
+}
+
+/// ADR-0019: an agent sees a device that stopped answering, is refused before anything is
+/// sent, and is told not to retry in a loop.
+#[tokio::test(flavor = "multi_thread")]
+async fn an_offline_device_is_visible_and_refused_with_a_next_step() {
+    let lab = lab(psu_grants()).await;
+    let operator = Client::new(&lab.gw.url, &lab.gw.operator_token).unwrap();
+    operator.sim_fault(PSU, "link-down").await.unwrap();
+    // A status refresh probes a device at most once a second.
+    tokio::time::sleep(std::time::Duration::from_millis(1_100)).await;
+    operator.device_status(Some(PSU), true).await.unwrap();
+    let client = connect(&lab.gw.url, &lab.agent_token, false).await;
+
+    let r = call(&client, "list_devices", json!({})).await;
+    let devices = structured(&r)["devices"].as_array().unwrap().clone();
+    let psu = devices.iter().find(|d| d["id"] == PSU).unwrap();
+    assert_eq!(psu["availability"], "OFFLINE");
+    assert!(
+        psu["reason"]
+            .as_str()
+            .unwrap()
+            .contains("simulated disconnect")
+    );
+
+    let r = call(
+        &client,
+        "submit_command",
+        json!({ "device": PSU, "capability": SETPOINT, "value": volts(1.0), "idempotency_key": "off-1" }),
+    )
+    .await;
+    assert!(is_error(&r));
+    let v = structured(&r);
+    assert_eq!(v["state"], "DENIED");
+    assert_eq!(v["reached_device"], false);
+    assert_eq!(v["reasons"][0]["code"], "device.unavailable");
+    let steps = v["next_steps"][0].as_str().unwrap();
+    assert!(steps.contains("Do not retry in a loop"), "{steps}");
+    client.cancel().await.unwrap();
+    lab.gw.shutdown().await.unwrap();
+}
+
+/// A stop that cannot be confirmed is never reported as having stopped anything, and the
+/// advice is the opposite of a write's: sending it again is fine, and the equipment's own
+/// emergency stop is what to use. A write in the same state is told never to resubmit.
+#[tokio::test(flavor = "multi_thread")]
+async fn an_unconfirmed_stop_is_not_reported_as_stopped() {
+    let lab = lab(vec![
+        grant("read-all", "*", "*", &[Operation::Read], Effect::Allow),
+        grant(
+            "axis-invoke",
+            "sim.axis-01",
+            "*",
+            &[Operation::Invoke],
+            Effect::Allow,
+        ),
+    ])
+    .await;
+    let operator = Client::new(&lab.gw.url, &lab.gw.operator_token).unwrap();
+    let client = connect(&lab.gw.url, &lab.agent_token, false).await;
+    // The link breaks after the gateway last saw the stage answer, so the stop is sent.
+    operator
+        .sim_fault("sim.axis-01", "link-down")
+        .await
+        .unwrap();
+
+    let r = call(
+        &client,
+        "submit_command",
+        json!({ "device": "sim.axis-01", "capability": "axis.stop", "params": {}, "idempotency_key": "stop-1" }),
+    )
+    .await;
+    assert!(is_error(&r), "an unconfirmed stop is flagged as an error");
+    let v = structured(&r);
+    assert_eq!(v["confirmed"], false);
+    assert_ne!(v["state"], "VERIFIED");
+    let steps = v["next_steps"].to_string();
+    assert!(steps.contains("NOT confirmed"), "{steps}");
+    assert!(steps.contains("emergency stop"), "{steps}");
+    assert!(steps.contains("safe"), "{steps}");
+    assert!(!steps.contains("Do NOT resubmit"), "{steps}");
     client.cancel().await.unwrap();
     lab.gw.shutdown().await.unwrap();
 }

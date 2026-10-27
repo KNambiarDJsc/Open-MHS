@@ -82,11 +82,12 @@
     </table>
     </div>
     <h3>Gate results on Windows</h3>
+    <p>Rows are from the M10 gate, except the <code>cargo test</code> count, which was re-run on 2026-10-28.</p>
     <div class="table-scroll">
     <table>
       <tr><th>Step</th><th>Result</th></tr>
       <tr><td><code>cargo fmt</code>, <code>cargo clippy -D warnings</code>, <code>cargo deny check</code></td><td><span class="tag ok">pass</span></td></tr>
-      <tr><td><code>cargo test --workspace</code></td><td><span class="tag ok">pass</span> 354 tests, 0 failed, 67 test binaries</td></tr>
+      <tr><td><code>cargo test --workspace</code></td><td><span class="tag ok">pass</span> 369 tests, 0 failed, 68 test binaries (<code>main</code> at <code>37c56fb</code>, Windows 11)</td></tr>
       <tr><td>Schema, registry, matrix and release-version checks</td><td><span class="tag ok">pass</span> 78 schema documents, 11 registry entries, 9 reports</td></tr>
       <tr><td>Python SDK tests and tool tests</td><td><span class="tag ok">pass</span></td></tr>
       <tr><td>Documentation build with link check</td><td><span class="tag ok">pass</span> 0 broken links</td></tr>

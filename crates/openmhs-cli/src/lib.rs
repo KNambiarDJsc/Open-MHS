@@ -292,6 +292,13 @@ pub struct ServeArgs {
     /// Seed for simulator noise.
     #[arg(long, default_value_t = 42)]
     seed: u64,
+    /// Refuse to start unless every device answers. By default a device that does not
+    /// answer is registered OFFLINE and used once it does.
+    #[arg(long)]
+    require_devices: bool,
+    /// How often to check that devices answer, in milliseconds; 0 turns it off.
+    #[arg(long, default_value_t = openmhs_gateway::DEFAULT_HEALTH_INTERVAL_MS)]
+    health_interval_ms: u64,
 }
 
 #[derive(Args)]
@@ -307,6 +314,9 @@ enum DevicesCmd {
     List,
     /// Show a device's descriptor: its capabilities, units, ranges and limits.
     Inspect { device: String },
+    /// Show whether devices answer, are busy or leased. Probes any device not checked in
+    /// the last second first.
+    Status { device: Option<String> },
 }
 
 #[derive(Args)]
@@ -719,13 +729,15 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
         seed: args.seed,
         adapters,
         topology,
+        require_devices: args.require_devices,
+        health_interval_ms: args.health_interval_ms,
     };
     let gateway = match openmhs_gateway::start(config).await {
         Ok(g) => g,
         Err(e) => {
             eprintln!("error: {e}");
-            // The gateway connects to every device before it listens; say which real
-            // devices it was reaching and how to try the profile without one.
+            // With --require-devices the gateway connects to every device before it
+            // listens; say which real devices it was reaching and how to go on without one.
             let real: Vec<_> = args.profiles.iter().zip(&opened).collect();
             if !real.is_empty() && matches!(e, openmhs_gateway::GatewayError::Engine(_)) {
                 eprintln!("  the gateway connects to each device before it starts:");
@@ -772,6 +784,15 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
                     d.device.id, d.adapter.id
                 ),
                 None => println!("  device   {} ({})", d.device.id, d.adapter.id),
+            }
+        }
+        for s in gateway.engine().device_statuses().unwrap_or_default() {
+            if s.availability == openmhs_types::Availability::Offline {
+                println!(
+                    "  offline  {} does not answer ({}); commands to it are refused until it does (`openmhs devices status`)",
+                    s.device,
+                    s.reason.as_deref().unwrap_or("no reason given")
+                );
             }
         }
         println!(
@@ -1482,6 +1503,11 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
             DevicesCmd::Inspect { device } => {
                 show(json, &client.describe(&device).await?, output::descriptor);
             }
+            DevicesCmd::Status { device } => show(
+                json,
+                &client.device_status(device.as_deref(), true).await?,
+                |s| output::device_statuses(s),
+            ),
         },
         Cmd::Graph => show(json, &client.graph().await?, output::graph),
         Cmd::Leases { command } => match command {

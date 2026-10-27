@@ -79,7 +79,7 @@ Tools (all return `structuredContent` with an `outputSchema`):
 
 | Tool | Changes the world? | Use |
 |---|---|---|
-| `list_devices`, `describe_device` | No | Discover devices, units, ranges, limits |
+| `list_devices`, `describe_device` | No | Discover devices, units, ranges, limits. `list_devices` also gives each device's `availability`, `reason`, `busy` and `lease_holder`; an `OFFLINE` device refuses commands with `device.unavailable` |
 | `read_state` | No (audited) | Read now; check `usable` before relying on it |
 | `check_command` | No | Ask whether a command would be allowed right now |
 | `submit_command` | **Yes** | Write a property (`value`) or invoke an action (`params`) |

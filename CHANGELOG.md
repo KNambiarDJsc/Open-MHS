@@ -44,11 +44,35 @@ Work towards the first public release (0.1.0). Milestones M0–M9 are described 
   the same capability is refused (`command.outcome_unresolved`) unless the capability is
   idempotent or a stop. `commands.resolve` / `openmhs commands resolve` lets an operator
   settle an outcome that cannot be read back, with the reason recorded.
+- Device availability ([ADR-0019](docs/adr/0019-device-availability.md)): a device that
+  does not answer at start is registered `OFFLINE` instead of stopping the gateway, the
+  others and crash recovery; probes (`connect`, then `health`) follow it, at most 16 at a
+  time; writes and invokes to an `OFFLINE` device are refused before anything is sent
+  (`device.unavailable`), stops never are; `devices.status`, `openmhs devices status`,
+  MCP `list_devices` (`availability`, `reason`, `busy`, `lease_holder`) and
+  `Client.device_status` in the Python SDK. `serve --require-devices` keeps the strict
+  start; `--health-interval-ms` sets the probe interval.
 - SCPI: a timed-out request can no longer desynchronize the link. Exchanges run to
   completion even if the caller gives up, the link resynchronizes with `*IDN?` before
   the next request, and a request is not sent while the instrument is still busy.
 - Release engineering: cargo-dist configuration, Python packaging, a documentation site,
   an adapter registry, a generated compatibility matrix, and governance files.
+
+### Changed
+
+- `openmhs serve` and `openmhs_gateway::start` no longer refuse to start when a device does
+  not answer; it is registered `OFFLINE` (ADR-0019). `--require-devices` /
+  `GatewayConfig::require_devices` restores the old start. `GatewayConfig` gains
+  `require_devices` and `health_interval_ms`, `EngineOptions` gains `probe_timeout_ms`
+  (code that builds them with struct literals must add the fields; `::new` and
+  `::default()` are unchanged). The `device.registered` audit record gains `availability`
+  and `reason`.
+
+### Fixed
+
+- SCPI: a link no longer refuses every request for good after an instrument dropped
+  requests while the line was down (a serial port that never closes). This made CI
+  fail on Linux and macOS since the resynchronization change.
 
 ### Known limitations
 

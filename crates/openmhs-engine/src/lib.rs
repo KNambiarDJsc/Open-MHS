@@ -13,7 +13,7 @@ pub mod journal;
 
 pub use engine::{
     DEFAULT_APPROVAL_TTL_MS, Engine, EngineOptions, LeaseRequest, MAX_APPROVAL_TTL_MS,
-    RecoveryReport, fingerprint,
+    MAX_CONCURRENT_PROBES, RecoveryReport, fingerprint,
 };
 pub use error::EngineError;
 pub use journal::{AuditRecord, AuditVerification, Journal, JournalError};

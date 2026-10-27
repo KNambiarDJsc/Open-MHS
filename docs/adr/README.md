@@ -20,6 +20,7 @@
 | [0016](0016-transport-security.md) | Transport security: verified TLS, no insecure mode, plaintext refused beyond loopback | Accepted |
 | [0017](0017-identity-and-trust.md) | Identity and trust: scoped credentials, approval records, signed adapter manifests, the `Caller` context | Accepted |
 | [0018](0018-orchestration.md) | Capability graph, leases, stop lane, plans with twin preflight | Accepted |
+| [0019](0019-device-availability.md) | Device availability: offline devices at start, probes, `device.unavailable`, `devices.status` | Accepted |
 
 Format: Context → Decision → Alternatives considered → Consequences. Supersede an
 ADR with a new one rather than rewriting history.

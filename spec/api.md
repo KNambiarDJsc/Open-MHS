@@ -54,6 +54,7 @@ apply to everyone. A role never bypasses authorization for device access.
 | `gateway.info` | any | — | version, spec version, your principal and role, your credential id and scopes, simulation flag, device count |
 | `devices.list` | any | — | descriptors |
 | `devices.describe` | any | `device` | descriptor |
+| `devices.status` | any | `device?`, `refresh?` | statuses: `device`, `availability` (`ONLINE`, `DEGRADED`, `OFFLINE`), `reason?`, `since`, `checked_at`, `busy`, `lease?` (`id`, `holder`, `expires_at`). `refresh` probes devices not checked in the last second first ([ADR-0019](../docs/adr/0019-device-availability.md)) |
 | `graph.get` | any | — | `devices`, `relationships` (each with `from` and `origin`), `resources`, `frames`, `issues` ([topology.md](topology.md)) |
 | `leases.acquire` | any⁵ | `devices?`, `resources?`, `ttl_ms`, `reason?` | lease (`id`, `holder`, `claim`, `expires_at`, …); all or nothing ([topology.md](topology.md) §Leases) |
 | `leases.get` / `leases.list` | any | `id` / `active?`, `limit?` | lease / leases, newest first |
@@ -125,7 +126,8 @@ The principal of a command always comes from the token, never from the request b
 | Kind | Recorded when |
 |---|---|
 | `gateway.started`, `gateway.stopped`, `gateway.recovered` | Gateway lifecycle and crash recovery |
-| `device.registered` | A device is registered at start |
+| `device.registered` | A device is registered at start, with its availability (`OFFLINE` if it did not answer) |
+| `device.availability` | A device's availability changed (`from`, `to`, `reason`); unchanged probes write nothing |
 | `policy.updated`, `grant.added`, `grant.revoked` | Policy changes |
 | `token.created`, `token.revoked`, `token.rotated` | Credential changes (never the secret) |
 | `credential.rejected` | First refused use of an expired or revoked credential (once per credential and reason) |

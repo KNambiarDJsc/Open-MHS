@@ -5,6 +5,7 @@
 //! It contains no hardware-specific logic.
 
 pub mod approval;
+pub mod availability;
 pub mod command;
 pub mod descriptor;
 pub mod error;
@@ -24,6 +25,7 @@ pub mod validate;
 pub mod value;
 
 pub use approval::{Approval, ApprovalStatus, canonical_json};
+pub use availability::{Availability, DeviceStatus};
 pub use command::{CommandRequest, RequestOperation, Target};
 pub use descriptor::Descriptor;
 pub use error::ErrorObject;

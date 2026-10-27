@@ -127,6 +127,11 @@ pub fn steps_for_reason(r: &Reason) -> Vec<String> {
              if it is needed, tell the human operator which permission is missing."
                 .into(),
         ),
+        "device.unavailable" => step(
+            "The device is not answering, so nothing was sent. Do not retry in a loop: do other \
+             work, check list_devices later, or tell the human operator it is offline."
+                .into(),
+        ),
         "command.value.out_of_range" => {
             let range = match (detail(r, "min"), detail(r, "max")) {
                 (Some(min), Some(max)) => format!(" ({min}..{max} {unit})"),
@@ -254,7 +259,40 @@ pub(crate) fn dedup(steps: Vec<String>) -> Vec<String> {
     out
 }
 
+/// What to tell a model about a stop that did not end `VERIFIED`. A stop that is not
+/// confirmed has not been shown to stop anything, whatever else happened to the request.
+/// Unlike any other command it is safe, and wanted, to send again; and when the device
+/// cannot be reached nothing in this system can stop it.
+pub fn steps_for_unconfirmed_stop(state: CommandState) -> Vec<String> {
+    use CommandState::*;
+    let mut steps = vec![
+        "This stop is NOT confirmed: treat the equipment as still moving or energized. Use its \
+         own emergency stop or interlock now if there is any hazard, and tell the human \
+         operator."
+            .to_owned(),
+    ];
+    match state {
+        Denied | Expired | Cancelled => steps.push(
+            "The stop was not sent. Fix the cause above, or ask the operator; do not wait on it."
+                .to_owned(),
+        ),
+        _ => steps.push(
+            "Sending the stop again is safe and is not held back. If the device is reachable \
+             it may take effect; read the device's state to find out. reconcile_command cannot \
+             prove a stop."
+                .to_owned(),
+        ),
+    }
+    steps
+}
+
 pub fn command_view(r: &Receipt) -> CommandView {
+    command_view_for(r, false)
+}
+
+/// As [`command_view`]; `is_stop` is whether the capability is declared `stop` in its
+/// descriptor, which a receipt does not carry.
+pub fn command_view_for(r: &Receipt, is_stop: bool) -> CommandView {
     let adapter_error = r.adapter_result.as_ref().and_then(|a| a.error.as_ref());
     let reasons: Vec<Reason> = r
         .policy
@@ -271,7 +309,12 @@ pub fn command_view(r: &Receipt) -> CommandView {
     for reason in &reasons {
         next_steps.extend(steps_for_reason(reason));
     }
-    next_steps.extend(steps_for_state(r.state));
+    if is_stop && r.outcome != Outcome::Succeeded {
+        // Replaces the state's advice: "never resubmit" is right for a write and wrong here.
+        next_steps.extend(steps_for_unconfirmed_stop(r.state));
+    } else {
+        next_steps.extend(steps_for_state(r.state));
+    }
 
     let target = format!(
         "{} on {}",

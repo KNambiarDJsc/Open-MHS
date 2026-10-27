@@ -23,7 +23,7 @@ openmhs read sim.thermo-01 temperature.ambient
 
 | Command | What it does |
 |---|---|
-| `serve [--sim] [--port N] [--listen ADDR --allow-remote] [--operator P] [--seed N]` | Run the gateway (same as `openmhsd`) |
+| `serve [--sim] [--port N] [--listen ADDR --allow-remote] [--operator P] [--seed N] [--require-devices] [--health-interval-ms N]` | Run the gateway (same as `openmhsd`). A device that does not answer is registered `OFFLINE` and used once it does; `--require-devices` refuses to start instead. Devices are probed every `--health-interval-ms` (default 5000; 0 turns it off) |
 | `serve --profile FILE`… | Also register the real device each protocol profile describes; connects to it ([profiles](adapters/profiles.md)) |
 | `serve --adapter-manifest FILE`… | Also register an out-of-process adapter, started from its [permission manifest](../spec/permission-manifest.md) and supervised ([adapter host](architecture/adapter-host.md)) |
 | `serve --profile-sim FILE`… | Also register each profile's simulated device, served in-process on a loopback port |
@@ -32,6 +32,7 @@ openmhs read sim.thermo-01 temperature.ambient
 | `demo [--keep]` | Guided scenario; exits non-zero if anything behaves unexpectedly |
 | `info` | Your principal and role, gateway version, device count |
 | `devices list` / `devices inspect <id>` | Registered devices / one descriptor |
+| `devices status [<id>]` | Whether each device answers (`ONLINE`, `DEGRADED`, `OFFLINE`), is busy or leased; probes devices not checked in the last second ([ADR-0019](adr/0019-device-availability.md)) |
 | `graph` | Relationships, shared resources and frames ([spec/topology.md](../spec/topology.md)) |
 | `leases acquire --device D [--resource R] --ttl 10m [--reason …]` | Exclusive use of devices (and what they contain or share) until released or due; others' writes and invokes are refused meanwhile |
 | `leases list [--active]` / `leases show <id>` | Every lease, or one: holder, claim, deadline |

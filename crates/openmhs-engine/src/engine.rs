@@ -24,11 +24,13 @@ use openmhs_types::{
 use tracing::{info, warn};
 
 mod approvals;
+mod availability;
 mod leases;
 mod plans;
 mod twin;
 
 pub use approvals::{DEFAULT_APPROVAL_TTL_MS, MAX_APPROVAL_TTL_MS, fingerprint};
+pub use availability::MAX_CONCURRENT_PROBES;
 pub use leases::LeaseRequest;
 
 use crate::error::EngineError;
@@ -48,6 +50,8 @@ pub struct EngineOptions {
     /// suite turns this off: it tests adapters against simulators, and sends again after
     /// the faults it injects on purpose.
     pub hold_unresolved: bool,
+    /// Upper bound for one availability probe (`connect` or `health`, ADR-0019).
+    pub probe_timeout_ms: u64,
 }
 
 impl Default for EngineOptions {
@@ -56,6 +60,7 @@ impl Default for EngineOptions {
             read_timeout_ms: 1_000,
             verify_poll_ms: 50,
             hold_unresolved: true,
+            probe_timeout_ms: 2_000,
         }
     }
 }
@@ -82,6 +87,11 @@ struct Device {
     lock: Arc<tokio::sync::Mutex<()>>,
     /// Dispatched mutations per capability, for rate and slew limits.
     history: Mutex<HashMap<String, Vec<Mutation>>>,
+    /// Whether it answers (ADR-0019).
+    availability: Mutex<availability::Record>,
+    /// A probe's adapter call is still running. A timed-out call is abandoned, not
+    /// cancelled, so this keeps a hung device to one outstanding probe.
+    probing: Arc<std::sync::atomic::AtomicBool>,
 }
 
 struct Inner {
@@ -212,6 +222,16 @@ impl Engine {
             .cloned()
     }
 
+    fn registered(&self) -> Vec<Arc<Device>> {
+        self.inner
+            .devices
+            .read()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .values()
+            .cloned()
+            .collect()
+    }
+
     /// Registered device descriptors, sorted by id.
     pub fn devices(&self) -> Vec<Descriptor> {
         let devices = self
@@ -288,11 +308,30 @@ impl Engine {
         Ok(self.inner.journal.verify_audit()?)
     }
 
-    /// Register a device. Its descriptor comes from the adapter and must validate.
-    /// Registration grants no permissions (spec/authorization.md §1).
+    /// Register a device. Its descriptor comes from the adapter and must validate, and the
+    /// device must answer `connect`. Registration grants no permissions
+    /// (spec/authorization.md §1).
     pub async fn register(
         &self,
         adapter: Arc<dyn HardwareAdapter>,
+    ) -> Result<Descriptor, EngineError> {
+        self.register_inner(adapter, false).await
+    }
+
+    /// Register a device that may be switched off: as [`Engine::register`], but if
+    /// `connect` fails the device is registered `OFFLINE` and comes online when it answers
+    /// (ADR-0019). A descriptor that does not validate is still refused.
+    pub async fn register_allow_offline(
+        &self,
+        adapter: Arc<dyn HardwareAdapter>,
+    ) -> Result<Descriptor, EngineError> {
+        self.register_inner(adapter, true).await
+    }
+
+    async fn register_inner(
+        &self,
+        adapter: Arc<dyn HardwareAdapter>,
+        allow_offline: bool,
     ) -> Result<Descriptor, EngineError> {
         let json = adapter.describe().await.map_err(EngineError::Adapter)?;
         let descriptor =
@@ -308,7 +347,22 @@ impl Engine {
                 ),
             )]));
         }
-        adapter.connect().await.map_err(EngineError::Adapter)?;
+        let probing = Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let connected = if allow_offline {
+            // A device that drops packets instead of refusing them must not hold the
+            // start: bound the connect, and keep one outstanding until it ends.
+            self.connect_bounded(adapter.clone(), probing.clone()).await
+        } else {
+            adapter.connect().await
+        };
+        let availability = match connected {
+            Ok(()) => availability::Record::online(self.now()),
+            Err(e) if allow_offline => {
+                warn!(device = %descriptor.device.id, error = %e, "device does not answer; registered OFFLINE");
+                availability::Record::offline(self.now(), e.message)
+            }
+            Err(e) => return Err(EngineError::Adapter(e)),
+        };
         let id = descriptor.device.id.clone();
         {
             let mut devices = self
@@ -326,6 +380,8 @@ impl Engine {
                     adapter,
                     lock: Arc::new(tokio::sync::Mutex::new(())),
                     history: Mutex::new(HashMap::new()),
+                    availability: Mutex::new(availability.clone()),
+                    probing,
                 }),
             );
         }
@@ -338,6 +394,8 @@ impl Engine {
                 "manufacturer": descriptor.device.manufacturer,
                 "model": descriptor.device.model,
                 "capabilities": descriptor.capabilities.len(),
+                "availability": availability.availability,
+                "reason": availability.reason,
             }),
         )?;
         info!(device = %id, "device registered");
@@ -459,6 +517,7 @@ impl Engine {
                 v.clone(),
             );
         }
+        self.observe(device, result.as_ref().map(|_| ()));
         result
     }
 
@@ -638,6 +697,17 @@ impl Engine {
         if let Err(errors) = openmhs_policy::check_command(&device.descriptor, &cap, req, None) {
             return Evaluation::Denied {
                 errors,
+                rules: authz.rules,
+            };
+        }
+
+        // A device that does not answer is refused before anything is sent (ADR-0019).
+        // Never a stop: bookkeeping does not stand between an operator and a stop.
+        if !cap.stop
+            && let Some(e) = self.unavailable_refusal(&device).await
+        {
+            return Evaluation::Denied {
+                errors: vec![e],
                 rules: authz.rules,
             };
         }
@@ -944,6 +1014,11 @@ impl Engine {
                     .error = Some(e);
             }
         };
+        match &outcome {
+            ExecOutcome::Finished(Ok(Ok(_))) => self.observe(device, Ok(())),
+            ExecOutcome::Finished(Ok(Err(err))) => self.observe(device, Err(err)),
+            _ => {}
+        }
 
         match outcome {
             ExecOutcome::TimedOut => {
@@ -1254,6 +1329,15 @@ impl Engine {
         // A lease someone else took while the command waited stops it too (not a stop).
         if !cap.stop
             && let Some(e) = self.lease_refusal(&receipt.principal, &req.target.device)
+        {
+            return self.transition(command_id, Denied, Some(e.message.clone()), |r| {
+                r.policy.decision = Decision::Deny;
+                r.policy.errors = vec![e];
+            });
+        }
+
+        if !cap.stop
+            && let Some(e) = self.unavailable_refusal(&device).await
         {
             return self.transition(command_id, Denied, Some(e.message.clone()), |r| {
                 r.policy.decision = Decision::Deny;

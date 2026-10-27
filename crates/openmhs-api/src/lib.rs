@@ -20,6 +20,7 @@ pub mod method {
     pub const GATEWAY_INFO: &str = "gateway.info";
     pub const DEVICES_LIST: &str = "devices.list";
     pub const DEVICES_DESCRIBE: &str = "devices.describe";
+    pub const DEVICES_STATUS: &str = "devices.status";
     pub const GRAPH_GET: &str = "graph.get";
     pub const LEASES_ACQUIRE: &str = "leases.acquire";
     pub const LEASES_GET: &str = "leases.get";
@@ -142,6 +143,16 @@ pub struct GatewayInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeviceParams {
     pub device: String,
+}
+
+/// `devices.status`: one device or all, optionally probing first (ADR-0019).
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct DeviceStatusParams {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub device: Option<String>,
+    /// Probe devices not checked in the last second before answering.
+    #[serde(default)]
+    pub refresh: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
