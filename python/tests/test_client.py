@@ -12,6 +12,7 @@ from test_models import jsonschema, receipt_validator
 
 from openmhs import (
     ApprovalStatus,
+    Availability,
     Client,
     CommandState,
     Decision,
@@ -279,6 +280,24 @@ class LeasesAndPlans(unittest.TestCase):
             released = a.release_lease(lease.id, reason="done")
             self.assertEqual(released.released_by, "agent:holder")
             self.assertTrue(b.write(PSU, SETPOINT, Quantity(1, "V")).confirmed)
+
+    def test_an_offline_device_is_reported_and_refused(self) -> None:
+        with Gateway() as gw:
+            agent, _ = gw.agent("agent:bench")
+            statuses = {s.device: s for s in agent.device_status()}
+            self.assertEqual(statuses[PSU].availability, Availability.ONLINE)
+            self.assertFalse(statuses[PSU].busy)
+            self.assertEqual(statuses[PSU].extra, {})
+
+            gw.operator().sim_fault(PSU, "link-down")
+            time.sleep(1.1)  # a refresh probes a device at most once a second
+            (psu,) = agent.device_status(PSU, refresh=True)
+            self.assertTrue(psu.offline)
+            refused = agent.write(PSU, SETPOINT, Quantity(1, "V"))
+            self.assertEqual(refused.reasons[0].code, "device.unavailable")
+
+            gw.operator().sim_fault(PSU, "clear")
+            self.assertTrue(agent.write(PSU, SETPOINT, Quantity(1, "V")).confirmed)
 
     def test_a_plan_runs_and_its_preflight_changes_nothing(self) -> None:
         with Gateway() as gw:

@@ -554,6 +554,46 @@ class Lease(Model):
     _omit_empty = frozenset({"resources"})
 
 
+class Availability(str, Enum):
+    """Whether a device answers (ADR-0019)."""
+
+    ONLINE = "ONLINE"
+    DEGRADED = "DEGRADED"
+    #: Commands to it, except stops, are refused with ``device.unavailable``.
+    OFFLINE = "OFFLINE"
+
+
+@dataclass
+class LeaseHold(Model):
+    """The lease that holds a device, as status shows it."""
+
+    id: str
+    holder: str
+    expires_at: str
+    extra: dict[str, Any] = _extra()
+
+
+@dataclass
+class DeviceStatus(Model):
+    """Whether a device answers, is busy or leased (``devices.status``)."""
+
+    device: str
+    availability: Availability | str
+    since: str
+    checked_at: str
+    busy: bool
+    #: Why it is degraded or offline, in the adapter's words.
+    reason: str | None = None
+    lease: LeaseHold | None = None
+    extra: dict[str, Any] = _extra()
+    _enums = {"availability": Availability}
+    _nested = {"lease": LeaseHold}
+
+    @property
+    def offline(self) -> bool:
+        return self.availability == Availability.OFFLINE
+
+
 @dataclass
 class StepRecord(Model):
     id: str

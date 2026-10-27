@@ -38,6 +38,10 @@ the README links here.
 - **Plans** run steps in order; there are no parallel steps.
 - **No signed descriptors or signed audit export.**
 - **Rate and slew history, and simulator state, reset on restart.**
+- **Availability is an observation.** It can be stale by one probe interval (5 s by
+  default). Probes are the adapter's side-effect-free `connect` and `health`; there is no
+  backoff for long-offline devices or damping for flapping ones yet
+  ([ADR-0019](adr/0019-device-availability.md)).
 
 ## Security
 

@@ -171,6 +171,12 @@ Reported by the adapter host when it refuses to start an adapter (spec/permissio
 A topology relationship that breaks a descriptor relationship rule is reported with the
 code the descriptor relationship rule uses (see Descriptor validation above).
 
+### Availability (ADR-0019)
+
+| Code | Meaning |
+|---|---|
+| `device.unavailable` | The device did not answer a probe made just before the command, so nothing was sent. Writes and invokes are refused until it answers; stops never are. `details.since` is when it went offline |
+
 ### Leases (M9)
 
 | Code | Meaning |

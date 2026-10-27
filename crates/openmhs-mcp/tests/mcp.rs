@@ -209,6 +209,10 @@ async fn discovery_and_reads_return_structured_results() {
         .unwrap();
     assert_eq!(setpoint["value"]["unit"], "V");
     assert_eq!(setpoint["side_effect"], "reversible");
+    // Availability travels with the summary (ADR-0019).
+    assert_eq!(psu["availability"], "ONLINE");
+    assert_eq!(psu["busy"], false);
+    assert!(psu.get("lease_holder").is_none());
     // Descriptor prose reaches the model marked as unattested; identifiers do not.
     let quoted = |v: &Value| {
         let t = v.as_str().unwrap();
@@ -576,6 +580,46 @@ async fn plans_check_run_and_explain_a_failure() {
     .await;
     assert!(is_error(&r));
     assert!(text(&r).contains("plan.invalid"), "{}", text(&r));
+    client.cancel().await.unwrap();
+    lab.gw.shutdown().await.unwrap();
+}
+
+/// ADR-0019: an agent sees a device that stopped answering, is refused before anything is
+/// sent, and is told not to retry in a loop.
+#[tokio::test(flavor = "multi_thread")]
+async fn an_offline_device_is_visible_and_refused_with_a_next_step() {
+    let lab = lab(psu_grants()).await;
+    let operator = Client::new(&lab.gw.url, &lab.gw.operator_token).unwrap();
+    operator.sim_fault(PSU, "link-down").await.unwrap();
+    // A status refresh probes a device at most once a second.
+    tokio::time::sleep(std::time::Duration::from_millis(1_100)).await;
+    operator.device_status(Some(PSU), true).await.unwrap();
+    let client = connect(&lab.gw.url, &lab.agent_token, false).await;
+
+    let r = call(&client, "list_devices", json!({})).await;
+    let devices = structured(&r)["devices"].as_array().unwrap().clone();
+    let psu = devices.iter().find(|d| d["id"] == PSU).unwrap();
+    assert_eq!(psu["availability"], "OFFLINE");
+    assert!(
+        psu["reason"]
+            .as_str()
+            .unwrap()
+            .contains("simulated disconnect")
+    );
+
+    let r = call(
+        &client,
+        "submit_command",
+        json!({ "device": PSU, "capability": SETPOINT, "value": volts(1.0), "idempotency_key": "off-1" }),
+    )
+    .await;
+    assert!(is_error(&r));
+    let v = structured(&r);
+    assert_eq!(v["state"], "DENIED");
+    assert_eq!(v["reached_device"], false);
+    assert_eq!(v["reasons"][0]["code"], "device.unavailable");
+    let steps = v["next_steps"][0].as_str().unwrap();
+    assert!(steps.contains("Do not retry in a loop"), "{steps}");
     client.cancel().await.unwrap();
     lab.gw.shutdown().await.unwrap();
 }

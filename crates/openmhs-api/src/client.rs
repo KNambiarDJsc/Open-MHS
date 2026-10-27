@@ -131,6 +131,20 @@ impl Client {
         self.call(method::DEVICES_LIST, serde_json::json!({})).await
     }
 
+    /// Whether devices answer, are busy or leased (ADR-0019). `device` narrows it to one;
+    /// `refresh` probes devices not checked in the last second first.
+    pub async fn device_status(
+        &self,
+        device: Option<&str>,
+        refresh: bool,
+    ) -> Result<Vec<openmhs_types::DeviceStatus>, ClientError> {
+        let params = crate::DeviceStatusParams {
+            device: device.map(str::to_owned),
+            refresh,
+        };
+        self.call(method::DEVICES_STATUS, params).await
+    }
+
     /// The capability graph: devices, relationships, shared resources, frames.
     pub async fn graph(&self) -> Result<openmhs_types::graph::Graph, ClientError> {
         self.call(method::GRAPH_GET, serde_json::json!({})).await

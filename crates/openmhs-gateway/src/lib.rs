@@ -38,6 +38,8 @@ pub const DEFAULT_PORT: u16 = 7400;
 pub const DEFAULT_OPERATOR: &str = "operator:local";
 pub const JOURNAL_FILE: &str = "journal.sqlite";
 pub const LOCK_FILE: &str = "gateway.lock";
+/// How often devices are probed for availability by default (ADR-0019).
+pub const DEFAULT_HEALTH_INTERVAL_MS: u64 = 5_000;
 
 #[derive(Debug, thiserror::Error)]
 pub enum GatewayError {
@@ -73,6 +75,12 @@ pub struct GatewayConfig {
     /// The operator's topology (spec/topology.md), applied once every device is
     /// registered. A topology naming a device that is not registered stops the start.
     pub topology: Option<openmhs_types::Topology>,
+    /// Refuse to start unless every device answers. Off by default: a device that does not
+    /// answer is registered `OFFLINE` and comes online when it does (ADR-0019).
+    pub require_devices: bool,
+    /// How often to probe devices for availability, in milliseconds. `0` turns the probes
+    /// off; commands to an `OFFLINE` device still probe it before they are refused.
+    pub health_interval_ms: u64,
 }
 
 impl std::fmt::Debug for GatewayConfig {
@@ -84,6 +92,8 @@ impl std::fmt::Debug for GatewayConfig {
             .field("operator", &self.operator)
             .field("simulation", &self.simulation)
             .field("seed", &self.seed)
+            .field("require_devices", &self.require_devices)
+            .field("health_interval_ms", &self.health_interval_ms)
             .field(
                 "adapters",
                 &self
@@ -107,6 +117,8 @@ impl GatewayConfig {
             seed: 42,
             adapters: Vec::new(),
             topology: None,
+            require_devices: false,
+            health_interval_ms: DEFAULT_HEALTH_INTERVAL_MS,
         }
     }
 }
@@ -120,6 +132,8 @@ pub struct RunningGateway {
     home: PathBuf,
     shutdown_tx: Option<oneshot::Sender<()>>,
     server: JoinHandle<std::io::Result<()>>,
+    /// The availability probes, if on.
+    monitor: Option<JoinHandle<()>>,
     _lock: File,
 }
 
@@ -136,6 +150,9 @@ impl RunningGateway {
     pub async fn shutdown(mut self) -> Result<(), GatewayError> {
         if let Some(tx) = self.shutdown_tx.take() {
             let _ = tx.send(());
+        }
+        if let Some(monitor) = self.monitor.take() {
+            monitor.abort();
         }
         match (&mut self.server).await {
             Ok(r) => r?,
@@ -200,8 +217,14 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
             sims.insert(d.device.id, sim.control);
         }
     }
+    // A device that is switched off does not keep the others, or crash recovery, from
+    // starting (ADR-0019); `require_devices` restores the strict start.
     for adapter in &config.adapters {
-        engine.register(adapter.clone()).await?;
+        if config.require_devices {
+            engine.register(adapter.clone()).await?;
+        } else {
+            engine.register_allow_offline(adapter.clone()).await?;
+        }
     }
     if let Some(topology) = config.topology.clone() {
         engine.set_topology(topology).map_err(|e| match e {
@@ -236,6 +259,19 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
         policy_store: tokio::sync::Mutex::new(policy_store),
         sims,
     });
+    let monitor = (config.health_interval_ms > 0).then(|| {
+        let engine = engine.clone();
+        let every = std::time::Duration::from_millis(config.health_interval_ms);
+        tokio::spawn(async move {
+            loop {
+                tokio::time::sleep(every).await;
+                // Devices that something else reached recently are not probed again.
+                if let Err(e) = engine.refresh_availability(config.health_interval_ms).await {
+                    warn!(error = %e, "availability probe failed");
+                }
+            }
+        })
+    });
     let (shutdown_tx, shutdown_rx) = oneshot::channel::<()>();
     let app = server::router(shared);
     let server = tokio::spawn(async move {
@@ -267,6 +303,7 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
         home: config.home,
         shutdown_tx: Some(shutdown_tx),
         server,
+        monitor,
         _lock: lock,
     })
 }

@@ -127,6 +127,11 @@ pub fn steps_for_reason(r: &Reason) -> Vec<String> {
              if it is needed, tell the human operator which permission is missing."
                 .into(),
         ),
+        "device.unavailable" => step(
+            "The device is not answering, so nothing was sent. Do not retry in a loop: do other \
+             work, check list_devices later, or tell the human operator it is offline."
+                .into(),
+        ),
         "command.value.out_of_range" => {
             let range = match (detail(r, "min"), detail(r, "max")) {
                 (Some(min), Some(max)) => format!(" ({min}..{max} {unit})"),

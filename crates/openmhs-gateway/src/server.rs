@@ -12,11 +12,11 @@ use axum::routing::post;
 use openmhs_api::{
     AcquireLeaseParams, ApprovalActionParams, ApprovalRequestParams, AuditEntry, AuditTailParams,
     AuditVerifyResult, CancelPlanParams, CommandIdParams, CreateTokenParams, CreatedToken,
-    DecidePlanParams, DeviceParams, ErrorData, GatewayInfo, GrantParams, IdParams,
-    ListApprovalsParams, ListCommandsParams, ListLeasesParams, ListPlansParams, PlanParams,
-    RPC_PATH, ReadParams, ReadResult, ReleaseLeaseParams, RenewLeaseParams, ResolveParams, Role,
-    RotateTokenParams, RpcError, RpcRequest, RpcResponse, SimFaultParams, SimFaultResult,
-    SubmitParams, method, rpc_code,
+    DecidePlanParams, DeviceParams, DeviceStatusParams, ErrorData, GatewayInfo, GrantParams,
+    IdParams, ListApprovalsParams, ListCommandsParams, ListLeasesParams, ListPlansParams,
+    PlanParams, RPC_PATH, ReadParams, ReadResult, ReleaseLeaseParams, RenewLeaseParams,
+    ResolveParams, Role, RotateTokenParams, RpcError, RpcRequest, RpcResponse, SimFaultParams,
+    SimFaultResult, SubmitParams, method, rpc_code,
 };
 use openmhs_engine::journal::sha256_hex;
 use openmhs_engine::{Engine, EngineError};
@@ -32,6 +32,8 @@ use crate::store::{Lookup, NewToken, PolicyStore, TokenError, TokenStore, valida
 
 const DEFAULT_LIST_LIMIT: usize = 50;
 const MAX_LIST_LIMIT: usize = 500;
+/// `devices.status {refresh}` re-probes a device at most this often.
+const STATUS_REFRESH_MS: u64 = 1_000;
 
 /// A verified request: who is calling, how, and with what ceiling. Built only by
 /// [`Shared::authenticate`]; nothing in a request body can set any of it.
@@ -335,6 +337,25 @@ async fn dispatch(
         }),
 
         method::DEVICES_LIST => ok(engine.devices()),
+
+        // Visible to every caller, like the devices and leases it is built from (ADR-0019).
+        // A refresh probes only devices not checked in the last second, so callers cannot
+        // turn it into a flood of device traffic.
+        method::DEVICES_STATUS => {
+            let p: DeviceStatusParams = params(raw)?;
+            if p.refresh {
+                let engine = engine.clone();
+                detached(async move { engine.refresh_availability(STATUS_REFRESH_MS).await })
+                    .await?;
+            }
+            match p.device {
+                Some(device) => match engine.device_status(&device).map_err(engine_error)? {
+                    Some(s) => ok(vec![s]),
+                    None => Err(unknown_device(&device)),
+                },
+                None => ok(engine.device_statuses().map_err(engine_error)?),
+            }
+        }
 
         // Visible to every caller, like the device list it is built from.
         method::GRAPH_GET => ok(engine.graph()),

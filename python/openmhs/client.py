@@ -29,6 +29,7 @@ from .models import (
     CommandState,
     CreatedToken,
     Descriptor,
+    DeviceStatus,
     ErrorObject,
     GatewayInfo,
     Lease,
@@ -154,6 +155,16 @@ class Client:
 
     def devices(self) -> list[Descriptor]:
         return [Descriptor.from_dict(d) for d in self.call("devices.list")]
+
+    def device_status(
+        self, device: str | None = None, refresh: bool = False
+    ) -> list[DeviceStatus]:
+        """Whether devices answer, are busy or leased (ADR-0019). ``device`` narrows it to
+        one; ``refresh`` probes devices not checked in the last second first."""
+        params: dict[str, Any] = {"refresh": refresh}
+        if device is not None:
+            params["device"] = device
+        return [DeviceStatus.from_dict(s) for s in self.call("devices.status", params)]
 
     def describe(self, device: str) -> Descriptor:
         return Descriptor.from_dict(self.call("devices.describe", {"device": device}))

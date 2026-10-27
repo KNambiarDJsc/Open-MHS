@@ -274,6 +274,35 @@ pub fn devices(devices: &[Descriptor]) {
     }
 }
 
+pub fn device_statuses(list: &[openmhs_types::DeviceStatus]) {
+    if list.is_empty() {
+        println!("no devices registered (start the gateway with --sim for the virtual lab)");
+        return;
+    }
+    for s in list {
+        let mut line = format!(
+            "{:<16} {:<9} since {}",
+            s.device,
+            s.availability.as_str(),
+            clock_time(s.since)
+        );
+        if s.busy {
+            line.push_str("  busy");
+        }
+        if let Some(l) = &s.lease {
+            line.push_str(&format!(
+                "  leased to {} until {}",
+                l.holder,
+                clock_time(l.expires_at)
+            ));
+        }
+        if let Some(reason) = &s.reason {
+            line.push_str(&format!("  ({reason})"));
+        }
+        println!("{line}");
+    }
+}
+
 pub fn graph(g: &openmhs_types::graph::Graph) {
     if g.relationships.is_empty() {
         println!("{} devices, no relationships declared", g.devices.len());
