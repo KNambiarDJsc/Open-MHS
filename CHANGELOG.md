@@ -5,12 +5,15 @@ All notable changes are recorded here. The format follows
 any minor version may change the specification, the adapter contract and the local API,
 and the entry will say so under **Changed** or **Removed**.
 
-No release has been published yet.
-
 ## [Unreleased]
 
-Work towards the first public release (0.1.0). Milestones M0–M9 are described in
-[docs/roadmap.md](docs/roadmap.md) and [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md).
+## [0.1.0] - 2026-10-28
+
+The first release. **Pre-alpha: no adapter has been run against physical hardware, and
+OpenMHS is not a safety system.** Everything below was tested against simulators. Milestones
+M0–M11 are described in [docs/roadmap.md](docs/roadmap.md) and
+[docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md); what is known to be missing is
+in [docs/limitations.md](docs/limitations.md) and [docs/strategy/](docs/strategy/).
 
 ### Added
 
