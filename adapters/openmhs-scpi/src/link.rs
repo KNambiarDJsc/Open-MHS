@@ -164,6 +164,14 @@ enum Unsynced {
 
 /// Send the sync query and discard input until its answer, counting earlier sync queries
 /// whose answers are still to come.
+///
+/// Since the request that timed out, the link has sent nothing but sync queries, which an
+/// instrument answers at once and in order. So once one of them is answered, that request
+/// is finished, and the queries still counted will follow almost immediately, if they come
+/// at all. When the line then stays quiet for at least half the timeout, they were never
+/// received (dropped while the line was down, or by a reset) and nothing more is coming:
+/// the link is in step. Without this, every sync query lost in an outage would keep the
+/// link refusing for good.
 async fn resync(
     conn: &mut Conn,
     query: &str,
@@ -173,15 +181,25 @@ async fn resync(
     write_line(conn, query).await.map_err(|_| Unsynced::Lost)?;
     conn.late_syncs += 1;
     let deadline = tokio::time::Instant::now() + timeout;
+    let mut last_answer: Option<tokio::time::Instant> = None;
     let mut line = String::new();
     while conn.late_syncs > 0 {
         line.clear();
         match tokio::time::timeout_at(deadline, conn.stream.read_line(&mut line)).await {
-            Err(_) => return Err(Unsynced::Busy),
+            Err(_) => {
+                return match last_answer {
+                    Some(at) if deadline.saturating_duration_since(at) >= timeout / 2 => {
+                        conn.late_syncs = 0;
+                        Ok(())
+                    }
+                    _ => Err(Unsynced::Busy),
+                };
+            }
             Ok(Ok(0) | Err(_)) => return Err(Unsynced::Lost),
             Ok(Ok(_)) => {
                 if line.trim_end_matches(['\r', '\n']) == identity {
                     conn.late_syncs -= 1;
+                    last_answer = Some(tokio::time::Instant::now());
                 }
             }
         }
@@ -399,6 +417,43 @@ mod tests {
         assert_eq!(
             link.transact("SOUR:VOLT?", ms(1_000)).await.unwrap(),
             "5.000"
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn requests_lost_while_the_line_was_down_do_not_wedge_the_link() {
+        // A serial line whose instrument stops listening for a while (a cable pulled, a
+        // power cycle): what is sent meanwhile is dropped, not queued, and the port never
+        // closes. Once it answers again the link must come back into step, not wait for
+        // answers that will never come.
+        let down = Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let outage = down.clone();
+        let (link, seen) = instrument(move |request| {
+            if outage.load(Ordering::SeqCst) {
+                return (0, None);
+            }
+            psu(request)
+        });
+        link.transact("*IDN?", ms(500)).await.unwrap();
+        down.store(true, Ordering::SeqCst);
+        assert_eq!(
+            link.transact("SOUR:VOLT?", ms(100)).await,
+            Err(LinkError::Timeout)
+        );
+        // While it is down, every resync finds it silent and nothing new is sent.
+        for _ in 0..3 {
+            let r = link.transact("OUTP ON;*OPC?", ms(100)).await;
+            assert!(
+                matches!(&r, Err(LinkError::Down(m)) if m.contains("was not sent")),
+                "{r:?}"
+            );
+        }
+        down.store(false, Ordering::SeqCst);
+        assert_eq!(link.transact("SOUR:VOLT?", ms(500)).await.unwrap(), "5.000");
+        assert!(
+            !seen.lock().unwrap().iter().any(|l| l.starts_with("OUTP")),
+            "{:?}",
+            seen.lock().unwrap()
         );
     }
 
