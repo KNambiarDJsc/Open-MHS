@@ -47,7 +47,7 @@ Any transition not shown is illegal and MUST be rejected.
 | `APPLIED` | Device reports the change applied |
 | `VERIFIED` | Readback confirms the expected state |
 | `VERIFICATION_FAILED` | Readback contradicts the expected state |
-| `UNVERIFIABLE` | Applied, but no readback is possible (declared `verification: none`, or the readback source was unavailable); reason recorded |
+| `UNVERIFIABLE` | Applied, but no readback is possible (declared `verification: none`, the readback source was unavailable, or every reading was older than the command, [ADR-0020](../docs/adr/0020-readback-must-follow-dispatch.md)); reason recorded |
 | `UNKNOWN_OUTCOME` | May or may not have taken effect |
 | `RECONCILED_APPLIED` / `RECONCILED_NOT_APPLIED` | Resolved by readback after `UNKNOWN_OUTCOME` |
 
@@ -139,6 +139,15 @@ operator, via an explicit request) reads the readback source:
 - matches the expectation → `RECONCILED_APPLIED`
 - matches the pre-command value, or otherwise contradicts it → `RECONCILED_NOT_APPLIED`
 - cannot be read → stays `UNKNOWN_OUTCOME`
+
+Only a reading **measured after the command was sent** counts, here and for `VERIFIED` /
+`VERIFICATION_FAILED` ([ADR-0020](../docs/adr/0020-readback-must-follow-dispatch.md)); a
+cached or retained value from before cannot show that a later command took effect. The
+reading's timestamp is compared with the `DISPATCHED` transition, allowing the operator's
+configured clock allowance (`readback_skew_ms`, default 0). A reading that does not match
+must also postdate the moment the gateway gave up, because "not applied" invites a resend
+and a slow device may not have finished. A reading older than that leaves the command in
+`UNKNOWN_OUTCOME` (reconciliation is refused), never concludes it.
 
 Commands with `verification: none` cannot be reconciled automatically; they stay
 `UNKNOWN_OUTCOME` until an operator resolves them with a recorded reason

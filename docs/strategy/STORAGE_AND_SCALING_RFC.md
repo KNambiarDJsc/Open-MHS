@@ -169,12 +169,29 @@ restart with N in-flight commands. Quotas, intervals and limits are set from tho
 | Per-device scheduler, backoff, budgets, hysteresis | Not implemented |
 | Benchmarks | Not implemented |
 
-## 10. Review questions
+## 10. Provisional decisions (2026-10-28)
 
-1. Is a `read` audit record ever required as evidence by itself in your intended
-   deployments (for example regulated labs), which would make `TELEMETRY` aggregation
-   opt-in rather than default?
-2. Default retention minima per class?
-3. Should checkpoints be signed by the gateway's own key from the start, or only once
-   signed audit export exists?
-4. Reserve size: fixed, or a fraction of the volume?
+The four review questions were answered provisionally by the maintainer. They are inputs
+to the implementation, not final policy.
+
+1. **Reads as evidence.** Preserve security-sensitive, privileged and experiment-critical
+   reads individually, in addition to every physical-command record. Only explicitly
+   classified routine telemetry may be aggregated. `TELEMETRY` aggregation is therefore
+   per-class opt-in, and the default class of a read is not `TELEMETRY` until configured.
+2. **Retention.** Configurable per event class. No silent deletion of critical command
+   records. Proposed defaults to validate against real deployments: 7 days of raw telemetry
+   and a longer retention for its summaries.
+3. **Checkpoints.** Verifiable segment chains first, with independent anchoring of
+   checkpoints (for example written to a second machine), and signatures added with
+   documented key management. Explicit archival verification.
+4. **Critical-storage reserve.** Configurable; **256 MiB per gateway as a starting
+   hypothesis for controlled testing**, to be sized from measured write rates and the
+   required offline period. It is not a safety guarantee. It must be protected from
+   telemetry and ordinary logs, and exhaustion behaviour must be tested.
+
+### Minimum protection implemented ahead of the rest
+
+See [ADR-0021](../adr/0021-journal-quota-and-reserve.md): a hard journal size limit, a
+reserve below it that only stops and recovery may use, and refusal of new physical commands
+once only the reserve is left. Segments, archives, retention and telemetry aggregation are
+still unimplemented and still need review.

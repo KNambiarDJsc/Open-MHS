@@ -38,6 +38,12 @@ the README links here.
 - **Plans** run steps in order; there are no parallel steps.
 - **No signed descriptors or signed audit export.**
 - **Rate and slew history, and simulator state, reset on restart.**
+- **Readback cannot prove an effect that leaves no difference:** a command that sets a
+  value the device already had looks the same as one that did nothing. Devices whose clocks
+  run behind the gateway's need `--readback-skew-ms` or their commands stay `UNVERIFIABLE`
+  ([ADR-0020](adr/0020-readback-must-follow-dispatch.md)).
+- **Journal limits are a floor, not a lifecycle.** The journal still grows until the limit;
+  nothing is archived or deleted ([ADR-0021](adr/0021-journal-quota-and-reserve.md)).
 - **Availability is an observation.** It can be stale by one probe interval (5 s by
   default). Probes are the adapter's side-effect-free `connect` and `health`; there is no
   backoff for long-offline devices or damping for flapping ones yet

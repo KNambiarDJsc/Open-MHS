@@ -299,6 +299,21 @@ pub struct ServeArgs {
     /// How often to check that devices answer, in milliseconds; 0 turns it off.
     #[arg(long, default_value_t = openmhs_gateway::DEFAULT_HEALTH_INTERVAL_MS)]
     health_interval_ms: u64,
+    /// How far behind this machine's clock a device may stamp a reading and still have it
+    /// count as measured after a command was sent. A command is only verified or reconciled
+    /// by readings taken after it; set this to your device clocks' offset if they run
+    /// behind (default 0).
+    #[arg(long, default_value_t = 0)]
+    readback_skew_ms: u64,
+    /// Hard limit on the journal's size in MiB. Within the reserve of it, new commands and
+    /// audited reads are refused and only stops and recovery may write (ADR-0021).
+    /// Default: no limit.
+    #[arg(long)]
+    journal_max_mib: Option<u64>,
+    /// With --journal-max-mib, the reserve below the limit kept for critical writes, in
+    /// MiB. A starting point to test, not a sizing recommendation.
+    #[arg(long, default_value_t = openmhs_gateway::DEFAULT_JOURNAL_RESERVE_BYTES / (1024 * 1024))]
+    journal_reserve_mib: u64,
 }
 
 #[derive(Args)]
@@ -731,6 +746,9 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
         topology,
         require_devices: args.require_devices,
         health_interval_ms: args.health_interval_ms,
+        readback_skew_ms: args.readback_skew_ms,
+        journal_max_bytes: args.journal_max_mib.map(|m| m.saturating_mul(1024 * 1024)),
+        journal_reserve_bytes: args.journal_reserve_mib.saturating_mul(1024 * 1024),
     };
     let gateway = match openmhs_gateway::start(config).await {
         Ok(g) => g,

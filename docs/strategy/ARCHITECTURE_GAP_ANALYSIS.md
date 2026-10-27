@@ -18,11 +18,11 @@ documented only.
 | H1 | One unreachable device stops the whole gateway from starting, and crash recovery never runs | High | Fixed here |
 | H2 | Device health is never checked at runtime; agents cannot tell an offline or busy device from a refusing one | High | Fixed here |
 | H3 | SCPI link wedges for good after requests are lost on a serial line (CI red on Linux and macOS) | High | Fixed here |
-| H4 | Readback verification and reconciliation accept a reading older than the command | High | Open |
+| H4 | Readback verification and reconciliation accept a reading older than the command | High | Fixed on `fix/stale-readback` ([ADR-0020](../adr/0020-readback-must-follow-dispatch.md)) |
 | H5 | A command timeout aborts the adapter's future; Modbus and HTTP can drop a half-written frame | Medium | Open |
 | H6 | The unresolved-outcome hold is per capability; related capabilities are not held | Medium | Open |
 | H7 | Rate history resets on restart | Low (documented) | Open |
-| H8 | The journal grows without bound: every read and preflight is an audit record, and nothing is ever retired | Medium now, high for long-running labs | Open |
+| H8 | The journal grows without bound: every read and preflight is an audit record, and nothing is ever retired | Medium now, high for long-running labs | Minimum protection on `fix/stale-readback` ([ADR-0021](../adr/0021-journal-quota-and-reserve.md)): a size limit and a critical reserve. Segments, retention and archives still open |
 | H9 | Availability probes ran one device at a time | Medium at scale | Fixed here (bounded concurrency, one outstanding probe per device) |
 | H10 | The gateway registers devices one after another at start, each waiting up to a probe timeout | Medium at scale | Open (M14) |
 | H11 | No backoff for long-offline devices, no hysteresis for flapping ones, no per-adapter probe budget | Medium at scale | Open (M14, [RFC](STORAGE_AND_SCALING_RFC.md) §7) |
@@ -107,7 +107,7 @@ instrument answers those at once and in order, so a long silence after one has b
 answered means the rest were lost, not queued. A portable regression test
 (`requests_lost_while_the_line_was_down_do_not_wedge_the_link`) reproduces it on every OS.
 
-### H4. Readback is not required to be newer than the command — open
+### H4. Readback is not required to be newer than the command — fixed on `fix/stale-readback`
 
 `verify` and `reconcile` accept any GOOD reading: `v.is_usable(self.now(), None)`
 (engine.rs L1082, L1400; `None` means no age limit, `state.rs` L45–54). An adapter that
@@ -120,11 +120,12 @@ produce:
   lifecycle exists to prevent.
 
 Experiment 02 shows the MQTT adapter happens to behave, but the engine should not depend on
-every adapter getting it right. **Recommendation:** for verification and reconciliation,
-require `observed.timestamp >= dispatched_at` (minus a declared clock-skew allowance) and the
-capability's `freshness.max_age_ms` if any; otherwise `UNVERIFIABLE` / not reconcilable.
-This tightens a safety rule, so it needs an RFC and a conformance check (`L2.stale_readback`)
-so adapters that serve cached values fail.
+every adapter getting it right. **Done:** verification and reconciliation require `observed.timestamp >= dispatched_at`
+(minus a configured clock allowance, default 0); otherwise `UNVERIFIABLE` / not
+reconcilable. A reading that does not match must also postdate the moment the gateway gave up.
+See ADR-0020 and `tests/stale_readback.rs`. **Still open:** a conformance check
+(`L2.stale_readback`) so adapters that serve cached values fail the suite, and the
+vacuous-match case (setting a value the device already had).
 
 ### H5. A timeout aborts the adapter mid-flight — open
 
