@@ -67,7 +67,14 @@ async fn bench_psu_over_a_serial_line_reaches_its_declared_level() {
         Arc::new(link),
         clock.clone(),
     ));
-    let report = openmhs_conformance::run(adapter, sim.device(), Options::new(clock)).await;
+    // A hang here once cost six hours of CI on macOS (an unbounded write on a full
+    // pseudo-terminal). Fail in minutes instead, saying so.
+    let report = tokio::time::timeout(
+        std::time::Duration::from_secs(300),
+        openmhs_conformance::run(adapter, sim.device(), Options::new(clock)),
+    )
+    .await
+    .expect("the serial conformance run did not finish within 5 minutes");
     server.abort();
     save("serial", &report);
     assert!(report.passed, "{}", render(&report));
