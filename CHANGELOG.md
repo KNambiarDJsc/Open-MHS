@@ -87,9 +87,14 @@ in [docs/limitations.md](docs/limitations.md) and [docs/strategy/](docs/strategy
 - SCPI: a link no longer refuses every request for good after an instrument dropped
   requests while the line was down (a serial port that never closes). This made CI
   fail on Linux and macOS since the resynchronization change.
+- SCPI: writes and connects give up within the exchange's timeout. An instrument that
+  stopped reading could block a write, and every request after it, forever; a write that
+  gives up counts as possibly sent. CI jobs now fail after an hour instead of hanging.
 
 ### Known limitations
 
+- SCPI over a serial line is untested on macOS: its pseudo-terminal test hangs there and
+  runs on Linux only. SCPI over TCP is tested on macOS.
 - No adapter has been run against physical hardware by the project.
 - Twin preflight has no physics.
 - The adapter host has no OS sandbox.
