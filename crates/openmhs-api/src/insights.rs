@@ -119,18 +119,18 @@ pub struct Latency {
     pub max: i64,
 }
 
+/// Count of one refusal code, the newest command that had it, and that command's numbers.
+type RefusalAcc<'a> = (
+    usize,
+    &'a Receipt,
+    Option<&'a serde_json::Map<String, serde_json::Value>>,
+);
+
 #[derive(Default)]
 struct Acc<'a> {
     attempts: usize,
     states: BTreeMap<String, usize>,
-    refusals: BTreeMap<
-        String,
-        (
-            usize,
-            &'a Receipt,
-            Option<&'a serde_json::Map<String, serde_json::Value>>,
-        ),
-    >,
+    refusals: BTreeMap<String, RefusalAcc<'a>>,
     verified: Vec<(&'a Receipt, f64, String)>,
     errors: Vec<(f64, String)>,
     latency: Vec<i64>,
@@ -179,16 +179,14 @@ pub fn summarize(
             }
         }
         if r.state == CommandState::Verified {
-            if let Some(v) = &r.verification {
-                if let (Some(Value::Quantity(want)), Some(seen)) = (&v.expected, &v.observed) {
-                    if let Value::Quantity(got) = &seen.value {
-                        if got.unit == want.unit {
-                            acc.verified.push((r, got.value, got.unit.clone()));
-                            acc.errors
-                                .push(((got.value - want.value).abs(), got.unit.clone()));
-                        }
-                    }
-                }
+            if let Some(v) = &r.verification
+                && let (Some(Value::Quantity(want)), Some(seen)) = (&v.expected, &v.observed)
+                && let Value::Quantity(got) = &seen.value
+                && got.unit == want.unit
+            {
+                acc.verified.push((r, got.value, got.unit.clone()));
+                acc.errors
+                    .push(((got.value - want.value).abs(), got.unit.clone()));
             }
             let sent = r
                 .transitions

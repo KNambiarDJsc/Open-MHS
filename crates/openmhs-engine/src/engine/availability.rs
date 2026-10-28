@@ -25,6 +25,27 @@ use crate::error::EngineError;
 /// How many availability probes run at once.
 pub const MAX_CONCURRENT_PROBES: usize = 16;
 
+/// The longest a periodic sweep waits between probes of a device that keeps not answering.
+pub const MAX_PROBE_BACKOFF_MS: u64 = 300_000;
+
+/// How long a periodic sweep leaves a device alone after its `failures`-th failed probe in a
+/// row: the base interval doubled for each failure, capped at [`MAX_PROBE_BACKOFF_MS`], plus
+/// up to a quarter more, derived from the device id so that devices that went down together
+/// do not all come back to be probed on the same tick. No failures: the base interval.
+pub fn probe_backoff_ms(base_ms: u64, failures: u32, device: &str) -> u64 {
+    if failures == 0 {
+        return base_ms;
+    }
+    let wait = base_ms
+        .saturating_mul(1u64 << failures.min(6))
+        .min(MAX_PROBE_BACKOFF_MS.max(base_ms));
+    let mut hash: u64 = 0xcbf2_9ce4_8422_2325;
+    for byte in device.bytes().chain(failures.to_le_bytes()) {
+        hash = (hash ^ u64::from(byte)).wrapping_mul(0x0100_0000_01b3);
+    }
+    wait + hash % (wait / 4 + 1)
+}
+
 /// What the engine last saw of a device.
 #[derive(Debug, Clone)]
 pub(super) struct Record {
@@ -34,6 +55,9 @@ pub(super) struct Record {
     pub checked_at: Timestamp,
     /// Whether the adapter's `connect` has succeeded. Until it has, probes call `connect`.
     pub connected: bool,
+    /// Probes and calls in a row that found the device not answering; zero while it is not
+    /// `OFFLINE`. Periodic sweeps back off by it ([`probe_backoff_ms`]).
+    pub failures: u32,
 }
 
 impl Record {
@@ -44,6 +68,7 @@ impl Record {
             since: at,
             checked_at: at,
             connected: true,
+            failures: 0,
         }
     }
 
@@ -54,6 +79,7 @@ impl Record {
             since: at,
             checked_at: at,
             connected: false,
+            failures: 1,
         }
     }
 }
@@ -126,13 +152,33 @@ impl Engine {
     /// many switched-off devices takes about `ceil(n / limit)` probe timeouts rather than
     /// `n`, and the number of tasks stays bounded however many devices there are.
     pub async fn refresh_availability(&self, min_age_ms: u64) -> Result<usize, EngineError> {
+        self.refresh_inner(min_age_ms, false).await
+    }
+
+    /// The periodic sweep: as [`Engine::refresh_availability`] with `base_ms`, except that a
+    /// device that keeps not answering is probed less and less often
+    /// ([`probe_backoff_ms`]), so a large fleet with many switched-off devices does not
+    /// spend every interval timing out on the same ones. A device that answers, or that a
+    /// command reaches, is back on the base interval at once. Commands to an `OFFLINE`
+    /// device still probe it on demand.
+    pub async fn sweep_availability(&self, base_ms: u64) -> Result<usize, EngineError> {
+        self.refresh_inner(base_ms, true).await
+    }
+
+    async fn refresh_inner(&self, min_age_ms: u64, backoff: bool) -> Result<usize, EngineError> {
         let now = self.now();
-        let min_age = i64::try_from(min_age_ms).unwrap_or(i64::MAX);
         let due: Vec<Arc<Device>> = self
             .registered()
             .into_iter()
             .filter(|d| {
-                lock(&d.availability).checked_at.ms_until(now) >= min_age
+                let wait = if backoff {
+                    let failures = lock(&d.availability).failures;
+                    probe_backoff_ms(min_age_ms, failures, &d.descriptor.device.id)
+                } else {
+                    min_age_ms
+                };
+                let wait = i64::try_from(wait).unwrap_or(i64::MAX);
+                lock(&d.availability).checked_at.ms_until(now) >= wait
                     && d.lock.try_lock().is_ok()
                     && !d.probing.load(Ordering::SeqCst)
             })
@@ -243,6 +289,7 @@ impl Engine {
             Ok(()) => {
                 let mut r = lock(&device.availability);
                 r.connected = true;
+                r.failures = 0;
                 if r.availability == Availability::Offline {
                     Some((Availability::Online, None))
                 } else {
@@ -274,6 +321,11 @@ impl Engine {
         let from = {
             let mut r = lock(&device.availability);
             r.checked_at = now;
+            r.failures = if to == Availability::Offline {
+                r.failures.saturating_add(1)
+            } else {
+                0
+            };
             let from = r.availability;
             r.reason = reason.clone();
             if from == to {

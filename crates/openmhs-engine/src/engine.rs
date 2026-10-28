@@ -30,7 +30,7 @@ mod plans;
 mod twin;
 
 pub use approvals::{DEFAULT_APPROVAL_TTL_MS, MAX_APPROVAL_TTL_MS, fingerprint};
-pub use availability::MAX_CONCURRENT_PROBES;
+pub use availability::{MAX_CONCURRENT_PROBES, MAX_PROBE_BACKOFF_MS, probe_backoff_ms};
 pub use leases::LeaseRequest;
 
 use crate::error::EngineError;

@@ -24,8 +24,8 @@ documented only.
 | H7 | Rate history resets on restart | Low (documented) | Open |
 | H8 | The journal grows without bound: every read and preflight is an audit record, and nothing is ever retired | Medium now, high for long-running labs | Minimum protection on `fix/stale-readback` ([ADR-0021](../adr/0021-journal-quota-and-reserve.md)): a size limit and a critical reserve. Segments, retention and archives still open |
 | H9 | Availability probes ran one device at a time | Medium at scale | Fixed here (bounded concurrency, one outstanding probe per device) |
-| H10 | The gateway registers devices one after another at start, each waiting up to a probe timeout | Medium at scale | Open (M14) |
-| H11 | No backoff for long-offline devices, no hysteresis for flapping ones, no per-adapter probe budget | Medium at scale | Open (M14, [RFC](STORAGE_AND_SCALING_RFC.md) §7) |
+| H10 | The gateway registers devices one after another at start, each waiting up to a probe timeout | Medium at scale | Fixed (concurrent, bounded) |
+| H11 | No backoff for long-offline devices, no hysteresis for flapping ones, no per-adapter probe budget | Medium at scale | Backoff fixed; hysteresis and per-adapter budget open ([RFC](STORAGE_AND_SCALING_RFC.md) §7) |
 | A1 | No per-caller view of what it may do: agents find out by being refused | Medium | Open |
 | A2 | Devices can only be added by restarting the gateway | Medium | Open (design in [PHYSICAL_TOOL_RUNTIME_V2.md](PHYSICAL_TOOL_RUNTIME_V2.md)) |
 | A3 | MCP is stdio only; no resources, no notifications for approvals or status | Medium | Open (documented) |
@@ -180,13 +180,16 @@ that finds the same state writes nothing). A device that flaps every few seconds
 still write two records per flap; damping (require N consecutive probes before a change)
 is the follow-up if that is seen in practice.
 
-### H10. Registration is sequential — open
+### H10. Registration was sequential — fixed here
 
 `openmhs_gateway::start` registers adapters in a loop. With every connect bounded by the
 probe timeout (2 s) a fleet of 1,000 devices that all drop packets takes about 2,000 s to
-start, though each is registered `OFFLINE`. Register concurrently under the same probe
-budget; the order of `device.registered` audit records then stops being deterministic, which
-no test or document depends on today.
+start, though each is registered `OFFLINE`. The gateway now registers devices concurrently
+under the same probe budget (at most 16 at a time) unless `--require-devices` asks for the
+strict, ordered start. The order of `device.registered` audit records is therefore no longer
+deterministic; no test or document depended on it. Measured in
+`many_wedged_devices_do_not_make_the_gateway_start_one_timeout_at_a_time`: 40 devices whose
+connect never returns start in about three timeouts (about 6 s) instead of 40 (80 s).
 
 ### H9. Probes ran one at a time — fixed here
 
@@ -201,11 +204,16 @@ Measured with virtual time in `a_thousand_offline_devices_start_and_one_sweep_br
 once, against 100 s sequentially. Virtual time shows the schedule, not CPU or memory; those
 need the M14 benchmark.
 
-### H11. Probe policy is minimal — open
+### H11. Probe policy is minimal — backoff fixed, the rest open
 
-No exponential backoff with jitter for devices offline for hours, no hysteresis against
-flapping, no `RECOVERING` state, no per-adapter budget (a serial bus or Modbus gateway is one
-link for many devices). Designed in [STORAGE_AND_SCALING_RFC.md](STORAGE_AND_SCALING_RFC.md) §7;
+The periodic sweep now backs off for a device that keeps not answering: the base interval
+doubled per consecutive failure, capped at 5 minutes, plus up to a quarter more derived from
+the device id so devices that went down together are not probed on the same tick
+(`probe_backoff_ms`). An answering device, or one a command reaches, is back on the base
+interval at once; commands and `devices status` still probe on demand, so backoff never
+makes a command refuse on old news. Still open: hysteresis against flapping, a `RECOVERING`
+state, and a per-adapter budget (a serial bus or Modbus gateway is one link for many devices).
+Designed in [STORAGE_AND_SCALING_RFC.md](STORAGE_AND_SCALING_RFC.md) §7;
 to be tuned from measurements.
 
 ### Concurrency, cancellation, leases

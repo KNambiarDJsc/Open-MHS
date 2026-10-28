@@ -13,6 +13,19 @@ and the entry will say so under **Changed** or **Removed**.
   agent credential, so an MCP host needs one config line and no separate `serve`, grants or
   token. The agent can read the simulated devices and write the power supply; the operator
   token never reaches the MCP server. Simulated devices only.
+- Insights ([ADR-0022](docs/adr/0022-insights-from-the-journal.md)): MCP tool `get_insights`,
+  `Client::insights` and `openmhs insights` summarize an agent's earlier commands on a device:
+  refusals with the numbers that bound them, confirmed values, tracking error, readback
+  latency and unresolved outcomes. A read of the journal only; it changes no limit, grant or
+  descriptor. `examples/agent-loop/learning_agent.py` shows a second session reaching its
+  target without a refusal.
+
+### Changed
+
+- The gateway registers devices concurrently at start (at most 16 at a time), so many
+  switched-off devices cost a few probe timeouts rather than one each.
+- The periodic availability sweep backs off for devices that keep not answering (doubling,
+  capped at 5 minutes, with jitter). Commands and `devices status` still probe on demand.
 
 ## [0.1.0] - 2026-10-28
 

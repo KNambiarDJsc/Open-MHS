@@ -32,6 +32,7 @@ openmhs read sim.thermo-01 temperature.ambient
 | `demo [--keep]` | Guided scenario; exits non-zero if anything behaves unexpectedly |
 | `info` | Your principal and role, gateway version, device count |
 | `devices list` / `devices inspect <id>` | Registered devices / one descriptor |
+| `insights <device> [<capability>]` | What the journal says happened on a device: refusals and their limits, confirmed values, tracking error, readback latency, unresolved outcomes. An agent sees its own commands, the operator everyone's ([ADR-0022](adr/0022-insights-from-the-journal.md)) |
 | `devices status [<id>]` | Whether each device answers (`ONLINE`, `DEGRADED`, `OFFLINE`), is busy or leased; probes devices not checked in the last second ([ADR-0019](adr/0019-device-availability.md)) |
 | `graph` | Relationships, shared resources and frames ([spec/topology.md](../spec/topology.md)) |
 | `leases acquire --device D [--resource R] --ttl 10m [--reason …]` | Exclusive use of devices (and what they contain or share) until released or due; others' writes and invokes are refused meanwhile |
