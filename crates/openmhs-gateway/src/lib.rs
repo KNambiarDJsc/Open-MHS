@@ -314,6 +314,7 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
         tokens: Mutex::new(tokens),
         reported: Mutex::new(std::collections::HashSet::new()),
         policy_store: tokio::sync::Mutex::new(policy_store),
+        procedures: tokio::sync::Mutex::new(store::ProcedureStore::open(&config.home)?),
         sims,
     });
     let monitor = (config.health_interval_ms > 0).then(|| {

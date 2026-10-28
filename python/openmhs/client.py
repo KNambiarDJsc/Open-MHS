@@ -166,6 +166,37 @@ class Client:
             params["device"] = device
         return [DeviceStatus.from_dict(s) for s in self.call("devices.status", params)]
 
+    # ------------------------------------------------------------ procedures
+
+    def procedures(self) -> list[dict[str, Any]]:
+        """Stored procedures (spec/procedures.md), proposed and approved."""
+        return self.call("procedures.list", {})
+
+    def propose_procedure(self, procedure: Mapping[str, Any]) -> dict[str, Any]:
+        """Store a procedure as proposed. It cannot run until an operator approves it."""
+        return self.call("procedures.propose", {"procedure": dict(procedure)})
+
+    def approve_procedure(self, name: str, version: int) -> dict[str, Any]:
+        """Approve a proposed version (operator)."""
+        return self.call("procedures.approve", {"name": name, "version": version})
+
+    def check_procedure(self, name: str, params: Mapping[str, Any] | None = None,
+                        version: int | None = None) -> dict[str, Any]:
+        return self.call("procedures.check", self._run_params(name, params, version))
+
+    def run_procedure(self, name: str, params: Mapping[str, Any] | None = None,
+                      version: int | None = None) -> dict[str, Any]:
+        """Run an approved procedure: an ordinary plan, as this caller, with every check."""
+        return self.call("procedures.run", self._run_params(name, params, version))
+
+    @staticmethod
+    def _run_params(name: str, params: Mapping[str, Any] | None,
+                    version: int | None) -> dict[str, Any]:
+        p: dict[str, Any] = {"name": name, "params": dict(params or {})}
+        if version is not None:
+            p["version"] = version
+        return p
+
     # ------------------------------------------------------------ state fabric
 
     def poll_events(

@@ -142,6 +142,10 @@ async fn tools_declare_their_risk_and_output_schemas() {
         "cancel_watch",
         "poll_events",
         "find_capabilities",
+        "list_procedures",
+        "check_procedure",
+        "run_procedure",
+        "propose_procedure",
         "list_pending_approvals",
         "reconcile_command",
         "cancel_command",
@@ -158,6 +162,8 @@ async fn tools_declare_their_risk_and_output_schemas() {
         let a = t.annotations.as_ref().unwrap();
         let read_only = a.read_only_hint == Some(true);
         let mutating = [
+            "run_procedure",
+            "propose_procedure",
             "watch_state",
             "cancel_watch",
             "submit_command",
@@ -907,6 +913,48 @@ async fn a_model_finds_the_device_that_can_do_what_it_needs() {
         is_error(&r) || r.structured_content.is_none(),
         "unknown fields are refused"
     );
+    client.cancel().await.unwrap();
+    lab_.gw.shutdown().await.unwrap();
+}
+
+/// A model proposes a procedure, cannot run it until a person approves it, and then runs it
+/// as an ordinary plan with its parameters checked.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_model_proposes_a_procedure_and_runs_it_once_a_person_approves() {
+    let lab_ = lab(psu_grants()).await;
+    let client = connect(&lab_.gw.url, &lab_.agent_token, false).await;
+    let procedure = json!({ "procedure": {
+        "name": "psu.set", "version": 1,
+        "params": { "v": { "type": "quantity", "unit": "V", "min": 0, "max": 2 } },
+        "plan": { "steps": [ { "id": "set", "request": {
+            "target": { "device": PSU, "capability": SETPOINT },
+            "operation": "write", "value": { "$param": "v" } } } ] } } });
+    let r = call(&client, "propose_procedure", procedure).await;
+    assert!(!is_error(&r), "{}", text(&r));
+    assert_eq!(structured(&r)["status"], "proposed");
+
+    let args = json!({ "name": "psu.set", "params": { "v": volts(1.0) } });
+    let r = call(&client, "run_procedure", args.clone()).await;
+    assert!(is_error(&r));
+    assert!(text(&r).contains("procedure.not_approved"), "{}", text(&r));
+
+    let operator = Client::new(&lab_.gw.url, &lab_.gw.operator_token).unwrap();
+    operator.approve_procedure("psu.set", 1).await.unwrap();
+    let listed = call(&client, "list_procedures", json!({})).await;
+    assert_eq!(structured(&listed)["procedures"][0]["status"], "approved");
+
+    let r = call(&client, "run_procedure", args).await;
+    assert!(!is_error(&r), "{}", text(&r));
+    assert_eq!(structured(&r)["state"], "SUCCEEDED", "{}", text(&r));
+
+    let r = call(
+        &client,
+        "check_procedure",
+        json!({ "name": "psu.set", "params": { "v": volts(9.0) } }),
+    )
+    .await;
+    assert!(is_error(&r));
+    assert!(text(&r).contains("outside"), "{}", text(&r));
     client.cancel().await.unwrap();
     lab_.gw.shutdown().await.unwrap();
 }

@@ -743,3 +743,44 @@ fn find_and_watch_a_streamable_measurement() {
             .all(|e| e["kind"] == "observation" && e["cause"] == "watch")
     );
 }
+
+/// Procedures from the command line: the operator adds one from a file, the agent runs it
+/// with `--param`, and an out-of-range value is refused.
+#[test]
+fn an_operator_adds_a_procedure_and_an_agent_runs_it_with_params() {
+    let gw = Gateway::start();
+    gw.grant_psu("allow");
+    let token = gw.agent_token();
+    let file = gw.home().join("set.json");
+    std::fs::write(
+        &file,
+        serde_json::json!({
+            "name": "psu.set", "version": 1,
+            "params": { "voltage": { "type": "quantity", "unit": "V", "min": 0, "max": 2 } },
+            "plan": { "steps": [ { "id": "set", "request": {
+                "target": { "device": PSU, "capability": SETPOINT },
+                "operation": "write", "value": { "$param": "voltage" } } } ] }
+        })
+        .to_string(),
+    )
+    .unwrap();
+    let path = file.to_string_lossy().into_owned();
+    let (code, out) = gw.op(&["procedures", "add", &path]);
+    assert_eq!(code, OK, "{out}");
+    assert_eq!(out["status"], "approved");
+
+    let (code, out) = gw.cli(
+        Some(&token),
+        &["procedures", "run", "psu.set", "--param", "voltage=1V"],
+    );
+    assert_eq!(code, OK, "{out}");
+    assert_eq!(out["state"], "SUCCEEDED");
+
+    let (code, _) = gw.cli(
+        Some(&token),
+        &["procedures", "run", "psu.set", "--param", "voltage=9V"],
+    );
+    assert_ne!(code, OK);
+    let (code, _) = gw.cli(Some(&token), &["procedures", "add", &path]);
+    assert_ne!(code, OK, "only an operator adds an approved procedure");
+}

@@ -27,6 +27,14 @@ pub mod method {
     pub const WATCHES_CREATE: &str = "watches.create";
     pub const WATCHES_LIST: &str = "watches.list";
     pub const WATCHES_CANCEL: &str = "watches.cancel";
+    pub const PROCEDURES_LIST: &str = "procedures.list";
+    pub const PROCEDURES_GET: &str = "procedures.get";
+    pub const PROCEDURES_PROPOSE: &str = "procedures.propose";
+    pub const PROCEDURES_ADD: &str = "procedures.add";
+    pub const PROCEDURES_APPROVE: &str = "procedures.approve";
+    pub const PROCEDURES_REMOVE: &str = "procedures.remove";
+    pub const PROCEDURES_CHECK: &str = "procedures.check";
+    pub const PROCEDURES_RUN: &str = "procedures.run";
     pub const GRAPH_GET: &str = "graph.get";
     pub const LEASES_ACQUIRE: &str = "leases.acquire";
     pub const LEASES_GET: &str = "leases.get";
@@ -182,6 +190,30 @@ pub struct WatchParams {
     pub interval_ms: u64,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ttl_ms: Option<u64>,
+}
+
+/// `procedures.propose` and `procedures.add` (spec/procedures.md).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProcedureParams {
+    pub procedure: openmhs_types::procedure::ProcedureSpec,
+}
+
+/// One procedure: a version, or the newest.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProcedureRef {
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub version: Option<u32>,
+}
+
+/// `procedures.check` and `procedures.run`: the newest approved version unless one is named.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RunProcedureParams {
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub version: Option<u32>,
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub params: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 /// `devices.status`: one device or all, optionally probing first (ADR-0019).

@@ -409,3 +409,26 @@ class StateFabric(unittest.TestCase):
             self.assertGreaterEqual(seen, 3)
             agent.cancel_watch(w["id"])
             self.assertEqual(agent.watches(), [])
+
+
+class Procedures(unittest.TestCase):
+    """Procedures through the Python client (spec/procedures.md)."""
+
+    def test_proposed_is_not_runnable_until_the_operator_approves(self) -> None:
+        spec = {
+            "name": "psu.set", "version": 1,
+            "params": {"v": {"type": "quantity", "unit": "V", "min": 0, "max": 2}},
+            "plan": {"steps": [{"id": "set", "request": {
+                "target": {"device": PSU, "capability": SETPOINT},
+                "operation": "write", "value": {"$param": "v"}}}]},
+        }
+        with Gateway() as gw:
+            agent, _ = gw.agent("agent:proc", default_grants())
+            self.assertEqual(agent.propose_procedure(spec)["status"], "proposed")
+            with self.assertRaises(Exception):
+                agent.run_procedure("psu.set", {"v": {"value": 1, "unit": "V"}})
+            with self.assertRaises(Exception):
+                agent.approve_procedure("psu.set", 1)
+            gw.operator().approve_procedure("psu.set", 1)
+            plan = agent.run_procedure("psu.set", {"v": {"value": 1, "unit": "V"}})
+            self.assertEqual(plan["state"], "SUCCEEDED")

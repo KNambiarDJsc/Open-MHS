@@ -68,6 +68,10 @@ apply to everyone. A role never bypasses authorization for device access.
 | `plans.get` / `plans.list` | any¹ | `id` / `limit?` | plan / plans, newest first |
 | `plans.decide` | op⁶ | `id`, `decision` (`resume`, `retry`, `compensate`, `abort`), `reason?` | plan |
 | `plans.cancel` | any² | `id`, `reason?` | plan |
+| `procedures.list` / `procedures.get` | any | — / `name`, `version?` | procedures / one (the newest version if none named) ([procedures.md](procedures.md)) |
+| `procedures.propose` | any | `procedure` | procedure, `proposed`; cannot run until approved |
+| `procedures.add` / `procedures.approve` / `procedures.remove` | op | `procedure` / `name`, `version` / `name`, `version` | procedure, approved / approved / removed |
+| `procedures.check` / `procedures.run` | any | `name`, `version?`, `params` | plan preflight / plan, run as the caller; parameters checked first |
 | `state.read` | any | `device`, `capability` | `state` (value, timestamp, source, quality), `age_ms`, `max_age_ms`, `usable` |
 | `commands.submit` | any | `request` (`command.schema.json`), `approval_id?` | receipt (waits until terminal, `UNKNOWN_OUTCOME`, or `AWAITING_APPROVAL`). With `approval_id`, spends an approved request for exactly this command |
 | `commands.preflight` | any | `request` | `decision`, `rules`, `errors?`, `checked_at`: what a submission would get now. Creates no command and runs nothing |
@@ -150,6 +154,7 @@ The principal of a command always comes from the token, never from the request b
 | `plan.submitted`, `plan.step.started`, `plan.step.succeeded`, `plan.step.failed`, `plan.step.compensating`, `plan.step.compensated`, `plan.waiting_approval`, `plan.awaiting_decision`, `plan.compensating`, `plan.decision`, `plan.recovered`, `plan.succeeded`, `plan.halted`, `plan.compensated`, `plan.aborted`, `plan.cancelled` | Every change to a plan ([plans.md](plans.md)). Each step's command has its own command records as usual |
 | `read` | An allowed read, with the reading or the adapter's error |
 | `read.denied` | A refused read: unknown device or capability, no grant, or not readable |
+| `procedure.proposed`, `procedure.added`, `procedure.approved`, `procedure.removed`, `procedure.run` | Procedure changes (version, `sha256`, who) and runs (with the plan id) ([procedures.md](procedures.md)) |
 | `watch.created`, `watch.ended` | A watch was created (principal, credential, capability, interval, expiry) or ended (`expired`, cancelled, replaced, no longer allowed, credential revoked, gateway stopping). Its samples are not recorded one by one; they reach only callers allowed to subscribe ([ADR-0023](../docs/adr/0023-state-fabric.md)) |
 | `request.rejected` | A command request that failed schema validation, before it became a command |
 | `command.preflight` | A preflight check and its decision |

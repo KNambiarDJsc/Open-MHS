@@ -388,6 +388,40 @@ pub fn selection(s: &openmhs_api::selection::Selection) {
     }
 }
 
+pub fn procedures(list: &[openmhs_types::procedure::Procedure]) {
+    if list.is_empty() {
+        println!("no procedures stored");
+        return;
+    }
+    for p in list {
+        let params: Vec<String> = p
+            .spec
+            .params
+            .iter()
+            .map(|(n, s)| match &s.unit {
+                Some(u) => format!("{n} ({u})"),
+                None => format!("{n} ({})", name(&s.ty)),
+            })
+            .collect();
+        println!(
+            "{:<24} v{:<3} {:<9} {}  by {}{}",
+            p.spec.name,
+            p.spec.version,
+            name(&p.status),
+            if params.is_empty() {
+                "no parameters".to_owned()
+            } else {
+                params.join(", ")
+            },
+            p.proposed_by,
+            p.approved_by
+                .as_deref()
+                .map(|a| format!(", approved by {a}"))
+                .unwrap_or_default()
+        );
+    }
+}
+
 pub fn insights(i: &openmhs_api::insights::Insights) {
     println!(
         "{}: {} command(s) examined{}",

@@ -182,6 +182,8 @@ code the descriptor relationship rule uses (see Descriptor validation above).
 | Code | Meaning |
 |---|---|
 | `storage.exhausted` | The journal is within its critical reserve of its size limit, so nothing was sent: writes and invokes (not stops), audited reads and approvals that would dispatch are refused until an operator frees space or raises the limit. `details`: `used_bytes`, `limit_bytes`, `reserve_bytes` |
+| `procedure.unknown`, `procedure.not_approved`, `procedure.exists` | No such procedure or version; proposed but not yet approved by an operator; that name and version is already stored ([procedures.md](../spec/procedures.md) §4) |
+| `procedure.param.invalid`, `procedure.param.missing`, `procedure.param.unknown` | A parameter of the wrong type, unit or range; a required one not given; one the procedure does not declare. `details.param` names it. Nothing was created |
 | `watch.invalid` | The interval is shorter than 200 ms or the lifetime is zero or longer than an hour. `details`: `min_interval_ms`, `max_ttl_ms` |
 | `watch.limit` | Too many watches: at most 16 per principal and 256 in all. Cancel one first. `details`: `per_principal`, `total` |
 | `watch.unknown` | No such watch is running for the caller |

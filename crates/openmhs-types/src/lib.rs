@@ -16,6 +16,7 @@ pub mod lease;
 pub mod lifecycle;
 pub mod plan;
 pub mod principal;
+pub mod procedure;
 pub mod receipt;
 pub mod schema;
 pub mod state;

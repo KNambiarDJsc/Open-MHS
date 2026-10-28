@@ -82,6 +82,11 @@ enum Cmd {
         #[command(subcommand)]
         command: PlansCmd,
     },
+    /// Reviewed, versioned plans with typed parameters (spec/procedures.md).
+    Procedures {
+        #[command(subcommand)]
+        command: ProceduresCmd,
+    },
     /// Read a property from the device (authorized and audited).
     Read { device: String, capability: String },
     /// Follow the state fabric (ADR-0023): observations you may subscribe to, availability
@@ -542,6 +547,50 @@ enum ApprovalsCmd {
 }
 
 #[derive(Subcommand)]
+enum ProceduresCmd {
+    /// Every stored procedure, proposed and approved.
+    List,
+    /// One procedure (the newest version unless --version).
+    Show {
+        name: String,
+        #[arg(long)]
+        version: Option<u32>,
+    },
+    /// Store a procedure (a JSON file) as proposed; it cannot run until approved.
+    Propose { file: PathBuf },
+    /// Store a procedure as approved (operator).
+    Add { file: PathBuf },
+    /// Approve a proposed version (operator).
+    Approve { name: String, version: u32 },
+    /// Remove a version (operator).
+    Remove { name: String, version: u32 },
+    /// Dry-run an approved procedure against twins.
+    Check(RunProcedureArgs),
+    /// Run an approved procedure: an ordinary plan, as you.
+    Run(RunProcedureArgs),
+}
+
+#[derive(Args)]
+struct RunProcedureArgs {
+    name: String,
+    #[arg(long)]
+    version: Option<u32>,
+    /// name=value, e.g. voltage=2V. Repeatable.
+    #[arg(long = "param", value_parser = values::parse_param)]
+    params: Vec<(String, serde_json::Value)>,
+}
+
+impl From<RunProcedureArgs> for openmhs_api::RunProcedureParams {
+    fn from(a: RunProcedureArgs) -> Self {
+        Self {
+            name: a.name,
+            version: a.version,
+            params: a.params.into_iter().collect(),
+        }
+    }
+}
+
+#[derive(Subcommand)]
 enum PlansCmd {
     /// Submit a plan (a JSON file); returns when it ends or waits.
     Submit { file: PathBuf },
@@ -963,6 +1012,11 @@ fn report_error(json: bool, e: &ClientError) -> u8 {
 fn parse_decision(s: &str) -> Result<openmhs_types::plan::PlanDecision, String> {
     serde_json::from_value(serde_json::Value::String(s.into()))
         .map_err(|_| format!("'{s}' is not resume, retry, compensate or abort"))
+}
+
+fn read_procedure(path: &Path) -> Result<openmhs_types::procedure::ProcedureSpec, String> {
+    let text = std::fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    serde_json::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))
 }
 
 fn read_plan(path: &Path) -> Result<openmhs_types::plan::PlanSpec, String> {
@@ -1747,6 +1801,62 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
             }
             PlansCmd::Cancel { id, reason } => {
                 show(json, &client.cancel_plan(&id, reason).await?, output::plan);
+            }
+        },
+        Cmd::Procedures { command } => match command {
+            ProceduresCmd::List => {
+                show(json, &client.procedures().await?, |l| output::procedures(l))
+            }
+            ProceduresCmd::Show { name, version } => {
+                show(json, &client.procedure(&name, version).await?, |p| {
+                    output::procedures(std::slice::from_ref(p))
+                });
+            }
+            ProceduresCmd::Propose { file } => {
+                let spec = match read_procedure(&file) {
+                    Ok(s) => s,
+                    Err(m) => {
+                        eprintln!("error: {m}");
+                        return Ok(exit::ERROR);
+                    }
+                };
+                show(json, &client.propose_procedure(spec).await?, |p| {
+                    output::procedures(std::slice::from_ref(p))
+                });
+            }
+            ProceduresCmd::Add { file } => {
+                let spec = match read_procedure(&file) {
+                    Ok(s) => s,
+                    Err(m) => {
+                        eprintln!("error: {m}");
+                        return Ok(exit::ERROR);
+                    }
+                };
+                show(json, &client.add_procedure(spec).await?, |p| {
+                    output::procedures(std::slice::from_ref(p))
+                });
+            }
+            ProceduresCmd::Approve { name, version } => {
+                show(
+                    json,
+                    &client.approve_procedure(&name, version).await?,
+                    |p| output::procedures(std::slice::from_ref(p)),
+                );
+            }
+            ProceduresCmd::Remove { name, version } => {
+                show(json, &client.remove_procedure(&name, version).await?, |p| {
+                    output::procedures(std::slice::from_ref(p))
+                });
+            }
+            ProceduresCmd::Check(args) => {
+                let p = client.check_procedure(args.into()).await?;
+                show(json, &p, output::plan_preflight);
+                return Ok(plan_preflight_exit(&p));
+            }
+            ProceduresCmd::Run(args) => {
+                let p = client.run_procedure(args.into()).await?;
+                show(json, &p, output::plan);
+                return Ok(plan_exit(&p));
             }
         },
         Cmd::Read { device, capability } => {

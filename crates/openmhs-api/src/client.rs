@@ -166,6 +166,86 @@ impl Client {
         .await
     }
 
+    pub async fn procedures(
+        &self,
+    ) -> Result<Vec<openmhs_types::procedure::Procedure>, ClientError> {
+        self.call(method::PROCEDURES_LIST, serde_json::json!({}))
+            .await
+    }
+
+    pub async fn procedure(
+        &self,
+        name: &str,
+        version: Option<u32>,
+    ) -> Result<openmhs_types::procedure::Procedure, ClientError> {
+        let r = crate::ProcedureRef {
+            name: name.to_owned(),
+            version,
+        };
+        self.call(method::PROCEDURES_GET, r).await
+    }
+
+    /// Store a procedure as proposed; it cannot run until an operator approves it.
+    pub async fn propose_procedure(
+        &self,
+        procedure: openmhs_types::procedure::ProcedureSpec,
+    ) -> Result<openmhs_types::procedure::Procedure, ClientError> {
+        self.call(
+            method::PROCEDURES_PROPOSE,
+            crate::ProcedureParams { procedure },
+        )
+        .await
+    }
+
+    /// Store a procedure as approved (operator).
+    pub async fn add_procedure(
+        &self,
+        procedure: openmhs_types::procedure::ProcedureSpec,
+    ) -> Result<openmhs_types::procedure::Procedure, ClientError> {
+        self.call(method::PROCEDURES_ADD, crate::ProcedureParams { procedure })
+            .await
+    }
+
+    pub async fn approve_procedure(
+        &self,
+        name: &str,
+        version: u32,
+    ) -> Result<openmhs_types::procedure::Procedure, ClientError> {
+        let r = crate::ProcedureRef {
+            name: name.to_owned(),
+            version: Some(version),
+        };
+        self.call(method::PROCEDURES_APPROVE, r).await
+    }
+
+    pub async fn remove_procedure(
+        &self,
+        name: &str,
+        version: u32,
+    ) -> Result<openmhs_types::procedure::Procedure, ClientError> {
+        let r = crate::ProcedureRef {
+            name: name.to_owned(),
+            version: Some(version),
+        };
+        self.call(method::PROCEDURES_REMOVE, r).await
+    }
+
+    /// Dry-run an approved procedure with `params`, like `plans.preflight`.
+    pub async fn check_procedure(
+        &self,
+        params: crate::RunProcedureParams,
+    ) -> Result<openmhs_types::plan::PlanPreflight, ClientError> {
+        self.call(method::PROCEDURES_CHECK, params).await
+    }
+
+    /// Run an approved procedure with `params`: an ordinary plan, as this caller.
+    pub async fn run_procedure(
+        &self,
+        params: crate::RunProcedureParams,
+    ) -> Result<openmhs_types::plan::Plan, ClientError> {
+        self.call(method::PROCEDURES_RUN, params).await
+    }
+
     pub async fn device_status(
         &self,
         device: Option<&str>,
