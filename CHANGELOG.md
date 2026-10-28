@@ -7,6 +7,13 @@ and the entry will say so under **Changed** or **Removed**.
 
 ## [Unreleased]
 
+### Added
+
+- `openmhs mcp --sim`: an MCP server that brings its own throwaway virtual-lab gateway and
+  agent credential, so an MCP host needs one config line and no separate `serve`, grants or
+  token. The agent can read the simulated devices and write the power supply; the operator
+  token never reaches the MCP server. Simulated devices only.
+
 ## [0.1.0] - 2026-10-28
 
 The first release. **Pre-alpha: no adapter has been run against physical hardware, and

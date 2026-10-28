@@ -249,6 +249,12 @@ struct McpArgs {
     /// policy. Never give a model that power unless you understand the risk.
     #[arg(long)]
     allow_operator: bool,
+    /// Run a throwaway gateway with the virtual lab inside this process and serve MCP
+    /// for it: no separate `serve`, grants or token. The agent may read every simulated
+    /// device and write the power supply; nothing persists and no real hardware is
+    /// touched. One config line is enough to try OpenMHS from an MCP host.
+    #[arg(long, conflicts_with_all = ["url", "allow_operator"])]
+    sim: bool,
 }
 
 #[derive(Args, Clone)]
@@ -1399,6 +1405,9 @@ async fn mcp(home: &std::path::Path, token: Option<&str>, args: McpArgs) -> u8 {
         .with_writer(std::io::stderr)
         .with_target(false)
         .try_init();
+    if args.sim {
+        return mcp_sim().await;
+    }
     if token.is_none() && !args.allow_operator {
         eprintln!(
             "error: `openmhs mcp` needs an agent token (--token or OPENMHS_TOKEN). Create one \
@@ -1431,6 +1440,81 @@ async fn mcp(home: &std::path::Path, token: Option<&str>, args: McpArgs) -> u8 {
             exit::ERROR
         }
     }
+}
+
+/// `openmhs mcp --sim`: the whole gateway in one process, for trying OpenMHS from an MCP
+/// host without any setup. The MCP server gets an agent token minted here, scoped to the
+/// virtual lab; the operator token never leaves this function, so the model cannot
+/// approve its own commands or change policy (the same boundary as `openmhs mcp`).
+async fn mcp_sim() -> u8 {
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis())
+        .unwrap_or_default();
+    let home = std::env::temp_dir().join(format!("openmhs-mcp-sim-{}-{stamp}", std::process::id()));
+    let mut config = GatewayConfig::new(&home);
+    config.listen = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 0);
+    config.simulation = true;
+    let gateway = match openmhs_gateway::start(config).await {
+        Ok(g) => g,
+        Err(e) => {
+            eprintln!("error: cannot start the virtual lab: {e}");
+            return exit::ERROR;
+        }
+    };
+    let code = match mcp_sim_session(&gateway.url, &gateway.operator_token).await {
+        Ok(()) => exit::OK,
+        Err(e) => {
+            eprintln!("error: {e}");
+            exit::ERROR
+        }
+    };
+    if let Err(e) = gateway.shutdown().await {
+        eprintln!("warning: gateway shutdown: {e}");
+    }
+    let _ = std::fs::remove_dir_all(&home);
+    code
+}
+
+async fn mcp_sim_session(url: &str, operator_token: &str) -> Result<(), String> {
+    let operator = Client::new(url, operator_token).map_err(|e| e.to_string())?;
+    let read = Grant {
+        id: "sim-read".into(),
+        principal: "agent:*".into(),
+        device: "sim.*".into(),
+        capability: "*".into(),
+        operations: vec![Operation::Read],
+        effect: Effect::Allow,
+        max_side_effect: None,
+        reason: None,
+    };
+    let psu = Grant {
+        id: "sim-psu".into(),
+        principal: "agent:*".into(),
+        device: "sim.psu-01".into(),
+        capability: "power.output.*".into(),
+        operations: vec![Operation::Write],
+        effect: Effect::Allow,
+        max_side_effect: Some(SideEffect::Reversible),
+        reason: None,
+    };
+    for g in [read, psu] {
+        operator.add_grant(g).await.map_err(|e| e.to_string())?;
+    }
+    let scopes = ["sim.*:*:read", "sim.psu-01:*:write"]
+        .map(|s| parse_scope(s).expect("static scope"))
+        .to_vec();
+    let token = operator
+        .create_token(CreateTokenParams::scoped("agent:sim", Role::Agent, scopes))
+        .await
+        .map_err(|e| e.to_string())?;
+    let agent = Client::new(url, &token.token).map_err(|e| e.to_string())?;
+    eprintln!(
+        "openmhs mcp --sim: virtual lab only (sim.thermo-01, sim.psu-01, sim.axis-01);          the agent can read all and write the power supply; nothing persists."
+    );
+    openmhs_mcp::serve_stdio(openmhs_mcp::OpenMhsServer::new(agent, false))
+        .await
+        .map_err(|e| format!("MCP session ended: {e}"))
 }
 
 async fn run(cli: Cli) -> u8 {

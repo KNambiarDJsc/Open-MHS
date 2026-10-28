@@ -538,3 +538,103 @@ fn mcp_needs_an_agent_token() {
     assert!(String::from_utf8_lossy(&out.stderr).contains("agent token"));
     assert!(out.stdout.is_empty(), "stdout is reserved for MCP");
 }
+
+/// `openmhs mcp --sim` is a complete lab behind one command: an MCP host needs no gateway,
+/// grants or token. It reads every simulated device, writes the supply (confirmed by
+/// readback), and is still refused what it was not granted.
+#[test]
+fn mcp_sim_is_a_working_lab_in_one_command() {
+    use std::io::{BufRead, BufReader, Write};
+
+    let mut child = Command::new(BIN)
+        .args(["mcp", "--sim"])
+        .env_remove("OPENMHS_TOKEN")
+        .env_remove("OPENMHS_HOME")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn()
+        .unwrap();
+    let mut stdin = child.stdin.take().unwrap();
+    let mut stdout = BufReader::new(child.stdout.take().unwrap());
+    let mut rpc = |id: u64, method: &str, params: Value| -> Value {
+        let line =
+            serde_json::json!({ "jsonrpc": "2.0", "id": id, "method": method, "params": params });
+        writeln!(stdin, "{line}").unwrap();
+        stdin.flush().unwrap();
+        loop {
+            let mut buf = String::new();
+            assert_ne!(
+                stdout.read_line(&mut buf).unwrap(),
+                0,
+                "server closed stdout"
+            );
+            let v: Value = serde_json::from_str(&buf).unwrap();
+            if v["id"] == id {
+                if method == "initialize" {
+                    let done = serde_json::json!({ "jsonrpc": "2.0", "method": "notifications/initialized" });
+                    writeln!(stdin, "{done}").unwrap();
+                    stdin.flush().unwrap();
+                }
+                return v["result"].clone();
+            }
+        }
+    };
+    rpc(
+        1,
+        "initialize",
+        serde_json::json!({
+            "protocolVersion": "2025-11-25", "capabilities": {},
+            "clientInfo": { "name": "cli-test", "version": "0" }
+        }),
+    );
+
+    let devices = rpc(
+        2,
+        "tools/call",
+        serde_json::json!({ "name": "list_devices", "arguments": {} }),
+    );
+    assert_eq!(
+        devices["structuredContent"]["devices"]
+            .as_array()
+            .map(Vec::len),
+        Some(3),
+        "{devices}"
+    );
+
+    let write = rpc(
+        3,
+        "tools/call",
+        serde_json::json!({ "name": "submit_command", "arguments": {
+            "device": PSU, "capability": SETPOINT,
+            "value": { "value": 2.0, "unit": "V" }, "idempotency_key": "sim-1" } }),
+    );
+    assert_eq!(write["structuredContent"]["confirmed"], true, "{write}");
+
+    let home = rpc(
+        4,
+        "tools/call",
+        serde_json::json!({ "name": "submit_command", "arguments": {
+            "device": "sim.axis-01", "capability": "axis.home",
+            "params": {}, "idempotency_key": "sim-2" } }),
+    );
+    assert_eq!(home["isError"], true, "the axis was not granted: {home}");
+    assert_eq!(home["structuredContent"]["reached_device"], false);
+
+    drop(stdin);
+    let status = child.wait().unwrap();
+    assert!(status.success(), "{status:?}");
+}
+
+/// `--sim` brings its own agent; pointing it at someone else's gateway or an operator
+/// token is a contradiction, not a silent override.
+#[test]
+fn mcp_sim_refuses_to_mix_with_a_real_gateway() {
+    let out = Command::new(BIN)
+        .args(["mcp", "--sim", "--allow-operator"])
+        .stdin(Stdio::null())
+        .output()
+        .unwrap();
+    assert_ne!(out.status.code(), Some(OK));
+    assert!(out.stdout.is_empty());
+}

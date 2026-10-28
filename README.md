@@ -76,6 +76,14 @@ openmhs --version
 openmhs demo
 ```
 
+**Already use an MCP host (Claude Code, Claude Desktop, an IDE agent)?** Skip to the agent
+side in one line, with the virtual lab built in and no token to handle
+([docs/mcp.md](docs/mcp.md)):
+
+```sh
+claude mcp add openmhs-sim -- openmhs mcp --sim
+```
+
 **2. Run the gateway yourself.** In terminal 1:
 
 ```sh
