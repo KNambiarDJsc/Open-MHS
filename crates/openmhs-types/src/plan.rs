@@ -40,6 +40,11 @@ pub struct PlanStep {
     /// Readings that must hold just before the step is submitted.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub preconditions: Vec<StepPrecondition>,
+    /// Conditions on fresh readings, in the precondition form, that decide whether the step
+    /// runs at all. If one is definitely false the step is `SKIPPED`, and so is every step
+    /// that depends on it. A reading that is missing or stale is not "false": the step fails.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub when: Vec<StepPrecondition>,
     #[serde(default)]
     pub on_failure: OnFailure,
     /// Undoes this step, if the plan compensates after it succeeded.
@@ -121,6 +126,9 @@ pub enum StepStatus {
     Running,
     WaitingApproval,
     Succeeded,
+    /// Not run: a `when` condition was false, or a step it depends on was skipped. Nothing
+    /// was sent, and there is nothing to compensate.
+    Skipped,
     /// Ended definitely without effect or with a failure the device reported.
     Failed,
     /// Its command may or may not have taken effect.
@@ -240,6 +248,9 @@ pub enum StepVerdict {
     Refused,
     /// An earlier step stops the plan before this one.
     NotReached,
+    /// Its `when` conditions were false on the readings the dry run used, or a step it depends
+    /// on was skipped: it would not run. Real readings at run time decide again.
+    Skipped,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -383,6 +394,7 @@ mod tests {
             request: json!({}),
             after: after.iter().map(|s| (*s).to_owned()).collect(),
             preconditions: vec![],
+            when: vec![],
             on_failure: OnFailure::Halt,
             compensate: None,
         }

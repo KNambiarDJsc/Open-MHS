@@ -50,6 +50,11 @@ pub struct StepInput {
     /// without sending anything.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub preconditions: Vec<PreconditionInput>,
+    /// Readings that decide whether the step runs at all: if one is definitely false
+    /// the step is skipped (and so is every step after it in `after`), and nothing is
+    /// sent for it. A reading that is missing or stale fails the step instead.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub when: Vec<PreconditionInput>,
     /// What a definite failure does: `halt` (default: stop, leave completed steps as
     /// they are), `compensate` (undo completed steps, newest first) or `ask` (wait for a
     /// human). An unknown outcome always waits for a human.

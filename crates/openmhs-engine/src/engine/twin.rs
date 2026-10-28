@@ -146,6 +146,7 @@ fn verdict(status: StepStatus, held: bool) -> StepVerdict {
         | StepStatus::CompensationFailed
         | StepStatus::CompensationUncertain => StepVerdict::Allowed,
         StepStatus::Failed | StepStatus::Uncertain => StepVerdict::Refused,
+        StepStatus::Skipped => StepVerdict::Skipped,
         StepStatus::Pending | StepStatus::Running | StepStatus::WaitingApproval => {
             StepVerdict::NotReached
         }
@@ -369,9 +370,12 @@ impl Engine {
     ) -> Result<PlanPreflight, EngineError> {
         let ok = lease.available
             && outcome == PlanState::Succeeded
-            && steps
-                .iter()
-                .all(|s| matches!(s.verdict, StepVerdict::Allowed | StepVerdict::NeedsApproval));
+            && steps.iter().all(|s| {
+                matches!(
+                    s.verdict,
+                    StepVerdict::Allowed | StepVerdict::NeedsApproval | StepVerdict::Skipped
+                )
+            });
         let result = PlanPreflight {
             ok,
             lease,

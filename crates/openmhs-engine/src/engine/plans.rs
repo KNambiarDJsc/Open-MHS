@@ -29,6 +29,22 @@ pub(super) struct PlanRuntime {
     cancelling: Mutex<HashSet<String>>,
 }
 
+/// Why conditions did not all hold.
+enum Unmet {
+    /// A usable reading definitely failed a comparison.
+    False(ErrorObject),
+    /// It could not be decided: unreadable, stale, bad quality, or not comparable.
+    Unknown(ErrorObject),
+}
+
+impl Unmet {
+    fn into_error(self) -> ErrorObject {
+        match self {
+            Unmet::False(e) | Unmet::Unknown(e) => e,
+        }
+    }
+}
+
 fn refused(code: &str, message: impl Into<String>) -> EngineError {
     EngineError::Denied(ErrorObject::new(code, message))
 }
@@ -154,7 +170,7 @@ impl Engine {
             {
                 errors.push(e);
             }
-            for p in &s.preconditions {
+            for p in s.preconditions.iter().chain(&s.when) {
                 let readable = self
                     .descriptor(&p.device)
                     .and_then(|d| d.capability(&p.capability).cloned())
@@ -399,18 +415,33 @@ impl Engine {
         caller: &Caller,
         step: &PlanStep,
     ) -> Result<(), ErrorObject> {
-        for p in &step.preconditions {
-            let failed = |msg: String| {
-                ErrorObject::new("plan.precondition.failed", msg)
-                    .detail("step", step.id.clone())
+        self.evaluate_conditions(caller, &step.id, &step.preconditions, "precondition")
+            .await
+            .map_err(Unmet::into_error)
+    }
+
+    /// Read each condition fresh and compare. `False` only when a usable reading definitely
+    /// fails the comparison; anything else that keeps it from being decided is `Unknown`.
+    async fn evaluate_conditions(
+        &self,
+        caller: &Caller,
+        step: &str,
+        conditions: &[openmhs_types::plan::StepPrecondition],
+        what: &str,
+    ) -> Result<(), Unmet> {
+        for p in conditions {
+            let err = |code: &str, msg: String| {
+                ErrorObject::new(code, msg)
+                    .detail("step", step.to_owned())
                     .detail("device", p.device.clone())
                     .detail("capability", p.capability.clone())
             };
+            let unknown = |msg: String| Unmet::Unknown(err("plan.precondition.failed", msg));
             let spec = self
                 .descriptor(&p.device)
                 .and_then(|d| d.capability(&p.capability).and_then(|c| c.value.clone()))
                 .ok_or_else(|| {
-                    failed(format!(
+                    unknown(format!(
                         "'{}' on '{}' is no longer readable",
                         p.capability, p.device
                     ))
@@ -419,13 +450,13 @@ impl Engine {
                 .read(caller, &p.device, &p.capability)
                 .await
                 .map_err(|e| {
-                    failed(format!(
+                    unknown(format!(
                         "could not read '{}' on '{}': {e}",
                         p.capability, p.device
                     ))
                 })?;
             if !reading.is_usable(self.now(), p.max_age_ms) {
-                return Err(failed(format!(
+                return Err(unknown(format!(
                     "the reading of '{}' on '{}' is stale or of bad quality",
                     p.capability, p.device
                 )));
@@ -433,21 +464,42 @@ impl Engine {
             match openmhs_policy::condition_holds(&spec, &reading.value, p.op, &p.value) {
                 Ok(true) => {}
                 Ok(false) => {
-                    return Err(failed(p.description.clone().unwrap_or_else(|| {
-                        format!(
-                            "'{}' on '{}' does not satisfy the step's precondition",
-                            p.capability, p.device
+                    return Err(Unmet::False(
+                        err(
+                            "plan.precondition.failed",
+                            p.description.clone().unwrap_or_else(|| {
+                                format!(
+                                    "'{}' on '{}' does not satisfy the step's {what}",
+                                    p.capability, p.device
+                                )
+                            }),
                         )
-                    }))
-                    .detail(
-                        "observed",
-                        serde_json::to_value(&reading.value).unwrap_or_default(),
+                        .detail(
+                            "observed",
+                            serde_json::to_value(&reading.value).unwrap_or_default(),
+                        ),
                     ));
                 }
-                Err(msg) => return Err(failed(msg)),
+                Err(msg) => return Err(unknown(msg)),
             }
         }
         Ok(())
+    }
+
+    /// Record a step as not run, with why. Nothing was sent for it.
+    fn skip(&self, plan: &mut Plan, step: &str, reason: String) -> Result<(), EngineError> {
+        if let Some(s) = plan.step_mut(step) {
+            s.status = StepStatus::Skipped;
+            s.error = Some(
+                ErrorObject::new("plan.step.skipped", reason.clone())
+                    .detail("step", step.to_owned()),
+            );
+        }
+        self.save_plan(
+            plan,
+            "plan.step.skipped",
+            serde_json::json!({ "step": step, "reason": reason }),
+        )
     }
 
     /// Submit a request for a step (or its compensation) and record the command.
@@ -512,6 +564,22 @@ impl Engine {
                 Some(format!("step '{step_id}' is missing")),
             );
         };
+        if let Some(dep) = step.after.iter().find(|d| {
+            plan.step(d)
+                .is_some_and(|r| r.status == StepStatus::Skipped)
+        }) {
+            let why = format!("step '{dep}', which it depends on, was skipped");
+            return self.skip(plan, &step_id, why);
+        }
+        match self
+            .evaluate_conditions(caller, &step_id, &step.when, "condition")
+            .await
+        {
+            Ok(()) => {}
+            Err(Unmet::False(e)) => return self.skip(plan, &step_id, e.message),
+            // Not knowing is not "false": a condition that cannot be decided fails the step.
+            Err(Unmet::Unknown(e)) => return self.fail(plan, &step_id, e),
+        }
         if let Err(e) = self.check_preconditions(caller, &step).await {
             return self.fail(plan, &step_id, e);
         }

@@ -44,6 +44,7 @@ Design: [ADR-0018](../docs/adr/0018-orchestration.md).
 | `steps[].request` | A write or invoke request ([schemas/command.schema.json](schemas/command.schema.json)) with no `idempotency_key`; the plan derives one per attempt |
 | `steps[].after` | Steps that must have succeeded first |
 | `steps[].preconditions` | Readings (`device`, `capability`, `op`, `value`, optional `max_age_ms`) that must hold just before the step is submitted. They are compared as descriptor preconditions are. A reading that is missing, stale or fails the comparison fails the step without sending anything |
+| `steps[].when` | Readings in the precondition form that decide whether the step runs at all. If one is definitely false (a usable reading fails the comparison) the step is `SKIPPED`, nothing is sent for it, and every step whose `after` names it is skipped too. A reading that is missing, stale or not comparable is not "false": the step fails. Skipped steps are never compensated. A dry run reports them as `skipped` and the plan can still be `ok` ([ADR-0024](../docs/adr/0024-conditional-steps.md)) |
 | `steps[].on_failure` | `halt` (default), `compensate` or `ask` (§3) |
 | `steps[].compensate` | A request that undoes the step, used when the plan compensates |
 | `lease_ttl_ms` | The plan's lease runs this long from the start of each step (default 15 minutes, at most 24 hours) |
