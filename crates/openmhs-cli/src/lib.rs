@@ -402,6 +402,43 @@ pub struct ServeArgs {
 
 #[derive(Subcommand)]
 enum DiscoverCmd {
+    /// Modbus TCP devices, by Read Device Identification (function 43/14).
+    Modbus {
+        /// Hosts: 192.168.1.20, 192.168.1.20:502, or a range 192.168.1.20-40 (at most 256).
+        #[arg(required = true)]
+        targets: Vec<String>,
+        #[arg(long, default_value_t = 502)]
+        port: u16,
+        /// Modbus unit id to ask.
+        #[arg(long, default_value_t = 1)]
+        unit: u8,
+        #[arg(long, default_value_t = 800)]
+        timeout_ms: u64,
+    },
+    /// HTTP devices: one GET of each URL given.
+    Http {
+        #[arg(required = true)]
+        urls: Vec<String>,
+        #[arg(long, default_value_t = 2000)]
+        timeout_ms: u64,
+        /// Allow http:// beyond loopback.
+        #[arg(long)]
+        allow_plaintext: bool,
+    },
+    /// MQTT topics: subscribe on a broker for a while and list what is published.
+    Mqtt {
+        /// host or host:port (1883 by default).
+        broker: String,
+        /// Topic filter.
+        #[arg(long, default_value = "#")]
+        topic: String,
+        /// How long to listen, e.g. 3s (at most 30s).
+        #[arg(long = "for", default_value = "3s", value_parser = parse_duration_ms)]
+        listen: u64,
+        /// Allow an unencrypted connection beyond loopback.
+        #[arg(long)]
+        allow_plaintext: bool,
+    },
     /// SCPI instruments over TCP (LXI, bench supplies, meters).
     Scpi {
         /// Hosts: 192.168.1.20, 192.168.1.20:5555, or a range 192.168.1.20-40 (at most 256).
@@ -1687,6 +1724,72 @@ async fn run(cli: Cli) -> u8 {
                     timeout_ms,
                 },
         } => return discover::run(cli.json, &targets, port, timeout_ms).await,
+        Cmd::Discover {
+            command:
+                DiscoverCmd::Modbus {
+                    targets,
+                    port,
+                    unit,
+                    timeout_ms,
+                },
+        } => {
+            let targets = match discover::expand(&targets, port) {
+                Ok(t) => t,
+                Err(e) => {
+                    eprintln!("error: {e}");
+                    return exit::ERROR;
+                }
+            };
+            let d =
+                discover::modbus(targets, unit, std::time::Duration::from_millis(timeout_ms)).await;
+            return discover::finish(cli.json, &d);
+        }
+        Cmd::Discover {
+            command:
+                DiscoverCmd::Http {
+                    urls,
+                    timeout_ms,
+                    allow_plaintext,
+                },
+        } => {
+            if urls.len() > discover::MAX_TARGETS {
+                eprintln!("error: at most {} URLs per run", discover::MAX_TARGETS);
+                return exit::ERROR;
+            }
+            for u in &urls {
+                let Ok(parsed) = reqwest::Url::parse(u) else {
+                    eprintln!("error: '{u}' is not a URL");
+                    return exit::ERROR;
+                };
+                let host = parsed.host_str().unwrap_or_default();
+                if let Err(e) =
+                    discover::check_plaintext(host, parsed.scheme() == "http", allow_plaintext)
+                {
+                    eprintln!("error: {e}");
+                    return exit::ERROR;
+                }
+            }
+            let d = discover::http(urls, std::time::Duration::from_millis(timeout_ms)).await;
+            return discover::finish(cli.json, &d);
+        }
+        Cmd::Discover {
+            command:
+                DiscoverCmd::Mqtt {
+                    broker,
+                    topic,
+                    listen,
+                    allow_plaintext,
+                },
+        } => {
+            let host = broker.rsplit_once(':').map_or(broker.as_str(), |(h, _)| h);
+            if let Err(e) = discover::check_plaintext(host, true, allow_plaintext) {
+                eprintln!("error: {e}");
+                return exit::ERROR;
+            }
+            let listen = std::time::Duration::from_millis(listen.min(30_000));
+            let d = discover::mqtt(&broker, &topic, listen).await;
+            return discover::finish(cli.json, &d);
+        }
         Cmd::Bench(args) => {
             return bench::run(cli.json, args.reads, args.commands, args.concurrency).await;
         }

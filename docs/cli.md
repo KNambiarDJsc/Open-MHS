@@ -37,7 +37,9 @@ openmhs read sim.thermo-01 temperature.ambient
 | `find [--name P] [--quantity Q] [--unit U] [--op OP] [--value X] [--available]` | Which devices can do what you need. Candidates, not permissions |
 | `procedures list\|show\|propose\|add\|approve\|remove\|check\|run` | Reviewed, versioned plans with typed parameters ([spec/procedures.md](../spec/procedures.md)). `run NAME --param voltage=2V`. Agents may propose; only an operator adds, approves or removes |
 | `bench [--reads N] [--commands N] [--concurrency N]` | Wall-clock read, command, event and watch timing of a throwaway gateway ([benchmarks.md](benchmarks.md)) |
-| `discover scpi <hosts...>` | Ask named addresses (`host`, `host:port`, `a.b.c.d-e`, at most 256) for `*IDN?` and propose profiles. Changes and registers nothing |
+| `discover scpi\|modbus <hosts...>` | Ask named addresses (`host`, `host:port`, `a.b.c.d-e`, at most 256) for their identity: SCPI `*IDN?`, Modbus Read Device Identification (43/14). Changes and registers nothing |
+| `discover http <urls...>` | One `GET` per URL; reports status, server and content type |
+| `discover mqtt <broker> [--topic F] [--for 3s]` | Subscribe and list the topics published; publishes nothing. Plaintext HTTP and MQTT beyond loopback need `--allow-plaintext` |
 | `insights <device> [<capability>]` | What the journal says happened on a device: refusals and their limits, confirmed values, tracking error, readback latency, unresolved outcomes. An agent sees its own commands, the operator everyone's ([ADR-0022](adr/0022-insights-from-the-journal.md)) |
 | `devices status [<id>]` | Whether each device answers (`ONLINE`, `DEGRADED`, `OFFLINE`), is busy or leased; probes devices not checked in the last second ([ADR-0019](adr/0019-device-availability.md)) |
 | `graph` | Relationships, shared resources and frames ([spec/topology.md](../spec/topology.md)) |

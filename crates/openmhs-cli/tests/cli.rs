@@ -875,3 +875,173 @@ fn discover_finds_instruments_and_sends_only_the_identity_query() {
     assert!(!heard.is_empty());
     assert!(heard.iter().all(|l| l == "*IDN?"), "{heard:?}");
 }
+
+/// Modbus discovery sends only Read Device Identification, and reports both a device that
+/// identifies itself and one that answers with an exception.
+#[test]
+fn discover_modbus_asks_only_for_the_identity() {
+    use std::io::{Read, Write};
+    use std::sync::{Arc, Mutex};
+
+    let heard = Arc::new(Mutex::new(Vec::<Vec<u8>>::new()));
+    let serve = |identifies: bool| {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let heard = heard.clone();
+        std::thread::spawn(move || {
+            for mut s in listener.incoming().flatten() {
+                let mut req = [0u8; 11];
+                if s.read_exact(&mut req).is_err() {
+                    continue;
+                }
+                heard.lock().unwrap().push(req.to_vec());
+                let pdu: Vec<u8> = if identifies {
+                    let mut p = vec![0x2B, 0x0E, 0x01, 0x01, 0x00, 0x00, 0x02];
+                    for (id, text) in [(0u8, "ACME"), (1, "CHAMBER-9")] {
+                        p.extend([id, text.len() as u8]);
+                        p.extend(text.as_bytes());
+                    }
+                    p
+                } else {
+                    vec![0xAB, 0x01]
+                };
+                let len = (pdu.len() + 1) as u16;
+                let mut out = vec![req[0], req[1], 0, 0];
+                out.extend(len.to_be_bytes());
+                out.push(req[6]);
+                out.extend(pdu);
+                let _ = s.write_all(&out);
+            }
+        });
+        port
+    };
+    let named = serve(true);
+    let shy = serve(false);
+    let out = Command::new(BIN)
+        .args(["--json", "discover", "modbus"])
+        .args([named, shy].map(|p| format!("127.0.0.1:{p}")))
+        .output()
+        .unwrap();
+    assert_eq!(
+        out.status.code(),
+        Some(OK),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let d: Value = serde_json::from_slice(&out.stdout).unwrap();
+    let ids: Vec<String> = d["candidates"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|c| c["identity"].as_str().unwrap().to_owned())
+        .collect();
+    assert!(ids.contains(&"ACME,CHAMBER-9".to_owned()), "{ids:?}");
+    assert!(ids.iter().any(|i| i.contains("exception 1")), "{ids:?}");
+    for req in heard.lock().unwrap().iter() {
+        assert_eq!(
+            &req[7..],
+            &[0x2B, 0x0E, 0x01, 0x00],
+            "only function 43/14 is sent"
+        );
+    }
+}
+
+/// HTTP discovery is one GET per URL, and refuses plaintext beyond loopback unless asked.
+#[test]
+fn discover_http_gets_each_url_once_and_guards_plaintext() {
+    use std::io::{BufRead, BufReader, Write};
+    use std::sync::{Arc, Mutex};
+
+    let methods = Arc::new(Mutex::new(Vec::<String>::new()));
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    {
+        let methods = methods.clone();
+        std::thread::spawn(move || {
+            for s in listener.incoming().flatten() {
+                let mut r = BufReader::new(s.try_clone().unwrap());
+                let mut first = String::new();
+                let _ = r.read_line(&mut first);
+                methods
+                    .lock()
+                    .unwrap()
+                    .push(first.split(' ').next().unwrap_or("").to_owned());
+                let mut out = s;
+                let _ = out.write_all(
+                    b"HTTP/1.1 200 OK\r\nServer: lamp-fw/1.2\r\nContent-Type: application/json\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{}",
+                );
+            }
+        });
+    }
+    let out = Command::new(BIN)
+        .args([
+            "--json",
+            "discover",
+            "http",
+            &format!("http://127.0.0.1:{port}/status"),
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(
+        out.status.code(),
+        Some(OK),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let d: Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert!(
+        d["candidates"][0]["identity"]
+            .as_str()
+            .unwrap()
+            .contains("server lamp-fw/1.2")
+    );
+    assert_eq!(*methods.lock().unwrap(), ["GET"]);
+
+    let refused = Command::new(BIN)
+        .args(["discover", "http", "http://192.0.2.1/"])
+        .output()
+        .unwrap();
+    assert_eq!(refused.status.code(), Some(ERROR));
+    assert!(String::from_utf8_lossy(&refused.stderr).contains("--allow-plaintext"));
+}
+
+/// MQTT discovery subscribes, lists the topics a node publishes, and publishes nothing.
+#[test]
+fn discover_mqtt_lists_the_topics_a_broker_carries() {
+    let rt = tokio::runtime::Runtime::new().unwrap();
+    let profile = openmhs_mqtt::load(include_str!(
+        "../../../adapters/openmhs-mqtt/profiles/greenhouse-node.json"
+    ))
+    .unwrap();
+    let listener = rt
+        .block_on(tokio::net::TcpListener::bind("127.0.0.1:0"))
+        .unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let sim = openmhs_mqtt::sim::MqttSim::new(profile);
+    rt.spawn(sim.serve(listener));
+
+    let out = Command::new(BIN)
+        .args([
+            "--json",
+            "discover",
+            "mqtt",
+            &format!("127.0.0.1:{port}"),
+            "--for",
+            "2s",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(
+        out.status.code(),
+        Some(OK),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let d: Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(d["asked"], 1);
+    assert!(
+        !d["candidates"].as_array().unwrap().is_empty(),
+        "the node's retained state topics are listed: {d}"
+    );
+    drop(rt);
+}

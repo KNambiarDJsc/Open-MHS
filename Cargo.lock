@@ -1595,6 +1595,8 @@ dependencies = [
  "openmhs-scpi",
  "openmhs-sim",
  "openmhs-types",
+ "reqwest",
+ "rumqttc",
  "serde",
  "serde_json",
  "tempfile",

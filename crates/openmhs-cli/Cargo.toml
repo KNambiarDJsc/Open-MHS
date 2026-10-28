@@ -36,6 +36,8 @@ openmhs-profile.workspace = true
 openmhs-scpi.workspace = true
 openmhs-sim.workspace = true
 openmhs-types.workspace = true
+reqwest.workspace = true
+rumqttc = { version = "0.25", default-features = false, features = ["use-rustls-no-provider"] }
 serde.workspace = true
 serde_json.workspace = true
 tokio = { workspace = true, features = ["signal", "net"] }
