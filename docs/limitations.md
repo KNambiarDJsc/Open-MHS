@@ -32,6 +32,8 @@ the README links here.
 
 - **Twin preflight has no physics.** A twin does what it is told; `ok` means a plan fits
   the contract and current readings, not that it will succeed.
+- **SCPI over serial is untested on macOS.** Its pseudo-terminal test hangs on macOS CI
+  (cause not yet found), so it runs on Linux only; SCPI over TCP is tested on macOS.
 - **OPC UA is read-only;** ROS 2 is observation-only (no services or actions). No Modbus
   RTU.
 - **MCP is stdio only:** no HTTP transport, resources or approval notifications.
