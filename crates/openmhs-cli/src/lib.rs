@@ -5,6 +5,7 @@
 
 mod bench;
 mod demo;
+mod discover;
 mod output;
 mod profiles;
 pub mod scaffold;
@@ -65,6 +66,12 @@ enum Cmd {
     /// Measure a throwaway gateway on this machine, through its real API: read, command
     /// and event latency, concurrent reads, watch timing. Simulated devices only.
     Bench(BenchArgs),
+    /// Ask addresses you name for their identity (SCPI `*IDN?`, which changes nothing) and
+    /// list what answers. Proposes only: nothing is connected, registered or granted.
+    Discover {
+        #[command(subcommand)]
+        command: DiscoverCmd,
+    },
     /// Show who you are to the gateway and what it is running.
     Info,
     /// List or inspect registered devices.
@@ -391,6 +398,22 @@ pub struct ServeArgs {
     /// MiB. A starting point to test, not a sizing recommendation.
     #[arg(long, default_value_t = openmhs_gateway::DEFAULT_JOURNAL_RESERVE_BYTES / (1024 * 1024))]
     journal_reserve_mib: u64,
+}
+
+#[derive(Subcommand)]
+enum DiscoverCmd {
+    /// SCPI instruments over TCP (LXI, bench supplies, meters).
+    Scpi {
+        /// Hosts: 192.168.1.20, 192.168.1.20:5555, or a range 192.168.1.20-40 (at most 256).
+        #[arg(required = true)]
+        targets: Vec<String>,
+        /// Port for targets that name none.
+        #[arg(long, default_value_t = 5025)]
+        port: u16,
+        /// How long to wait for each answer.
+        #[arg(long, default_value_t = 800)]
+        timeout_ms: u64,
+    },
 }
 
 #[derive(Args)]
@@ -1656,6 +1679,14 @@ async fn run(cli: Cli) -> u8 {
     match cli.command {
         Cmd::Serve(args) => return serve(home, args).await,
         Cmd::Demo(args) => return demo::run(args.keep).await,
+        Cmd::Discover {
+            command:
+                DiscoverCmd::Scpi {
+                    targets,
+                    port,
+                    timeout_ms,
+                },
+        } => return discover::run(cli.json, &targets, port, timeout_ms).await,
         Cmd::Bench(args) => {
             return bench::run(cli.json, args.reads, args.commands, args.concurrency).await;
         }
@@ -1715,6 +1746,7 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
         Cmd::Serve(_)
         | Cmd::Demo(_)
         | Cmd::Bench(_)
+        | Cmd::Discover { .. }
         | Cmd::Mcp(_)
         | Cmd::Conformance(_)
         | Cmd::Profile { .. }

@@ -814,3 +814,64 @@ fn bench_reports_measured_latencies_and_its_conditions() {
     assert!(r["profile"] == "debug" || r["profile"] == "release");
     assert!(r["note"].as_str().unwrap().contains("Not a capacity claim"));
 }
+
+/// `openmhs discover scpi` lists what identifies itself, ignores what does not, and sends
+/// nothing but the identity query.
+#[test]
+fn discover_finds_instruments_and_sends_only_the_identity_query() {
+    use std::io::{BufRead, BufReader, Write};
+    use std::sync::{Arc, Mutex};
+
+    let heard = Arc::new(Mutex::new(Vec::<String>::new()));
+    let serve = |answer: &'static str| {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let heard = heard.clone();
+        std::thread::spawn(move || {
+            for stream in listener.incoming().flatten() {
+                let mut out = stream.try_clone().unwrap();
+                let mut lines = BufReader::new(stream);
+                let mut line = String::new();
+                while lines.read_line(&mut line).unwrap_or(0) > 0 {
+                    heard.lock().unwrap().push(line.trim_end().to_owned());
+                    let _ = writeln!(out, "{answer}");
+                    line.clear();
+                }
+            }
+        });
+        port
+    };
+    let instrument = serve("ACME,PSU-1,SN42,1.0");
+    let not_an_instrument = serve("hello");
+    let closed = {
+        let l = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        l.local_addr().unwrap().port()
+    };
+
+    let out = Command::new(BIN)
+        .args(["--json", "discover", "scpi", "--timeout-ms", "500"])
+        .args([instrument, not_an_instrument, closed].map(|p| format!("127.0.0.1:{p}")))
+        .output()
+        .unwrap();
+    assert_eq!(
+        out.status.code(),
+        Some(OK),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let d: Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(d["asked"], 3);
+    assert_eq!(d["silent"], 2);
+    let c = &d["candidates"][0];
+    assert_eq!(c["address"], format!("127.0.0.1:{instrument}"));
+    assert_eq!(c["identity"], "ACME,PSU-1,SN42,1.0");
+    assert!(
+        c["next"]
+            .as_str()
+            .unwrap()
+            .starts_with("openmhs profile new scpi")
+    );
+    let heard = heard.lock().unwrap();
+    assert!(!heard.is_empty());
+    assert!(heard.iter().all(|l| l == "*IDN?"), "{heard:?}");
+}
