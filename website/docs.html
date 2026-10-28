@@ -158,7 +158,13 @@ openmhs exec lab.node-01 vent.position --value 140%   # DENIED, outside 0..100 %
 
     <h2 id="mcp">Connect an AI agent over MCP</h2>
     <p><code>openmhs mcp</code> is an MCP server on stdin and stdout. It is a client of a
-    running gateway and holds one agent token, never the operator's. For Claude Code:</p>
+    running gateway and holds one agent token, never the operator's. To try it with no
+    setup, <code>--sim</code> starts a throwaway gateway with the virtual lab inside the same
+    process and gives the agent read access to every simulated device and write access to the
+    power supply. Nothing persists, no real hardware is touched, and the agent still cannot
+    approve its own commands:</p>
+<pre><code>claude mcp add openmhs-sim -- openmhs mcp --sim</code></pre>
+    <p>For your own gateway and devices, give it an agent token. For Claude Code:</p>
 <pre><code>claude mcp add openmhs -e OPENMHS_TOKEN=&lt;token&gt; -- openmhs mcp</code></pre>
     <p>Any other MCP host: a stdio server, command <code>openmhs</code>, argument
     <code>mcp</code>, environment <code>OPENMHS_TOKEN</code>.</p>
@@ -175,7 +181,17 @@ openmhs exec lab.node-01 vent.position --value 140%   # DENIED, outside 0..100 %
     <code>describe_device</code>, <code>read_state</code>, <code>check_command</code>,
     <code>submit_command</code>, <code>get_command</code>,
     <code>reconcile_command</code> and the plan tools. Refusals come back as structured
-    results with a suggested next step. Details:
+    results with a suggested next step.</p>
+    <p>Three more help an agent work across devices and over time.
+    <code>find_capabilities</code> answers "which device can do this" by quantity, unit,
+    operation or a value inside the declared range; it selects candidates and grants nothing.
+    <code>watch_state</code> and <code>poll_events</code> follow a measurement, availability
+    changes and the agent's own commands as they happen. They work only for capabilities
+    that declare <code>subscribe</code>, and only with a <code>subscribe</code> grant
+    (<code>openmhs grants add ... --ops subscribe</code>). <code>get_insights</code>
+    summarizes what the agent's earlier commands did: refusals with the limits behind them,
+    confirmed values, how far readings landed from the request. It is read from the journal,
+    and it never changes a limit or a permission. Details:
     <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/mcp.md">docs/mcp.md</a>.</p>
 
     <h2 id="python">Python SDK</h2>
@@ -194,14 +210,18 @@ if receipt.confirmed:                              # verified by reading the dev
 elif receipt.denied:                               # a refusal is a receipt, not an exception
     for reason in receipt.reasons:
         print(reason.code, reason.details)</code></pre>
-    <p>Leases and plans are available too. See
+    <p>Leases, plans, events and watches (<code>poll_events</code>,
+    <code>create_watch</code>) are available too. See
     <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/python/README.md">python/README.md</a>.</p>
 
     <h2 id="check">Check what happened</h2>
     <p>As the operator (no <code>OPENMHS_TOKEN</code>):</p>
 <pre><code>openmhs commands list              # every command, its state and why
 openmhs audit tail                 # the latest audit records
-openmhs audit verify               # audit log intact: N records, hash chain verified</code></pre>
+openmhs audit verify               # audit log intact: N records, hash chain verified
+openmhs devices status             # which devices answer, are busy or leased
+openmhs insights sim.psu-01        # refusals, confirmed values, unresolved outcomes
+openmhs events --follow            # what happens, as it happens</code></pre>
     <p>When something says no, the error code says why, and
     <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/troubleshooting.md">troubleshooting</a>
     says what to do.</p>
@@ -211,7 +231,9 @@ openmhs audit verify               # audit log intact: N records, hash chain ver
     reads the gateway's advice, and ramps instead:</p>
 <pre><code>cargo build -p openmhs-cli
 python examples/agent-loop/mock_agent.py</code></pre>
-    <p>An optional variant drives the same loop with Claude; see
+    <p><code>learning_agent.py</code> runs two separate sessions: the second reads the
+    first one's evidence with <code>get_insights</code> and reaches its target without a
+    single refusal. An optional variant drives the loop with Claude; see
     <a href="https://github.com/KNambiarDJsc/Open-MHS/tree/main/examples/agent-loop">examples/agent-loop</a>.</p>
 
     <h2 id="conformance">Run conformance</h2>

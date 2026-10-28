@@ -149,6 +149,16 @@
     that arrives after its timeout is discarded by a <code>*IDN?</code> resync, never read
     as the answer to the next request, and nothing new is sent while the instrument is
     still busy.</p>
+    <p>A reading only counts as evidence if it was measured after the command was sent. A
+    cached or retained value from before cannot verify a command, and cannot reconcile one
+    as "not applied", which would invite a second, duplicate effect. Such a command ends
+    <code>UNVERIFIABLE</code> instead. A device whose clock runs behind the gateway's is
+    allowed for with <code>--readback-skew-ms</code>, set to the measured offset.</p>
+    <p>A device that does not answer is registered <code>OFFLINE</code> rather than stopping
+    the gateway. Commands to it are refused with <code>device.unavailable</code> before
+    anything is sent, and it is used again as soon as it answers. Stops are never refused for
+    availability, but an unconfirmed stop is reported as unconfirmed: the equipment's own
+    emergency stop stays authoritative.</p>
 
     <h2 id="policy">Principals, grants and approvals</h2>
     <ul>
@@ -285,6 +295,15 @@ openmhs tokens create agent:claude --scope 'sim.*:*:read' --scope 'sim.psu-01:*:
       <li><strong>Stop lane.</strong> Actions marked <code>stop</code> skip the device lock
       and leases, so they reach a busy device. They are still authorized and validated, and
       they are not a safety function.</li>
+      <li><strong>Events and watches.</strong> Observations, availability changes and command
+      state changes go into one bounded, ordered stream that clients poll with a cursor. A
+      watch samples a capability that declares <code>subscribe</code>. A client that falls
+      behind is told how many events it missed, never silently. Events are notifications: the
+      engine never decides anything from them, and takes fresh readings of its own.</li>
+      <li><strong>Journal limits.</strong> An operator can cap the journal's size and keep a
+      reserve below the cap. Once only the reserve is left, new commands and audited reads are
+      refused with nothing sent, while stops and recovery can still be recorded. Nothing is
+      deleted or archived.</li>
     </ul>
 
     <h2 id="code">Where things are in the code</h2>
