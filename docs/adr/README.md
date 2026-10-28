@@ -24,6 +24,7 @@
 | [0020](0020-readback-must-follow-dispatch.md) | Readback must be measured after the command was sent | Accepted |
 | [0021](0021-journal-quota-and-reserve.md) | Journal size limit and critical reserve | Accepted |
 | [0022](0022-insights-from-the-journal.md) | Insights: an agent learns from what the journal recorded, never from a back door | Accepted |
+| [0023](0023-state-fabric.md) | State fabric: bounded event stream, watches, and the `subscribe` operation | Accepted |
 
 Format: Context → Decision → Alternatives considered → Consequences. Supersede an
 ADR with a new one rather than rewriting history.

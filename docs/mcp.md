@@ -102,6 +102,10 @@ Tools (all return `structuredContent` with an `outputSchema`):
 |---|---|---|
 | `list_devices`, `describe_device` | No | Discover devices, units, ranges, limits. `list_devices` also gives each device's `availability`, `reason`, `busy` and `lease_holder`; an `OFFLINE` device refuses commands with `device.unavailable` |
 | `get_insights` | No | What your earlier commands on a device did, from the journal: confirmed values, refusals with the limits behind them, how far readings landed from the request, readback latency, unresolved outcomes. Evidence to iterate on; it never changes what you may do ([ADR-0022](adr/0022-insights-from-the-journal.md)) |
+| `find_capabilities` | No | Which devices can do what you need: by capability name pattern, quantity, unit, operation, a value inside the declared range, side effect, availability. Candidates, not permissions |
+| `watch_state` | Reads the device | Sample a capability that declares `subscribe` (needs a `subscribe` grant) every `interval_ms`, into the event stream ([ADR-0023](adr/0023-state-fabric.md)) |
+| `poll_events` | No | Observations you may subscribe to, availability changes and your commands' state changes since `after`; `wait_ms` waits for one. `missed` > 0 means you fell behind |
+| `cancel_watch` | No | Stop a watch you created |
 | `read_state` | No (audited) | Read now; check `usable` before relying on it |
 | `check_command` | No | Ask whether a command would be allowed right now |
 | `submit_command` | **Yes** | Write a property (`value`) or invoke an action (`params`) |

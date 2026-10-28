@@ -19,6 +19,17 @@ and the entry will say so under **Changed** or **Removed**.
   latency and unresolved outcomes. A read of the journal only; it changes no limit, grant or
   descriptor. `examples/agent-loop/learning_agent.py` shows a second session reaching its
   target without a refusal.
+- State fabric ([ADR-0023](docs/adr/0023-state-fabric.md)): `events.poll` streams observations,
+  availability changes and command transitions from a bounded in-memory buffer, reporting
+  any it had to drop (`missed`); `watches.create` samples a capability that declares
+  `subscribe`. Both are authorized as the specification's `subscribe` operation (scope and
+  grant), checked at delivery and before every sample. MCP tools `watch_state`,
+  `poll_events`, `cancel_watch`; `openmhs events` and `openmhs watch`; Python client methods.
+- Capability-based selection: MCP `find_capabilities`, `openmhs find`,
+  `Client::find_capabilities`.
+- [docs/strategy/PLATFORM_ARCHITECTURE.md](docs/strategy/PLATFORM_ARCHITECTURE.md): verified
+  gap matrix for the platform brief, subsystem contracts, and designs for procedures, DAG
+  plans, a model-agnostic harness, discovery and federation (not implemented).
 
 ### Changed
 

@@ -32,6 +32,9 @@ openmhs read sim.thermo-01 temperature.ambient
 | `demo [--keep]` | Guided scenario; exits non-zero if anything behaves unexpectedly |
 | `info` | Your principal and role, gateway version, device count |
 | `devices list` / `devices inspect <id>` | Registered devices / one descriptor |
+| `events [--follow] [--device P] [--kind K] [--from-start]` | The state fabric: observations you may subscribe to, availability changes, command state changes ([ADR-0023](adr/0023-state-fabric.md)) |
+| `watch <device> <capability> [--every 1s] [--for 1m]` | Sample a capability that declares `subscribe` and print each reading (needs a `subscribe` grant) |
+| `find [--name P] [--quantity Q] [--unit U] [--op OP] [--value X] [--available]` | Which devices can do what you need. Candidates, not permissions |
 | `insights <device> [<capability>]` | What the journal says happened on a device: refusals and their limits, confirmed values, tracking error, readback latency, unresolved outcomes. An agent sees its own commands, the operator everyone's ([ADR-0022](adr/0022-insights-from-the-journal.md)) |
 | `devices status [<id>]` | Whether each device answers (`ONLINE`, `DEGRADED`, `OFFLINE`), is busy or leased; probes devices not checked in the last second ([ADR-0019](adr/0019-device-availability.md)) |
 | `graph` | Relationships, shared resources and frames ([spec/topology.md](../spec/topology.md)) |
