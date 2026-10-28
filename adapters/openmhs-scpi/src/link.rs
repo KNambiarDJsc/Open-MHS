@@ -134,10 +134,31 @@ impl StreamLink {
     }
 }
 
-async fn write_line(conn: &mut Conn, line: &str) -> io::Result<()> {
+/// Write one line, giving up after `timeout`. An instrument that stops reading (busy, or
+/// wedged) fills the line's buffer, and a serial line's is small: on macOS a pseudo-terminal
+/// holds about a kilobyte. Unbounded, the write would wait forever while holding the link,
+/// so every later request would wait behind it. A write that gives up may have sent part of
+/// the line, so the caller treats the request as possibly sent and drops the connection.
+/// On a serial line the instrument's input may then hold a fragment of a request, which
+/// reopening the port does not clear: the engine never resends it, and an operator should
+/// clear the instrument's input (or power-cycle it) before trusting it again.
+async fn write_line(conn: &mut Conn, line: &str, timeout: Duration) -> io::Result<()> {
     let out = conn.stream.get_mut();
-    out.write_all(format!("{line}\n").as_bytes()).await?;
-    out.flush().await
+    let bytes = format!("{line}\n");
+    let write = async {
+        out.write_all(bytes.as_bytes()).await?;
+        out.flush().await
+    };
+    match tokio::time::timeout(timeout, write).await {
+        Ok(result) => result,
+        Err(_) => Err(io::Error::new(
+            io::ErrorKind::TimedOut,
+            format!(
+                "the instrument did not take the request within {} ms; it is not reading",
+                timeout.as_millis()
+            ),
+        )),
+    }
 }
 
 /// Read and discard whatever is already waiting.
@@ -178,7 +199,9 @@ async fn resync(
     identity: &str,
     timeout: Duration,
 ) -> Result<(), Unsynced> {
-    write_line(conn, query).await.map_err(|_| Unsynced::Lost)?;
+    write_line(conn, query, timeout)
+        .await
+        .map_err(|_| Unsynced::Lost)?;
     conn.late_syncs += 1;
     let deadline = tokio::time::Instant::now() + timeout;
     let mut last_answer: Option<tokio::time::Instant> = None;
@@ -239,7 +262,17 @@ async fn exchange(
     let conn = match st.conn.as_mut() {
         Some(c) => c,
         None => {
-            let stream = open().await.map_err(|e| LinkError::Down(e.to_string()))?;
+            // Bounded too: a connect to an address that drops packets can take the OS a
+            // minute or more to give up.
+            let stream = match tokio::time::timeout(timeout, open()).await {
+                Ok(opened) => opened.map_err(|e| LinkError::Down(e.to_string()))?,
+                Err(_) => {
+                    return Err(LinkError::Down(format!(
+                        "could not connect within {} ms",
+                        timeout.as_millis()
+                    )));
+                }
+            };
             st.conn.insert(Conn {
                 stream: BufReader::new(stream),
                 stale: false,
@@ -248,7 +281,7 @@ async fn exchange(
         }
     };
 
-    if let Err(e) = write_line(conn, request).await {
+    if let Err(e) = write_line(conn, request, timeout).await {
         st.conn = None;
         return Err(LinkError::Lost(e.to_string()));
     }
@@ -359,6 +392,30 @@ mod tests {
             "SLOW;*OPC?" => (1_500, Some("1".into())),
             _ => (0, Some("0".into())),
         }
+    }
+
+    /// An instrument that stops reading must not wedge the link: the write gives up within
+    /// the exchange's timeout, the request counts as possibly sent (`Lost`, never `Down`,
+    /// which would claim it was not), and the next request is answered at once instead of
+    /// waiting forever behind the blocked one. Before the fix this test hung.
+    #[tokio::test(flavor = "multi_thread")]
+    async fn an_instrument_that_stops_reading_does_not_wedge_the_link() {
+        // A 16-byte line buffer that nobody reads, like a pseudo-terminal whose far end is busy.
+        let (ours, _theirs) = tokio::io::duplex(16);
+        let port = Arc::new(StdMutex::new(Some(ours)));
+        let link = StreamLink::new(move || {
+            let taken = port.lock().unwrap().take();
+            async move { taken.ok_or_else(|| io::Error::other("the port is already open")) }
+        });
+        let long = format!("SOUR:VOLT 5;{}*OPC?", "*WAI;".repeat(20));
+        let first = tokio::time::timeout(ms(5_000), link.transact(&long, ms(200)))
+            .await
+            .expect("the write must give up, not hang");
+        assert!(matches!(first, Err(LinkError::Lost(_))), "{first:?}");
+        let second = tokio::time::timeout(ms(5_000), link.transact("*IDN?", ms(200)))
+            .await
+            .expect("the next request must not wait behind the blocked one");
+        assert!(second.is_err(), "{second:?}");
     }
 
     #[tokio::test(flavor = "multi_thread")]
