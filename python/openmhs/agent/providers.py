@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import os
+import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 from typing import Any, Callable, Protocol
@@ -114,6 +115,16 @@ class ScriptedProvider:
 # ---------------------------------------------------------------- OpenAI-compatible
 
 
+def _function_parameters(schema: dict[str, Any]) -> dict[str, Any]:
+    """A tool's input schema as chat-completions servers accept it. Some (Ollama among them)
+    refuse an object schema without ``properties``, which a tool that takes no arguments
+    has; an empty one means the same."""
+    out = dict(schema)
+    if out.get("type") == "object" and not isinstance(out.get("properties"), dict):
+        out["properties"] = {}
+    return out
+
+
 class _ChatCompletionsConversation:
     def __init__(self, provider: OpenAICompatibleProvider, system: str, task: str,
                  tools: list[ToolSpec]) -> None:
@@ -125,7 +136,7 @@ class _ChatCompletionsConversation:
         self._tools = [
             {"type": "function",
              "function": {"name": t.name, "description": t.description,
-                          "parameters": t.input_schema}}
+                          "parameters": _function_parameters(t.input_schema)}}
             for t in tools
         ]
 
@@ -162,12 +173,13 @@ class OpenAICompatibleProvider:
     """
 
     def __init__(self, base_url: str, model: str, api_key: str | None = None,
-                 timeout: float = 300) -> None:
+                 timeout: float = 300, retries: int = 2) -> None:
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.name = f"openai-compatible:{model}"
         self._key = api_key if api_key is not None else os.environ.get("OPENAI_API_KEY", "")
         self._timeout = timeout
+        self.retries = retries
 
     def _post(self, path: str, body: dict[str, Any]) -> dict[str, Any]:
         req = urllib.request.Request(
@@ -175,8 +187,20 @@ class OpenAICompatibleProvider:
             headers={"Content-Type": "application/json",
                      **({"Authorization": f"Bearer {self._key}"} if self._key else {})},
         )
-        with urllib.request.urlopen(req, timeout=self._timeout) as resp:  # noqa: S310
-            return json.loads(resp.read().decode("utf-8"))
+        # A model call touches no device, so a server error is safe to retry. Local servers
+        # answer 500 when a small model writes malformed tool arguments; a second sample
+        # usually does not.
+        for attempt in range(self.retries + 1):
+            try:
+                with urllib.request.urlopen(req, timeout=self._timeout) as resp:  # noqa: S310
+                    return json.loads(resp.read().decode("utf-8"))
+            except urllib.error.HTTPError as e:
+                # The server's own explanation is the useful part (an unsupported model, no
+                # tool support, out of memory); keep it.
+                detail = e.read().decode("utf-8", "replace")[:500]
+                if e.code < 500 or attempt == self.retries:
+                    raise RuntimeError(f"{self.base_url}{path}: HTTP {e.code}: {detail}") from e
+        raise AssertionError("unreachable")
 
     def start(self, system: str, task: str, tools: list[ToolSpec]) -> Conversation:
         return _ChatCompletionsConversation(self, system, task, tools)

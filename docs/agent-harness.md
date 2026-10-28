@@ -72,6 +72,19 @@ when it runs.
 - the Anthropic provider sends Messages API requests of the documented shape to a fake
   client and keeps history append-only. A refusal ends the run without running its calls.
 
-**Not tested:** a real Claude or a real local model. The provider code follows the
-documented request shapes, but no request has been sent to either service from this
-repository.
+### Against a real local model
+
+On 2026-10-28 a local 9B Qwen-family model served by Ollama (`/v1/chat/completions`, Windows,
+`openmhs mcp --sim`) was given "set sim.psu-01 to 5 V and confirm". It called
+`describe_device`, `read_state` and `check_command` (all through the real gateway) and then
+ended its turn without submitting or explaining, after 271 s. The harness worked end to end;
+the task was not completed by that model. The run found three provider problems, now fixed and
+tested:
+- Ollama refuses an object schema without `properties`, which the argument-less tools had;
+  they now get `{}`.
+- A small model's malformed tool arguments come back as HTTP 500 for the whole request; the
+  provider retries 5xx answers twice (a model call touches no device).
+- The server's error text is now kept in the exception.
+
+**Not tested:** Claude. No Anthropic request has been sent from this repository; the
+Anthropic provider follows the documented request shapes and is tested against a fake client.

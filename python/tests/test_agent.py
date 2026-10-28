@@ -248,3 +248,12 @@ class Anthropic(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Schemas(unittest.TestCase):
+    def test_a_tool_without_arguments_gets_an_empty_properties_object(self) -> None:
+        from openmhs.agent.providers import _function_parameters
+        self.assertEqual(_function_parameters({"type": "object", "additionalProperties": False}),
+                         {"type": "object", "additionalProperties": False, "properties": {}})
+        kept = {"type": "object", "properties": {"device": {"type": "string"}}}
+        self.assertEqual(_function_parameters(kept), kept)
