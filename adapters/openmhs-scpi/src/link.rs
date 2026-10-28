@@ -139,6 +139,9 @@ impl StreamLink {
 /// holds about a kilobyte. Unbounded, the write would wait forever while holding the link,
 /// so every later request would wait behind it. A write that gives up may have sent part of
 /// the line, so the caller treats the request as possibly sent and drops the connection.
+/// On a serial line the instrument's input may then hold a fragment of a request, which
+/// reopening the port does not clear: the engine never resends it, and an operator should
+/// clear the instrument's input (or power-cycle it) before trusting it again.
 async fn write_line(conn: &mut Conn, line: &str, timeout: Duration) -> io::Result<()> {
     let out = conn.stream.get_mut();
     let bytes = format!("{line}\n");
