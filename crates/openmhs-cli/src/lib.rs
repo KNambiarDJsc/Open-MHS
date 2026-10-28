@@ -3,6 +3,7 @@
 //! Every command except `serve` and `demo` is a client of a running gateway; the CLI
 //! never touches devices, policy or the journal directly (ADR-0001).
 
+mod bench;
 mod demo;
 mod output;
 mod profiles;
@@ -61,6 +62,9 @@ enum Cmd {
     Serve(ServeArgs),
     /// Start a throwaway gateway with the virtual lab and walk through a guided scenario.
     Demo(DemoArgs),
+    /// Measure a throwaway gateway on this machine, through its real API: read, command
+    /// and event latency, concurrent reads, watch timing. Simulated devices only.
+    Bench(BenchArgs),
     /// Show who you are to the gateway and what it is running.
     Info,
     /// List or inspect registered devices.
@@ -387,6 +391,19 @@ pub struct ServeArgs {
     /// MiB. A starting point to test, not a sizing recommendation.
     #[arg(long, default_value_t = openmhs_gateway::DEFAULT_JOURNAL_RESERVE_BYTES / (1024 * 1024))]
     journal_reserve_mib: u64,
+}
+
+#[derive(Args)]
+struct BenchArgs {
+    /// Sequential reads to time (also the total for the concurrent run).
+    #[arg(long, default_value_t = 500)]
+    reads: usize,
+    /// Verified writes to time (paced at under 5 a second, the setpoint's rate limit).
+    #[arg(long, default_value_t = 20)]
+    commands: usize,
+    /// Clients reading at once in the concurrent run.
+    #[arg(long, default_value_t = 8)]
+    concurrency: usize,
 }
 
 #[derive(Args)]
@@ -1639,6 +1656,9 @@ async fn run(cli: Cli) -> u8 {
     match cli.command {
         Cmd::Serve(args) => return serve(home, args).await,
         Cmd::Demo(args) => return demo::run(args.keep).await,
+        Cmd::Bench(args) => {
+            return bench::run(cli.json, args.reads, args.commands, args.concurrency).await;
+        }
         Cmd::Mcp(args) => return mcp(&home, cli.token.as_deref(), args).await,
         Cmd::Conformance(args) => return conformance(cli.json, args).await,
         Cmd::Profile {
@@ -1694,6 +1714,7 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
     match cmd {
         Cmd::Serve(_)
         | Cmd::Demo(_)
+        | Cmd::Bench(_)
         | Cmd::Mcp(_)
         | Cmd::Conformance(_)
         | Cmd::Profile { .. }

@@ -784,3 +784,33 @@ fn an_operator_adds_a_procedure_and_an_agent_runs_it_with_params() {
     let (code, _) = gw.cli(Some(&token), &["procedures", "add", &path]);
     assert_ne!(code, OK, "only an operator adds an approved procedure");
 }
+
+/// `openmhs bench` measures a real gateway and says what it ran on.
+#[test]
+fn bench_reports_measured_latencies_and_its_conditions() {
+    let out = Command::new(BIN)
+        .args([
+            "--json",
+            "bench",
+            "--reads",
+            "20",
+            "--commands",
+            "2",
+            "--concurrency",
+            "2",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(
+        out.status.code(),
+        Some(OK),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let r: Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(r["read"]["samples"], 20);
+    assert_eq!(r["command"]["samples"], 2);
+    assert!(r["read"]["p50_ms"].as_f64().unwrap() > 0.0);
+    assert!(r["profile"] == "debug" || r["profile"] == "release");
+    assert!(r["note"].as_str().unwrap().contains("Not a capacity claim"));
+}

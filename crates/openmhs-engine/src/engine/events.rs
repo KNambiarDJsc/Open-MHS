@@ -434,8 +434,13 @@ impl Engine {
 
     async fn run_watch(self, caller: Caller, watch: Watch, device: Arc<Device>) {
         let every = Duration::from_millis(watch.interval_ms);
+        // A fixed cadence: sleeping the interval after each read would drift by the read's
+        // own time (measured by `openmhs bench`). A sample that runs late skips a tick rather
+        // than bunching the next ones together.
+        let mut ticker = tokio::time::interval_at(tokio::time::Instant::now() + every, every);
+        ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
         let reason = loop {
-            tokio::time::sleep(every).await;
+            ticker.tick().await;
             if self.now() >= watch.expires_at {
                 break "expired".to_owned();
             }
