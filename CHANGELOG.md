@@ -5,12 +5,15 @@ All notable changes are recorded here. The format follows
 any minor version may change the specification, the adapter contract and the local API,
 and the entry will say so under **Changed** or **Removed**.
 
-No release has been published yet.
-
 ## [Unreleased]
 
-Work towards the first public release (0.1.0). Milestones M0–M9 are described in
-[docs/roadmap.md](docs/roadmap.md) and [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md).
+## [0.1.0] - 2026-10-28
+
+The first release. **Pre-alpha: no adapter has been run against physical hardware, and
+OpenMHS is not a safety system.** Everything below was tested against simulators. Milestones
+M0–M11 are described in [docs/roadmap.md](docs/roadmap.md) and
+[docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md); what is known to be missing is
+in [docs/limitations.md](docs/limitations.md) and [docs/strategy/](docs/strategy/).
 
 ### Added
 
@@ -84,9 +87,14 @@ Work towards the first public release (0.1.0). Milestones M0–M9 are described 
 - SCPI: a link no longer refuses every request for good after an instrument dropped
   requests while the line was down (a serial port that never closes). This made CI
   fail on Linux and macOS since the resynchronization change.
+- SCPI: writes and connects give up within the exchange's timeout. An instrument that
+  stopped reading could block a write, and every request after it, forever; a write that
+  gives up counts as possibly sent. CI jobs now fail after an hour instead of hanging.
 
 ### Known limitations
 
+- SCPI over a serial line is untested on macOS: its pseudo-terminal test hangs there and
+  runs on Linux only. SCPI over TCP is tested on macOS.
 - No adapter has been run against physical hardware by the project.
 - Twin preflight has no physics.
 - The adapter host has no OS sandbox.
