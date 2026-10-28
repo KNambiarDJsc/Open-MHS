@@ -4,6 +4,7 @@
 //! This crate defines the wire types once, for the gateway and every Rust client.
 
 pub mod client;
+pub mod insights;
 pub mod runtime;
 
 use openmhs_policy::{Grant, PrincipalKind, Scope};

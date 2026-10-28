@@ -84,6 +84,14 @@ enum Cmd {
     },
     /// Read a property from the device (authorized and audited).
     Read { device: String, capability: String },
+    /// What the journal says happened on a device: confirmed values, refusals and the limits
+    /// behind them, tracking error, readback latency, unresolved outcomes (ADR-0022).
+    /// As an agent it covers your own commands; as the operator, everyone's.
+    Insights {
+        device: String,
+        /// Only this capability.
+        capability: Option<String>,
+    },
     /// Submit a write (properties) or invoke (actions) and wait for its receipt.
     Exec(ExecArgs),
     /// Inspect and manage commands.
@@ -1689,6 +1697,10 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
         Cmd::Read { device, capability } => {
             let r = client.read(&device, &capability).await?;
             show(json, &r, output::read_result);
+        }
+        Cmd::Insights { device, capability } => {
+            let i = client.insights(&device, capability.as_deref()).await?;
+            show(json, &i, output::insights);
         }
         Cmd::Exec(args) => {
             let request = match build_request(client, &args).await {

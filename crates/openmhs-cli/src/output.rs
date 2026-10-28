@@ -303,6 +303,61 @@ pub fn device_statuses(list: &[openmhs_types::DeviceStatus]) {
     }
 }
 
+pub fn insights(i: &openmhs_api::insights::Insights) {
+    println!(
+        "{}: {} command(s) examined{}",
+        i.device,
+        i.window.commands,
+        if i.window.truncated {
+            " (the newest only; older history is not included)"
+        } else {
+            ""
+        }
+    );
+    for c in &i.capabilities {
+        let states: Vec<String> = c.states.iter().map(|(s, n)| format!("{s} {n}")).collect();
+        println!();
+        println!(
+            "{}: {} attempt(s): {}",
+            c.capability,
+            c.attempts,
+            states.join(", ")
+        );
+        for r in &c.refusals {
+            let numbers = r
+                .latest_details
+                .as_ref()
+                .map(|d| serde_json::Value::Object(d.clone()).to_string())
+                .unwrap_or_default();
+            println!("  refused {}x  {}  {numbers}", r.count, r.code);
+        }
+        if let Some(v) = &c.verified {
+            println!(
+                "  confirmed {}x  {} to {} {} (latest {} {})",
+                v.count, v.lowest, v.highest, v.unit, v.latest, v.unit
+            );
+        }
+        if let Some(t) = &c.tracking_error {
+            println!(
+                "  landed within {} {} of the request (mean {:.4})",
+                t.max_abs, t.unit, t.mean_abs
+            );
+        }
+        if let Some(l) = &c.verify_latency_ms {
+            println!(
+                "  readback took {} ms (median), {} ms (max)",
+                l.median, l.max
+            );
+        }
+        if !c.unresolved.is_empty() {
+            println!(
+                "  UNRESOLVED: {} (reconcile before sending another)",
+                c.unresolved.join(", ")
+            );
+        }
+    }
+}
+
 pub fn graph(g: &openmhs_types::graph::Graph) {
     if g.relationships.is_empty() {
         println!("{} devices, no relationships declared", g.devices.len());

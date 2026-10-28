@@ -638,3 +638,36 @@ fn mcp_sim_refuses_to_mix_with_a_real_gateway() {
     assert_ne!(out.status.code(), Some(OK));
     assert!(out.stdout.is_empty());
 }
+
+/// `openmhs insights` reports what the journal recorded for the caller, and nothing it did
+/// not: a refusal with its numbers, then a confirmed value.
+#[test]
+fn insights_report_refusals_and_confirmed_values() {
+    let gw = Gateway::start();
+    gw.grant_psu("allow");
+    let token = gw.agent_token();
+
+    let (code, _) = set_volts(&gw, &token, "9V", &["--idempotency-key", "i1"]);
+    assert_eq!(code, DENIED);
+    let (code, _) = set_volts(&gw, &token, "2V", &["--idempotency-key", "i2"]);
+    assert_eq!(code, OK);
+
+    let (code, out) = gw.cli(Some(&token), &["insights", PSU]);
+    assert_eq!(code, OK, "{out}");
+    let cap = &out["capabilities"][0];
+    assert_eq!(cap["capability"], SETPOINT);
+    assert_eq!(cap["refusals"][0]["code"], "command.slew_exceeded");
+    assert_eq!(cap["refusals"][0]["latest_details"]["max_change"], 2.0);
+    assert_eq!(cap["verified"]["latest"], 2.0);
+
+    // The plain-text form says the same in words.
+    let text = Command::new(BIN)
+        .args(["insights", PSU, "--home"])
+        .arg(gw.home())
+        .args(["--token", &token])
+        .output()
+        .unwrap();
+    let text = String::from_utf8_lossy(&text.stdout);
+    assert!(text.contains("refused 1x  command.slew_exceeded"), "{text}");
+    assert!(text.contains("confirmed 1x"), "{text}");
+}

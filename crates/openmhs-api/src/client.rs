@@ -413,6 +413,21 @@ impl Client {
             .await
     }
 
+    /// What the journal says happened for `device` (optionally one capability), from the
+    /// newest commands this credential may list: refusals and the numbers behind them,
+    /// confirmed values, tracking error, readback latency, unresolved outcomes (ADR-0022).
+    pub async fn insights(
+        &self,
+        device: &str,
+        capability: Option<&str>,
+    ) -> Result<crate::insights::Insights, ClientError> {
+        const WINDOW: usize = 500;
+        let receipts = self.commands(Vec::new(), Some(WINDOW)).await?;
+        Ok(crate::insights::summarize(
+            &receipts, device, capability, WINDOW,
+        ))
+    }
+
     pub async fn approve(&self, command_id: &str) -> Result<Receipt, ClientError> {
         self.call(method::COMMANDS_APPROVE, id(command_id)).await
     }

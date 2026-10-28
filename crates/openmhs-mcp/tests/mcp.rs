@@ -137,6 +137,7 @@ async fn tools_declare_their_risk_and_output_schemas() {
         "check_command",
         "submit_command",
         "get_command",
+        "get_insights",
         "list_pending_approvals",
         "reconcile_command",
         "cancel_command",
@@ -663,6 +664,94 @@ async fn an_unconfirmed_stop_is_not_reported_as_stopped() {
     assert!(steps.contains("emergency stop"), "{steps}");
     assert!(steps.contains("safe"), "{steps}");
     assert!(!steps.contains("Do NOT resubmit"), "{steps}");
+    client.cancel().await.unwrap();
+    lab.gw.shutdown().await.unwrap();
+}
+
+/// An agent can learn from what it already did: refusals come back with the numbers that
+/// bound them, confirmed values with their tracking error, and none of it widens access.
+#[tokio::test(flavor = "multi_thread")]
+async fn insights_summarize_what_the_journal_recorded() {
+    let lab = lab(psu_grants()).await;
+    let client = connect(&lab.gw.url, &lab.agent_token, false).await;
+
+    let nothing = call(&client, "get_insights", json!({ "device": PSU })).await;
+    assert!(!is_error(&nothing), "{}", text(&nothing));
+    assert_eq!(structured(&nothing)["insights"]["window"]["commands"], 0);
+
+    // Two refusals of the same kind, then a step that is within the limits.
+    for (key, v) in [("a", 9.0), ("b", 48.0), ("c", 11.0)] {
+        let r = call(
+            &client,
+            "submit_command",
+            json!({ "device": PSU, "capability": SETPOINT, "value": volts(v), "idempotency_key": key }),
+        )
+        .await;
+        assert!(is_error(&r), "{v} V should be refused");
+    }
+    let r = call(
+        &client,
+        "submit_command",
+        json!({ "device": PSU, "capability": SETPOINT, "value": volts(2.0), "idempotency_key": "d" }),
+    )
+    .await;
+    assert_eq!(structured(&r)["confirmed"], true, "{}", text(&r));
+
+    let r = call(&client, "get_insights", json!({ "device": PSU })).await;
+    assert!(!is_error(&r), "{}", text(&r));
+    let i = &structured(&r)["insights"];
+    assert_eq!(i["window"]["commands"], 4);
+    assert_eq!(i["window"]["truncated"], false);
+    let cap = &i["capabilities"][0];
+    assert_eq!(cap["capability"], SETPOINT);
+    assert_eq!(cap["attempts"], 4);
+    assert_eq!(cap["states"]["VERIFIED"], 1);
+    assert_eq!(cap["states"]["DENIED"], 3);
+
+    // The slew limit the agent hit comes back as numbers, most frequent refusal first.
+    let refusals = cap["refusals"].as_array().unwrap();
+    let slew = refusals
+        .iter()
+        .find(|x| x["code"] == "command.slew_exceeded")
+        .unwrap();
+    assert_eq!(slew["count"], 2, "9 V and 11 V both jump too far");
+    assert_eq!(slew["latest_details"]["max_change"], 2.0);
+    assert!(
+        refusals
+            .iter()
+            .any(|x| x["code"] == "command.value.out_of_range")
+    );
+
+    // The one confirmed write: the value the device was observed to hold.
+    let verified = &cap["verified"];
+    assert_eq!(verified["count"], 1);
+    assert_eq!(verified["unit"], "V");
+    assert_eq!(verified["latest"], 2.0);
+    assert!(cap["tracking_error"]["max_abs"].as_f64().unwrap() < 0.1);
+    assert!(cap["verify_latency_ms"]["samples"].as_u64().unwrap() >= 1);
+    assert_eq!(cap["unresolved"].as_array().unwrap().len(), 0);
+    assert!(cap["evidence"].as_array().unwrap().len() <= 5);
+
+    // Asking about another device or capability reports nothing for it, not a guess.
+    let r = call(
+        &client,
+        "get_insights",
+        json!({ "device": PSU, "capability": "power.output.enabled" }),
+    )
+    .await;
+    assert_eq!(structured(&r)["insights"]["window"]["commands"], 0);
+
+    // It is a read: the agent's permissions are what they were.
+    let r = call(
+        &client,
+        "submit_command",
+        json!({ "device": "sim.axis-01", "capability": "axis.home", "idempotency_key": "e" }),
+    )
+    .await;
+    assert_eq!(
+        structured(&r)["reasons"][0]["code"],
+        "policy.denied.no_grant"
+    );
     client.cancel().await.unwrap();
     lab.gw.shutdown().await.unwrap();
 }
