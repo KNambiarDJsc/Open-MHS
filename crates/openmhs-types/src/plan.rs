@@ -23,6 +23,10 @@ pub struct PlanSpec {
     pub lease_ttl_ms: Option<u64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    /// Run ready steps that act on disjoint devices and resources at the same time
+    /// (ADR-0025). Off by default: steps run one at a time.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub parallel: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -405,6 +409,7 @@ mod tests {
             steps,
             lease_ttl_ms: None,
             description: None,
+            parallel: false,
         }
     }
 

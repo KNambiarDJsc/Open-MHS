@@ -27,6 +27,10 @@ pub struct PlanInput {
     /// 1 to 100 steps. They run one at a time in dependency order; among ready steps,
     /// the one listed first runs first.
     pub steps: Vec<StepInput>,
+    /// Run ready steps on separate devices at the same time. Steps that share a device or
+    /// resource, or that need approval, still run one at a time.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub parallel: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
