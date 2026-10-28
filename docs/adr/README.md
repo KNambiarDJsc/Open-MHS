@@ -26,6 +26,7 @@
 | [0022](0022-insights-from-the-journal.md) | Insights: an agent learns from what the journal recorded, never from a back door | Accepted |
 | [0023](0023-state-fabric.md) | State fabric: bounded event stream, watches, and the `subscribe` operation | Accepted |
 | [0024](0024-conditional-steps.md) | Conditional plan steps (`when`); parallel steps deferred | Accepted |
+| [0025](0025-parallel-steps.md) | Parallel plan steps: opt-in, disjoint claims, settled before the plan reacts | Accepted |
 
 Format: Context → Decision → Alternatives considered → Consequences. Supersede an
 ADR with a new one rather than rewriting history.

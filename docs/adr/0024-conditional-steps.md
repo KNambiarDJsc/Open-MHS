@@ -1,6 +1,6 @@
 # ADR-0024: Conditional plan steps, and why parallel steps wait
 
-- Status: Accepted
+- Status: Accepted. The parallel-steps part is superseded by [ADR-0025](0025-parallel-steps.md)
 - Date: 2026-10-28
 - Builds on: [ADR-0018](0018-orchestration.md)
 

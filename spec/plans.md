@@ -47,6 +47,7 @@ Design: [ADR-0018](../docs/adr/0018-orchestration.md).
 | `steps[].when` | Readings in the precondition form that decide whether the step runs at all. If one is definitely false (a usable reading fails the comparison) the step is `SKIPPED`, nothing is sent for it, and every step whose `after` names it is skipped too. A reading that is missing, stale or not comparable is not "false": the step fails. Skipped steps are never compensated. A dry run reports them as `skipped` and the plan can still be `ok` ([ADR-0024](../docs/adr/0024-conditional-steps.md)) |
 | `steps[].on_failure` | `halt` (default), `compensate` or `ask` (§3) |
 | `steps[].compensate` | A request that undoes the step, used when the plan compensates |
+| `parallel` | Run ready steps whose devices and shared resources do not overlap at the same time, led by the first ready step. Steps that need approval run alone. Every command of a batch settles before the plan reacts ([ADR-0025](../docs/adr/0025-parallel-steps.md)). Default `false` |
 | `lease_ttl_ms` | The plan's lease runs this long from the start of each step (default 15 minutes, at most 24 hours) |
 
 At most 100 steps. Steps run one at a time in dependency order; among steps that are

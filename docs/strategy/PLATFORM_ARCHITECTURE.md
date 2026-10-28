@@ -28,13 +28,13 @@ Legend:
 
 | # | Capability | State | Where (code, tests) | What is missing |
 |---|---|---|---|---|
-| 1 | Programmable hardware discovery | **New (first protocol)** | `openmhs discover scpi` asks named addresses `*IDN?` and proposes a profile; registers nothing (`crates/openmhs-cli/src/discover.rs`, `discover_finds_instruments_and_sends_only_the_identity_query`) | Modbus device identification, mDNS for MQTT/HTTP, ROS 2 graph introspection; an operator-only `devices.discover` API (§5.4) |
+| 1 | Programmable hardware discovery | **Partial** | `openmhs discover scpi`, `modbus`, `http`, `mqtt`: read-only identification at named addresses; registers nothing (`crates/openmhs-cli/src/discover.rs`, four CLI tests) | mDNS, ROS 2 graph introspection; an operator-only `devices.discover` API (§5.4) |
 | 2 | Device registration and lifecycle | **Partial** | `Engine::register`, `register_allow_offline` (`engine.rs`). Availability ADR-0019; `tests/availability.rs` | Hot add and remove without a restart |
 | 3 | Unified state and capability abstraction | **Built** | `spec/descriptor.md`, `openmhs-types/src/descriptor.rs`, `validate.rs`, `spec/examples/invalid/*` | Semantic operation names (`power_supply.configure_voltage`) as an alias layer over capability names (§5.5) |
 | 4 | Agent-accessible device tools | **Built** | 18 MCP tools (`openmhs-mcp/src/lib.rs`), CLI, Python SDK; `tests/mcp.rs` | — |
 | 5 | Live cross-device state subscriptions | **New** | `events.poll`, `watches.*` (ADR-0023, `engine/events.rs`); `tests/events.rs`, MCP, CLI and Python tests | Push transport; adapter-native subscriptions for event-kind capabilities |
 | 6 | Capability-based hardware selection | **New** | `find_capabilities`, `openmhs find`, `Client::find_capabilities` (`openmhs-api/src/selection.rs`) | Selection by relationship (via the capability graph), for example "the meter wired to this supply" |
-| 7 | Multi-device workflow orchestration | **Partial** | Plans with leases, compensation, twin preflight (ADR-0018); **conditional steps (`when`, ADR-0024)**; `tests/plans.rs`, `tests/conditional_steps.rs` | Parallel execution of independent steps, deferred with reasons in ADR-0024 |
+| 7 | Multi-device workflow orchestration | **Built** | Plans with leases, compensation, twin preflight (ADR-0018); conditional steps (ADR-0024); opt-in parallel steps (ADR-0025); `tests/plans.rs`, `conditional_steps.rs`, `parallel_steps.rs` | Plans spanning gateways (RFC 0001) |
 | 8 | Reusable deterministic procedures | **New** | `spec/procedures.md`, `openmhs-types/src/procedure.rs`, gateway `procedures.*`; agents propose, operators approve; `gateway/tests/procedures.rs`, MCP, CLI and Python tests | Procedure-level approval rules (for example, two approvers) |
 | 9 | Adaptive observation and replanning | **Built** | Structured refusals (`guidance.rs`), insights (ADR-0022), the model-agnostic harness `openmhs.agent` (`docs/agent-harness.md`, `python/tests/test_agent.py`) | A run against a real model has not been recorded |
 | 10 | Human approvals, deterministic policy | **Built** | ADR-0003, ADR-0017, `engine/approvals.rs`, `tests/approvals.rs` | — |
@@ -258,8 +258,8 @@ stands: release (M11) and the ESP32 validation (M12) come first.
 | M17b: electronics lab demo | A simulated electronic load or DMM. A scripted agent that discovers, selects, plans, requests approval, configures, watches, detects an injected anomaly, recovers within its grants, reconciles an uncertain write, and writes an evidence report from receipts and the audit | Every command in the report has a receipt id that `commands.get` returns. The report states each fault injected. No dispatch is mocked |
 | M18: procedures | §5.1 | **Done:** §5.1 acceptance met (units checked, deterministic expansion with the hash in the plan, agents cannot add or approve, a step outside the grants is refused) |
 | M19a: harness | §5.3 | **Done** except the real-provider run: the same scenarios pass with scripted, OpenAI-compatible (fake server) and Anthropic (fake client) providers; the gateway, not the harness, refuses |
-| M20a: DAG plans | §5.2 | **Conditional steps done** (ADR-0024); parallel execution deferred to its own ADR |
-| M20b: discovery | §5.4 | **SCPI done** (sends only `*IDN?`, registers nothing); other protocols and the API remain |
+| M20a: DAG plans | §5.2 | **Done**: conditional steps (ADR-0024) and opt-in parallel steps (ADR-0025) |
+| M20b: discovery | §5.4 | **SCPI, Modbus TCP, HTTP and MQTT done** (read-only, registers nothing); mDNS and the API remain |
 | M20c: federation | §5.6, after an RFC and review | §5.6 acceptance |
 | Benchmarks (**first slice done**, `docs/benchmarks.md`) | `openmhs bench` with wall-clock measurements: events per second through `events.poll`, watch sampling jitter, command latency with N watches running, startup with N offline devices | Numbers committed with the machine they ran on. Nothing inferred from virtual time |
 

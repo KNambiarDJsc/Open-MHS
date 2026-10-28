@@ -41,6 +41,9 @@ and the entry will say so under **Changed** or **Removed**.
   `propose_procedure`, `openmhs procedures`, Python client methods.
 - Conditional plan steps (`when`, [ADR-0024](docs/adr/0024-conditional-steps.md)): a false
   condition skips the step and its dependents; one that cannot be decided fails the step.
+- Parallel plan steps (`"parallel": true`, [ADR-0025](docs/adr/0025-parallel-steps.md)): ready steps
+  on disjoint devices and resources run together; every branch settles before the plan reacts.
+- Discovery for Modbus TCP, HTTP and MQTT, read-only like SCPI.
 - `openmhs bench` ([docs/benchmarks.md](docs/benchmarks.md)): wall-clock read, command, event
   and watch timing through the real API.
 - `openmhs discover scpi`: asks named addresses `*IDN?` and proposes profiles; registers
