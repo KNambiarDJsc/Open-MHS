@@ -300,6 +300,12 @@ openmhs tokens create agent:claude --scope 'sim.*:*:read' --scope 'sim.psu-01:*:
       watch samples a capability that declares <code>subscribe</code>. A client that falls
       behind is told how many events it missed, never silently. Events are notifications: the
       engine never decides anything from them, and takes fresh readings of its own.</li>
+      <li><strong>Conditional steps.</strong> A step can run only <code>when</code> fresh
+      readings say so. A false condition skips it and the steps that depend on it, with
+      nothing sent. A reading that cannot be had fails the step rather than skipping it.</li>
+      <li><strong>Procedures.</strong> Reviewed, versioned plans with typed parameters. An
+      agent may propose one; only an operator approves it. Running one is an ordinary plan
+      as the caller, so a procedure grants nothing.</li>
       <li><strong>Journal limits.</strong> An operator can cap the journal's size and keep a
       reserve below the cap. Once only the reserve is left, new commands and audited reads are
       refused with nothing sent, while stops and recovery can still be recorded. Nothing is

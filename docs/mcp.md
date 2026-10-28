@@ -102,6 +102,9 @@ Tools (all return `structuredContent` with an `outputSchema`):
 |---|---|---|
 | `list_devices`, `describe_device` | No | Discover devices, units, ranges, limits. `list_devices` also gives each device's `availability`, `reason`, `busy` and `lease_holder`; an `OFFLINE` device refuses commands with `device.unavailable` |
 | `get_insights` | No | What your earlier commands on a device did, from the journal: confirmed values, refusals with the limits behind them, how far readings landed from the request, readback latency, unresolved outcomes. Evidence to iterate on; it never changes what you may do ([ADR-0022](adr/0022-insights-from-the-journal.md)) |
+| `list_procedures`, `check_procedure` | No | Reviewed, versioned plans with typed parameters, and a dry run of one ([spec/procedures.md](../spec/procedures.md)) |
+| `run_procedure` | **Yes** | Run an approved procedure: an ordinary plan, as the agent, with every check |
+| `propose_procedure` | No | Store a plan that worked as a proposed procedure; only a person can approve it |
 | `find_capabilities` | No | Which devices can do what you need: by capability name pattern, quantity, unit, operation, a value inside the declared range, side effect, availability. Candidates, not permissions |
 | `watch_state` | Reads the device | Sample a capability that declares `subscribe` (needs a `subscribe` grant) every `interval_ms`, into the event stream ([ADR-0023](adr/0023-state-fabric.md)) |
 | `poll_events` | No | Observations you may subscribe to, availability changes and your commands' state changes since `after`; `wait_ms` waits for one. `missed` > 0 means you fell behind |

@@ -30,9 +30,25 @@ and the entry will say so under **Changed** or **Removed**.
 - [docs/strategy/PLATFORM_ARCHITECTURE.md](docs/strategy/PLATFORM_ARCHITECTURE.md): verified
   gap matrix for the platform brief, subsystem contracts, and designs for procedures, DAG
   plans, a model-agnostic harness, discovery and federation (not implemented).
+- Model-agnostic agent harness `openmhs.agent` ([docs/agent-harness.md](docs/agent-harness.md)):
+  Claude (official SDK), any OpenAI-compatible server (local models included) and a scripted
+  provider. Only gateway tools, a confirmation hook for physical calls, `check_plan` before
+  `submit_plan`, step and time budgets, a transcript, and a run turned into a draft plan.
+  `python -m openmhs.agent`.
+- Procedures ([spec/procedures.md](spec/procedures.md)): versioned, parameterized plans.
+  Anyone may propose; only an operator approves; a run is an ordinary plan as the caller.
+  `procedures.*` API, MCP `list_procedures` / `check_procedure` / `run_procedure` /
+  `propose_procedure`, `openmhs procedures`, Python client methods.
+- Conditional plan steps (`when`, [ADR-0024](docs/adr/0024-conditional-steps.md)): a false
+  condition skips the step and its dependents; one that cannot be decided fails the step.
+- `openmhs bench` ([docs/benchmarks.md](docs/benchmarks.md)): wall-clock read, command, event
+  and watch timing through the real API.
+- `openmhs discover scpi`: asks named addresses `*IDN?` and proposes profiles; registers
+  nothing.
 
 ### Changed
 
+- Watches sample at a fixed rate (the first benchmark showed them drifting).
 - The gateway registers devices concurrently at start (at most 16 at a time), so many
   switched-off devices cost a few probe timeouts rather than one each.
 - The periodic availability sweep backs off for devices that keep not answering (doubling,

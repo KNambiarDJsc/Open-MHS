@@ -231,6 +231,12 @@ openmhs events --follow            # what happens, as it happens</code></pre>
     reads the gateway's advice, and ramps instead:</p>
 <pre><code>cargo build -p openmhs-cli
 python examples/agent-loop/mock_agent.py</code></pre>
+    <p>To drive the same tools with any model, the Python package includes an agent harness:
+    Claude, any OpenAI-compatible server (local models included), or a script. It only
+    narrows what a model can do: physical calls can wait for your confirmation, a plan is
+    checked before it is submitted, and runs have step and time budgets. See
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/agent-harness.md">docs/agent-harness.md</a>.</p>
+<pre><code>python -m openmhs.agent --sim "set the bench supply to 5 V and confirm it"</code></pre>
     <p><code>learning_agent.py</code> runs two separate sessions: the second reads the
     first one's evidence with <code>get_insights</code> and reaches its target without a
     single refusal. An optional variant drives the loop with Claude; see
