@@ -348,6 +348,12 @@ impl Engine {
             id,
             &serde_json::json!({ "from": from, "to": to, "reason": reason }),
         )?;
+        self.publish(openmhs_types::event::EventBody::Availability {
+            device: id.clone(),
+            from,
+            to,
+            reason,
+        });
         Ok(())
     }
 

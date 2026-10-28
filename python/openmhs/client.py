@@ -166,6 +166,48 @@ class Client:
             params["device"] = device
         return [DeviceStatus.from_dict(s) for s in self.call("devices.status", params)]
 
+    # ------------------------------------------------------------ state fabric
+
+    def poll_events(
+        self,
+        after: int | None = None,
+        *,
+        stream: str | None = None,
+        devices: list[str] | None = None,
+        kinds: list[str] | None = None,
+        limit: int | None = None,
+        wait_ms: int = 0,
+    ) -> dict[str, Any]:
+        """Events after ``after`` (ADR-0023): ``{"stream", "events", "next", "missed"}``.
+
+        Pass the previous batch's ``stream`` and ``next`` to continue. Without ``after``,
+        only events from now on. ``missed`` > 0 means the bounded buffer dropped events
+        before you read them: read current values instead of assuming. Events are
+        notifications; ``read`` or a command's receipt is the evidence."""
+        params: dict[str, Any] = {"wait_ms": wait_ms}
+        for key, value in (("after", after), ("stream", stream), ("devices", devices),
+                           ("kinds", kinds), ("limit", limit)):
+            if value is not None:
+                params[key] = value
+        return self.call("events.poll", params)
+
+    def create_watch(
+        self, device: str, capability: str, interval_ms: int, ttl_ms: int | None = None
+    ) -> dict[str, Any]:
+        """Sample a capability that declares ``subscribe`` into the event stream. Needs a
+        ``subscribe`` grant; a second watch on the same capability replaces the first."""
+        params: dict[str, Any] = {
+            "device": device, "capability": capability, "interval_ms": interval_ms}
+        if ttl_ms is not None:
+            params["ttl_ms"] = ttl_ms
+        return self.call("watches.create", params)
+
+    def watches(self) -> list[dict[str, Any]]:
+        return self.call("watches.list", {})
+
+    def cancel_watch(self, watch_id: str) -> dict[str, Any]:
+        return self.call("watches.cancel", {"id": watch_id})
+
     def describe(self, device: str) -> Descriptor:
         return Descriptor.from_dict(self.call("devices.describe", {"device": device}))
 

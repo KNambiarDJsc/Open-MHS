@@ -671,3 +671,75 @@ fn insights_report_refusals_and_confirmed_values() {
     assert!(text.contains("refused 1x  command.slew_exceeded"), "{text}");
     assert!(text.contains("confirmed 1x"), "{text}");
 }
+
+/// The state fabric and selection from the command line: `find` names the streamable
+/// voltage, `watch` prints one JSON line per sample, and nothing streams without a
+/// subscribe grant.
+#[test]
+fn find_and_watch_a_streamable_measurement() {
+    let gw = Gateway::start();
+    gw.grant_psu("allow");
+    let token = gw.agent_token();
+
+    let (code, found) = gw.cli(Some(&token), &["find", "--unit", "V", "--op", "subscribe"]);
+    assert_eq!(code, OK, "{found}");
+    assert_eq!(
+        found["matches"][0]["capability"],
+        "power.output.voltage.measured"
+    );
+
+    let watch = |token: &str| {
+        Command::new(BIN)
+            .args(["--json", "--home"])
+            .arg(gw.home())
+            .args(["--token", token])
+            .args([
+                "watch",
+                PSU,
+                "power.output.voltage.measured",
+                "--every",
+                "200ms",
+                "--for",
+                "2s",
+            ])
+            .output()
+            .unwrap()
+    };
+    let refused = watch(&token);
+    assert_ne!(refused.status.code(), Some(OK), "no subscribe grant yet");
+
+    let (code, out) = gw.op(&[
+        "grants",
+        "add",
+        "--id",
+        "psu-subscribe",
+        "--principal",
+        "agent:*",
+        "--device",
+        PSU,
+        "--capability",
+        "*",
+        "--ops",
+        "subscribe",
+        "--effect",
+        "allow",
+    ]);
+    assert_eq!(code, OK, "{out}");
+    let out = watch(&token);
+    assert_eq!(
+        out.status.code(),
+        Some(OK),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let lines: Vec<Value> = String::from_utf8_lossy(&out.stdout)
+        .lines()
+        .map(|l| serde_json::from_str(l).unwrap())
+        .collect();
+    assert!(lines.len() >= 3, "{} samples in 2 s", lines.len());
+    assert!(
+        lines
+            .iter()
+            .all(|e| e["kind"] == "observation" && e["cause"] == "watch")
+    );
+}

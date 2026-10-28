@@ -12,11 +12,11 @@ use axum::routing::post;
 use openmhs_api::{
     AcquireLeaseParams, ApprovalActionParams, ApprovalRequestParams, AuditEntry, AuditTailParams,
     AuditVerifyResult, CancelPlanParams, CommandIdParams, CreateTokenParams, CreatedToken,
-    DecidePlanParams, DeviceParams, DeviceStatusParams, ErrorData, GatewayInfo, GrantParams,
-    IdParams, ListApprovalsParams, ListCommandsParams, ListLeasesParams, ListPlansParams,
-    PlanParams, RPC_PATH, ReadParams, ReadResult, ReleaseLeaseParams, RenewLeaseParams,
-    ResolveParams, Role, RotateTokenParams, RpcError, RpcRequest, RpcResponse, SimFaultParams,
-    SimFaultResult, SubmitParams, method, rpc_code,
+    DecidePlanParams, DeviceParams, DeviceStatusParams, ErrorData, EventsPollParams, GatewayInfo,
+    GrantParams, IdParams, ListApprovalsParams, ListCommandsParams, ListLeasesParams,
+    ListPlansParams, PlanParams, RPC_PATH, ReadParams, ReadResult, ReleaseLeaseParams,
+    RenewLeaseParams, ResolveParams, Role, RotateTokenParams, RpcError, RpcRequest, RpcResponse,
+    SimFaultParams, SimFaultResult, SubmitParams, WatchParams, method, rpc_code,
 };
 use openmhs_engine::journal::sha256_hex;
 use openmhs_engine::{Engine, EngineError};
@@ -341,6 +341,43 @@ async fn dispatch(
         // Visible to every caller, like the devices and leases it is built from (ADR-0019).
         // A refresh probes only devices not checked in the last second, so callers cannot
         // turn it into a flood of device traffic.
+        method::EVENTS_POLL => {
+            let p: EventsPollParams = params(raw)?;
+            let query = openmhs_engine::EventQuery {
+                stream: p.stream,
+                after: p.after,
+                filter: openmhs_engine::EventFilter {
+                    devices: p.devices,
+                    kinds: p.kinds,
+                },
+                limit: p.limit.unwrap_or(DEFAULT_LIST_LIMIT),
+                wait_ms: p.wait_ms,
+            };
+            ok(engine.poll_events(&session.caller, operator, &query).await)
+        }
+
+        method::WATCHES_CREATE => {
+            let p: WatchParams = params(raw)?;
+            ok(engine
+                .create_watch(
+                    &session.caller,
+                    &p.device,
+                    &p.capability,
+                    p.interval_ms,
+                    p.ttl_ms,
+                )
+                .map_err(engine_error)?)
+        }
+
+        method::WATCHES_LIST => ok(engine.watches(&session.caller, operator)),
+
+        method::WATCHES_CANCEL => {
+            let p: IdParams = params(raw)?;
+            ok(engine
+                .cancel_watch(&session.caller, &p.id, operator)
+                .map_err(engine_error)?)
+        }
+
         method::DEVICES_STATUS => {
             let p: DeviceStatusParams = params(raw)?;
             if p.refresh {
@@ -716,6 +753,7 @@ async fn dispatch(
                 let released = engine
                     .release_credential_leases(&info.id, &session.principal)
                     .map_err(engine_error)?;
+                engine.end_watches_of_credential(&info.id);
                 shared.audit(
                     "token.revoked",
                     &info.id,
@@ -746,6 +784,7 @@ async fn dispatch(
             let released = engine
                 .release_credential_leases(&old.id, &session.principal)
                 .map_err(engine_error)?;
+            engine.end_watches_of_credential(&old.id);
             shared.audit(
                 "token.rotated",
                 &info.id,

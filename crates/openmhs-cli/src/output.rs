@@ -303,6 +303,91 @@ pub fn device_statuses(list: &[openmhs_types::DeviceStatus]) {
     }
 }
 
+/// One JSON object per line, for `--follow` streams.
+pub fn json_line<T: serde::Serialize>(v: &T) {
+    if let Ok(s) = serde_json::to_string(v) {
+        println!("{s}");
+    }
+}
+
+pub fn event(e: &openmhs_types::event::Event) {
+    use openmhs_types::event::EventBody;
+    let at = clock_time(e.at);
+    match &e.body {
+        EventBody::Observation {
+            device,
+            capability,
+            state,
+            cause,
+            command_id,
+        } => println!(
+            "{at}  #{:<6} {device} {capability} = {}  ({}, measured {}, {}){}",
+            e.seq,
+            value(&state.value),
+            name(&state.quality),
+            clock_time(state.timestamp),
+            name(cause),
+            command_id
+                .as_deref()
+                .map(|c| format!(" for command {c}"))
+                .unwrap_or_default()
+        ),
+        EventBody::Availability {
+            device,
+            from,
+            to,
+            reason,
+        } => println!(
+            "{at}  #{:<6} {device} {} -> {}{}",
+            e.seq,
+            from.as_str(),
+            to.as_str(),
+            reason
+                .as_deref()
+                .map(|r| format!("  ({r})"))
+                .unwrap_or_default()
+        ),
+        EventBody::Command {
+            command_id,
+            principal,
+            device,
+            capability,
+            state,
+        } => println!(
+            "{at}  #{:<6} {device} {capability} command {command_id} -> {} ({principal})",
+            e.seq,
+            name(state)
+        ),
+    }
+}
+
+pub fn selection(s: &openmhs_api::selection::Selection) {
+    if s.matches.is_empty() {
+        println!("nothing among {} device(s) matches", s.devices);
+        return;
+    }
+    for m in &s.matches {
+        let range = match (m.min, m.max) {
+            (Some(lo), Some(hi)) => format!(" {lo}..{hi}"),
+            _ => String::new(),
+        };
+        let ops: Vec<String> = m.operations.iter().map(name).collect();
+        println!(
+            "{:<16} {:<34} {}{}{}  [{}]  {}",
+            m.device,
+            m.capability,
+            m.unit.as_deref().unwrap_or(""),
+            range,
+            m.quantity
+                .as_deref()
+                .map(|q| format!(" ({q})"))
+                .unwrap_or_default(),
+            ops.join(","),
+            m.availability.as_str()
+        );
+    }
+}
+
 pub fn insights(i: &openmhs_api::insights::Insights) {
     println!(
         "{}: {} command(s) examined{}",

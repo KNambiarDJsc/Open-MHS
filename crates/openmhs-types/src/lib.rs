@@ -9,6 +9,7 @@ pub mod availability;
 pub mod command;
 pub mod descriptor;
 pub mod error;
+pub mod event;
 pub mod graph;
 pub mod issue;
 pub mod lease;

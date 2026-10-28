@@ -11,6 +11,7 @@ use openmhs_adapter::{
 };
 use openmhs_policy::{Caller, Expectation, Live, Mutation, Policy, Prepared, PrincipalKind};
 use openmhs_types::descriptor::{Capability, Operation};
+use openmhs_types::event::ObservationCause;
 use openmhs_types::graph::{Graph, check_topology};
 use openmhs_types::receipt::{
     AdapterResult, Decision, PolicyRecord, PreflightResult, RuleMatch, VerificationMode,
@@ -25,12 +26,18 @@ use tracing::{info, warn};
 
 mod approvals;
 mod availability;
+mod events;
 mod leases;
 mod plans;
 mod twin;
 
 pub use approvals::{DEFAULT_APPROVAL_TTL_MS, MAX_APPROVAL_TTL_MS, fingerprint};
 pub use availability::{MAX_CONCURRENT_PROBES, MAX_PROBE_BACKOFF_MS, probe_backoff_ms};
+pub use events::{
+    DEFAULT_EVENT_CAPACITY, DEFAULT_WATCH_TTL_MS, EventFilter, EventQuery, MAX_EVENTS_PER_POLL,
+    MAX_POLL_WAIT_MS, MAX_WATCH_TTL_MS, MAX_WATCHES, MAX_WATCHES_PER_PRINCIPAL,
+    MIN_WATCH_INTERVAL_MS,
+};
 pub use leases::LeaseRequest;
 
 use crate::error::EngineError;
@@ -57,6 +64,9 @@ pub struct EngineOptions {
     /// reading older than this cannot show that a command took effect and is not used to
     /// verify or reconcile it (ADR-0020). Zero trusts nothing a device stamps earlier.
     pub readback_skew_ms: u64,
+    /// Events kept in memory for `events.poll` (ADR-0023). Older ones are dropped, and a
+    /// consumer that had not read them is told how many it missed.
+    pub event_capacity: usize,
 }
 
 impl Default for EngineOptions {
@@ -67,6 +77,7 @@ impl Default for EngineOptions {
             hold_unresolved: true,
             probe_timeout_ms: 2_000,
             readback_skew_ms: 0,
+            event_capacity: events::DEFAULT_EVENT_CAPACITY,
         }
     }
 }
@@ -121,6 +132,9 @@ struct Inner {
     storage: Mutex<Option<StorageLimits>>,
     options: EngineOptions,
     plans: plans::PlanRuntime,
+    /// The state fabric's event stream and watches (ADR-0023). In memory only.
+    bus: events::Bus,
+    watches: events::Watches,
 }
 
 /// Cheap to clone; all clones share one engine.
@@ -193,6 +207,8 @@ impl Engine {
                 topology: RwLock::new(Vec::new()),
                 state: Mutex::new(HashMap::new()),
                 storage: Mutex::new(None),
+                bus: events::Bus::new(options.event_capacity),
+                watches: events::Watches::default(),
                 options,
                 plans: plans::PlanRuntime::default(),
             }),
@@ -476,6 +492,7 @@ impl Engine {
 
     /// Ask every adapter to shut down. Best effort: failures are logged.
     pub async fn shutdown_adapters(&self) {
+        self.end_all_watches();
         let devices: Vec<Arc<Device>> = self
             .inner
             .devices
@@ -553,7 +570,9 @@ impl Engine {
         if let Some(e) = self.storage_refusal() {
             return Err(EngineError::Denied(e));
         }
-        let result = self.read_device(&device, capability).await;
+        let result = self
+            .read_device(&device, capability, ObservationCause::Read, None)
+            .await;
         self.inner.journal.append_audit(
             self.now(),
             "read",
@@ -571,6 +590,8 @@ impl Engine {
         &self,
         device: &Arc<Device>,
         capability: &str,
+        cause: ObservationCause,
+        command_id: Option<&str>,
     ) -> Result<StateValue, AdapterError> {
         let adapter = device.adapter.clone();
         let cap = capability.to_owned();
@@ -591,6 +612,13 @@ impl Engine {
             lock(&self.inner.state).insert(
                 (device.descriptor.device.id.clone(), capability.to_owned()),
                 v.clone(),
+            );
+            self.publish_observation(
+                &device.descriptor.device.id,
+                capability,
+                v,
+                cause,
+                command_id,
             );
         }
         self.observe(device, result.as_ref().map(|_| ()));
@@ -689,6 +717,7 @@ impl Engine {
             .journal
             .transition(id, to, self.now(), detail, update)?;
         info!(command = %id, state = ?to, "transition");
+        self.publish_command(&r);
         Ok(r)
     }
 
@@ -1018,7 +1047,10 @@ impl Engine {
     ) -> Result<Prepared, Vec<ErrorObject>> {
         let mut fresh: HashMap<String, StateValue> = HashMap::new();
         for name in openmhs_policy::state_needed(cap) {
-            match self.read_device(device, &name).await {
+            match self
+                .read_device(device, &name, ObservationCause::Check, None)
+                .await
+            {
                 Ok(v) => {
                     fresh.insert(name, v);
                 }
@@ -1272,7 +1304,9 @@ impl Engine {
         let mut last: Option<StateValue> = None;
         let mut too_old = false;
         loop {
-            if let Ok(v) = self.read_device(device, &capability).await
+            if let Ok(v) = self
+                .read_device(device, &capability, ObservationCause::Verify, Some(id))
+                .await
                 && v.is_usable(self.now(), None)
             {
                 if !self.measured_since(&v, since) {
@@ -1619,7 +1653,12 @@ impl Engine {
             .ok_or_else(|| EngineError::NotReconcilable("device is not registered".into()))?;
         let _guard = device.lock.lock().await;
         let observed = self
-            .read_device(&device, &capability)
+            .read_device(
+                &device,
+                &capability,
+                ObservationCause::Reconcile,
+                Some(command_id),
+            )
             .await
             .ok()
             .filter(|v| v.is_usable(self.now(), None))

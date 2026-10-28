@@ -874,13 +874,14 @@ impl Engine {
             && let Some(r) = self.inner.journal.receipt(c)?
             && r.state == CommandState::AwaitingApproval
         {
-            self.inner.journal.transition(
+            let r = self.inner.journal.transition(
                 c,
                 CommandState::Cancelled,
                 self.now(),
                 Some(format!("plan {} ended by {by}", plan.id)),
                 |_| {},
             )?;
+            self.publish_command(&r);
         }
         Ok(())
     }

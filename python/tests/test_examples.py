@@ -64,7 +64,7 @@ class LlmAgentWithoutKey(unittest.TestCase):
         p = self.run_example("--print-tools")
         self.assertEqual(p.returncode, 0, p.stderr.decode("utf-8", "replace"))
         tools = {t["name"]: t for t in json.loads(p.stdout)}
-        self.assertEqual(len(tools), 14)
+        self.assertEqual(len(tools), 18)
         for t in tools.values():
             self.assertEqual(set(t), {"name", "description", "input_schema"})
             self.assertEqual(t["input_schema"]["type"], "object")

@@ -133,6 +133,39 @@ impl Client {
 
     /// Whether devices answer, are busy or leased (ADR-0019). `device` narrows it to one;
     /// `refresh` probes devices not checked in the last second first.
+    /// Events after `after` (ADR-0023). Pass the previous batch's `stream` and `next` to
+    /// continue; `wait_ms` waits for one when there are none.
+    pub async fn poll_events(
+        &self,
+        params: crate::EventsPollParams,
+    ) -> Result<openmhs_types::event::EventBatch, ClientError> {
+        self.call(method::EVENTS_POLL, params).await
+    }
+
+    pub async fn create_watch(
+        &self,
+        params: crate::WatchParams,
+    ) -> Result<openmhs_types::event::Watch, ClientError> {
+        self.call(method::WATCHES_CREATE, params).await
+    }
+
+    pub async fn watches(&self) -> Result<Vec<openmhs_types::event::Watch>, ClientError> {
+        self.call(method::WATCHES_LIST, serde_json::json!({})).await
+    }
+
+    pub async fn cancel_watch(
+        &self,
+        watch_id: &str,
+    ) -> Result<openmhs_types::event::Watch, ClientError> {
+        self.call(
+            method::WATCHES_CANCEL,
+            crate::IdParams {
+                id: watch_id.to_owned(),
+            },
+        )
+        .await
+    }
+
     pub async fn device_status(
         &self,
         device: Option<&str>,
@@ -426,6 +459,17 @@ impl Client {
         Ok(crate::insights::summarize(
             &receipts, device, capability, WINDOW,
         ))
+    }
+
+    /// Which registered devices can do what `query` asks (capability-based selection).
+    /// Candidates only: whether a command is allowed is decided when it is checked or sent.
+    pub async fn find_capabilities(
+        &self,
+        query: &crate::selection::CapabilityQuery,
+    ) -> Result<crate::selection::Selection, ClientError> {
+        let descriptors = self.devices().await?;
+        let statuses = self.device_status(None, false).await?;
+        Ok(crate::selection::select(&descriptors, &statuses, query))
     }
 
     pub async fn approve(&self, command_id: &str) -> Result<Receipt, ClientError> {

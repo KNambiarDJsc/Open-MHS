@@ -138,6 +138,10 @@ async fn tools_declare_their_risk_and_output_schemas() {
         "submit_command",
         "get_command",
         "get_insights",
+        "watch_state",
+        "cancel_watch",
+        "poll_events",
+        "find_capabilities",
         "list_pending_approvals",
         "reconcile_command",
         "cancel_command",
@@ -154,6 +158,8 @@ async fn tools_declare_their_risk_and_output_schemas() {
         let a = t.annotations.as_ref().unwrap();
         let read_only = a.read_only_hint == Some(true);
         let mutating = [
+            "watch_state",
+            "cancel_watch",
             "submit_command",
             "reconcile_command",
             "cancel_command",
@@ -754,4 +760,153 @@ async fn insights_summarize_what_the_journal_recorded() {
     );
     client.cancel().await.unwrap();
     lab.gw.shutdown().await.unwrap();
+}
+
+/// The state fabric through MCP: a watch on a streamable measurement reaches the model as
+/// observation events with their measurement time and quality; its own command shows up
+/// as state changes; a capability that does not declare subscribe cannot be watched, and
+/// nothing streams without a subscribe grant.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_model_watches_a_measurement_and_follows_its_command() {
+    let mut grants = psu_grants();
+    grants.push(grant(
+        "psu-subscribe",
+        PSU,
+        "*",
+        &[Operation::Subscribe],
+        Effect::Allow,
+    ));
+    let lab_ = lab(grants).await;
+    let client = connect(&lab_.gw.url, &lab_.agent_token, false).await;
+
+    let start = call(&client, "poll_events", json!({})).await;
+    let start = structured(&start).clone();
+    let stream = start["stream"].clone();
+    let mut next = start["next"].as_u64().unwrap();
+
+    let w = call(
+        &client,
+        "watch_state",
+        json!({ "device": PSU, "capability": "power.output.voltage.measured", "interval_ms": 200, "ttl_ms": 5000 }),
+    )
+    .await;
+    assert!(!is_error(&w), "{}", text(&w));
+    let watch_id = structured(&w)["watch_id"].as_str().unwrap().to_owned();
+
+    let r = call(
+        &client,
+        "submit_command",
+        json!({ "device": PSU, "capability": SETPOINT, "value": volts(2.0), "idempotency_key": "w1" }),
+    )
+    .await;
+    assert_eq!(structured(&r)["confirmed"], true, "{}", text(&r));
+    let command_id = structured(&r)["command_id"].as_str().unwrap().to_owned();
+
+    let mut samples = 0;
+    let mut verified = false;
+    for _ in 0..20 {
+        let b = call(
+            &client,
+            "poll_events",
+            json!({ "after": next, "stream": stream, "wait_ms": 1000 }),
+        )
+        .await;
+        let b = structured(&b).clone();
+        assert_eq!(b["missed"], 0);
+        next = b["next"].as_u64().unwrap();
+        for e in b["events"].as_array().unwrap() {
+            if e["kind"] == "observation" && e["cause"] == "watch" {
+                assert_eq!(e["value"]["unit"], "V");
+                assert!(e["measured_at"].is_string() && e["quality"].is_string());
+                samples += 1;
+            }
+            if e["kind"] == "command"
+                && e["command_id"] == command_id.as_str()
+                && e["state"] == "VERIFIED"
+            {
+                verified = true;
+            }
+        }
+        if samples >= 3 && verified {
+            break;
+        }
+    }
+    assert!(samples >= 3, "{samples} samples");
+    assert!(
+        verified,
+        "the command's VERIFIED transition arrived as an event"
+    );
+
+    let c = call(&client, "cancel_watch", json!({ "watch_id": watch_id })).await;
+    assert!(!is_error(&c), "{}", text(&c));
+
+    // Not streamable: the setpoint declares read and write only.
+    let r = call(
+        &client,
+        "watch_state",
+        json!({ "device": PSU, "capability": SETPOINT, "interval_ms": 500 }),
+    )
+    .await;
+    assert!(is_error(&r));
+    assert!(
+        text(&r).contains("command.operation.unsupported"),
+        "{}",
+        text(&r)
+    );
+    client.cancel().await.unwrap();
+    lab_.gw.shutdown().await.unwrap();
+
+    // Without a subscribe grant: no watch.
+    let lab_ = lab(psu_grants()).await;
+    let client = connect(&lab_.gw.url, &lab_.agent_token, false).await;
+    let r = call(
+        &client,
+        "watch_state",
+        json!({ "device": PSU, "capability": "power.output.voltage.measured", "interval_ms": 500 }),
+    )
+    .await;
+    assert!(is_error(&r));
+    assert!(text(&r).contains("policy.denied"), "{}", text(&r));
+    client.cancel().await.unwrap();
+    lab_.gw.shutdown().await.unwrap();
+}
+
+/// Capability-based selection: the model asks for what it needs instead of reading every
+/// descriptor, and gets candidates that fit, not permissions.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_model_finds_the_device_that_can_do_what_it_needs() {
+    let lab_ = lab(psu_grants()).await;
+    let client = connect(&lab_.gw.url, &lab_.agent_token, false).await;
+
+    let r = call(
+        &client,
+        "find_capabilities",
+        json!({ "quantity": "temperature", "operation": "subscribe" }),
+    )
+    .await;
+    assert!(!is_error(&r), "{}", text(&r));
+    let m = &structured(&r)["matches"];
+    assert_eq!(m.as_array().unwrap().len(), 1, "{m}");
+    assert_eq!(m[0]["device"], "sim.thermo-01");
+    assert_eq!(m[0]["availability"], "ONLINE");
+
+    let r = call(
+        &client,
+        "find_capabilities",
+        json!({ "unit": "V", "operation": "write", "value": 48.0 }),
+    )
+    .await;
+    assert_eq!(
+        structured(&r)["matches"].as_array().unwrap().len(),
+        0,
+        "48 V is out of every range"
+    );
+
+    let r = call(&client, "find_capabilities", json!({ "nonsense": 1 })).await;
+    assert!(
+        is_error(&r) || r.structured_content.is_none(),
+        "unknown fields are refused"
+    );
+    client.cancel().await.unwrap();
+    lab_.gw.shutdown().await.unwrap();
 }

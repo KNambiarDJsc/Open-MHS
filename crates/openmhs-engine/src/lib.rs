@@ -16,6 +16,11 @@ pub use engine::{
     MAX_CONCURRENT_PROBES, MAX_PROBE_BACKOFF_MS, RecoveryReport, StorageLimits, fingerprint,
     probe_backoff_ms,
 };
+pub use engine::{
+    DEFAULT_EVENT_CAPACITY, DEFAULT_WATCH_TTL_MS, EventFilter, EventQuery, MAX_EVENTS_PER_POLL,
+    MAX_POLL_WAIT_MS, MAX_WATCH_TTL_MS, MAX_WATCHES, MAX_WATCHES_PER_PRINCIPAL,
+    MIN_WATCH_INTERVAL_MS,
+};
 pub use error::EngineError;
 pub use journal::{AuditRecord, AuditVerification, Journal, JournalError};
 pub use openmhs_types::graph::{Claim, Graph};

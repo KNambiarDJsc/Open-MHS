@@ -234,7 +234,15 @@ impl Engine {
                     if cap.value.is_none() || !cap.supports(Operation::Read) {
                         continue;
                     }
-                    if let Ok(v) = self.read_device(&real, &cap.name).await {
+                    if let Ok(v) = self
+                        .read_device(
+                            &real,
+                            &cap.name,
+                            openmhs_types::event::ObservationCause::Preflight,
+                            None,
+                        )
+                        .await
+                    {
                         let age = u64::try_from(v.timestamp.ms_until(self.now())).unwrap_or(0);
                         lock(&adapter.values).insert(cap.name.clone(), (v.value, age, v.quality));
                         reads += 1;

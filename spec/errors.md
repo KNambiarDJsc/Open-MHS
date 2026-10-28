@@ -182,6 +182,9 @@ code the descriptor relationship rule uses (see Descriptor validation above).
 | Code | Meaning |
 |---|---|
 | `storage.exhausted` | The journal is within its critical reserve of its size limit, so nothing was sent: writes and invokes (not stops), audited reads and approvals that would dispatch are refused until an operator frees space or raises the limit. `details`: `used_bytes`, `limit_bytes`, `reserve_bytes` |
+| `watch.invalid` | The interval is shorter than 200 ms or the lifetime is zero or longer than an hour. `details`: `min_interval_ms`, `max_ttl_ms` |
+| `watch.limit` | Too many watches: at most 16 per principal and 256 in all. Cancel one first. `details`: `per_principal`, `total` |
+| `watch.unknown` | No such watch is running for the caller |
 | `storage.limits` | The configured limits cannot work: the reserve is not smaller than the limit, or the journal is already larger than the limit |
 
 ### Leases (M9)

@@ -6,6 +6,7 @@
 pub mod client;
 pub mod insights;
 pub mod runtime;
+pub mod selection;
 
 use openmhs_policy::{Grant, PrincipalKind, Scope};
 use openmhs_types::{ApprovalStatus, CommandState, ErrorObject, StateValue};
@@ -22,6 +23,10 @@ pub mod method {
     pub const DEVICES_LIST: &str = "devices.list";
     pub const DEVICES_DESCRIBE: &str = "devices.describe";
     pub const DEVICES_STATUS: &str = "devices.status";
+    pub const EVENTS_POLL: &str = "events.poll";
+    pub const WATCHES_CREATE: &str = "watches.create";
+    pub const WATCHES_LIST: &str = "watches.list";
+    pub const WATCHES_CANCEL: &str = "watches.cancel";
     pub const GRAPH_GET: &str = "graph.get";
     pub const LEASES_ACQUIRE: &str = "leases.acquire";
     pub const LEASES_GET: &str = "leases.get";
@@ -144,6 +149,39 @@ pub struct GatewayInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeviceParams {
     pub device: String,
+}
+
+/// `events.poll` (ADR-0023): events after a cursor, optionally waiting for one.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct EventsPollParams {
+    /// The `stream` of the batch the cursor came from; a different one means the gateway
+    /// restarted, and the answer starts again (`reset`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stream: Option<String>,
+    /// Return events with a greater `seq`. Absent: only events from now on.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub after: Option<u64>,
+    /// `*` patterns of device ids; empty means all.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub devices: Vec<String>,
+    /// `observation`, `availability`, `command`; empty means all.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub kinds: Vec<openmhs_types::event::EventKind>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub limit: Option<usize>,
+    /// Wait this long for an event if there is none yet (at most 30 000).
+    #[serde(default)]
+    pub wait_ms: u64,
+}
+
+/// `watches.create` (ADR-0023): sample a capability that declares `subscribe`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WatchParams {
+    pub device: String,
+    pub capability: String,
+    pub interval_ms: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ttl_ms: Option<u64>,
 }
 
 /// `devices.status`: one device or all, optionally probing first (ADR-0019).

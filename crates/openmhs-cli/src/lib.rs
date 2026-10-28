@@ -84,6 +84,22 @@ enum Cmd {
     },
     /// Read a property from the device (authorized and audited).
     Read { device: String, capability: String },
+    /// Follow the state fabric (ADR-0023): observations you may subscribe to, availability
+    /// changes, and command state changes, as they happen.
+    Events(EventsArgs),
+    /// Sample a capability that declares `subscribe` and print each reading until stopped.
+    Watch {
+        device: String,
+        capability: String,
+        /// How often, e.g. 500ms or 2s (at least 200ms).
+        #[arg(long, default_value = "1s", value_parser = parse_duration_ms)]
+        every: u64,
+        /// How long, e.g. 30s or 5m (at most 1h).
+        #[arg(long = "for", default_value = "1m", value_parser = parse_duration_ms)]
+        ttl: u64,
+    },
+    /// Find capabilities by what they can do: quantity, unit, operation, a value in range.
+    Find(FindArgs),
     /// What the journal says happened on a device: confirmed values, refusals and the limits
     /// behind them, tracking error, readback latency, unresolved outcomes (ADR-0022).
     /// As an agent it covers your own commands; as the operator, everyone's.
@@ -246,6 +262,44 @@ enum AdapterCmd {
         #[arg(long)]
         out: Option<PathBuf>,
     },
+}
+
+#[derive(Args)]
+struct EventsArgs {
+    /// Only these devices (`*` patterns). Repeatable.
+    #[arg(long = "device")]
+    devices: Vec<String>,
+    /// Only these kinds: observation, availability, command. Repeatable.
+    #[arg(long = "kind", value_parser = parse_enum::<openmhs_types::event::EventKind>)]
+    kinds: Vec<openmhs_types::event::EventKind>,
+    /// Start from the oldest event still kept instead of from now.
+    #[arg(long)]
+    from_start: bool,
+    /// Keep waiting for new events instead of printing what is there and stopping.
+    #[arg(long)]
+    follow: bool,
+}
+
+#[derive(Args)]
+struct FindArgs {
+    /// Capability name, `*` patterns allowed.
+    #[arg(long)]
+    name: Option<String>,
+    /// Physical quantity, e.g. voltage, temperature.
+    #[arg(long)]
+    quantity: Option<String>,
+    /// Unit, e.g. V, Cel.
+    #[arg(long)]
+    unit: Option<String>,
+    /// read, write, subscribe or invoke.
+    #[arg(long = "op", value_parser = parse_enum::<Operation>)]
+    operation: Option<Operation>,
+    /// A value it must accept (inside its declared range).
+    #[arg(long)]
+    value: Option<f64>,
+    /// Only devices that are not OFFLINE.
+    #[arg(long)]
+    available: bool,
 }
 
 #[derive(Args)]
@@ -640,6 +694,7 @@ fn parse_duration_ms(s: &str) -> Result<u64, String> {
         .parse()
         .map_err(|_| format!("'{s}' is not a duration like 30m, 12h or 7d"))?;
     let unit_ms: u64 = match unit {
+        "ms" => 1,
         "s" => 1_000,
         "m" => 60_000,
         "h" => 3_600_000,
@@ -1697,6 +1752,100 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
         Cmd::Read { device, capability } => {
             let r = client.read(&device, &capability).await?;
             show(json, &r, output::read_result);
+        }
+        Cmd::Events(args) => {
+            let mut params = openmhs_api::EventsPollParams {
+                after: args.from_start.then_some(0),
+                devices: args.devices,
+                kinds: args.kinds,
+                limit: Some(500),
+                ..Default::default()
+            };
+            loop {
+                let b = client.poll_events(params.clone()).await?;
+                if b.missed > 0 {
+                    eprintln!("({} event(s) dropped before they could be read)", b.missed);
+                }
+                for e in &b.events {
+                    if json {
+                        output::json_line(e);
+                    } else {
+                        output::event(e);
+                    }
+                }
+                if !args.follow {
+                    break;
+                }
+                params.stream = Some(b.stream);
+                params.after = Some(b.next);
+                params.wait_ms = 25_000;
+            }
+        }
+        Cmd::Watch {
+            device,
+            capability,
+            every,
+            ttl,
+        } => {
+            let start = client
+                .poll_events(openmhs_api::EventsPollParams::default())
+                .await?;
+            let w = client
+                .create_watch(openmhs_api::WatchParams {
+                    device: device.clone(),
+                    capability: capability.clone(),
+                    interval_ms: every,
+                    ttl_ms: Some(ttl),
+                })
+                .await?;
+            eprintln!(
+                "watching {device} {capability} every {every} ms until {} (watch {})",
+                w.expires_at, w.id
+            );
+            let mut params = openmhs_api::EventsPollParams {
+                stream: Some(start.stream),
+                after: Some(start.next),
+                devices: vec![device.clone()],
+                kinds: vec![openmhs_types::event::EventKind::Observation],
+                limit: Some(500),
+                wait_ms: 25_000,
+            };
+            let ends = std::time::Instant::now() + std::time::Duration::from_millis(ttl);
+            while let Some(left) = ends.checked_duration_since(std::time::Instant::now()) {
+                params.wait_ms = u64::try_from(left.as_millis())
+                    .unwrap_or(25_000)
+                    .min(25_000);
+                let b = client.poll_events(params.clone()).await?;
+                for e in &b.events {
+                    if let openmhs_types::event::EventBody::Observation { capability: c, .. } =
+                        &e.body
+                        && *c == capability
+                    {
+                        if json {
+                            output::json_line(e);
+                        } else {
+                            output::event(e);
+                        }
+                    }
+                }
+                params.after = Some(b.next);
+            }
+        }
+        Cmd::Find(args) => {
+            let q = openmhs_api::selection::CapabilityQuery {
+                name: args.name,
+                quantity: args.quantity,
+                unit: args.unit,
+                operation: args.operation,
+                value: args.value,
+                max_side_effect: None,
+                available_only: args.available,
+            };
+            show(
+                json,
+                &client.find_capabilities(&q).await?,
+                output::selection,
+            );
         }
         Cmd::Insights { device, capability } => {
             let i = client.insights(&device, capability.as_deref()).await?;
