@@ -479,6 +479,7 @@ impl Engine {
             &id,
             &serde_json::json!({
                 "adapter": descriptor.adapter,
+                "descriptor_sha256": descriptor_sha256(&descriptor),
                 "manufacturer": descriptor.device.manufacturer,
                 "model": descriptor.device.model,
                 "capabilities": descriptor.capabilities.len(),
@@ -1137,7 +1138,7 @@ impl Engine {
                 res = &mut handle => break ExecOutcome::Finished(res),
                 Some(ProgressEvent::Accepted { external_ref }) = rx.recv(), if !accepted => {
                     accepted = true;
-                    self.transition(id, Accepted, None, |r| {
+                    self.transition(id, Accepted, accepted_detail(external_ref.as_deref()), |r| {
                         let ar = r.adapter_result.get_or_insert_with(AdapterResult::default);
                         ar.acknowledged = Some(true);
                         ar.external_ref = external_ref;
@@ -1151,7 +1152,7 @@ impl Engine {
         };
         if !accepted && let Ok(ProgressEvent::Accepted { external_ref }) = rx.try_recv() {
             accepted = true;
-            self.transition(id, Accepted, None, |r| {
+            self.transition(id, Accepted, accepted_detail(external_ref.as_deref()), |r| {
                 let ar = r.adapter_result.get_or_insert_with(AdapterResult::default);
                 ar.acknowledged = Some(true);
                 ar.external_ref = external_ref;
@@ -1897,3 +1898,17 @@ const _: fn() = || {
     fn assert_send_sync<T: Send + Sync>() {}
     assert_send_sync::<Engine>();
 };
+
+/// The detail recorded (and so hash-chained) when the device acknowledges a command: the
+/// device's own reference for the work, so the audit trail links this command to the device's
+/// record of it. `None` when the adapter gave no reference.
+fn accepted_detail(external_ref: Option<&str>) -> Option<String> {
+    external_ref.map(|r| format!("device reference {r}"))
+}
+
+/// SHA-256 of the validated descriptor in canonical form (sorted keys, no whitespace): which
+/// capability contract was in force when a device was registered.
+fn descriptor_sha256(descriptor: &Descriptor) -> String {
+    let value = serde_json::to_value(descriptor).unwrap_or(serde_json::Value::Null);
+    sha256_hex(&openmhs_types::canonical_json(&value))
+}

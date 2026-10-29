@@ -19,6 +19,7 @@ Importing grants nothing: OpenMHS stays deny-by-default.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 import urllib.request
@@ -27,6 +28,8 @@ from urllib.parse import urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import td_import  # noqa: E402
+
+IMPORTER_VERSION = "wot-import 0.1"
 
 
 def load(source: str) -> object:
@@ -104,6 +107,19 @@ def main() -> int:
                         print(f"note: could not probe {pname}: {e}", file=sys.stderr)
     mapping = td_import.map_thing(doc, base_url=base, device_id=args.device_id, overrides=overrides,
                                   samples=samples)
+
+    # Where this contract came from, so it is part of what the gateway hashes at registration:
+    # the exact description imported (canonical sha256), where it was fetched, the reviewed
+    # overrides, and the importer's version. A changed Thing Description is then a changed hash.
+    canon = lambda v: json.dumps(v, sort_keys=True, separators=(",", ":"), ensure_ascii=False)  # noqa: E731
+    mapping.descriptor.setdefault("extensions", {})["x-wot-source"] = {
+        "td_sha256": hashlib.sha256(canon(doc).encode("utf-8")).hexdigest(),
+        "td_location": args.td if args.td.startswith("http") else Path(args.td).name,
+        "importer": IMPORTER_VERSION,
+    }
+    if overrides:
+        mapping.descriptor["extensions"]["x-wot-source"]["overrides_sha256"] = hashlib.sha256(
+            canon(overrides).encode("utf-8")).hexdigest()
 
     args.out.mkdir(parents=True, exist_ok=True)
     if not mapping.connectable:
