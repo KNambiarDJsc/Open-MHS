@@ -1,6 +1,6 @@
 //! The command engine.
 
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::path::Path;
 use std::sync::{Arc, Mutex, MutexGuard, RwLock};
 use std::time::Duration;
@@ -53,7 +53,8 @@ pub struct EngineOptions {
     /// Interval between readback attempts during verification.
     pub verify_poll_ms: u64,
     /// Refuse a non-idempotent write or invoke while an earlier one to the same
-    /// capability is `UNKNOWN_OUTCOME` (spec/lifecycle.md §3 rule 3). Only the conformance
+    /// capability is `UNKNOWN_OUTCOME`, and hold other writes on related shared resources
+    /// until uncertainty is resolved (spec/lifecycle.md §3 rule 3). Only the conformance
     /// suite turns this off: it tests adapters against simulators, and sends again after
     /// the faults it injects on purpose.
     pub hold_unresolved: bool,
@@ -126,6 +127,10 @@ struct Inner {
     journal: Journal,
     policy: RwLock<Policy>,
     devices: RwLock<HashMap<String, Arc<Device>>>,
+    /// Per-resource command gates, acquired in sorted resource-key order.
+    resource_locks: Mutex<HashMap<String, Arc<tokio::sync::Mutex<()>>>>,
+    /// A topology change cannot invalidate an active command's resource lock set.
+    resource_configuration: Arc<tokio::sync::RwLock<()>>,
     /// The operator's installation-specific relationships (spec/topology.md).
     topology: RwLock<Vec<TopologyRelationship>>,
     state: Mutex<HashMap<(String, String), StateValue>>,
@@ -156,16 +161,24 @@ enum Evaluation {
         errors: Vec<ErrorObject>,
         rules: Vec<RuleMatch>,
     },
-    /// Allowed or held for approval. The device lock is held so the live checks stay
-    /// valid until dispatch; a stop holds none (ADR-0018).
+    /// Allowed or held for approval. Device and shared-resource locks stay held through
+    /// dispatch and verification; a stop holds none (ADR-0018).
     Ready {
         device: Arc<Device>,
         cap: Box<Capability>,
         decision: Decision,
         rules: Vec<RuleMatch>,
         prepared: Prepared,
-        guard: Option<tokio::sync::OwnedMutexGuard<()>>,
+        guard: Option<Box<CommandGuards>>,
     },
+}
+
+/// Holds the device and shared-resource locks through verification, along with the
+/// configuration guard used to derive the lock set.
+struct CommandGuards {
+    _configuration: tokio::sync::OwnedRwLockReadGuard<()>,
+    _device: tokio::sync::OwnedMutexGuard<()>,
+    _resources: Vec<tokio::sync::OwnedMutexGuard<()>>,
 }
 
 enum ExecOutcome {
@@ -204,6 +217,8 @@ impl Engine {
                 journal,
                 policy: RwLock::new(policy),
                 devices: RwLock::new(HashMap::new()),
+                resource_locks: Mutex::new(HashMap::new()),
+                resource_configuration: Arc::new(tokio::sync::RwLock::new(())),
                 topology: RwLock::new(Vec::new()),
                 state: Mutex::new(HashMap::new()),
                 storage: Mutex::new(None),
@@ -217,6 +232,42 @@ impl Engine {
 
     fn now(&self) -> Timestamp {
         self.inner.clock.now()
+    }
+
+    /// Serialize state-changing work by device and declared shared resources. Resource
+    /// keys are sorted by the graph, so every multi-resource command takes the same order.
+    async fn command_guards(&self, device: &Arc<Device>, device_id: &str) -> CommandGuards {
+        let configuration = self.inner.resource_configuration.clone().read_owned().await;
+        let resources: Vec<String> = self
+            .graph()
+            .resources
+            .into_iter()
+            .filter_map(|(resource, devices)| devices.contains(device_id).then_some(resource))
+            .collect();
+        let gates: Vec<Arc<tokio::sync::Mutex<()>>> = {
+            let mut locks = lock(&self.inner.resource_locks);
+            resources
+                .iter()
+                .map(|resource| {
+                    locks
+                        .entry(resource.clone())
+                        .or_insert_with(|| Arc::new(tokio::sync::Mutex::new(())))
+                        .clone()
+                })
+                .collect()
+        };
+
+        // Device first, then shared resources in the graph's stable sorted order.
+        let device_guard = device.lock.clone().lock_owned().await;
+        let mut resource_guards = Vec::with_capacity(gates.len());
+        for gate in gates {
+            resource_guards.push(gate.lock_owned().await);
+        }
+        CommandGuards {
+            _configuration: configuration,
+            _device: device_guard,
+            _resources: resource_guards,
+        }
     }
 
     /// Limit the journal's size and keep a reserve below the limit for critical writes
@@ -350,6 +401,12 @@ impl Engine {
     /// Install the operator's topology. Refused, whole, if any relationship names a device
     /// that is not registered or breaks a relationship rule: register devices first.
     pub fn set_topology(&self, topology: Topology) -> Result<(), EngineError> {
+        let _configuration = self.inner.resource_configuration.try_write().map_err(|_| {
+            EngineError::InvalidRequest(vec![ErrorObject::new(
+                "topology.busy",
+                "topology cannot change while commands hold resource ownership locks",
+            )])
+        })?;
         let issues = check_topology(&self.devices(), &topology.relationships);
         if !issues.is_empty() {
             return Err(EngineError::InvalidRequest(
@@ -461,6 +518,14 @@ impl Engine {
             }
             Err(e) => return Err(EngineError::Adapter(e)),
         };
+        // A device registration changes the resource graph. Wait until active commands
+        // release their graph-derived locks before making the new device visible.
+        let _configuration = self
+            .inner
+            .resource_configuration
+            .clone()
+            .write_owned()
+            .await;
         let id = descriptor.device.id.clone();
         {
             let mut devices = self
@@ -869,14 +934,23 @@ impl Engine {
         let guard = if cap.stop {
             None
         } else {
-            Some(device.lock.clone().lock_owned().await)
+            Some(Box::new(
+                self.command_guards(&device, &req.target.device).await,
+            ))
         };
         // No blind retries (spec/lifecycle.md §3 rule 3). Checked under the lock, so a
         // command that has just ended uncertain is seen.
         if self.inner.options.hold_unresolved
             && !cap.stop
-            && cap.idempotent != Some(true)
-            && let Some(e) = self.unresolved_refusal(&req.target.device, &req.target.capability)
+            && matches!(
+                req.operation,
+                RequestOperation::Write | RequestOperation::Invoke
+            )
+            && let Some(e) = self.unresolved_refusal(
+                &req.target.device,
+                &req.target.capability,
+                cap.idempotent == Some(true),
+            )
         {
             return Evaluation::Denied {
                 errors: vec![e],
@@ -1025,25 +1099,57 @@ impl Engine {
         Ok(result)
     }
 
-    /// The refusal for a non-idempotent write while an earlier one to the same capability
-    /// may or may not have taken effect: sending it again could do it twice. If the
-    /// journal cannot be read, nothing runs.
-    fn unresolved_refusal(&self, device: &str, capability: &str) -> Option<ErrorObject> {
-        match self.inner.journal.unresolved_commands(device, capability) {
-            Ok(ids) => ids.first().map(|first| {
-                ErrorObject::new(
-                    "command.outcome_unresolved",
-                    format!(
-                        "command {first} on '{device}' '{capability}' may or may not have taken \
-                         effect; reconcile it, or have an operator resolve it, before sending \
-                         this again"
-                    ),
-                )
-                .detail("unresolved", ids.clone())
-            }),
+    /// Hold a non-idempotent repeat on the same capability, and every write sharing a
+    /// resource with any unresolved command. The latter prevents another device from
+    /// racing a command whose physical effect remains unknown.
+    fn unresolved_refusal(
+        &self,
+        device: &str,
+        capability: &str,
+        idempotent: bool,
+    ) -> Option<ErrorObject> {
+        let graph = self.graph();
+        let claim = graph.claim([device], []);
+        let mut related_devices = BTreeSet::from([device.to_owned()]);
+        for resource in claim.resources {
+            if let Some(users) = graph.resources.get(&resource) {
+                related_devices.extend(users.iter().cloned());
+            }
+        }
+        let related_devices: Vec<String> = related_devices.into_iter().collect();
+        match self
+            .inner
+            .journal
+            .unresolved_commands_on_devices(&related_devices)
+        {
+            Ok(receipts) => {
+                let ids: Vec<String> = receipts
+                    .iter()
+                    .filter(|receipt| {
+                        let target = &receipt.request.target;
+                        if target.device == device {
+                            target.capability == capability && !idempotent
+                        } else {
+                            true
+                        }
+                    })
+                    .map(|receipt| receipt.command_id.clone())
+                    .collect();
+                ids.first().map(|first| {
+                    ErrorObject::new(
+                        "command.outcome_unresolved",
+                        format!(
+                            "command {first} on a shared resource may or may not have taken \
+                             effect; reconcile it, or have an operator resolve it, before \
+                             sending another write"
+                        ),
+                    )
+                    .detail("unresolved", ids.clone())
+                })
+            }
             Err(e) => Some(ErrorObject::new(
                 "gateway.journal",
-                format!("could not check for unresolved commands: {e}"),
+                format!("could not check shared resources for unresolved commands: {e}"),
             )),
         }
     }
@@ -1541,7 +1647,7 @@ impl Engine {
         let _guard = if cap.stop {
             None
         } else {
-            Some(device.lock.lock().await)
+            Some(self.command_guards(&device, &req.target.device).await)
         };
         let prepared = match self.check_live(&device, &cap, &req).await {
             Ok(p) => p,
@@ -1669,7 +1775,9 @@ impl Engine {
         let device = self
             .device(&receipt.request.target.device)
             .ok_or_else(|| EngineError::NotReconcilable("device is not registered".into()))?;
-        let _guard = device.lock.lock().await;
+        let _guard = self
+            .command_guards(&device, &receipt.request.target.device)
+            .await;
         let observed = self
             .read_device(
                 &device,
@@ -1844,7 +1952,8 @@ impl Engine {
                     let expectation = self.inner.journal.expectation(&id)?;
                     match (device, expectation) {
                         (Some(device), Some(expectation)) => {
-                            let _guard = device.lock.lock().await;
+                            let _guard =
+                                self.command_guards(&device, &r.request.target.device).await;
                             self.verify(&device, &id, &expectation).await?;
                             report.verification_resumed.push(id);
                         }

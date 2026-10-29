@@ -41,6 +41,8 @@ Relationships come from two places and use the same objects
   `issues` (`graph.target.unregistered`) and otherwise ignored: devices register
   independently.
 - A `contains` cycle is reported (`graph.contains.cycle`).
+- Runtime topology changes are refused with `topology.busy` while a command holds its
+  resource lock set; apply configuration before starting work.
 
 ## What the graph decides: claims
 
@@ -61,6 +63,14 @@ The rule is deliberately conservative: two devices that share a workspace cannot
 operated by different holders at the same time, even if their motions might never meet.
 OpenMHS does not reason about geometry.
 
+Within one gateway process, state-changing commands also hold locks for every declared
+shared resource used by their target device, from live checks through verification. A
+command involving several shared resources takes their locks in sorted resource-id order.
+This prevents two local adapters from concurrently changing a declared shared resource,
+even when their device ids differ. The stop lane remains concurrent by design. These locks
+do not fence another gateway process or a direct device controller; resource ownership
+epochs and controller-enforced fencing are not implemented yet.
+
 ## Leases
 
 A lease gives its holder exclusive use of what it claims until a deadline.
@@ -73,7 +83,8 @@ A lease gives its holder exclusive use of what it claims until a deadline.
   anyone but the holder is refused with `lease.held`. Reads are not affected. The check
   runs for every command, including one held for approval, which is checked again when
   approved. If the leases cannot be read, nothing runs (`gateway.journal`). Commands
-  already running when a lease is taken finish.
+  already running when a lease is taken finish; later writes sharing a resource serialize
+  behind the current local command.
 - **Who can lease**: only a caller that could operate every claimed device (its
   credential's scopes reach the device and some grant short of `deny` allows a write or
   invoke on it). A read-only agent cannot lock others out. A resource can be leased only

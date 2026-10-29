@@ -9,6 +9,10 @@ and the entry will say so under **Changed** or **Removed**.
 
 ### Added
 
+- State-changing commands now serialize on declared shared resources as well as individual
+  devices, with a stable lock order for multi-resource commands. This is a single-gateway
+  guarantee; unresolved outcomes also hold related writes until reconciliation or operator
+  resolution. It does not fence another process or the device controller.
 - Principal-scoped command receipt lookup by device and idempotency key, plus a Python SDK
   execution handle that submits once, recovers a lost response, waits with a caller-bounded
   deadline, and makes approval, reconciliation, or human verification the explicit next step.
@@ -119,7 +123,8 @@ in [docs/limitations.md](docs/limitations.md) and [docs/strategy/](docs/strategy
 - Leases, plans with twin preflight, compensation and a stop lane.
 - No blind retries, enforced: while a write or invoke is `UNKNOWN_OUTCOME`, a new one to
   the same capability is refused (`command.outcome_unresolved`) unless the capability is
-  idempotent or a stop. `commands.resolve` / `openmhs commands resolve` lets an operator
+  idempotent or a stop. Other writes to devices sharing its declared resources are also
+  refused until resolution. `commands.resolve` / `openmhs commands resolve` lets an operator
   settle an outcome that cannot be read back, with the reason recorded.
 - Device availability ([ADR-0019](docs/adr/0019-device-availability.md)): a device that
   does not answer at start is registered `OFFLINE` instead of stopping the gateway, the

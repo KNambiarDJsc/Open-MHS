@@ -7,7 +7,7 @@ These are engineering invariants, not a claim of physical safety or production r
 | No dispatch without authorization | Gateway-authenticated caller; scope and grant checks in engine | Policy tests and gateway tests exist; expand agent-facing negative coverage |
 | No blind retry after an ambiguous write | `UNKNOWN_OUTCOME`, unresolved hold, idempotency index | Research simulator evidence and engine recovery tests; not a universal device guarantee |
 | No false verified result from acknowledgement | `ACCEPTED`/`APPLIED` are pending; post-dispatch readback | Lifecycle and stale-readback tests; physical sensor truth is not established |
-| No two ordinary writes concurrently on one device | Per-device async mutex held across checks and verification | Engine tests; no distributed split-brain fencing exists |
+| No concurrent writes on one device or declared shared resource in one gateway; unresolved effects hold related writes | Per-device and sorted per-resource locks plus journal-backed unresolved-command checks | `resource_serialization.rs`; no cross-process or controller fencing exists |
 | Admitted work survives process restart as evidence | SQLite command receipts and transitions | Recovery tests; disk loss/corruption and full-disk crash windows need expanded drills |
 | Unknown devices are explicit errors | Gateway descriptor lookup returns `command.device.unknown`; insights now validates first | MCP regression test added for insights and access discovery |
 | Permission discovery cannot grant authority | New query intersects credential scope and policy; each execution rechecks | MCP test added; output is advisory and expires after 10 seconds |

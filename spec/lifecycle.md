@@ -75,7 +75,9 @@ Agents usually only need the coarse class:
    automatically. It is resolved by readback, or by an operator (§5). Until it is, a new
    write or invoke to the same capability is `DENIED` with
    `command.outcome_unresolved`, unless the capability is declared `idempotent` (doing
-   it twice is the same as once) or `stop`. Checked under the device lock, before any
+   it twice is the same as once) or `stop`. Any write or invoke on another device that
+   shares a declared resource with the unresolved command is also denied, even if that
+   other capability is idempotent. Checks run under the device and resource locks before
    device traffic.
 4. **Idempotency.** `(principal, device, idempotency_key)` identifies a request. A
    repeated submission with the same key returns the existing command and receipt and

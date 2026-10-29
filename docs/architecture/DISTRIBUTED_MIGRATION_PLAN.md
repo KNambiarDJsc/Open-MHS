@@ -24,6 +24,7 @@ not a prerequisite for running a local adapter or lab integration.
 - Principal-scoped permission introspection that does not bypass dispatch authorization.
 - Deterministic command lifecycle, idempotency, uncertainty and restart recovery tests.
 - Receipt/audit integrity scope and explicit evidence limitations.
+- Per-device and shared-resource serialization within one gateway process.
 
 ### Necessary before multiple writers or sites
 

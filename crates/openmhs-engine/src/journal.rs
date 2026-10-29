@@ -15,7 +15,7 @@ use openmhs_types::evidence::{
 };
 use openmhs_types::receipt::TransitionRecord;
 use openmhs_types::{Approval, ApprovalStatus, CommandState, ErrorObject, Receipt, Timestamp};
-use rusqlite::{Connection, OptionalExtension, Transaction, params};
+use rusqlite::{Connection, OptionalExtension, ToSql, Transaction, params};
 use sha2::{Digest, Sha256};
 
 mod leases;
@@ -725,6 +725,42 @@ impl Journal {
             )?
             .collect::<Result<Vec<String>, _>>()?;
         Ok(ids)
+    }
+
+    /// Receipts with unknown outcomes on a set of devices, oldest first. This is used to
+    /// hold shared resources whose physical state may still be affected by an old command.
+    pub fn unresolved_commands_on_devices(
+        &self,
+        devices: &[String],
+    ) -> Result<Vec<Receipt>, JournalError> {
+        if devices.is_empty() {
+            return Ok(Vec::new());
+        }
+        let conn = self.lock();
+        let placeholders = std::iter::repeat_n("?", devices.len())
+            .collect::<Vec<_>>()
+            .join(",");
+        let sql = format!(
+            "SELECT receipt, state FROM commands WHERE state = ? AND device IN ({placeholders}) \
+             ORDER BY created_ms, command_id"
+        );
+        let state = state_name(CommandState::UnknownOutcome);
+        let mut values: Vec<&dyn ToSql> = Vec::with_capacity(devices.len() + 1);
+        values.push(&state);
+        values.extend(devices.iter().map(|device| device as &dyn ToSql));
+        let mut stmt = conn.prepare(&sql)?;
+        let rows = stmt.query_map(rusqlite::params_from_iter(values), |r| {
+            Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
+        })?;
+        let mut out = Vec::new();
+        for row in rows {
+            let (json, state) = row?;
+            let receipt: Receipt = serde_json::from_str(&json)?;
+            Self::check_state(&receipt, &state)?;
+            Self::check_receipt(&conn, &receipt)?;
+            out.push(receipt);
+        }
+        Ok(out)
     }
 
     /// Most recent commands first, optionally filtered by principal and state (an empty

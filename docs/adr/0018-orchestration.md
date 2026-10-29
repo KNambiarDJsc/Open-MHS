@@ -42,6 +42,12 @@ checked on use, so a gateway that crashed and restarted honours deadlines withou
 sweeper. The claim is fixed when the lease is taken; a topology change takes effect for
 new leases.
 
+Within one gateway process, state-changing commands on devices sharing a declared resource
+also serialize through sorted per-resource locks held from live checks through verification.
+An unresolved outcome blocks later writes to related devices until reconciled or resolved.
+This is a local ownership boundary; it is not a fencing token and does not stop another
+gateway process or a direct controller.
+
 ### Stop lane
 
 An action may declare `"stop": true`. A stop is authorized and validated like any other

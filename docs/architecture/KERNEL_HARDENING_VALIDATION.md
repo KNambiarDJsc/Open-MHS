@@ -88,7 +88,24 @@ Validation: `cargo test -p openmhs-gateway` passed; `cargo clippy -p openmhs-api
 These tests exercise simulated gateway behavior only; physical recovery and resource
 fencing remain unproven.
 
+## Local resource serialization follow-up — 2026-10-30
+
+Commands now hold their device lock and every topology-declared shared-resource lock from
+live checks through verification. Multiple resource locks are taken in sorted order.
+Registration and topology changes cannot alter the graph while a command holds that lock
+set. Reconciliation and recovery verification use the same locks. Stops retain the
+existing stop lane and bypass these locks. An unresolved command also refuses writes to
+other devices in its shared-resource claim until reconciliation or operator resolution.
+`resource_serialization.rs` verifies shared-resource exclusion, the unresolved hold, and
+that unrelated devices still can execute concurrently.
+
+This is a guarantee within one gateway process. It is not a fencing epoch and does not
+stop another gateway process, a direct controller, or a stale network client outside that
+process. The next ownership milestone is an explicit versioned owner epoch validated at
+the controlling endpoint where supported, with a fail-closed local boundary where it is
+not.
+
 ## Next implementation milestone
 
-Add device-local resource ownership and fencing semantics before distributed transport.
-Claim fencing only when the underlying controller can enforce it.
+Add versioned ownership epochs and stale-owner checks before distributed transport. Claim
+fencing only when the underlying controller can enforce it.
