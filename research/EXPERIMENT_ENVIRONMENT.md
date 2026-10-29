@@ -125,5 +125,23 @@ removed and regenerated locally from the command above.
 ## Startup and shutdown
 
 Both servers started in about two seconds and answered immediately. A running simulator holds
-no state that needs saving for these experiments. Shutdown behaviour is recorded in the notes at the
-end of the work (below).
+no state that needs saving for these experiments.
+
+**Shutdown, as observed at the end of the work.** The servers were stopped by forcible termination
+of the process (the harness's stop command), not a graceful interrupt, which was not tested. In
+each case the port stopped listening within about two seconds and the server log shows no shutdown
+message (its last line is the last request). Specifically:
+
+- **LabBench (LabThings-FastAPI)** held 521 action invocations in memory, position 47 and 1,702 jobs
+  started. After a restart the invocation list was empty, position 0 and jobs 0: **LabThings keeps
+  nothing across a restart**, so every invocation id recorded by OpenMHS stops resolving, and the
+  device's state returns to its defaults. This is the "server restarted" case of ASYNC_ACTION_RELIABILITY.md (S07).
+- **OpenFlexure simulator** and the **hotplate stand-in** stopped cleanly in the same sense; neither
+  was restarted.
+- **The private Ollama server** (port 11435) stopped and released the port. The user's own Ollama
+  on port 11434 was never started, stopped or configured by this work and was still listening
+  afterwards.
+
+Everything on disk (virtual environment, model files, gateway homes under
+`D:\openmhs-research\work`) is left in place for re-running; remove `D:\openmhs-research` to reclaim
+the space.

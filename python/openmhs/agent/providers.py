@@ -141,7 +141,11 @@ class _ChatCompletionsConversation:
         ]
 
     def next_turn(self) -> Turn:
-        body = {"model": self._p.model, "messages": self._messages, "tools": self._tools}
+        body: dict[str, Any] = {"model": self._p.model, "messages": self._messages, "tools": self._tools}
+        if self._p.temperature is not None:
+            body["temperature"] = self._p.temperature
+        if self._p.seed is not None:
+            body["seed"] = self._p.seed
         reply = self._p._post("/chat/completions", body)
         choice = reply["choices"][0]
         message = choice["message"]
@@ -173,13 +177,15 @@ class OpenAICompatibleProvider:
     """
 
     def __init__(self, base_url: str, model: str, api_key: str | None = None,
-                 timeout: float = 300, retries: int = 2) -> None:
+                 timeout: float = 300, retries: int = 2, temperature: float | None = None,
+                 seed: int | None = None) -> None:
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.name = f"openai-compatible:{model}"
         self._key = api_key if api_key is not None else os.environ.get("OPENAI_API_KEY", "")
         self._timeout = timeout
         self.retries = retries
+        self.temperature, self.seed = temperature, seed
 
     def _post(self, path: str, body: dict[str, Any]) -> dict[str, Any]:
         req = urllib.request.Request(

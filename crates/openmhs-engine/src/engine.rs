@@ -1152,11 +1152,16 @@ impl Engine {
         };
         if !accepted && let Ok(ProgressEvent::Accepted { external_ref }) = rx.try_recv() {
             accepted = true;
-            self.transition(id, Accepted, accepted_detail(external_ref.as_deref()), |r| {
-                let ar = r.adapter_result.get_or_insert_with(AdapterResult::default);
-                ar.acknowledged = Some(true);
-                ar.external_ref = external_ref;
-            })?;
+            self.transition(
+                id,
+                Accepted,
+                accepted_detail(external_ref.as_deref()),
+                |r| {
+                    let ar = r.adapter_result.get_or_insert_with(AdapterResult::default);
+                    ar.acknowledged = Some(true);
+                    ar.external_ref = external_ref;
+                },
+            )?;
         }
 
         let with_error = |e: ErrorObject| {

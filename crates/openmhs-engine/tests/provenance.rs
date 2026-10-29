@@ -137,5 +137,8 @@ async fn registration_records_a_stable_hash_of_the_contract() {
         b[0]["descriptor_sha256"].as_str().unwrap(),
     );
     assert_eq!(ha.len(), 64, "a sha256 in hex");
-    assert_eq!(ha, hb, "the same contract hashes the same, however it is served");
+    assert_eq!(
+        ha, hb,
+        "the same contract hashes the same, however it is served"
+    );
 }

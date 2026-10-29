@@ -249,18 +249,20 @@ def make_manifest(out: Path, base_url: str, *, upstream: str = BENCH, thing: str
 class Gateway:
     """A real ``openmhs serve`` process with one adapter manifest."""
 
-    def __init__(self, home: Path, manifest: Path, *, grants: bool = True, skew_ms: int = 0) -> None:
-        self.home, self.manifest, self.proc, self.grants = Path(home), Path(manifest), None, grants
-        self.skew_ms = skew_ms
+    def __init__(self, home: Path, manifest, *, grants: bool = True, skew_ms: int = 0, extra: list[str] | None = None) -> None:
+        self.manifests = [Path(m) for m in (manifest if isinstance(manifest, (list, tuple)) else [manifest])]
+        self.home, self.manifest, self.proc, self.grants = Path(home), self.manifests[0], None, grants
+        self.skew_ms, self.extra = skew_ms, list(extra or [])
 
     def start(self) -> "Gateway":
         self.home.mkdir(parents=True, exist_ok=True)
         (self.home / "gateway.json").unlink(missing_ok=True)
         self.log = open(self.home / "serve.log", "ab")
         self.proc = subprocess.Popen(
-            [OPENMHS, "--home", str(self.home), "serve", "--port", "0", "--adapter-manifest",
-             str(self.manifest), "--allow-unsigned-adapters", "--health-interval-ms", "500",
-             *(["--readback-skew-ms", str(self.skew_ms)] if self.skew_ms else [])],
+            [OPENMHS, "--home", str(self.home), "serve", "--port", "0",
+             *[a for m in self.manifests for a in ("--adapter-manifest", str(m))],
+             "--allow-unsigned-adapters", "--health-interval-ms", "500",
+             *(["--readback-skew-ms", str(self.skew_ms)] if self.skew_ms else []), *self.extra],
             stdout=self.log, stderr=subprocess.STDOUT)
         end = time.time() + 30
         while time.time() < end:

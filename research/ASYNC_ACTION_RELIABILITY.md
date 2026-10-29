@@ -39,7 +39,7 @@ changed as asked; only `VERIFIED` says that.
 | # | Scenario | OpenMHS | Ground truth | Duplicate? |
 |---|---|---|---|---|
 | S01 | Accepted, not yet completed (3 s job) | `ACCEPTED` for 3.6 s while the invocation was `running`, then `APPLIED` → `VERIFIED`. **No early success** | position 40, one job | no |
-| S02 | Completed | `VERIFIED` (readback 40 matches) | position 40 | no |
+| S02 | Completed (the end state of S01, not a separate run) | `VERIFIED` (readback 40 matches) | position 40 | no |
 | S03 | Action raised an error part-way (stalled motor) | `FAILED`; message states how far the action got is *not* known | stuck at 14 of 60; invocation `error` | no |
 | S04 | Cancelled by someone else while OpenMHS waits | `FAILED`, message says cancelled | stopped at 15 of 80; invocation `cancelled` | no |
 | S04b | Cancel request on an action that ignores cancellation (direct) | (not OpenMHS) | `DELETE` → **200** "Cancel request sent", invocation still `running`, carriage kept moving 16 → 27 → … → 60 | n/a |
@@ -89,6 +89,10 @@ validated ≤ 256 characters, no control characters, else dropped; never used to
 In S05, S09 and S10 the receipt now carries `labthings:<invocation id>`, **including the case where
 the gateway itself was killed and recovered (S10)**, because the id was journaled at acceptance,
 before the crash. Covered by a host test.
+
+*Since then:* the reference is also written into the hash-chained `ACCEPTED` audit record
+("device reference labthings:…"), not only the receipt, so it is covered by the chain
+(AUDIT_AND_PROVENANCE.md). Covered by an engine test.
 
 *What it does not do:* OpenMHS still reconciles by **readback**, never by asking LabThings for the
 invocation's status. The id lets a person (or a later feature) ask. That later feature is
