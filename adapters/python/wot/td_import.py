@@ -344,7 +344,7 @@ def map_thing(
         variants = (ov or {}).get("variants") or {None: {}}
         for vname, vov in variants.items():
             cur = {**(ov or {}), **vov}
-            side_effect = cur.get("side_effect", "none" if td_safe else None)
+            side_effect = cur.get("side_effect", "reversible" if td_safe else None)
             if side_effect not in SIDE_EFFECTS:
                 findings.append(Finding(aff, REVIEW, "action_unreviewed",
                                         f"override has no valid side_effect (one of {SIDE_EFFECTS})"))
@@ -385,6 +385,17 @@ def map_thing(
                     findings.append(Finding(aff, REVIEW, cat, f"parameter '{pk}': {why}", slug(aname)))
             for pk, ps in declared.items():
                 params[slug(pk)], wire[slug(pk)] = ps, pk
+            # A numeric parameter with no limit is a limit nobody chose. Expose it only if a
+            # reviewer says, by name, that it is meant to be unbounded.
+            unbounded = [k for k, ps in params.items()
+                         if ps.get("type") in ("number", "integer") and "range" not in ps
+                         and k not in cur.get("unbounded_ok", [])]
+            if unbounded:
+                findings.append(Finding(
+                    aff, REVIEW, "unbounded_param",
+                    "not exposed: no limit is declared for " + ", ".join(f"'{k}'" for k in unbounded) +
+                    "; give a range in the override, or list the parameter under unbounded_ok"))
+                continue
             if not ok:
                 continue
 
@@ -397,7 +408,7 @@ def map_thing(
                 "side_effect": side_effect,
                 "idempotent": bool(idem),
                 "timing": timing,
-                "verification": cur.get("verification", {"mode": "none"}),
+                "verification": cur.get("verification", {"mode": "none", "reason": "no readback is declared in the Thing Description or the review"}),
                 "extensions": {"x-wot": {"affordance": aff,
                                          "reviewed": bool(ov), "td_declared_safe": td_safe}},
             }
@@ -455,7 +466,7 @@ def review_template(td: dict, mapping: Mapping) -> dict:
             "idempotent": act.get("idempotent"),
             "timing": {"timeout_ms": None},
             "params": {},
-            "verification": {"mode": "none"},
+            "verification": {"mode": "none", "reason": "no readback is declared in the Thing Description or the review"},
             "reviewed_by": None,
             "reason": None,
             "td_description": (act.get("description") or "").strip()[:200],

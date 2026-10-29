@@ -99,7 +99,9 @@ class Actions(unittest.TestCase):
     def test_only_a_declared_safe_action_is_exposed_without_review(self) -> None:
         m = t.map_thing(td(actions={"snapshot": act(safe=True, input={"type": "object", "properties": {}})}))
         (c,) = m.descriptor["capabilities"]
-        self.assertEqual((c["side_effect"], c["extensions"]["x-wot"]["td_declared_safe"]), ("none", True))
+        # OpenMHS reserves side_effect "none" for read-only capabilities; an invoke is at least
+        # "reversible", and the TD's safe: true claim is kept as provenance.
+        self.assertEqual((c["side_effect"], c["extensions"]["x-wot"]["td_declared_safe"]), ("reversible", True))
         self.assertTrue(any(f.category == "mapped_td_safe" for f in m.findings))
 
     def test_a_reviewed_override_supplies_what_the_description_omits(self) -> None:
@@ -121,7 +123,7 @@ class Actions(unittest.TestCase):
             self.assertEqual(m.descriptor["capabilities"], [], ov)
 
     def test_parameters_with_defaults_are_left_to_the_device(self) -> None:
-        a = act(input={"type": "object", "properties": {"level": {"type": "integer"},
+        a = act(input={"type": "object", "properties": {"level": {"type": "integer", "minimum": 0, "maximum": 9},
                                                          "quick": {"type": "boolean", "default": False}}})
         ov = {"actions": {"go": {"expose": True, "side_effect": "none", "idempotent": True,
                                  "timing": {"timeout_ms": 1000}}}}
@@ -138,11 +140,29 @@ class Actions(unittest.TestCase):
         a = act(input={"type": "object", "properties": {}, "additionalProperties": True})
         ov = {"actions": {"move": {"expose": True, "side_effect": "reversible", "idempotent": True,
                                    "timing": {"timeout_ms": 9000},
-                                   "variants": {"move_x": {"params": {"x": {"type": "integer"}}},
-                                                "move_y": {"params": {"y": {"type": "integer"}}}}}}}
+                                   "variants": {"move_x": {"params": {"x": {"type": "integer", "range": {"min": -9, "max": 9}}}},
+                                                "move_y": {"params": {"y": {"type": "integer", "range": {"min": -9, "max": 9}}}}}}}}
         m = t.map_thing(td(actions={"move": a}), overrides=ov)
         self.assertEqual([c["name"] for c in m.descriptor["capabilities"]], ["move_x", "move_y"])
         self.assertEqual(m.bindings["move_y"]["wire"], {"y": "y"})
+
+
+class Limits(unittest.TestCase):
+    OV = {"actions": {"go": {"expose": True, "side_effect": "reversible", "idempotent": True,
+                             "timing": {"timeout_ms": 1000}}}}
+
+    def test_a_parameter_with_no_declared_limit_blocks_exposure_until_a_reviewer_decides(self) -> None:
+        a = act(input={"type": "object", "properties": {"level": {"type": "number"}}})
+        m = t.map_thing(td(actions={"go": a}), overrides=self.OV)
+        self.assertEqual(m.descriptor["capabilities"], [])
+        self.assertTrue(any(f.category == "unbounded_param" for f in m.findings))
+
+    def test_a_limit_from_the_description_or_the_reviewer_lets_it_through(self) -> None:
+        bounded = act(input={"type": "object", "properties": {"level": {"type": "number", "minimum": 0, "maximum": 5}}})
+        self.assertEqual(len(t.map_thing(td(actions={"go": bounded}), overrides=self.OV).descriptor["capabilities"]), 1)
+        unbounded = act(input={"type": "object", "properties": {"level": {"type": "number"}}})
+        ov = {"actions": {"go": {**self.OV["actions"]["go"], "unbounded_ok": ["level"]}}}
+        self.assertEqual(len(t.map_thing(td(actions={"go": unbounded}), overrides=ov).descriptor["capabilities"]), 1)
 
 
 class SecurityAndEvents(unittest.TestCase):

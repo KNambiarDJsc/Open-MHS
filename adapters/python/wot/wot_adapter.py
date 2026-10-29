@@ -73,6 +73,9 @@ class WotAdapter(Adapter):
             permissions.check_network(b["href"])
         if self.ledger:
             permissions.check_read(self.ledger)
+        # A number with a unit is a quantity in OpenMHS: {"value": ..., "unit": ...}.
+        self._units = {c["name"]: c["value"]["unit"] for c in self.descriptor["capabilities"]
+                       if c["kind"] == "property" and c.get("value", {}).get("unit")}
         declared = {c["name"] for c in self.descriptor["capabilities"]}
         if set(self.bindings) != declared:
             raise AdapterError("internal", "bindings and descriptor name different capabilities")
@@ -151,7 +154,11 @@ class WotAdapter(Adapter):
             return ("disconnected", e.message)
         except (urllib.error.URLError, OSError, TimeoutError) as e:
             return ("disconnected", str(getattr(e, "reason", e)))
-        return "healthy" if status < 500 else ("degraded", f"HTTP {status}")
+        if status in (401, 403):
+            # Answering is not the same as being usable: a Thing that refuses our credentials
+            # cannot be operated, and saying "healthy" would hide that until the first command.
+            return ("disconnected", f"the Thing rejected the credentials (HTTP {status})")
+        return "healthy" if status < 400 else ("degraded", f"HTTP {status}")
 
     async def connect(self) -> None:
         state = await self.health()
@@ -172,6 +179,9 @@ class WotAdapter(Adapter):
             if not isinstance(body, dict) or b["field"] not in body:
                 raise AdapterError("malformed_response", f"no field {b['field']!r} in the value")
             body = body[b["field"]]
+        unit = self._units.get(capability)
+        if unit and isinstance(body, (int, float)) and not isinstance(body, bool):
+            body = {"value": body, "unit": unit}
         return reading(body, timestamp=self._measured_at(headers), source=self.source)
 
     def _measured_at(self, headers: dict) -> str | None:
