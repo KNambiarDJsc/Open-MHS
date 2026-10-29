@@ -9,6 +9,17 @@ and the entry will say so under **Changed** or **Removed**.
 
 ### Added
 
+- Provenance in the audit trail (from the LabThings/OpenFlexure study, `research/`): an adapter
+  may report the device's own reference for a command (`progress.accepted(external_ref=...)`,
+  `adapter_result.external_ref`, at most 256 characters); the `ACCEPTED` audit record carries it
+  as `device reference <ref>`, and `device.registered` records `descriptor_sha256`, the hash of
+  the validated descriptor in canonical form. The W3C Thing Description importer and generic
+  HTTP/LabThings adapter (`adapters/python/wot/`) record the description's hash in the
+  descriptor's `extensions`.
+- `research/`: reproducible simulator-only study (importer coverage, async-action failure
+  scenarios, 225-run fault-injection benchmark, provenance experiments, multi-device plan,
+  natural-language experiments) and a decision memo. No hardware claims.
+
 - `openmhs mcp --sim`: an MCP server that brings its own throwaway virtual-lab gateway and
   agent credential, so an MCP host needs one config line and no separate `serve`, grants or
   token. The agent can read the simulated devices and write the power supply; the operator
