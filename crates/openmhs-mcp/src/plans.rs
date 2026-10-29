@@ -41,11 +41,8 @@ pub struct StepInput {
     pub id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    /// A write or invoke request, without an idempotency_key (the plan makes one per
-    /// attempt), e.g. {"target": {"device": "sim.psu-01", "capability":
-    /// "power.output.enabled"}, "operation": "write", "value": true} or {"target":
-    /// {"device": "sim.axis-01", "capability": "axis.move_absolute"}, "operation":
-    /// "invoke", "params": {"position": {"value": 50, "unit": "mm"}}}.
+    /// A write or invoke request, without an idempotency_key (the plan makes one per attempt).
+    /// Use device and capability ids returned by discovery tools.
     pub request: Value,
     /// Ids of steps that must have succeeded first.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]

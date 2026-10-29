@@ -23,6 +23,7 @@ pub mod method {
     pub const DEVICES_LIST: &str = "devices.list";
     pub const DEVICES_DESCRIBE: &str = "devices.describe";
     pub const DEVICES_STATUS: &str = "devices.status";
+    pub const ACCESS_ALLOWED_OPERATIONS: &str = "access.allowed_operations";
     pub const EVENTS_POLL: &str = "events.poll";
     pub const WATCHES_CREATE: &str = "watches.create";
     pub const WATCHES_LIST: &str = "watches.list";
@@ -157,6 +158,34 @@ pub struct GatewayInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeviceParams {
     pub device: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct AllowedOperationsParams {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub device: Option<String>,
+}
+
+/// Effective access for the authenticated principal at one point in time. This is
+/// advisory discovery metadata; the gateway reauthorizes every operation at execution.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+pub struct AllowedOperations {
+    pub principal: String,
+    pub policy_revision: String,
+    pub generated_at: String,
+    pub expires_at: String,
+    pub advisory: bool,
+    pub operations: Vec<AllowedOperation>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+pub struct AllowedOperation {
+    pub device: String,
+    pub capability: String,
+    pub operation: String,
+    /// `allowed` or `requires_approval` under the current policy and credential scope.
+    pub access: String,
+    pub descriptor_sha256: String,
 }
 
 /// `events.poll` (ADR-0023): events after a cursor, optionally waiting for one.

@@ -9,7 +9,7 @@ use std::net::{Ipv4Addr, SocketAddr};
 use openmhs_api::{Client, CreateTokenParams, Role};
 use openmhs_gateway::{GatewayConfig, RunningGateway};
 use openmhs_mcp::OpenMhsServer;
-use openmhs_policy::{Effect, Grant};
+use openmhs_policy::{Effect, Grant, Scope};
 use openmhs_types::descriptor::Operation;
 use rmcp::model::{CallToolRequestParams, CallToolResult};
 use rmcp::service::RunningService;
@@ -138,6 +138,7 @@ async fn tools_declare_their_risk_and_output_schemas() {
         "submit_command",
         "get_command",
         "get_insights",
+        "get_allowed_operations",
         "watch_state",
         "cancel_watch",
         "poll_events",
@@ -179,6 +180,12 @@ async fn tools_declare_their_risk_and_output_schemas() {
             t.name
         );
     }
+    let descriptions = tools
+        .iter()
+        .filter_map(|t| t.description.as_deref())
+        .collect::<Vec<_>>()
+        .join("\n");
+    assert!(!descriptions.contains("sim.axis-01"), "{descriptions}");
     // Only standard JSON Schema: strict client-side validators warn on `uint64` and kin.
     let all = serde_json::to_string(&tools).unwrap();
     for f in [
@@ -763,6 +770,104 @@ async fn insights_summarize_what_the_journal_recorded() {
     assert_eq!(
         structured(&r)["reasons"][0]["code"],
         "policy.denied.no_grant"
+    );
+    client.cancel().await.unwrap();
+    lab.gw.shutdown().await.unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn insights_reject_an_unknown_device_instead_of_returning_empty_success() {
+    let lab = lab(vec![]).await;
+    let client = connect(&lab.gw.url, &lab.agent_token, false).await;
+    let result = call(
+        &client,
+        "get_insights",
+        json!({ "device": "missing-device" }),
+    )
+    .await;
+    assert!(is_error(&result), "{}", text(&result));
+    assert!(
+        text(&result).contains("command.device.unknown"),
+        "{}",
+        text(&result)
+    );
+    client.cancel().await.unwrap();
+    lab.gw.shutdown().await.unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn allowed_operations_are_principal_scoped_advisory_and_expiring() {
+    let lab = lab(psu_grants()).await;
+    let client = connect(&lab.gw.url, &lab.agent_token, false).await;
+    let result = call(&client, "get_allowed_operations", json!({ "device": PSU })).await;
+    assert!(!is_error(&result), "{}", text(&result));
+    let access = structured(&result);
+    assert_eq!(access["principal"], "agent:mcp");
+    assert!(access["advisory"].as_bool().unwrap());
+    assert!(
+        access["policy_revision"]
+            .as_str()
+            .unwrap()
+            .starts_with("sha256:")
+    );
+    assert!(access["generated_at"].as_str().is_some());
+    assert!(access["expires_at"].as_str().is_some());
+    let operations = access["operations"].as_array().unwrap();
+    assert!(operations.iter().any(|op| {
+        op["device"] == PSU && op["operation"] == "read" && op["access"] == "allowed"
+    }));
+    assert!(operations.iter().any(|op| {
+        op["device"] == PSU && op["operation"] == "write" && op["access"] == "allowed"
+    }));
+    assert!(operations.iter().all(|op| {
+        op["descriptor_sha256"]
+            .as_str()
+            .unwrap()
+            .starts_with("sha256:")
+    }));
+
+    // A narrower credential for the same principal must narrow the effective result.
+    let operator = Client::new(&lab.gw.url, &lab.gw.operator_token).unwrap();
+    let read_only = operator
+        .create_token(CreateTokenParams::scoped(
+            "agent:mcp",
+            Role::Agent,
+            vec![Scope {
+                device: PSU.into(),
+                capability: "*".into(),
+                operations: vec![Operation::Read],
+            }],
+        ))
+        .await
+        .unwrap();
+    let narrow_client = connect(&lab.gw.url, &read_only.token, false).await;
+    let narrow = call(
+        &narrow_client,
+        "get_allowed_operations",
+        json!({ "device": PSU }),
+    )
+    .await;
+    assert!(!is_error(&narrow), "{}", text(&narrow));
+    assert!(
+        structured(&narrow)["operations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|op| op["operation"] == "read")
+    );
+    narrow_client.cancel().await.unwrap();
+
+    let missing = call(
+        &client,
+        "get_allowed_operations",
+        json!({ "device": "missing-device" }),
+    )
+    .await;
+    assert!(is_error(&missing), "{}", text(&missing));
+    assert!(
+        text(&missing).contains("command.device.unknown"),
+        "{}",
+        text(&missing)
     );
     client.cancel().await.unwrap();
     lab.gw.shutdown().await.unwrap();

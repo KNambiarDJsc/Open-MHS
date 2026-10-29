@@ -43,29 +43,31 @@ find_capabilities answers \"which device can do X\" (by quantity, unit, operatio
 in range); it selects candidates and grants nothing.\n\
 2. Quantities are objects with the declared unit, e.g. {\"value\": 5, \"unit\": \"V\"}. \
 Units are never guessed.\n\
-3. Use check_command to ask whether something would be allowed before doing it.\n\
-4. Give every submit_command an idempotency_key; resubmitting with the same key is safe \
+3. Use get_allowed_operations to inspect your current effective access; the result is advisory, \
+expires quickly, and every command is authorized again when submitted.\n\
+4. Use check_command to ask whether something would be allowed before doing it.\n\
+5. Give every submit_command an idempotency_key; resubmitting with the same key is safe \
 and never runs the command twice.\n\
-5. Only `confirmed: true` means the effect was verified by reading the device back.\n\
-6. UNKNOWN_OUTCOME means it may or may not have happened: never resubmit; call \
+6. Only `confirmed: true` means the effect was verified by reading the device back.\n\
+7. UNKNOWN_OUTCOME means it may or may not have happened: never resubmit; call \
 reconcile_command.\n\
-7. A refusal is final for that request. Replan from `reasons` and `next_steps`; never \
+8. A refusal is final for that request. Replan from `reasons` and `next_steps`; never \
 try to work around a permission denial. Ask the human instead.\n\
-8. AWAITING_APPROVAL means a human must decide; wait with get_command(wait_ms).
-9. For several steps, possibly across devices, use a plan: check_plan first, then \
+9. AWAITING_APPROVAL means a human must decide; wait with get_command(wait_ms).\n\
+10. For several steps, possibly across devices, use a plan: check_plan first, then \
 submit_plan. Every step is an ordinary command with every check above. A plan that stops \
 for a decision (AWAITING_DECISION) is settled by a human, never by you.\n\
-10. list_devices shows each device's availability. An OFFLINE device is not answering: \
+11. list_devices shows each device's availability. An OFFLINE device is not answering: \
 commands to it are refused with device.unavailable and nothing is sent. Do not retry in a \
 loop; carry on with other work, look again later, or tell the operator. `busy` means a \
-command is running on it; `lease_holder` means someone holds it.
-11. To iterate, call get_insights(device): what your earlier commands did (confirmed values, refusals with the numbers that bound them, how far readings landed from what you asked, how long readback took, outcomes still unresolved). It is evidence from the journal, not a permission: it never changes a limit or a grant. Adjust the next request from it, keep every step small and reversible, and stop and report instead of widening a step when the evidence does not support it.\n\
-12. To follow a measurement over time, watch_state(device, capability, interval_ms), then \
+command is running on it; `lease_holder` means someone holds it.\n\
+12. To iterate, call get_insights(device): what your earlier commands did (confirmed values, refusals with the numbers that bound them, how far readings landed from what you asked, how long readback took, outcomes still unresolved). It is evidence from the journal, not a permission: it never changes a limit or a grant. Adjust the next request from it, keep every step small and reversible, and stop and report instead of widening a step when the evidence does not support it.\n\
+13. To follow a measurement over time, watch_state(device, capability, interval_ms), then \
 poll_events(after, wait_ms) with the `next` it returned. Events are notifications: check \
 `measured_at` and `quality`, read_state before deciding, and if `missed` is not zero you \
 fell behind, so read current values instead of assuming. Only capabilities that declare \
 \"subscribe\" can be watched, and only with a subscribe grant. Cancel watches you are done with.\n\
-13. Procedures are reviewed, reusable plans. Prefer an approved procedure (list_procedures) \
+14. Procedures are reviewed, reusable plans. Prefer an approved procedure (list_procedures) \
 over composing the same steps yourself: check_procedure, then run_procedure. A run is an \
 ordinary plan as you, with every check. You may propose_procedure a plan that worked; only \
 a person can approve it, and you cannot run it until they do.
@@ -94,7 +96,7 @@ pub(crate) fn standard_formats(schema: &mut schemars::Schema) {
 #[derive(Debug, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct DeviceArgs {
-    /// Device id from list_devices, e.g. "sim.psu-01".
+    /// Device id returned by list_devices.
     pub device: String,
 }
 
@@ -106,6 +108,14 @@ pub struct InsightsArgs {
     /// Limit the summary to one capability.
     #[serde(default)]
     pub capability: Option<String>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct AllowedOperationsArgs {
+    /// If omitted, inspect all registered devices. Use an id returned by list_devices.
+    #[serde(default)]
+    pub device: Option<String>,
 }
 
 #[derive(Debug, Serialize, JsonSchema)]
@@ -541,6 +551,31 @@ impl OpenMhsServer {
                 .await
             {
                 Ok(insights) => structured(&InsightsOutput { insights }, false),
+                Err(e) => client_error(&e),
+            },
+        )
+    }
+
+    /// List operations available to this authenticated principal under current policy and
+    /// credential scope. The result is advisory and short-lived; writes are rechecked.
+    #[tool(
+        output_schema = schema_for_output::<openmhs_api::AllowedOperations>(),
+        annotations(title = "Get allowed operations", read_only_hint = true, open_world_hint = false)
+    )]
+    async fn get_allowed_operations(
+        &self,
+        args: Parameters<AllowedOperationsArgs>,
+    ) -> Result<CallToolResult, ErrorData> {
+        if let Err(r) = self.ready().await {
+            return Ok(r);
+        }
+        Ok(
+            match self
+                .client
+                .allowed_operations(args.0.device.as_deref())
+                .await
+            {
+                Ok(result) => structured(&result, false),
                 Err(e) => client_error(&e),
             },
         )

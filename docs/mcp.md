@@ -101,6 +101,7 @@ Tools (all return `structuredContent` with an `outputSchema`):
 | Tool | Changes the world? | Use |
 |---|---|---|
 | `list_devices`, `describe_device` | No | Discover devices, units, ranges, limits. `list_devices` also gives each device's `availability`, `reason`, `busy` and `lease_holder`; an `OFFLINE` device refuses commands with `device.unavailable` |
+| `get_allowed_operations` | No | Effective operations under this token's scopes and current policy, with policy/descriptor digests and a 10-second expiry. Informative only; every command is authorized again at submission |
 | `get_insights` | No | What your earlier commands on a device did, from the journal: confirmed values, refusals with the limits behind them, how far readings landed from the request, readback latency, unresolved outcomes. Evidence to iterate on; it never changes what you may do ([ADR-0022](adr/0022-insights-from-the-journal.md)) |
 | `list_procedures`, `check_procedure` | No | Reviewed, versioned plans with typed parameters, and a dry run of one ([spec/procedures.md](../spec/procedures.md)) |
 | `run_procedure` | **Yes** | Run an approved procedure: an ordinary plan, as the agent, with every check |

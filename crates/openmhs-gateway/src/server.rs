@@ -23,6 +23,7 @@ use openmhs_engine::journal::sha256_hex;
 use openmhs_engine::{Engine, EngineError};
 use openmhs_policy::{AuthMethod, Caller, Policy, Scope};
 use openmhs_sim::SimControl;
+use openmhs_types::descriptor::Operation;
 use openmhs_types::{Clock, ErrorObject};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
@@ -344,6 +345,73 @@ async fn dispatch(
         }),
 
         method::DEVICES_LIST => ok(engine.devices()),
+
+        method::ACCESS_ALLOWED_OPERATIONS => {
+            let p: openmhs_api::AllowedOperationsParams = params(raw)?;
+            const FRESH_FOR_MS: u64 = 10_000;
+            let now = shared.clock.now();
+            let policy = engine.policy();
+            let policy_json = serde_json::to_string(&policy).unwrap_or_default();
+            let policy_revision = format!("sha256:{}", sha256_hex(&policy_json));
+            let mut descriptors = engine.devices();
+            if let Some(device) = p.device.as_deref() {
+                let Some(descriptor) = descriptors.iter().find(|d| d.device.id == device).cloned()
+                else {
+                    return Err(unknown_device(device));
+                };
+                descriptors = vec![descriptor];
+            }
+            let mut operations = Vec::new();
+            for descriptor in descriptors {
+                let descriptor_bytes = serde_json::to_string(&descriptor).unwrap_or_default();
+                let descriptor_sha256 = format!("sha256:{}", sha256_hex(&descriptor_bytes));
+                for capability in &descriptor.capabilities {
+                    for operation in &capability.operations {
+                        if !session.caller.in_scope(
+                            &descriptor.device.id,
+                            &capability.name,
+                            *operation,
+                        ) {
+                            continue;
+                        }
+                        let decision = policy.authorize(
+                            &session.principal,
+                            &descriptor.device.id,
+                            capability,
+                            *operation,
+                        );
+                        let access = match decision.decision {
+                            openmhs_types::receipt::Decision::Allow => "allowed",
+                            openmhs_types::receipt::Decision::RequireApproval => {
+                                "requires_approval"
+                            }
+                            openmhs_types::receipt::Decision::Deny => continue,
+                        };
+                        operations.push(openmhs_api::AllowedOperation {
+                            device: descriptor.device.id.clone(),
+                            capability: capability.name.clone(),
+                            operation: match operation {
+                                Operation::Read => "read",
+                                Operation::Write => "write",
+                                Operation::Subscribe => "subscribe",
+                                Operation::Invoke => "invoke",
+                            }
+                            .into(),
+                            access: access.into(),
+                            descriptor_sha256: descriptor_sha256.clone(),
+                        });
+                    }
+                }
+            }
+            ok(openmhs_api::AllowedOperations {
+                principal: session.principal.clone(),
+                policy_revision,
+                generated_at: now.to_rfc3339(),
+                expires_at: now.plus_ms(FRESH_FOR_MS).to_rfc3339(),
+                advisory: true,
+                operations,
+            })
+        }
 
         // Visible to every caller, like the devices and leases it is built from (ADR-0019).
         // A refresh probes only devices not checked in the last second, so callers cannot

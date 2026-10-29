@@ -131,6 +131,21 @@ impl Client {
         self.call(method::DEVICES_LIST, serde_json::json!({})).await
     }
 
+    /// Effective operations visible to this credential. The result is advisory and
+    /// carries a short expiry; command submission performs a fresh authorization check.
+    pub async fn allowed_operations(
+        &self,
+        device: Option<&str>,
+    ) -> Result<AllowedOperations, ClientError> {
+        self.call(
+            method::ACCESS_ALLOWED_OPERATIONS,
+            AllowedOperationsParams {
+                device: device.map(str::to_owned),
+            },
+        )
+        .await
+    }
+
     /// Whether devices answer, are busy or leased (ADR-0019). `device` narrows it to one;
     /// `refresh` probes devices not checked in the last second first.
     /// Events after `after` (ADR-0023). Pass the previous batch's `stream` and `next` to
@@ -535,6 +550,8 @@ impl Client {
         capability: Option<&str>,
     ) -> Result<crate::insights::Insights, ClientError> {
         const WINDOW: usize = 500;
+        // A missing device must not look like an empty, successful history window.
+        self.describe(device).await?;
         let receipts = self.commands(Vec::new(), Some(WINDOW)).await?;
         Ok(crate::insights::summarize(
             &receipts, device, capability, WINDOW,
