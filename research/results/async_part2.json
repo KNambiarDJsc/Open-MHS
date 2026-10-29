@@ -1,0 +1,758 @@
+{
+ "S04": {
+  "title": "cancelled externally",
+  "cancel_http": 200,
+  "final": {
+   "command_id": "01a18794-3367-75eb-bec0-8343c9dad52f",
+   "state": "FAILED",
+   "outcome": "failed",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "FAILED"
+   ],
+   "last_detail": "device rejected the command: invocation a1de1cee-cbfb-46f4-8dd6-26c2623f12ba was cancelled (The action was cancelled.); how far the action got is not stated, so check the device's state before relying on it",
+   "errors": [],
+   "verification": null
+  },
+  "truth_after": {
+   "position": 16,
+   "jobs_started": 13,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "e99196a9-0d39-4fe3-a8ff-78c87d5bb52e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "33306cf6-888f-4463-a835-502b14ffddf9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "7fdf34f7-7914-401d-8efe-bd1ca0bbb3da",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f6136055-d6b1-4f77-83da-308197b60716",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "c7137e46-8eb4-4088-9ea3-a62205c35403",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "fd40a1a7-3db5-4c67-bbd3-10b6c5574bd2",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "eabb5f29-82be-46db-92ff-318ba3903ff2",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "56b6291b-0ed2-4b7c-8eec-6b7a65e3eefb",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "42beeba5-a208-49ee-9765-6234aad20a56",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f3d3ddee-406a-4875-8618-a4cec93cfe21",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "94a298a7-7582-4b70-bb3e-f0a34dbd1877",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "db051f8f-ebb7-4b44-be90-4e0730ea818c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "a1de1cee-cbfb-46f4-8dd6-26c2623f12ba",
+     "action": "move_to",
+     "status": "cancelled"
+    }
+   ]
+  },
+  "stopped_partway": true,
+  "jobs_delta": 1
+ },
+ "S05": {
+  "title": "caller deadline passes before completion",
+  "first": {
+   "command_id": "01a18794-3e88-759e-91f9-d5c1660d222e",
+   "state": "UNKNOWN_OUTCOME",
+   "outcome": "uncertain",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "TIMED_OUT",
+    "UNKNOWN_OUTCOME"
+   ],
+   "last_detail": "may or may not have taken effect; not retried; reconcile by readback",
+   "errors": [],
+   "verification": null
+  },
+  "truth_at_unknown": {
+   "position": 21,
+   "jobs_started": 15,
+   "busy": true,
+   "invocations": [
+    {
+     "id": "e99196a9-0d39-4fe3-a8ff-78c87d5bb52e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "33306cf6-888f-4463-a835-502b14ffddf9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "7fdf34f7-7914-401d-8efe-bd1ca0bbb3da",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f6136055-d6b1-4f77-83da-308197b60716",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "c7137e46-8eb4-4088-9ea3-a62205c35403",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "fd40a1a7-3db5-4c67-bbd3-10b6c5574bd2",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "eabb5f29-82be-46db-92ff-318ba3903ff2",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "56b6291b-0ed2-4b7c-8eec-6b7a65e3eefb",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "42beeba5-a208-49ee-9765-6234aad20a56",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f3d3ddee-406a-4875-8618-a4cec93cfe21",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "94a298a7-7582-4b70-bb3e-f0a34dbd1877",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "db051f8f-ebb7-4b44-be90-4e0730ea818c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "a1de1cee-cbfb-46f4-8dd6-26c2623f12ba",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "44d07b7a-d86e-4e4d-b655-3bc455dd6d32",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "cd3664eb-7ade-4198-9bd6-135d89353b09",
+     "action": "move_to",
+     "status": "running"
+    }
+   ]
+  },
+  "followup_while_unresolved": {
+   "command_id": "01a18794-44ab-7613-9997-82883784e7fb",
+   "state": "DENIED",
+   "outcome": "denied",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "DENIED"
+   ],
+   "last_detail": "command 01a18794-3e88-759e-91f9-d5c1660d222e on 'lab.bench' 'move_to' may or may not have taken effect; reconcile it, or have an operator resolve it, before sending this again",
+   "errors": [
+    {
+     "code": "command.outcome_unresolved",
+     "message": "command 01a18794-3e88-759e-91f9-d5c1660d222e on 'lab.bench' 'move_to' may or may not have taken effect; reconcile it, or have an operator resolve it, before sending this again"
+    }
+   ],
+   "verification": null
+  },
+  "truth_after": {
+   "position": 70,
+   "jobs_started": 15,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "e99196a9-0d39-4fe3-a8ff-78c87d5bb52e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "33306cf6-888f-4463-a835-502b14ffddf9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "7fdf34f7-7914-401d-8efe-bd1ca0bbb3da",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f6136055-d6b1-4f77-83da-308197b60716",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "c7137e46-8eb4-4088-9ea3-a62205c35403",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "fd40a1a7-3db5-4c67-bbd3-10b6c5574bd2",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "eabb5f29-82be-46db-92ff-318ba3903ff2",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "56b6291b-0ed2-4b7c-8eec-6b7a65e3eefb",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "42beeba5-a208-49ee-9765-6234aad20a56",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f3d3ddee-406a-4875-8618-a4cec93cfe21",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "94a298a7-7582-4b70-bb3e-f0a34dbd1877",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "db051f8f-ebb7-4b44-be90-4e0730ea818c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "a1de1cee-cbfb-46f4-8dd6-26c2623f12ba",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "44d07b7a-d86e-4e4d-b655-3bc455dd6d32",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "cd3664eb-7ade-4198-9bd6-135d89353b09",
+     "action": "move_to",
+     "status": "completed"
+    }
+   ]
+  },
+  "reconcile": {
+   "command_id": "01a18794-3e88-759e-91f9-d5c1660d222e",
+   "state": "RECONCILED_APPLIED",
+   "outcome": "succeeded",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "TIMED_OUT",
+    "UNKNOWN_OUTCOME",
+    "RECONCILED_APPLIED"
+   ],
+   "last_detail": "reconciled by readback 70",
+   "errors": [],
+   "verification": {
+    "matched": true,
+    "reason": null,
+    "observed": 70
+   }
+  },
+  "invocation_id_in_error": false,
+  "invocation_id_in_adapter_ledger": true,
+  "jobs_delta": 1
+ },
+ "S06": {
+  "title": "status polling lost after acceptance",
+  "first": {
+   "command_id": "01a18794-5850-7464-a4b2-caa4b700a946",
+   "state": "UNKNOWN_OUTCOME",
+   "outcome": "uncertain",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "UNKNOWN_OUTCOME"
+   ],
+   "last_detail": "[adapter.disconnected] lost contact with invocation 18e8568d-48dc-49ea-884d-16666b76ad15 (http://127.0.0.1:54805/action_invocations/18e8568d-48dc-49ea-884d-16666b76ad15) after it was accepted (Remote end closed connection without response); its outcome is unknown; not retried",
+   "errors": [],
+   "verification": null
+  },
+  "truth_after": {
+   "position": 55,
+   "jobs_started": 17,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "e99196a9-0d39-4fe3-a8ff-78c87d5bb52e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "33306cf6-888f-4463-a835-502b14ffddf9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "7fdf34f7-7914-401d-8efe-bd1ca0bbb3da",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f6136055-d6b1-4f77-83da-308197b60716",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "c7137e46-8eb4-4088-9ea3-a62205c35403",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "fd40a1a7-3db5-4c67-bbd3-10b6c5574bd2",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "eabb5f29-82be-46db-92ff-318ba3903ff2",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "56b6291b-0ed2-4b7c-8eec-6b7a65e3eefb",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "42beeba5-a208-49ee-9765-6234aad20a56",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f3d3ddee-406a-4875-8618-a4cec93cfe21",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "94a298a7-7582-4b70-bb3e-f0a34dbd1877",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "db051f8f-ebb7-4b44-be90-4e0730ea818c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "a1de1cee-cbfb-46f4-8dd6-26c2623f12ba",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "44d07b7a-d86e-4e4d-b655-3bc455dd6d32",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "cd3664eb-7ade-4198-9bd6-135d89353b09",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "90af415d-2a7b-4d1a-ae02-4c476caee7c6",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "18e8568d-48dc-49ea-884d-16666b76ad15",
+     "action": "move_to",
+     "status": "completed"
+    }
+   ]
+  },
+  "reconcile": {
+   "command_id": "01a18794-5850-7464-a4b2-caa4b700a946",
+   "state": "RECONCILED_APPLIED",
+   "outcome": "succeeded",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "UNKNOWN_OUTCOME",
+    "RECONCILED_APPLIED"
+   ],
+   "last_detail": "reconciled by readback 55",
+   "errors": [],
+   "verification": {
+    "matched": true,
+    "reason": null,
+    "observed": 55
+   }
+  },
+  "adapter_ledger": [
+   "post",
+   "accepted",
+   "poll_lost"
+  ],
+  "jobs_delta": 1
+ },
+ "S07": {
+  "title": "invocation unknown to the server (404)",
+  "first": {
+   "command_id": "01a18794-6894-710a-8c98-dd2cfb41f1db",
+   "state": "UNKNOWN_OUTCOME",
+   "outcome": "uncertain",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "UNKNOWN_OUTCOME"
+   ],
+   "last_detail": "[adapter.disconnected] invocation 51a51b77-0168-475f-aca0-f5f0e8e5f325 is no longer known to the server (expired or restarted); its outcome is unknown; not retried",
+   "errors": [],
+   "verification": null
+  },
+  "truth_after": {
+   "position": 45,
+   "jobs_started": 19,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "e99196a9-0d39-4fe3-a8ff-78c87d5bb52e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "33306cf6-888f-4463-a835-502b14ffddf9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "7fdf34f7-7914-401d-8efe-bd1ca0bbb3da",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f6136055-d6b1-4f77-83da-308197b60716",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "c7137e46-8eb4-4088-9ea3-a62205c35403",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "fd40a1a7-3db5-4c67-bbd3-10b6c5574bd2",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "eabb5f29-82be-46db-92ff-318ba3903ff2",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "56b6291b-0ed2-4b7c-8eec-6b7a65e3eefb",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "42beeba5-a208-49ee-9765-6234aad20a56",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f3d3ddee-406a-4875-8618-a4cec93cfe21",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "94a298a7-7582-4b70-bb3e-f0a34dbd1877",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "db051f8f-ebb7-4b44-be90-4e0730ea818c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "a1de1cee-cbfb-46f4-8dd6-26c2623f12ba",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "44d07b7a-d86e-4e4d-b655-3bc455dd6d32",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "cd3664eb-7ade-4198-9bd6-135d89353b09",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "90af415d-2a7b-4d1a-ae02-4c476caee7c6",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "18e8568d-48dc-49ea-884d-16666b76ad15",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "29148810-9237-4ee3-9854-345dfe350b74",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "51a51b77-0168-475f-aca0-f5f0e8e5f325",
+     "action": "move_to",
+     "status": "completed"
+    }
+   ]
+  },
+  "reconcile": {
+   "command_id": "01a18794-6894-710a-8c98-dd2cfb41f1db",
+   "state": "RECONCILED_APPLIED",
+   "outcome": "succeeded",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "UNKNOWN_OUTCOME",
+    "RECONCILED_APPLIED"
+   ],
+   "last_detail": "reconciled by readback 45",
+   "errors": [],
+   "verification": {
+    "matched": true,
+    "reason": null,
+    "observed": 45
+   }
+  },
+  "jobs_delta": 1
+ },
+ "S08": {
+  "title": "status returns after the client gave up",
+  "first": {
+   "command_id": "01a18794-74e4-74b5-be18-d45ebc16fc9f",
+   "state": "UNKNOWN_OUTCOME",
+   "outcome": "uncertain",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "UNKNOWN_OUTCOME"
+   ],
+   "last_detail": "[adapter.disconnected] lost contact with invocation 815f62f4-7aec-46a7-a0a0-e7b9e1d74c7d (http://127.0.0.1:64122/action_invocations/815f62f4-7aec-46a7-a0a0-e7b9e1d74c7d) after it was accepted (timed out); its outcome is unknown; not retried",
+   "errors": [],
+   "verification": null
+  },
+  "truth_after": {
+   "position": 35,
+   "jobs_started": 21,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "e99196a9-0d39-4fe3-a8ff-78c87d5bb52e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "33306cf6-888f-4463-a835-502b14ffddf9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "7fdf34f7-7914-401d-8efe-bd1ca0bbb3da",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f6136055-d6b1-4f77-83da-308197b60716",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "c7137e46-8eb4-4088-9ea3-a62205c35403",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "fd40a1a7-3db5-4c67-bbd3-10b6c5574bd2",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "eabb5f29-82be-46db-92ff-318ba3903ff2",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "56b6291b-0ed2-4b7c-8eec-6b7a65e3eefb",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "42beeba5-a208-49ee-9765-6234aad20a56",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f3d3ddee-406a-4875-8618-a4cec93cfe21",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "94a298a7-7582-4b70-bb3e-f0a34dbd1877",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "db051f8f-ebb7-4b44-be90-4e0730ea818c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "a1de1cee-cbfb-46f4-8dd6-26c2623f12ba",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "44d07b7a-d86e-4e4d-b655-3bc455dd6d32",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "cd3664eb-7ade-4198-9bd6-135d89353b09",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "90af415d-2a7b-4d1a-ae02-4c476caee7c6",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "18e8568d-48dc-49ea-884d-16666b76ad15",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "29148810-9237-4ee3-9854-345dfe350b74",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "51a51b77-0168-475f-aca0-f5f0e8e5f325",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "cc7c9fd2-169e-46e7-aa1c-c9805258929c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "815f62f4-7aec-46a7-a0a0-e7b9e1d74c7d",
+     "action": "move_to",
+     "status": "completed"
+    }
+   ]
+  },
+  "reconcile": {
+   "command_id": "01a18794-74e4-74b5-be18-d45ebc16fc9f",
+   "state": "RECONCILED_APPLIED",
+   "outcome": "succeeded",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "UNKNOWN_OUTCOME",
+    "RECONCILED_APPLIED"
+   ],
+   "last_detail": "reconciled by readback 35",
+   "errors": [],
+   "verification": {
+    "matched": true,
+    "reason": null,
+    "observed": 35
+   }
+  },
+  "job_completed_normally": true,
+  "jobs_delta": 1
+ }
+}

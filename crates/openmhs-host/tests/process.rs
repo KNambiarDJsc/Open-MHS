@@ -326,3 +326,25 @@ async fn shutdown_is_final() {
     let err = adapter.read("level.measured").await.unwrap_err();
     assert_eq!(err.kind, AdapterErrorKind::Disconnected);
 }
+
+/// An adapter can attach an opaque reference (a LabThings invocation id, a job id) when it
+/// reports acceptance; the host passes it on. A reference that is too long or holds control
+/// characters is dropped, not truncated or forwarded.
+#[tokio::test(flavor = "multi_thread")]
+async fn an_external_reference_is_passed_on_when_well_formed_and_dropped_otherwise() {
+    use openmhs_adapter::ProgressEvent;
+    for (mode, expected) in [
+        ("accept_with_ref", Some("labthings:7f3a")),
+        ("accept_with_long_ref", None),
+        ("accept_with_control_ref", None),
+    ] {
+        let adapter = start(mode, json!({})).await;
+        let (progress, mut rx) = Progress::channel();
+        adapter
+            .execute(dose(5_000), progress)
+            .await
+            .unwrap_or_else(|e| panic!("{mode}: {e}"));
+        let ProgressEvent::Accepted { external_ref } = rx.try_recv().expect("an acceptance event");
+        assert_eq!(external_ref.as_deref(), expected, "{mode}");
+    }
+}

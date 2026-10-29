@@ -113,11 +113,17 @@ pub enum Health {
 }
 
 /// Progress events an adapter reports while executing.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ProgressEvent {
-    /// The device acknowledged the command (lifecycle `ACCEPTED`).
-    Accepted,
+    /// The device acknowledged the command (lifecycle `ACCEPTED`). `external_ref` is an
+    /// opaque identifier the device or its server gave the work (for example a LabThings
+    /// invocation id), kept in the receipt so an unresolved command can be matched to it
+    /// later. It is the adapter's text, not the gateway's: treat it as untrusted.
+    Accepted { external_ref: Option<String> },
 }
+
+/// The longest external reference kept.
+pub const MAX_EXTERNAL_REF: usize = 256;
 
 /// Handle an adapter uses to report progress during [`HardwareAdapter::execute`].
 #[derive(Debug, Clone)]
@@ -134,7 +140,19 @@ impl Progress {
     /// Report that the device acknowledged the command.
     pub fn accepted(&self) {
         // The engine may already have stopped listening (e.g. after a timeout); that is fine.
-        let _ = self.tx.send(ProgressEvent::Accepted);
+        let _ = self.tx.send(ProgressEvent::Accepted { external_ref: None });
+    }
+
+    /// As [`Progress::accepted`], recording `external_ref` (at most [`MAX_EXTERNAL_REF`]
+    /// characters, no control characters; anything else is dropped, not truncated).
+    pub fn accepted_with_ref(&self, external_ref: impl Into<String>) {
+        let r: String = external_ref.into();
+        let ok = !r.is_empty()
+            && r.chars().count() <= MAX_EXTERNAL_REF
+            && !r.chars().any(char::is_control);
+        let _ = self.tx.send(ProgressEvent::Accepted {
+            external_ref: ok.then_some(r),
+        });
     }
 }
 

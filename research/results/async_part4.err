@@ -1,0 +1,6 @@
+[S09] adapter crash during an outstanding action
+[S04b] cancel request on an action that ignores it (direct LabThings)
+[S12] stale readback served by an intermediary
+[S12b] stale reading used to reconcile (stamp=received, readback_skew_ms=0)
+[S12b-date] stale reading used to reconcile (stamp=date_header, readback_skew_ms=1000)
+[S12c] Date-header stamping, uncached, readback_skew_ms=1000

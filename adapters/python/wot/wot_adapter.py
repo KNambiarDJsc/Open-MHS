@@ -41,8 +41,10 @@ import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "python"))
 from openmhs.adapter import (  # noqa: E402
@@ -65,6 +67,7 @@ class WotAdapter(Adapter):
         self.timeout = float(config.get("timeout_ms", 2000)) / 1000
         self.poll = float(config.get("poll_ms", 100)) / 1000
         self.source = config.get("source", "device")
+        self._auth_header = self._build_auth(config.get("auth"))
         self.ledger = config.get("ledger")
         for name, b in self.bindings.items():
             permissions.check_network(b["href"])
@@ -74,33 +77,60 @@ class WotAdapter(Adapter):
         if set(self.bindings) != declared:
             raise AdapterError("internal", "bindings and descriptor name different capabilities")
 
+    @staticmethod
+    def _build_auth(auth: dict | None) -> str | None:
+        """An Authorization header from the gateway-provided environment. Never logged; sent only
+        to the configured origin (every URL is checked against ``endpoints.network``)."""
+        if not auth:
+            return None
+        import base64
+        import os
+        if auth["scheme"] == "basic":
+            user, password = os.environ.get("WOT_USER"), os.environ.get("WOT_PASSWORD")
+            if not user or password is None:
+                raise AdapterError(
+                    "internal", "the Thing needs basic authentication: WOT_USER and WOT_PASSWORD are not set")
+            return "Basic " + base64.b64encode(f"{user}:{password}".encode()).decode()
+        if auth["scheme"] == "bearer":
+            token = os.environ.get("WOT_TOKEN")
+            if not token:
+                raise AdapterError("internal", "the Thing needs a bearer token: WOT_TOKEN is not set")
+            return "Bearer " + token
+        raise AdapterError("internal", f"authentication scheme {auth.get('scheme')!r} is not supported")
+
     async def describe(self) -> dict:
         return self.descriptor
 
     # ------------------------------------------------------------------ HTTP
 
-    def _request(self, method: str, url: str, body: Any = None) -> tuple[int, Any]:
+    def _request(self, method: str, url: str, body: Any = None) -> tuple[int, Any, dict]:
         """One request. ``method`` is only ever GET or POST."""
         assert method in ("GET", "POST")
         self.permissions.check_network(url)
         data = None if body is None else json.dumps(body).encode()
-        req = urllib.request.Request(url, data=data, method=method,
-                                     headers={"Content-Type": "application/json", "Accept": "application/json"})
+        headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        if self._auth_header:
+            headers["Authorization"] = self._auth_header
+        req = urllib.request.Request(url, data=data, method=method, headers=headers)
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:  # noqa: S310
                 raw = resp.read(MAX_BODY + 1)
-                status = resp.status
+                status, headers = resp.status, dict(resp.headers.items())
         except urllib.error.HTTPError as e:
-            raw, status = e.read(MAX_BODY + 1), e.code
+            raw, status, headers = e.read(MAX_BODY + 1), e.code, dict(e.headers.items())
         if len(raw) > MAX_BODY:
             raise AdapterError("malformed_response", "response larger than 1 MiB")
         try:
-            return status, (json.loads(raw) if raw else None)
+            return status, (json.loads(raw) if raw else None), headers
         except ValueError:
             raise AdapterError("malformed_response", f"HTTP {status} body is not JSON") from None
 
     async def _call(self, method: str, url: str, body: Any = None) -> tuple[int, Any]:
-        return await asyncio.to_thread(self._request, method, url, body)
+        status, data, _ = await asyncio.to_thread(self._request, method, url, body)
+        return status, data
+
+    async def _call_h(self, method: str, url: str) -> tuple[int, Any, dict]:
+        return await asyncio.to_thread(self._request, method, url, None)
 
     def _note(self, **fields: Any) -> None:
         if not self.ledger:
@@ -133,7 +163,7 @@ class WotAdapter(Adapter):
         if b is None or b["kind"] != "property":
             raise AdapterError("unsupported", f"cannot read {capability!r}")
         try:
-            status, body = await self._call("GET", b["href"])
+            status, body, headers = await self._call_h("GET", b["href"])
         except (urllib.error.URLError, OSError, TimeoutError) as e:
             raise AdapterError("disconnected", str(getattr(e, "reason", e))) from None
         if status != 200:
@@ -142,7 +172,26 @@ class WotAdapter(Adapter):
             if not isinstance(body, dict) or b["field"] not in body:
                 raise AdapterError("malformed_response", f"no field {b['field']!r} in the value")
             body = body[b["field"]]
-        return reading(body, source=self.source)
+        return reading(body, timestamp=self._measured_at(headers), source=self.source)
+
+    def _measured_at(self, headers: dict) -> str | None:
+        """When to say a value was measured. By default, now (when it was received). A property
+        read carries no measurement time, so with ``config.stamp == "date_header"`` the server's
+        HTTP ``Date`` (when it *produced* the response, one-second resolution) is used instead:
+        a cache or proxy that replays an old response replays its old ``Date`` too, and OpenMHS
+        then refuses to treat the reading as taken after a command (ADR-0020). Use it with
+        ``--readback-skew-ms 1000`` so a response from the same second as the command is not
+        thrown out."""
+        if self.config.get("stamp") != "date_header":
+            return None
+        date = next((v for k, v in headers.items() if k.lower() == "date"), None)
+        if not date:
+            return None
+        try:
+            return parsedate_to_datetime(date).astimezone(timezone.utc).isoformat(
+                timespec="milliseconds").replace("+00:00", "Z")
+        except (TypeError, ValueError):
+            return None
 
     # ------------------------------------------------------------------ actions
 
@@ -176,9 +225,11 @@ class WotAdapter(Adapter):
         if status >= 500 and not (isinstance(reply, dict) and "status" in reply):
             raise AdapterError("device_failure", f"HTTP {status} starting the action")
 
-        progress.accepted()
         if isinstance(reply, dict) and "status" in reply and ("href" in reply or "id" in reply):
+            # The invocation id goes into OpenMHS's receipt as soon as the server accepts the work.
+            progress.accepted(external_ref=f"labthings:{reply.get('id')}" if reply.get("id") else None)
             return await self._follow(command, b, reply, deadline)
+        progress.accepted()
         # A synchronous Thing: the answer is the result.
         self._note(event="sync_result", command_id=command.command_id, status=status)
         if status >= 400:
@@ -193,7 +244,19 @@ class WotAdapter(Adapter):
 
     async def _follow(self, command: Command, b: dict, reply: dict, deadline: float):
         inv_id = reply.get("id")
-        href = reply.get("href") or ""
+        # The server's own absolute URL is untrusted data (a proxy, or a hostile server, could
+        # point it anywhere): poll only its *path*, under the origin this adapter was configured
+        # with.
+        given = reply.get("href") or ""
+        origin = "{0.scheme}://{0.netloc}".format(urlsplit(b["href"]))
+        href = origin + urlsplit(given).path if given else ""
+        if not href:
+            self._note(event="no_invocation_href", command_id=command.command_id, invocation_id=inv_id)
+            raise AdapterError(
+                "malformed_response",
+                f"the server accepted the action (invocation {inv_id}) but gave no URL to follow it; "
+                "its outcome is unknown",
+            )
         self._note(event="accepted", command_id=command.command_id, invocation_id=inv_id, href=href,
                    status=reply.get("status"))
         state = reply
@@ -209,12 +272,14 @@ class WotAdapter(Adapter):
             await asyncio.sleep(self.poll)
             try:
                 status, polled = await self._call("GET", href)
-            except (urllib.error.URLError, OSError, TimeoutError) as e:
-                self._note(event="poll_lost", command_id=command.command_id, invocation_id=inv_id,
-                           error=str(getattr(e, "reason", e)))
+            except (urllib.error.URLError, OSError, TimeoutError, AdapterError) as e:
+                # Whatever went wrong, the action was accepted: never report "not sent".
+                why = e.message if isinstance(e, AdapterError) else str(getattr(e, "reason", e))
+                self._note(event="poll_lost", command_id=command.command_id, invocation_id=inv_id, error=why)
                 raise AdapterError(
                     "disconnected",
-                    f"lost contact with invocation {inv_id} ({href}) after it was accepted; its outcome is unknown",
+                    f"lost contact with invocation {inv_id} ({href}) after it was accepted ({why}); "
+                    "its outcome is unknown",
                 ) from None
             if status == 404:
                 self._note(event="invocation_gone", command_id=command.command_id, invocation_id=inv_id)

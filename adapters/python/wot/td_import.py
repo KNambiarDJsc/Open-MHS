@@ -78,6 +78,14 @@ class Mapping:
     descriptor: dict
     bindings: dict
     findings: list[Finding] = field(default_factory=list)
+    #: How the adapter authenticates to the Thing: ``None`` (the Thing declares none), or
+    #: ``{"scheme": "basic" | "bearer"}`` (credentials come from the gateway's environment),
+    #: or ``{"scheme": "unsupported", ...}`` when the Thing needs something this adapter cannot do.
+    auth: Optional[dict] = None
+
+    @property
+    def connectable(self) -> bool:
+        return not (self.auth and self.auth.get("scheme") == "unsupported")
 
     def counts(self) -> dict:
         out: dict = {}
@@ -186,6 +194,34 @@ def _flatten(schema: dict) -> Optional[dict[str, dict]]:
     return None
 
 
+def _security(td: dict, findings: list) -> Optional[dict]:
+    """The Thing's security requirement, as far as this adapter can meet it.
+
+    Supported: none (``nosec``), ``basic`` and ``bearer`` in a header. Anything else
+    (OAuth2, digest, API keys in a query string, combinations) is reported and blocks the
+    import: a contract that can only ever be refused is worse than none."""
+    names = td.get("security") or []
+    names = [names] if isinstance(names, str) else list(names)
+    defs = td.get("securityDefinitions") or {}
+    schemes = [(n, defs.get(n) or {}) for n in names]
+    if all(d.get("scheme") in (None, "nosec") for _, d in schemes):
+        return None
+    if (len(schemes) == 1 and schemes[0][1].get("scheme") in ("basic", "bearer")
+            and schemes[0][1].get("in", "header") == "header"):
+        scheme = schemes[0][1]["scheme"]
+        envs = "WOT_USER and WOT_PASSWORD" if scheme == "basic" else "WOT_TOKEN"
+        findings.append(Finding(
+            "security", REVIEW, "credentials_required",
+            f"the Thing requires {scheme} authentication; the gateway's environment must provide "
+            f"{envs}. They are passed to the adapter by name and never written to the manifest"))
+        return {"scheme": scheme}
+    findings.append(Finding(
+        "security", UNSUPPORTED, "security_scheme_unsupported",
+        "the Thing requires " + ", ".join(f"{n} ({d.get('scheme')})" for n, d in schemes) +
+        ", which this adapter cannot do; no manifest is written"))
+    return {"scheme": "unsupported", "schemes": [d.get("scheme") for _, d in schemes]}
+
+
 def map_thing(
     td: dict,
     *,
@@ -289,6 +325,12 @@ def map_thing(
         if ov is not None and not ov.get("expose", True):
             ov = None
         td_safe = act.get("safe") is True
+        hidden = (act.get("input") or {}).get("additionalProperties") is True
+        if hidden and not (ov or {}).get("params") and not any(
+                (v or {}).get("params") for v in ((ov or {}).get("variants") or {}).values()):
+            findings.append(Finding(aff, REVIEW, "undeclared_params",
+                                    "the action accepts extra keyword arguments the Thing Description "
+                                    "does not list; a reviewer must declare them to make it callable"))
         if not ov and not td_safe:
             missing = ["side_effect", "idempotent", "timing"]
             if act.get("idempotent") is not None:
@@ -299,79 +341,91 @@ def map_thing(
                 "world; a reviewer must supply " + ", ".join(missing) + " and parameter limits"))
             continue
 
-        side_effect = (ov or {}).get("side_effect", "none" if td_safe else None)
-        if side_effect not in SIDE_EFFECTS:
-            findings.append(Finding(aff, REVIEW, "action_unreviewed",
-                                    f"override has no valid side_effect (one of {SIDE_EFFECTS})"))
-            continue
-        timing = (ov or {}).get("timing") or ({"timeout_ms": 30000} if td_safe else None)
-        if not timing or "timeout_ms" not in timing:
-            findings.append(Finding(aff, REVIEW, "action_unreviewed", "override has no timing.timeout_ms"))
-            continue
-        idem = (ov or {}).get("idempotent", act.get("idempotent", True if td_safe else None))
-        if idem is None:
-            findings.append(Finding(aff, REVIEW, "action_unreviewed", "override does not say idempotent"))
-            continue
+        variants = (ov or {}).get("variants") or {None: {}}
+        for vname, vov in variants.items():
+            cur = {**(ov or {}), **vov}
+            side_effect = cur.get("side_effect", "none" if td_safe else None)
+            if side_effect not in SIDE_EFFECTS:
+                findings.append(Finding(aff, REVIEW, "action_unreviewed",
+                                        f"override has no valid side_effect (one of {SIDE_EFFECTS})"))
+                continue
+            timing = cur.get("timing") or ({"timeout_ms": 30000} if td_safe else None)
+            if not timing or "timeout_ms" not in timing:
+                findings.append(Finding(aff, REVIEW, "action_unreviewed", "override has no timing.timeout_ms"))
+                continue
+            idem = cur.get("idempotent", act.get("idempotent", True if td_safe else None))
+            if idem is None:
+                findings.append(Finding(aff, REVIEW, "action_unreviewed", "override does not say idempotent"))
+                continue
 
-        schema = act.get("input") or {}
-        params: dict[str, dict] = {}
-        wire: dict[str, str] = {}
-        ok = True
-        declared = (ov or {}).get("params") or {}
-        for pk, ps in (schema.get("properties") or {}).items():
-            if pk in declared:
+            schema = act.get("input") or {}
+            params: dict[str, dict] = {}
+            wire: dict[str, str] = {}
+            ok = True
+            declared = cur.get("params") or {}
+            for pk, ps in (schema.get("properties") or {}).items():
+                if pk in declared:
+                    continue
+                if pk in cur.get("omit_params", []):
+                    findings.append(Finding(aff, REVIEW, "optional_param_omitted",
+                                            f"'{pk}' is left to the device's default (reviewer decision)", f"{slug(aname)}"))
+                    continue
+                if "default" in ps:
+                    findings.append(Finding(aff, REVIEW, "optional_param_omitted",
+                                            f"'{pk}' has a default and is left to the device's default", f"{slug(aname)}"))
+                    continue
+                spec, notes = value_spec(ps)
+                if spec is None:
+                    findings.append(Finding(aff, UNSUPPORTED, notes[0][0],
+                                            f"parameter '{pk}': {notes[0][1]}"))
+                    ok = False
+                    continue
+                params[slug(pk)], wire[slug(pk)] = spec, pk
+                for cat, why in notes:
+                    findings.append(Finding(aff, REVIEW, cat, f"parameter '{pk}': {why}", slug(aname)))
+            for pk, ps in declared.items():
+                params[slug(pk)], wire[slug(pk)] = ps, pk
+            if not ok:
                 continue
-            if "default" in ps:
-                findings.append(Finding(aff, REVIEW, "optional_param_omitted",
-                                        f"'{pk}' has a default and is left to the device's default", f"{slug(aname)}"))
-                continue
-            spec, notes = value_spec(ps)
-            if spec is None:
-                findings.append(Finding(aff, UNSUPPORTED, notes[0][0],
-                                        f"parameter '{pk}': {notes[0][1]}"))
-                ok = False
-                continue
-            params[slug(pk)], wire[slug(pk)] = spec, pk
-            for cat, why in notes:
-                findings.append(Finding(aff, REVIEW, cat, f"parameter '{pk}': {why}", slug(aname)))
-        for pk, ps in declared.items():
-            params[slug(pk)], wire[slug(pk)] = ps, pk
-        if schema.get("additionalProperties") is True and not declared:
-            findings.append(Finding(aff, REVIEW, "undeclared_params",
-                                    "the action accepts extra keyword arguments the Thing Description "
-                                    "does not list; a reviewer must declare them to make it callable"))
-        if not ok:
-            continue
 
-        cname = name_for(aname)
-        cap = {
-            "name": cname,
-            "kind": "action",
-            "operations": ["invoke"],
-            "params": params,
-            "side_effect": side_effect,
-            "idempotent": bool(idem),
-            "timing": timing,
-            "verification": (ov or {}).get("verification", {"mode": "none"}),
-            "extensions": {"x-wot": {"affordance": aff,
-                                     "reviewed": bool(ov), "td_declared_safe": td_safe}},
-        }
-        if (ov or {}).get("stop"):
-            cap["stop"] = True
-        if (ov or {}).get("preconditions"):
-            cap["preconditions"] = ov["preconditions"]
-        if (ov or {}).get("result"):
-            cap["result"] = ov["result"]
-        desc = act.get("description")
-        if desc:
-            cap["description"] = str(desc).strip()[:300]
-        caps.append(cap)
-        bindings[cname] = {"kind": "action", "href": href(form), "wire": wire,
-                           "result": bool((ov or {}).get("result")),
-                           "result_key": (ov or {}).get("result_key")}
+            cname = name_for(vname or aname)
+            cap = {
+                "name": cname,
+                "kind": "action",
+                "operations": ["invoke"],
+                "params": params,
+                "side_effect": side_effect,
+                "idempotent": bool(idem),
+                "timing": timing,
+                "verification": cur.get("verification", {"mode": "none"}),
+                "extensions": {"x-wot": {"affordance": aff,
+                                         "reviewed": bool(ov), "td_declared_safe": td_safe}},
+            }
+            if cur.get("stop"):
+                cap["stop"] = True
+            if cur.get("preconditions"):
+                cap["preconditions"] = ov["preconditions"]
+            if cur.get("result"):
+                cap["result"] = ov["result"]
+            desc = act.get("description")
+            if desc:
+                cap["description"] = str(desc).strip()[:300]
+            caps.append(cap)
+            bindings[cname] = {"kind": "action", "href": href(form), "wire": wire,
+                               "result": bool(cur.get("result")),
+                               "result_key": cur.get("result_key")}
+            findings.append(Finding(
+                aff, MAPPED, "mapped_from_override" if ov else "mapped_td_safe",
+                "exposed from a reviewed override" if ov else "exposed because the TD declares safe: true", cname))
+
+    # ------------------------------------------------------------------ events
+    for ename in (td.get("events") or {}):
         findings.append(Finding(
-            aff, MAPPED, "mapped_from_override" if ov else "mapped_td_safe",
-            "exposed from a reviewed override" if ov else "exposed because the TD declares safe: true", cname))
+            f"events/{ename}", UNSUPPORTED, "event_unsupported",
+            "events are not mapped; poll the related property with watch_state instead"))
+
+    # ------------------------------------------------------------------ security
+    auth = _security(td, findings)
 
     descriptor = {
         "openmhs": "0.1",
@@ -385,7 +439,7 @@ def map_thing(
         "adapter": {"id": adapter_id, "version": "0.1.0"},
         "capabilities": caps,
     }
-    return Mapping(descriptor, bindings, findings)
+    return Mapping(descriptor, bindings, findings, auth)
 
 
 def review_template(td: dict, mapping: Mapping) -> dict:

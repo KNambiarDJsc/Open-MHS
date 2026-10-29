@@ -109,6 +109,12 @@ class Misbehave(Adapter):
         if self.mode == "crash_after_apply":
             progress.accepted()
             os._exit(4)
+        if self.mode in ("accept_with_ref", "accept_with_long_ref", "accept_with_control_ref"):
+            ref = {"accept_with_ref": "labthings:7f3a",
+                   "accept_with_long_ref": "x" * 300,
+                   "accept_with_control_ref": "job" + chr(10) + "42"}[self.mode]
+            progress.accepted(external_ref=ref)
+            return Applied()
         if self.mode == "hang_on_execute":
             time.sleep(60)  # blocks the event loop: no more heartbeats
         return Applied()

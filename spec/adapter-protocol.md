@@ -132,8 +132,13 @@ Values are already validated and converted to the descriptor's units. Result:
 - Anything else is an error (§4). The adapter sends the command **at most once**. It does
   not retry it, even after a timeout, and it does not wait past `deadline`.
 - Once the command has been handed to the device, the adapter should send the
-  notification `progress` `{"command_id": "01J…", "event": "accepted"}` (the SDK's
-  `progress.accepted()`). It is informational: the outcome is the response.
+  notification `progress` `{"command_id": "01J…", "event": "accepted", "external_ref": "…"}` (the SDK's
+  `progress.accepted(external_ref=…)`; `external_ref` is optional). `external_ref` is an
+  opaque identifier the device or its server gave the accepted work, for example a LabThings
+  invocation id. The gateway stores it in the receipt (`adapter_result.external_ref`) so an
+  unresolved command can later be matched to the work it started. At most 256 characters, no
+  control characters; a longer or malformed one is dropped, not truncated. It is adapter text:
+  never used to authorize or decide anything. It is informational: the outcome is the response.
 
 ### `ping`
 

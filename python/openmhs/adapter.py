@@ -196,9 +196,17 @@ class Progress:
         self._send = send
         self._command_id = command_id
 
-    def accepted(self) -> None:
-        """Report that the device acknowledged the command (lifecycle ACCEPTED)."""
-        self._send("progress", {"command_id": self._command_id, "event": "accepted"})
+    def accepted(self, external_ref: Optional[str] = None) -> None:
+        """Report that the device acknowledged the command (lifecycle ACCEPTED).
+
+        ``external_ref`` is an opaque identifier the device or its server gave the work (a
+        LabThings invocation id, a job id): the gateway keeps it in the receipt
+        (``adapter_result.external_ref``) so an unresolved command can be matched to the work it
+        started. At most 256 characters, no control characters; otherwise it is dropped."""
+        msg = {"command_id": self._command_id, "event": "accepted"}
+        if external_ref:
+            msg["external_ref"] = external_ref
+        self._send("progress", msg)
 
 
 HealthResult = Union[str, tuple]

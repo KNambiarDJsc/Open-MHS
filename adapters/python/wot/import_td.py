@@ -37,7 +37,7 @@ def load(source: str) -> object:
 
 
 def build_manifest(mapping: td_import.Mapping, base_url: str, out: Path, *, source: str,
-                   timeout_ms: int) -> dict:
+                   timeout_ms: int, stamp: str = "received") -> dict:
     caps = mapping.descriptor["capabilities"]
     parts = urlsplit(base_url)
     origin = f"{parts.scheme}://{parts.netloc}"
@@ -50,6 +50,8 @@ def build_manifest(mapping: td_import.Mapping, base_url: str, out: Path, *, sour
         },
         "capabilities": {"allow": [{"name": c["name"], "operations": c["operations"]} for c in caps]},
         "endpoints": {"network": [origin]},
+        **({"credentials": ["WOT_USER", "WOT_PASSWORD"] if mapping.auth["scheme"] == "basic" else ["WOT_TOKEN"]}
+           if mapping.auth else {}),
         "filesystem": {"write": [str(out.resolve())]},
         "config": {
             "descriptor": mapping.descriptor,
@@ -57,6 +59,8 @@ def build_manifest(mapping: td_import.Mapping, base_url: str, out: Path, *, sour
             "timeout_ms": timeout_ms,
             "poll_ms": 100,
             "source": source,
+            "stamp": stamp,
+            "auth": mapping.auth,
             "ledger": str((out / "invocations.jsonl").resolve()),
         },
     }
@@ -73,6 +77,8 @@ def main() -> int:
     ap.add_argument("--source", default="device", choices=["device", "simulator"],
                     help="what readings through this adapter come from")
     ap.add_argument("--timeout-ms", type=int, default=2000)
+    ap.add_argument("--stamp", default="received", choices=["received", "date_header"],
+                    help="time to give a reading: when received, or the server's HTTP Date")
     ap.add_argument("--probe", action="store_true",
                     help="read (GET) map-valued properties once to learn their keys; reads only")
     args = ap.parse_args()
@@ -100,7 +106,15 @@ def main() -> int:
                                   samples=samples)
 
     args.out.mkdir(parents=True, exist_ok=True)
-    manifest = build_manifest(mapping, base, args.out, source=args.source, timeout_ms=args.timeout_ms)
+    if not mapping.connectable:
+        review = {"device": mapping.descriptor["device"]["id"], "counts": mapping.counts(),
+                  "findings": [f.__dict__ for f in mapping.findings]}
+        (args.out / "review.json").write_text(json.dumps(review, indent=2) + "\n", encoding="utf-8")
+        why = next(f.detail for f in mapping.findings if f.category == "security_scheme_unsupported")
+        print(f"error: {why}", file=sys.stderr)
+        return 3
+    manifest = build_manifest(mapping, base, args.out, source=args.source, timeout_ms=args.timeout_ms,
+                              stamp=args.stamp)
     (args.out / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     review = {
         "device": mapping.descriptor["device"]["id"],

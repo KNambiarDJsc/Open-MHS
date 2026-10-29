@@ -1135,10 +1135,12 @@ impl Engine {
             tokio::select! {
                 biased;
                 res = &mut handle => break ExecOutcome::Finished(res),
-                Some(ProgressEvent::Accepted) = rx.recv(), if !accepted => {
+                Some(ProgressEvent::Accepted { external_ref }) = rx.recv(), if !accepted => {
                     accepted = true;
                     self.transition(id, Accepted, None, |r| {
-                        r.adapter_result.get_or_insert_with(AdapterResult::default).acknowledged = Some(true);
+                        let ar = r.adapter_result.get_or_insert_with(AdapterResult::default);
+                        ar.acknowledged = Some(true);
+                        ar.external_ref = external_ref;
                     })?;
                 }
                 () = &mut sleep => {
@@ -1147,12 +1149,12 @@ impl Engine {
                 }
             }
         };
-        if !accepted && matches!(rx.try_recv(), Ok(ProgressEvent::Accepted)) {
+        if !accepted && let Ok(ProgressEvent::Accepted { external_ref }) = rx.try_recv() {
             accepted = true;
             self.transition(id, Accepted, None, |r| {
-                r.adapter_result
-                    .get_or_insert_with(AdapterResult::default)
-                    .acknowledged = Some(true);
+                let ar = r.adapter_result.get_or_insert_with(AdapterResult::default);
+                ar.acknowledged = Some(true);
+                ar.external_ref = external_ref;
             })?;
         }
 

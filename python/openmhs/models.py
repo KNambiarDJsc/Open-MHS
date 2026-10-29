@@ -285,6 +285,7 @@ class PolicyRecord(Model):
 @dataclass
 class AdapterResult(Model):
     acknowledged: bool | None = None
+    external_ref: str | None = None
     reported_applied: bool | None = None
     value: Any = None
     result: dict[str, Any] | None = None

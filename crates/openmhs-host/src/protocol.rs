@@ -242,6 +242,9 @@ pub fn parse_health(v: serde_json::Value) -> Result<Health, String> {
 pub struct ProgressParams {
     pub command_id: String,
     pub event: String,
+    /// An opaque identifier for the accepted work (spec/adapter-protocol.md).
+    #[serde(default)]
+    pub external_ref: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
