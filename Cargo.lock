@@ -1570,6 +1570,7 @@ dependencies = [
  "openmhs-types",
  "reqwest",
  "rustls",
+ "schemars",
  "serde",
  "serde_json",
  "thiserror",
@@ -1594,6 +1595,8 @@ dependencies = [
  "openmhs-scpi",
  "openmhs-sim",
  "openmhs-types",
+ "reqwest",
+ "rumqttc",
  "serde",
  "serde_json",
  "tempfile",
@@ -1812,6 +1815,7 @@ dependencies = [
  "proptest",
  "serde",
  "serde_json",
+ "sha2",
  "time",
 ]
 

@@ -303,6 +303,180 @@ pub fn device_statuses(list: &[openmhs_types::DeviceStatus]) {
     }
 }
 
+/// One JSON object per line, for `--follow` streams.
+pub fn json_line<T: serde::Serialize>(v: &T) {
+    if let Ok(s) = serde_json::to_string(v) {
+        println!("{s}");
+    }
+}
+
+pub fn event(e: &openmhs_types::event::Event) {
+    use openmhs_types::event::EventBody;
+    let at = clock_time(e.at);
+    match &e.body {
+        EventBody::Observation {
+            device,
+            capability,
+            state,
+            cause,
+            command_id,
+        } => println!(
+            "{at}  #{:<6} {device} {capability} = {}  ({}, measured {}, {}){}",
+            e.seq,
+            value(&state.value),
+            name(&state.quality),
+            clock_time(state.timestamp),
+            name(cause),
+            command_id
+                .as_deref()
+                .map(|c| format!(" for command {c}"))
+                .unwrap_or_default()
+        ),
+        EventBody::Availability {
+            device,
+            from,
+            to,
+            reason,
+        } => println!(
+            "{at}  #{:<6} {device} {} -> {}{}",
+            e.seq,
+            from.as_str(),
+            to.as_str(),
+            reason
+                .as_deref()
+                .map(|r| format!("  ({r})"))
+                .unwrap_or_default()
+        ),
+        EventBody::Command {
+            command_id,
+            principal,
+            device,
+            capability,
+            state,
+        } => println!(
+            "{at}  #{:<6} {device} {capability} command {command_id} -> {} ({principal})",
+            e.seq,
+            name(state)
+        ),
+    }
+}
+
+pub fn selection(s: &openmhs_api::selection::Selection) {
+    if s.matches.is_empty() {
+        println!("nothing among {} device(s) matches", s.devices);
+        return;
+    }
+    for m in &s.matches {
+        let range = match (m.min, m.max) {
+            (Some(lo), Some(hi)) => format!(" {lo}..{hi}"),
+            _ => String::new(),
+        };
+        let ops: Vec<String> = m.operations.iter().map(name).collect();
+        println!(
+            "{:<16} {:<34} {}{}{}  [{}]  {}",
+            m.device,
+            m.capability,
+            m.unit.as_deref().unwrap_or(""),
+            range,
+            m.quantity
+                .as_deref()
+                .map(|q| format!(" ({q})"))
+                .unwrap_or_default(),
+            ops.join(","),
+            m.availability.as_str()
+        );
+    }
+}
+
+pub fn procedures(list: &[openmhs_types::procedure::Procedure]) {
+    if list.is_empty() {
+        println!("no procedures stored");
+        return;
+    }
+    for p in list {
+        let params: Vec<String> = p
+            .spec
+            .params
+            .iter()
+            .map(|(n, s)| match &s.unit {
+                Some(u) => format!("{n} ({u})"),
+                None => format!("{n} ({})", name(&s.ty)),
+            })
+            .collect();
+        println!(
+            "{:<24} v{:<3} {:<9} {}  by {}{}",
+            p.spec.name,
+            p.spec.version,
+            name(&p.status),
+            if params.is_empty() {
+                "no parameters".to_owned()
+            } else {
+                params.join(", ")
+            },
+            p.proposed_by,
+            p.approved_by
+                .as_deref()
+                .map(|a| format!(", approved by {a}"))
+                .unwrap_or_default()
+        );
+    }
+}
+
+pub fn insights(i: &openmhs_api::insights::Insights) {
+    println!(
+        "{}: {} command(s) examined{}",
+        i.device,
+        i.window.commands,
+        if i.window.truncated {
+            " (the newest only; older history is not included)"
+        } else {
+            ""
+        }
+    );
+    for c in &i.capabilities {
+        let states: Vec<String> = c.states.iter().map(|(s, n)| format!("{s} {n}")).collect();
+        println!();
+        println!(
+            "{}: {} attempt(s): {}",
+            c.capability,
+            c.attempts,
+            states.join(", ")
+        );
+        for r in &c.refusals {
+            let numbers = r
+                .latest_details
+                .as_ref()
+                .map(|d| serde_json::Value::Object(d.clone()).to_string())
+                .unwrap_or_default();
+            println!("  refused {}x  {}  {numbers}", r.count, r.code);
+        }
+        if let Some(v) = &c.verified {
+            println!(
+                "  confirmed {}x  {} to {} {} (latest {} {})",
+                v.count, v.lowest, v.highest, v.unit, v.latest, v.unit
+            );
+        }
+        if let Some(t) = &c.tracking_error {
+            println!(
+                "  landed within {} {} of the request (mean {:.4})",
+                t.max_abs, t.unit, t.mean_abs
+            );
+        }
+        if let Some(l) = &c.verify_latency_ms {
+            println!(
+                "  readback took {} ms (median), {} ms (max)",
+                l.median, l.max
+            );
+        }
+        if !c.unresolved.is_empty() {
+            println!(
+                "  UNRESOLVED: {} (reconcile before sending another)",
+                c.unresolved.join(", ")
+            );
+        }
+    }
+}
+
 pub fn graph(g: &openmhs_types::graph::Graph) {
     if g.relationships.is_empty() {
         println!("{} devices, no relationships declared", g.devices.len());

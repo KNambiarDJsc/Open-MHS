@@ -4,7 +4,9 @@
 //! This crate defines the wire types once, for the gateway and every Rust client.
 
 pub mod client;
+pub mod insights;
 pub mod runtime;
+pub mod selection;
 
 use openmhs_policy::{Grant, PrincipalKind, Scope};
 use openmhs_types::{ApprovalStatus, CommandState, ErrorObject, StateValue};
@@ -21,6 +23,19 @@ pub mod method {
     pub const DEVICES_LIST: &str = "devices.list";
     pub const DEVICES_DESCRIBE: &str = "devices.describe";
     pub const DEVICES_STATUS: &str = "devices.status";
+    pub const ACCESS_ALLOWED_OPERATIONS: &str = "access.allowed_operations";
+    pub const EVENTS_POLL: &str = "events.poll";
+    pub const WATCHES_CREATE: &str = "watches.create";
+    pub const WATCHES_LIST: &str = "watches.list";
+    pub const WATCHES_CANCEL: &str = "watches.cancel";
+    pub const PROCEDURES_LIST: &str = "procedures.list";
+    pub const PROCEDURES_GET: &str = "procedures.get";
+    pub const PROCEDURES_PROPOSE: &str = "procedures.propose";
+    pub const PROCEDURES_ADD: &str = "procedures.add";
+    pub const PROCEDURES_APPROVE: &str = "procedures.approve";
+    pub const PROCEDURES_REMOVE: &str = "procedures.remove";
+    pub const PROCEDURES_CHECK: &str = "procedures.check";
+    pub const PROCEDURES_RUN: &str = "procedures.run";
     pub const GRAPH_GET: &str = "graph.get";
     pub const LEASES_ACQUIRE: &str = "leases.acquire";
     pub const LEASES_GET: &str = "leases.get";
@@ -50,6 +65,7 @@ pub mod method {
     pub const TOKENS_REVOKE: &str = "tokens.revoke";
     pub const TOKENS_ROTATE: &str = "tokens.rotate";
     pub const AUDIT_VERIFY: &str = "audit.verify";
+    pub const AUDIT_EXPORT: &str = "audit.export";
     pub const AUDIT_TAIL: &str = "audit.tail";
     pub const SIM_FAULT: &str = "sim.fault";
     pub const PLANS_SUBMIT: &str = "plans.submit";
@@ -143,6 +159,91 @@ pub struct GatewayInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeviceParams {
     pub device: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct AllowedOperationsParams {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub device: Option<String>,
+}
+
+/// Effective access for the authenticated principal at one point in time. This is
+/// advisory discovery metadata; the gateway reauthorizes every operation at execution.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+pub struct AllowedOperations {
+    pub principal: String,
+    pub policy_revision: String,
+    pub generated_at: String,
+    pub expires_at: String,
+    pub advisory: bool,
+    pub operations: Vec<AllowedOperation>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+pub struct AllowedOperation {
+    pub device: String,
+    pub capability: String,
+    pub operation: String,
+    /// `allowed` or `requires_approval` under the current policy and credential scope.
+    pub access: String,
+    pub descriptor_sha256: String,
+}
+
+/// `events.poll` (ADR-0023): events after a cursor, optionally waiting for one.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct EventsPollParams {
+    /// The `stream` of the batch the cursor came from; a different one means the gateway
+    /// restarted, and the answer starts again (`reset`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stream: Option<String>,
+    /// Return events with a greater `seq`. Absent: only events from now on.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub after: Option<u64>,
+    /// `*` patterns of device ids; empty means all.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub devices: Vec<String>,
+    /// `observation`, `availability`, `command`; empty means all.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub kinds: Vec<openmhs_types::event::EventKind>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub limit: Option<usize>,
+    /// Wait this long for an event if there is none yet (at most 30 000).
+    #[serde(default)]
+    pub wait_ms: u64,
+}
+
+/// `watches.create` (ADR-0023): sample a capability that declares `subscribe`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WatchParams {
+    pub device: String,
+    pub capability: String,
+    pub interval_ms: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ttl_ms: Option<u64>,
+}
+
+/// `procedures.propose` and `procedures.add` (spec/procedures.md).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProcedureParams {
+    pub procedure: openmhs_types::procedure::ProcedureSpec,
+}
+
+/// One procedure: a version, or the newest.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProcedureRef {
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub version: Option<u32>,
+}
+
+/// `procedures.check` and `procedures.run`: the newest approved version unless one is named.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RunProcedureParams {
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub version: Option<u32>,
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub params: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 /// `devices.status`: one device or all, optionally probing first (ADR-0019).

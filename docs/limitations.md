@@ -47,9 +47,19 @@ the README links here.
 - **Journal limits are a floor, not a lifecycle.** The journal still grows until the limit;
   nothing is archived or deleted ([ADR-0021](adr/0021-journal-quota-and-reserve.md)).
 - **Availability is an observation.** It can be stale by one probe interval (5 s by
-  default). Probes are the adapter's side-effect-free `connect` and `health`; there is no
-  backoff for long-offline devices or damping for flapping ones yet
-  ([ADR-0019](adr/0019-device-availability.md)).
+  default). Probes are the adapter's side-effect-free `connect` and `health`. Periodic
+  sweeps back off for long-offline devices, but there is no damping for flapping ones and
+  no per-adapter probe budget yet ([ADR-0019](adr/0019-device-availability.md)).
+- **Events are notifications, not truth, and live in memory.** `events.poll` keeps the newest
+  8 192 events and reports how many a slow consumer missed; a restart loses them and ends
+  every watch. Watches sample through `read` (at most every 200 ms, 16 per principal), so
+  event-kind capabilities without `read` cannot be watched yet, and there is no push
+  transport. Individual watch samples are not audited; creation and end are
+  ([ADR-0023](adr/0023-state-fabric.md)).
+- **Insights are evidence, not knowledge.** `get_insights` summarizes the newest 500
+  commands a credential can list; a value confirmed earlier says nothing certain about
+  now, and nothing in it changes a limit or a permission. It does not model the device
+  or tune anything ([ADR-0022](adr/0022-insights-from-the-journal.md)).
 
 ## Security
 

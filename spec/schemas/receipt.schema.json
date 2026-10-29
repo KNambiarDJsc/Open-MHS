@@ -61,6 +61,7 @@
       "additionalProperties": false,
       "properties": {
         "acknowledged": { "type": "boolean" },
+        "external_ref": { "type": "string", "minLength": 1, "maxLength": 256 },
         "reported_applied": { "type": "boolean" },
         "value": { "$ref": "urn:openmhs:schema:0.1:common#/$defs/value" },
         "result": {

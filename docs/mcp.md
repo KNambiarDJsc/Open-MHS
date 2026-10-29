@@ -10,6 +10,27 @@ It never sees hardware credentials. Design: [ADR-0012](adr/0012-mcp-server-and-s
 > profile or adapter instead ([Connect your own device](connect-a-device.md)). OpenMHS is
 > not a safety system: hardware interlocks and emergency stops keep final authority.
 
+## Fastest start: one command, no setup
+
+To see an agent drive OpenMHS from your MCP host, with nothing else running:
+
+```sh
+claude mcp add openmhs-sim -- openmhs mcp --sim
+```
+
+or, in any host's JSON config, `{"command": "openmhs", "args": ["mcp", "--sim"]}`.
+
+`--sim` starts a throwaway gateway with the virtual lab inside the same process, grants
+the agent read access to every simulated device and write access to the power supply
+(`sim.psu-01`, `power.output.*`), and serves MCP for it. There is no token to copy and
+nothing to start first. Everything is discarded on exit, and no real hardware is touched.
+The agent still cannot do more than that (the axis is refused, 48 V is refused, a fast
+jump is refused with numbers it can act on), and it cannot approve its own commands: the
+operator token stays in the process and never reaches the MCP server. It cannot be mixed
+with `--url` or `--allow-operator`.
+
+This is for trying OpenMHS. To use your own devices, follow the steps below.
+
 ## 1. Start a gateway and give the agent a token
 
 ```sh
@@ -80,6 +101,15 @@ Tools (all return `structuredContent` with an `outputSchema`):
 | Tool | Changes the world? | Use |
 |---|---|---|
 | `list_devices`, `describe_device` | No | Discover devices, units, ranges, limits. `list_devices` also gives each device's `availability`, `reason`, `busy` and `lease_holder`; an `OFFLINE` device refuses commands with `device.unavailable` |
+| `get_allowed_operations` | No | Effective operations under this token's scopes and current policy, with policy/descriptor digests and a 10-second expiry. Informative only; every command is authorized again at submission |
+| `get_insights` | No | What your earlier commands on a device did, from the journal: confirmed values, refusals with the limits behind them, how far readings landed from the request, readback latency, unresolved outcomes. Evidence to iterate on; it never changes what you may do ([ADR-0022](adr/0022-insights-from-the-journal.md)) |
+| `list_procedures`, `check_procedure` | No | Reviewed, versioned plans with typed parameters, and a dry run of one ([spec/procedures.md](../spec/procedures.md)) |
+| `run_procedure` | **Yes** | Run an approved procedure: an ordinary plan, as the agent, with every check |
+| `propose_procedure` | No | Store a plan that worked as a proposed procedure; only a person can approve it |
+| `find_capabilities` | No | Which devices can do what you need: by capability name pattern, quantity, unit, operation, a value inside the declared range, side effect, availability. Candidates, not permissions |
+| `watch_state` | Reads the device | Sample a capability that declares `subscribe` (needs a `subscribe` grant) every `interval_ms`, into the event stream ([ADR-0023](adr/0023-state-fabric.md)) |
+| `poll_events` | No | Observations you may subscribe to, availability changes and your commands' state changes since `after`; `wait_ms` waits for one. `missed` > 0 means you fell behind |
+| `cancel_watch` | No | Stop a watch you created |
 | `read_state` | No (audited) | Read now; check `usable` before relying on it |
 | `check_command` | No | Ask whether a command would be allowed right now |
 | `submit_command` | **Yes** | Write a property (`value`) or invoke an action (`params`) |

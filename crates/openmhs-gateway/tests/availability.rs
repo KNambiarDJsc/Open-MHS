@@ -201,3 +201,69 @@ async fn require_devices_keeps_the_strict_start() {
     strict.require_devices = true;
     assert!(openmhs_gateway::start(strict).await.is_err());
 }
+
+/// A device whose connect never returns, as a powered but wedged instrument does.
+struct Wedged(usize);
+
+#[async_trait]
+impl HardwareAdapter for Wedged {
+    fn adapter_id(&self) -> &str {
+        "openmhs.sim.psu"
+    }
+    async fn describe(&self) -> Result<Value, AdapterError> {
+        let mut d: Value = serde_json::from_str(include_str!(
+            "../../../spec/examples/valid/power-supply.json"
+        ))
+        .unwrap();
+        d["device"]["id"] = format!("lab.psu-{:02}", self.0 + 10).into();
+        Ok(d)
+    }
+    async fn connect(&self) -> Result<(), AdapterError> {
+        std::future::pending().await
+    }
+    async fn health(&self) -> Health {
+        Health::Disconnected("wedged".into())
+    }
+    async fn read(&self, _capability: &str) -> Result<StateValue, AdapterError> {
+        Err(refused())
+    }
+    async fn execute(
+        &self,
+        _command: AdapterCommand,
+        _progress: Progress,
+    ) -> Result<ExecuteReport, AdapterError> {
+        panic!("nothing may be sent to a device that is wedged");
+    }
+    async fn shutdown(&self) -> Result<(), AdapterError> {
+        Ok(())
+    }
+}
+
+/// Starting does not take one probe timeout per wedged device (ADR-0019): with the bounded
+/// concurrency, 40 of them cost a few timeouts, where one at a time would cost 40 x 2 s.
+#[tokio::test(flavor = "multi_thread")]
+async fn many_wedged_devices_do_not_make_the_gateway_start_one_timeout_at_a_time() {
+    const WEDGED: usize = 40;
+    let home = tempfile::tempdir().unwrap();
+    let mut config = config(home.path());
+    config.adapters = (0..WEDGED)
+        .map(|n| Arc::new(Wedged(n)) as Arc<dyn HardwareAdapter>)
+        .collect();
+    let started = std::time::Instant::now();
+    let gw = openmhs_gateway::start(config).await.unwrap();
+    let took = started.elapsed();
+
+    let operator = Client::new(&gw.url, &gw.operator_token).unwrap();
+    let statuses = operator.device_status(None, false).await.unwrap();
+    let offline = statuses
+        .iter()
+        .filter(|s| s.availability == Availability::Offline)
+        .count();
+    assert_eq!(offline, WEDGED, "every wedged device is registered OFFLINE");
+    assert!(
+        took < std::time::Duration::from_secs(12),
+        "started in {took:?}; one at a time this takes about {} s",
+        WEDGED * 2
+    );
+    gw.shutdown().await.unwrap();
+}

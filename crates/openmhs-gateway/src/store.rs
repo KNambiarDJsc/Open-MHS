@@ -17,6 +17,7 @@ use crate::GatewayError;
 
 pub const POLICY_FILE: &str = "policy.json";
 pub const TOKENS_FILE: &str = "tokens.json";
+pub const PROCEDURES_FILE: &str = "procedures.json";
 
 /// Write `contents` to `path` atomically. On Unix the file is created `0600`.
 pub fn write_private(path: &Path, contents: &str) -> std::io::Result<()> {
@@ -594,4 +595,148 @@ mod tests {
         let (_, again) = PolicyStore::open(dir.path(), "operator:other").unwrap();
         assert_eq!(again, policy);
     }
+}
+
+// ------------------------------------------------------------------ procedures
+
+/// Procedures (spec/procedures.md), in `procedures.json`. Versions are never edited: a
+/// changed procedure is a new version. Kept in memory and rewritten on every change.
+pub struct ProcedureStore {
+    path: PathBuf,
+    procedures: Vec<openmhs_types::procedure::Procedure>,
+}
+
+#[derive(Serialize, Deserialize, Default)]
+struct ProceduresFile {
+    procedures: Vec<openmhs_types::procedure::Procedure>,
+}
+
+impl ProcedureStore {
+    pub fn open(home: &Path) -> Result<Self, GatewayError> {
+        let path = home.join(PROCEDURES_FILE);
+        let procedures = if path.exists() {
+            let text = std::fs::read_to_string(&path)?;
+            serde_json::from_str::<ProceduresFile>(&text)
+                .map_err(|e| GatewayError::Config(format!("{}: {e}", path.display())))?
+                .procedures
+        } else {
+            Vec::new()
+        };
+        Ok(Self { path, procedures })
+    }
+
+    fn save(&self) -> Result<(), GatewayError> {
+        let file = ProceduresFile {
+            procedures: self.procedures.clone(),
+        };
+        let text =
+            serde_json::to_string_pretty(&file).map_err(|e| GatewayError::Config(e.to_string()))?;
+        write_private(&self.path, &(text + "\n"))?;
+        Ok(())
+    }
+
+    /// Every procedure, by name then version.
+    pub fn list(&self) -> Vec<openmhs_types::procedure::Procedure> {
+        let mut all = self.procedures.clone();
+        all.sort_by(|a, b| {
+            a.spec
+                .name
+                .cmp(&b.spec.name)
+                .then(a.spec.version.cmp(&b.spec.version))
+        });
+        all
+    }
+
+    /// One version, or the newest; `approved_only` skips proposed versions.
+    pub fn get(
+        &self,
+        name: &str,
+        version: Option<u32>,
+        approved_only: bool,
+    ) -> Option<&openmhs_types::procedure::Procedure> {
+        use openmhs_types::procedure::ProcedureStatus;
+        self.procedures
+            .iter()
+            .filter(|p| p.spec.name == name && version.is_none_or(|v| p.spec.version == v))
+            .filter(|p| !approved_only || p.status == ProcedureStatus::Approved)
+            .max_by_key(|p| p.spec.version)
+    }
+
+    /// Store a new version. A name and version already stored is refused, whatever its
+    /// status: versions are never replaced.
+    pub fn insert(
+        &mut self,
+        procedure: openmhs_types::procedure::Procedure,
+    ) -> Result<openmhs_types::procedure::Procedure, ErrorObject> {
+        if self
+            .get(&procedure.spec.name, Some(procedure.spec.version), false)
+            .is_some()
+        {
+            return Err(ErrorObject::new(
+                "procedure.exists",
+                format!(
+                    "'{}' v{} is already stored; a changed procedure is a new version",
+                    procedure.spec.name, procedure.spec.version
+                ),
+            ));
+        }
+        self.procedures.push(procedure.clone());
+        self.save()
+            .map_err(|e| ErrorObject::new("gateway.io", e.to_string()))?;
+        Ok(procedure)
+    }
+
+    pub fn approve(
+        &mut self,
+        name: &str,
+        version: u32,
+        by: &str,
+        at: Timestamp,
+    ) -> Result<openmhs_types::procedure::Procedure, ErrorObject> {
+        use openmhs_types::procedure::ProcedureStatus;
+        let p = self
+            .procedures
+            .iter_mut()
+            .find(|p| p.spec.name == name && p.spec.version == version)
+            .ok_or_else(|| unknown_procedure(name, Some(version)))?;
+        if p.status == ProcedureStatus::Approved {
+            return Err(ErrorObject::new(
+                "procedure.approved",
+                format!("'{name}' v{version} is already approved"),
+            ));
+        }
+        p.status = ProcedureStatus::Approved;
+        p.approved_by = Some(by.to_owned());
+        p.approved_at = Some(at);
+        let approved = p.clone();
+        self.save()
+            .map_err(|e| ErrorObject::new("gateway.io", e.to_string()))?;
+        Ok(approved)
+    }
+
+    pub fn remove(
+        &mut self,
+        name: &str,
+        version: u32,
+    ) -> Result<openmhs_types::procedure::Procedure, ErrorObject> {
+        let i = self
+            .procedures
+            .iter()
+            .position(|p| p.spec.name == name && p.spec.version == version)
+            .ok_or_else(|| unknown_procedure(name, Some(version)))?;
+        let removed = self.procedures.remove(i);
+        self.save()
+            .map_err(|e| ErrorObject::new("gateway.io", e.to_string()))?;
+        Ok(removed)
+    }
+}
+
+pub fn unknown_procedure(name: &str, version: Option<u32>) -> ErrorObject {
+    ErrorObject::new(
+        "procedure.unknown",
+        match version {
+            Some(v) => format!("no procedure '{name}' v{v}"),
+            None => format!("no procedure '{name}'"),
+        },
+    )
 }

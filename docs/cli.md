@@ -1,6 +1,6 @@
 # `openmhs` command line
 
-All commands except `serve`, `demo`, `conformance`, `profile new`, `profile check`, `adapter check` and `adapter new` are clients of a running gateway. They find it
+All commands except `serve`, `demo`, `conformance`, `profile new`, `profile check`, `adapter check`, `adapter new` and `audit verify-file` are clients of a running gateway. They find it
 through the runtime file in the gateway home: `--home`, else `$OPENMHS_HOME`, else the
 per-user local data directory.
 
@@ -32,6 +32,15 @@ openmhs read sim.thermo-01 temperature.ambient
 | `demo [--keep]` | Guided scenario; exits non-zero if anything behaves unexpectedly |
 | `info` | Your principal and role, gateway version, device count |
 | `devices list` / `devices inspect <id>` | Registered devices / one descriptor |
+| `events [--follow] [--device P] [--kind K] [--from-start]` | The state fabric: observations you may subscribe to, availability changes, command state changes ([ADR-0023](adr/0023-state-fabric.md)) |
+| `watch <device> <capability> [--every 1s] [--for 1m]` | Sample a capability that declares `subscribe` and print each reading (needs a `subscribe` grant) |
+| `find [--name P] [--quantity Q] [--unit U] [--op OP] [--value X] [--available]` | Which devices can do what you need. Candidates, not permissions |
+| `procedures list\|show\|propose\|add\|approve\|remove\|check\|run` | Reviewed, versioned plans with typed parameters ([spec/procedures.md](../spec/procedures.md)). `run NAME --param voltage=2V`. Agents may propose; only an operator adds, approves or removes |
+| `bench [--reads N] [--commands N] [--concurrency N]` | Wall-clock read, command, event and watch timing of a throwaway gateway ([benchmarks.md](benchmarks.md)) |
+| `discover scpi\|modbus <hosts...>` | Ask named addresses (`host`, `host:port`, `a.b.c.d-e`, at most 256) for their identity: SCPI `*IDN?`, Modbus Read Device Identification (43/14). Changes and registers nothing |
+| `discover http <urls...>` | One `GET` per URL; reports status, server and content type |
+| `discover mqtt <broker> [--topic F] [--for 3s]` | Subscribe and list the topics published; publishes nothing. Plaintext HTTP and MQTT beyond loopback need `--allow-plaintext` |
+| `insights <device> [<capability>]` | What the journal says happened on a device: refusals and their limits, confirmed values, tracking error, readback latency, unresolved outcomes. An agent sees its own commands, the operator everyone's ([ADR-0022](adr/0022-insights-from-the-journal.md)) |
 | `devices status [<id>]` | Whether each device answers (`ONLINE`, `DEGRADED`, `OFFLINE`), is busy or leased; probes devices not checked in the last second ([ADR-0019](adr/0019-device-availability.md)) |
 | `graph` | Relationships, shared resources and frames ([spec/topology.md](../spec/topology.md)) |
 | `leases acquire --device D [--resource R] --ttl 10m [--reason …]` | Exclusive use of devices (and what they contain or share) until released or due; others' writes and invokes are refused meanwhile |
@@ -59,6 +68,8 @@ openmhs read sim.thermo-01 temperature.ambient
 | `grants list` / `grants add …` / `grants revoke <id>` | Policy (operator) |
 | `tokens create <principal> [--role agent\|operator] (--scope DEVICE:CAPABILITY:OPS … \| --any-scope) [--ttl 12h]` / `tokens list` / `tokens revoke <id>` / `tokens rotate <id> [--ttl …]` | Credentials (operator). A credential reaches only its scopes, and only what grants also allow; it expires at `--ttl`; revoked credentials stay listed ([spec/authorization.md](../spec/authorization.md) §7) |
 | `audit verify` / `audit tail [--limit N]` | Audit log (operator) |
+| `audit export --out FILE [--checkpoint-out FILE]` | Export all audit/receipt evidence from one snapshot (operator). Creates new files and refuses overwrites |
+| `audit verify-file FILE [--checkpoint FILE]` | Verify exported evidence offline, with optional independently retained checkpoint. Exits 3 on invalid evidence or legacy receipts with incomplete digest coverage ([details](architecture/AUDIT_EVIDENCE.md)) |
 | `sim fault <device> <fault>` / `sim faults` | Fault injection (operator, `serve --sim` only) |
 | `conformance [--device ID]… [--profile FILE]… [--adapter-manifest FILE]… [--report-dir DIR] [--seed N]` | Run the conformance suite against the built-in simulators, protocol profiles' simulators, or out-of-process adapters started in fixture mode (their manifests must point at a simulator, never a real device); no gateway needed. Exit 0 when each reaches its declared level ([spec/conformance.md](../spec/conformance.md)) |
 | `adapter check FILE…` | Validate adapter permission manifests; starts nothing. Exit 0 when all are valid |

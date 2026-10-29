@@ -378,3 +378,57 @@ class Concurrency(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class StateFabric(unittest.TestCase):
+    """Watches and events through the Python client (ADR-0023)."""
+
+    def test_a_watch_streams_samples_and_needs_a_subscribe_grant(self) -> None:
+        measured = "power.output.voltage.measured"
+        with Gateway() as gw:
+            agent, _ = gw.agent("agent:watcher", [grant("read-all", "*", "*", ["read"])])
+            with self.assertRaises(Exception):
+                agent.create_watch(PSU, measured, 200, 2_000)
+        with Gateway() as gw:
+            agent, _ = gw.agent("agent:watcher", [
+                grant("read-all", "*", "*", ["read"]),
+                grant("psu-sub", PSU, "*", ["subscribe"]),
+            ])
+            start = agent.poll_events()
+            w = agent.create_watch(PSU, measured, 200, 3_000)
+            self.assertEqual([x["id"] for x in agent.watches()], [w["id"]])
+            seen, cursor = 0, start["next"]
+            for _ in range(10):
+                b = agent.poll_events(cursor, stream=start["stream"], kinds=["observation"],
+                                      wait_ms=1_000)
+                self.assertEqual(b["missed"], 0)
+                cursor = b["next"]
+                seen += sum(1 for e in b["events"] if e["cause"] == "watch")
+                if seen >= 3:
+                    break
+            self.assertGreaterEqual(seen, 3)
+            agent.cancel_watch(w["id"])
+            self.assertEqual(agent.watches(), [])
+
+
+class Procedures(unittest.TestCase):
+    """Procedures through the Python client (spec/procedures.md)."""
+
+    def test_proposed_is_not_runnable_until_the_operator_approves(self) -> None:
+        spec = {
+            "name": "psu.set", "version": 1,
+            "params": {"v": {"type": "quantity", "unit": "V", "min": 0, "max": 2}},
+            "plan": {"steps": [{"id": "set", "request": {
+                "target": {"device": PSU, "capability": SETPOINT},
+                "operation": "write", "value": {"$param": "v"}}}]},
+        }
+        with Gateway() as gw:
+            agent, _ = gw.agent("agent:proc", default_grants())
+            self.assertEqual(agent.propose_procedure(spec)["status"], "proposed")
+            with self.assertRaises(Exception):
+                agent.run_procedure("psu.set", {"v": {"value": 1, "unit": "V"}})
+            with self.assertRaises(Exception):
+                agent.approve_procedure("psu.set", 1)
+            gw.operator().approve_procedure("psu.set", 1)
+            plan = agent.run_procedure("psu.set", {"v": {"value": 1, "unit": "V"}})
+            self.assertEqual(plan["state"], "SUCCEEDED")

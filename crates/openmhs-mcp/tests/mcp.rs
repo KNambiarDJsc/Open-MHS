@@ -9,7 +9,7 @@ use std::net::{Ipv4Addr, SocketAddr};
 use openmhs_api::{Client, CreateTokenParams, Role};
 use openmhs_gateway::{GatewayConfig, RunningGateway};
 use openmhs_mcp::OpenMhsServer;
-use openmhs_policy::{Effect, Grant};
+use openmhs_policy::{Effect, Grant, Scope};
 use openmhs_types::descriptor::Operation;
 use rmcp::model::{CallToolRequestParams, CallToolResult};
 use rmcp::service::RunningService;
@@ -137,6 +137,16 @@ async fn tools_declare_their_risk_and_output_schemas() {
         "check_command",
         "submit_command",
         "get_command",
+        "get_insights",
+        "get_allowed_operations",
+        "watch_state",
+        "cancel_watch",
+        "poll_events",
+        "find_capabilities",
+        "list_procedures",
+        "check_procedure",
+        "run_procedure",
+        "propose_procedure",
         "list_pending_approvals",
         "reconcile_command",
         "cancel_command",
@@ -153,6 +163,10 @@ async fn tools_declare_their_risk_and_output_schemas() {
         let a = t.annotations.as_ref().unwrap();
         let read_only = a.read_only_hint == Some(true);
         let mutating = [
+            "run_procedure",
+            "propose_procedure",
+            "watch_state",
+            "cancel_watch",
             "submit_command",
             "reconcile_command",
             "cancel_command",
@@ -166,6 +180,12 @@ async fn tools_declare_their_risk_and_output_schemas() {
             t.name
         );
     }
+    let descriptions = tools
+        .iter()
+        .filter_map(|t| t.description.as_deref())
+        .collect::<Vec<_>>()
+        .join("\n");
+    assert!(!descriptions.contains("sim.axis-01"), "{descriptions}");
     // Only standard JSON Schema: strict client-side validators warn on `uint64` and kin.
     let all = serde_json::to_string(&tools).unwrap();
     for f in [
@@ -665,4 +685,381 @@ async fn an_unconfirmed_stop_is_not_reported_as_stopped() {
     assert!(!steps.contains("Do NOT resubmit"), "{steps}");
     client.cancel().await.unwrap();
     lab.gw.shutdown().await.unwrap();
+}
+
+/// An agent can learn from what it already did: refusals come back with the numbers that
+/// bound them, confirmed values with their tracking error, and none of it widens access.
+#[tokio::test(flavor = "multi_thread")]
+async fn insights_summarize_what_the_journal_recorded() {
+    let lab = lab(psu_grants()).await;
+    let client = connect(&lab.gw.url, &lab.agent_token, false).await;
+
+    let nothing = call(&client, "get_insights", json!({ "device": PSU })).await;
+    assert!(!is_error(&nothing), "{}", text(&nothing));
+    assert_eq!(structured(&nothing)["insights"]["window"]["commands"], 0);
+
+    // Two refusals of the same kind, then a step that is within the limits.
+    for (key, v) in [("a", 9.0), ("b", 48.0), ("c", 11.0)] {
+        let r = call(
+            &client,
+            "submit_command",
+            json!({ "device": PSU, "capability": SETPOINT, "value": volts(v), "idempotency_key": key }),
+        )
+        .await;
+        assert!(is_error(&r), "{v} V should be refused");
+    }
+    let r = call(
+        &client,
+        "submit_command",
+        json!({ "device": PSU, "capability": SETPOINT, "value": volts(2.0), "idempotency_key": "d" }),
+    )
+    .await;
+    assert_eq!(structured(&r)["confirmed"], true, "{}", text(&r));
+
+    let r = call(&client, "get_insights", json!({ "device": PSU })).await;
+    assert!(!is_error(&r), "{}", text(&r));
+    let i = &structured(&r)["insights"];
+    assert_eq!(i["window"]["commands"], 4);
+    assert_eq!(i["window"]["truncated"], false);
+    let cap = &i["capabilities"][0];
+    assert_eq!(cap["capability"], SETPOINT);
+    assert_eq!(cap["attempts"], 4);
+    assert_eq!(cap["states"]["VERIFIED"], 1);
+    assert_eq!(cap["states"]["DENIED"], 3);
+
+    // The slew limit the agent hit comes back as numbers, most frequent refusal first.
+    let refusals = cap["refusals"].as_array().unwrap();
+    let slew = refusals
+        .iter()
+        .find(|x| x["code"] == "command.slew_exceeded")
+        .unwrap();
+    assert_eq!(slew["count"], 2, "9 V and 11 V both jump too far");
+    assert_eq!(slew["latest_details"]["max_change"], 2.0);
+    assert!(
+        refusals
+            .iter()
+            .any(|x| x["code"] == "command.value.out_of_range")
+    );
+
+    // The one confirmed write: the value the device was observed to hold.
+    let verified = &cap["verified"];
+    assert_eq!(verified["count"], 1);
+    assert_eq!(verified["unit"], "V");
+    assert_eq!(verified["latest"], 2.0);
+    assert!(cap["tracking_error"]["max_abs"].as_f64().unwrap() < 0.1);
+    assert!(cap["verify_latency_ms"]["samples"].as_u64().unwrap() >= 1);
+    assert_eq!(cap["unresolved"].as_array().unwrap().len(), 0);
+    assert!(cap["evidence"].as_array().unwrap().len() <= 5);
+
+    // Asking about another device or capability reports nothing for it, not a guess.
+    let r = call(
+        &client,
+        "get_insights",
+        json!({ "device": PSU, "capability": "power.output.enabled" }),
+    )
+    .await;
+    assert_eq!(structured(&r)["insights"]["window"]["commands"], 0);
+
+    // It is a read: the agent's permissions are what they were.
+    let r = call(
+        &client,
+        "submit_command",
+        json!({ "device": "sim.axis-01", "capability": "axis.home", "idempotency_key": "e" }),
+    )
+    .await;
+    assert_eq!(
+        structured(&r)["reasons"][0]["code"],
+        "policy.denied.no_grant"
+    );
+    client.cancel().await.unwrap();
+    lab.gw.shutdown().await.unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn insights_reject_an_unknown_device_instead_of_returning_empty_success() {
+    let lab = lab(vec![]).await;
+    let client = connect(&lab.gw.url, &lab.agent_token, false).await;
+    let result = call(
+        &client,
+        "get_insights",
+        json!({ "device": "missing-device" }),
+    )
+    .await;
+    assert!(is_error(&result), "{}", text(&result));
+    assert!(
+        text(&result).contains("command.device.unknown"),
+        "{}",
+        text(&result)
+    );
+    client.cancel().await.unwrap();
+    lab.gw.shutdown().await.unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn allowed_operations_are_principal_scoped_advisory_and_expiring() {
+    let lab = lab(psu_grants()).await;
+    let client = connect(&lab.gw.url, &lab.agent_token, false).await;
+    let result = call(&client, "get_allowed_operations", json!({ "device": PSU })).await;
+    assert!(!is_error(&result), "{}", text(&result));
+    let access = structured(&result);
+    assert_eq!(access["principal"], "agent:mcp");
+    assert!(access["advisory"].as_bool().unwrap());
+    assert!(
+        access["policy_revision"]
+            .as_str()
+            .unwrap()
+            .starts_with("sha256:")
+    );
+    assert!(access["generated_at"].as_str().is_some());
+    assert!(access["expires_at"].as_str().is_some());
+    let operations = access["operations"].as_array().unwrap();
+    assert!(operations.iter().any(|op| {
+        op["device"] == PSU && op["operation"] == "read" && op["access"] == "allowed"
+    }));
+    assert!(operations.iter().any(|op| {
+        op["device"] == PSU && op["operation"] == "write" && op["access"] == "allowed"
+    }));
+    assert!(operations.iter().all(|op| {
+        op["descriptor_sha256"]
+            .as_str()
+            .unwrap()
+            .starts_with("sha256:")
+    }));
+
+    // A narrower credential for the same principal must narrow the effective result.
+    let operator = Client::new(&lab.gw.url, &lab.gw.operator_token).unwrap();
+    let read_only = operator
+        .create_token(CreateTokenParams::scoped(
+            "agent:mcp",
+            Role::Agent,
+            vec![Scope {
+                device: PSU.into(),
+                capability: "*".into(),
+                operations: vec![Operation::Read],
+            }],
+        ))
+        .await
+        .unwrap();
+    let narrow_client = connect(&lab.gw.url, &read_only.token, false).await;
+    let narrow = call(
+        &narrow_client,
+        "get_allowed_operations",
+        json!({ "device": PSU }),
+    )
+    .await;
+    assert!(!is_error(&narrow), "{}", text(&narrow));
+    assert!(
+        structured(&narrow)["operations"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|op| op["operation"] == "read")
+    );
+    narrow_client.cancel().await.unwrap();
+
+    let missing = call(
+        &client,
+        "get_allowed_operations",
+        json!({ "device": "missing-device" }),
+    )
+    .await;
+    assert!(is_error(&missing), "{}", text(&missing));
+    assert!(
+        text(&missing).contains("command.device.unknown"),
+        "{}",
+        text(&missing)
+    );
+    client.cancel().await.unwrap();
+    lab.gw.shutdown().await.unwrap();
+}
+
+/// The state fabric through MCP: a watch on a streamable measurement reaches the model as
+/// observation events with their measurement time and quality; its own command shows up
+/// as state changes; a capability that does not declare subscribe cannot be watched, and
+/// nothing streams without a subscribe grant.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_model_watches_a_measurement_and_follows_its_command() {
+    let mut grants = psu_grants();
+    grants.push(grant(
+        "psu-subscribe",
+        PSU,
+        "*",
+        &[Operation::Subscribe],
+        Effect::Allow,
+    ));
+    let lab_ = lab(grants).await;
+    let client = connect(&lab_.gw.url, &lab_.agent_token, false).await;
+
+    let start = call(&client, "poll_events", json!({})).await;
+    let start = structured(&start).clone();
+    let stream = start["stream"].clone();
+    let mut next = start["next"].as_u64().unwrap();
+
+    let w = call(
+        &client,
+        "watch_state",
+        json!({ "device": PSU, "capability": "power.output.voltage.measured", "interval_ms": 200, "ttl_ms": 5000 }),
+    )
+    .await;
+    assert!(!is_error(&w), "{}", text(&w));
+    let watch_id = structured(&w)["watch_id"].as_str().unwrap().to_owned();
+
+    let r = call(
+        &client,
+        "submit_command",
+        json!({ "device": PSU, "capability": SETPOINT, "value": volts(2.0), "idempotency_key": "w1" }),
+    )
+    .await;
+    assert_eq!(structured(&r)["confirmed"], true, "{}", text(&r));
+    let command_id = structured(&r)["command_id"].as_str().unwrap().to_owned();
+
+    let mut samples = 0;
+    let mut verified = false;
+    for _ in 0..20 {
+        let b = call(
+            &client,
+            "poll_events",
+            json!({ "after": next, "stream": stream, "wait_ms": 1000 }),
+        )
+        .await;
+        let b = structured(&b).clone();
+        assert_eq!(b["missed"], 0);
+        next = b["next"].as_u64().unwrap();
+        for e in b["events"].as_array().unwrap() {
+            if e["kind"] == "observation" && e["cause"] == "watch" {
+                assert_eq!(e["value"]["unit"], "V");
+                assert!(e["measured_at"].is_string() && e["quality"].is_string());
+                samples += 1;
+            }
+            if e["kind"] == "command"
+                && e["command_id"] == command_id.as_str()
+                && e["state"] == "VERIFIED"
+            {
+                verified = true;
+            }
+        }
+        if samples >= 3 && verified {
+            break;
+        }
+    }
+    assert!(samples >= 3, "{samples} samples");
+    assert!(
+        verified,
+        "the command's VERIFIED transition arrived as an event"
+    );
+
+    let c = call(&client, "cancel_watch", json!({ "watch_id": watch_id })).await;
+    assert!(!is_error(&c), "{}", text(&c));
+
+    // Not streamable: the setpoint declares read and write only.
+    let r = call(
+        &client,
+        "watch_state",
+        json!({ "device": PSU, "capability": SETPOINT, "interval_ms": 500 }),
+    )
+    .await;
+    assert!(is_error(&r));
+    assert!(
+        text(&r).contains("command.operation.unsupported"),
+        "{}",
+        text(&r)
+    );
+    client.cancel().await.unwrap();
+    lab_.gw.shutdown().await.unwrap();
+
+    // Without a subscribe grant: no watch.
+    let lab_ = lab(psu_grants()).await;
+    let client = connect(&lab_.gw.url, &lab_.agent_token, false).await;
+    let r = call(
+        &client,
+        "watch_state",
+        json!({ "device": PSU, "capability": "power.output.voltage.measured", "interval_ms": 500 }),
+    )
+    .await;
+    assert!(is_error(&r));
+    assert!(text(&r).contains("policy.denied"), "{}", text(&r));
+    client.cancel().await.unwrap();
+    lab_.gw.shutdown().await.unwrap();
+}
+
+/// Capability-based selection: the model asks for what it needs instead of reading every
+/// descriptor, and gets candidates that fit, not permissions.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_model_finds_the_device_that_can_do_what_it_needs() {
+    let lab_ = lab(psu_grants()).await;
+    let client = connect(&lab_.gw.url, &lab_.agent_token, false).await;
+
+    let r = call(
+        &client,
+        "find_capabilities",
+        json!({ "quantity": "temperature", "operation": "subscribe" }),
+    )
+    .await;
+    assert!(!is_error(&r), "{}", text(&r));
+    let m = &structured(&r)["matches"];
+    assert_eq!(m.as_array().unwrap().len(), 1, "{m}");
+    assert_eq!(m[0]["device"], "sim.thermo-01");
+    assert_eq!(m[0]["availability"], "ONLINE");
+
+    let r = call(
+        &client,
+        "find_capabilities",
+        json!({ "unit": "V", "operation": "write", "value": 48.0 }),
+    )
+    .await;
+    assert_eq!(
+        structured(&r)["matches"].as_array().unwrap().len(),
+        0,
+        "48 V is out of every range"
+    );
+
+    let r = call(&client, "find_capabilities", json!({ "nonsense": 1 })).await;
+    assert!(
+        is_error(&r) || r.structured_content.is_none(),
+        "unknown fields are refused"
+    );
+    client.cancel().await.unwrap();
+    lab_.gw.shutdown().await.unwrap();
+}
+
+/// A model proposes a procedure, cannot run it until a person approves it, and then runs it
+/// as an ordinary plan with its parameters checked.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_model_proposes_a_procedure_and_runs_it_once_a_person_approves() {
+    let lab_ = lab(psu_grants()).await;
+    let client = connect(&lab_.gw.url, &lab_.agent_token, false).await;
+    let procedure = json!({ "procedure": {
+        "name": "psu.set", "version": 1,
+        "params": { "v": { "type": "quantity", "unit": "V", "min": 0, "max": 2 } },
+        "plan": { "steps": [ { "id": "set", "request": {
+            "target": { "device": PSU, "capability": SETPOINT },
+            "operation": "write", "value": { "$param": "v" } } } ] } } });
+    let r = call(&client, "propose_procedure", procedure).await;
+    assert!(!is_error(&r), "{}", text(&r));
+    assert_eq!(structured(&r)["status"], "proposed");
+
+    let args = json!({ "name": "psu.set", "params": { "v": volts(1.0) } });
+    let r = call(&client, "run_procedure", args.clone()).await;
+    assert!(is_error(&r));
+    assert!(text(&r).contains("procedure.not_approved"), "{}", text(&r));
+
+    let operator = Client::new(&lab_.gw.url, &lab_.gw.operator_token).unwrap();
+    operator.approve_procedure("psu.set", 1).await.unwrap();
+    let listed = call(&client, "list_procedures", json!({})).await;
+    assert_eq!(structured(&listed)["procedures"][0]["status"], "approved");
+
+    let r = call(&client, "run_procedure", args).await;
+    assert!(!is_error(&r), "{}", text(&r));
+    assert_eq!(structured(&r)["state"], "SUCCEEDED", "{}", text(&r));
+
+    let r = call(
+        &client,
+        "check_procedure",
+        json!({ "name": "psu.set", "params": { "v": volts(9.0) } }),
+    )
+    .await;
+    assert!(is_error(&r));
+    assert!(text(&r).contains("outside"), "{}", text(&r));
+    client.cancel().await.unwrap();
+    lab_.gw.shutdown().await.unwrap();
 }

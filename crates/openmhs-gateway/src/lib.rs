@@ -251,11 +251,36 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
     }
     // A device that is switched off does not keep the others, or crash recovery, from
     // starting (ADR-0019); `require_devices` restores the strict start.
-    for adapter in &config.adapters {
-        if config.require_devices {
+    if config.require_devices {
+        for adapter in &config.adapters {
             engine.register(adapter.clone()).await?;
-        } else {
-            engine.register_allow_offline(adapter.clone()).await?;
+        }
+    } else {
+        // Each switched-off device costs up to a probe timeout. One at a time that is
+        // n timeouts before the gateway listens; a bounded number at a time it is about
+        // n / MAX_CONCURRENT_PROBES.
+        let limit = Arc::new(tokio::sync::Semaphore::new(
+            openmhs_engine::MAX_CONCURRENT_PROBES,
+        ));
+        let mut registering = tokio::task::JoinSet::new();
+        for adapter in config.adapters.iter().cloned() {
+            let (engine, limit) = (engine.clone(), limit.clone());
+            registering.spawn(async move {
+                let _permit = limit.acquire_owned().await;
+                engine.register_allow_offline(adapter).await
+            });
+        }
+        while let Some(done) = registering.join_next().await {
+            match done {
+                Ok(registered) => {
+                    registered?;
+                }
+                Err(join) => {
+                    return Err(GatewayError::Config(format!(
+                        "registering a device failed: {join}"
+                    )));
+                }
+            }
         }
     }
     if let Some(topology) = config.topology.clone() {
@@ -289,6 +314,7 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
         tokens: Mutex::new(tokens),
         reported: Mutex::new(std::collections::HashSet::new()),
         policy_store: tokio::sync::Mutex::new(policy_store),
+        procedures: tokio::sync::Mutex::new(store::ProcedureStore::open(&config.home)?),
         sims,
     });
     let monitor = (config.health_interval_ms > 0).then(|| {
@@ -298,7 +324,7 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
             loop {
                 tokio::time::sleep(every).await;
                 // Devices that something else reached recently are not probed again.
-                if let Err(e) = engine.refresh_availability(config.health_interval_ms).await {
+                if let Err(e) = engine.sweep_availability(config.health_interval_ms).await {
                     warn!(error = %e, "availability probe failed");
                 }
             }

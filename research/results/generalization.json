@@ -1,0 +1,356 @@
+{
+ "_meta": {
+  "td": "research/generalization/hotplate_td.json",
+  "when": "2026-10-29T18:15:45+0530",
+  "note": "simulators only; the TD was written before the importer was run on it"
+ },
+ "unreviewed": {
+  "exposed": {
+   "properties": 4,
+   "actions": 1
+  },
+  "counts": {
+   "properties": {
+    "mapped": 4,
+    "review": 6,
+    "unsupported": 0
+   },
+   "actions": {
+    "mapped": 1,
+    "review": 3,
+    "unsupported": 0
+   },
+   "events": {
+    "mapped": 0,
+    "review": 0,
+    "unsupported": 1
+   },
+   "security": {
+    "mapped": 0,
+    "review": 1,
+    "unsupported": 0
+   }
+  },
+  "reasons": {
+   "mapped": 4,
+   "no_measurement_time": 4,
+   "action_unreviewed": 3,
+   "writable_not_exposed": 1,
+   "unit_unknown": 1,
+   "mapped_td_safe": 1,
+   "event_unsupported": 1,
+   "credentials_required": 1
+  },
+  "connectable": true,
+  "unsupported": [
+   "events/overheat: event_unsupported"
+  ],
+  "needs_review": [
+   "actions/setProgram: action_unreviewed",
+   "actions/start: action_unreviewed",
+   "actions/stop: action_unreviewed",
+   "properties/stirRate: unit_unknown",
+   "properties/targetTemperature: writable_not_exposed",
+   "security: credentials_required"
+  ]
+ },
+ "reviewed": {
+  "exposed": {
+   "properties": 4,
+   "actions": 4
+  },
+  "counts": {
+   "properties": {
+    "mapped": 4,
+    "review": 6,
+    "unsupported": 0
+   },
+   "actions": {
+    "mapped": 4,
+    "review": 0,
+    "unsupported": 0
+   },
+   "events": {
+    "mapped": 0,
+    "review": 0,
+    "unsupported": 1
+   },
+   "security": {
+    "mapped": 0,
+    "review": 1,
+    "unsupported": 0
+   }
+  },
+  "reasons": {
+   "mapped": 4,
+   "no_measurement_time": 4,
+   "mapped_from_override": 3,
+   "writable_not_exposed": 1,
+   "unit_unknown": 1,
+   "mapped_td_safe": 1,
+   "event_unsupported": 1,
+   "credentials_required": 1
+  },
+  "connectable": true,
+  "unsupported": [
+   "events/overheat: event_unsupported"
+  ],
+  "needs_review": [
+   "properties/stirRate: unit_unknown",
+   "properties/targetTemperature: writable_not_exposed",
+   "security: credentials_required"
+  ]
+ },
+ "live": {
+  "read_temperature": {
+   "value": "Quantity(value=67.0, unit='Cel')",
+   "usable": true,
+   "source": "simulator"
+  },
+  "selfTest_td_safe": {
+   "state": "UNVERIFIABLE",
+   "outcome": "unverified",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "APPLIED",
+    "UNVERIFIABLE"
+   ],
+   "errors": [],
+   "detail": "no readback declared: no readback is declared in the Thing Description or the review"
+  },
+  "setProgram_in_range": {
+   "state": "VERIFIED",
+   "outcome": "succeeded",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "APPLIED",
+    "VERIFIED"
+   ],
+   "errors": [],
+   "detail": "readback 40 Cel matches"
+  },
+  "temperature_after_3s": "Quantity(value=61.5, unit='Cel')",
+  "setProgram_out_of_range": {
+   "state": "DENIED",
+   "outcome": "denied",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "DENIED"
+   ],
+   "errors": [
+    "command.value.out_of_range: 500 Cel is outside the allowed range 20..300 Cel"
+   ],
+   "detail": "500 Cel is outside the allowed range 20..300 Cel"
+  },
+  "stop": {
+   "state": "UNVERIFIABLE",
+   "outcome": "unverified",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "APPLIED",
+    "UNVERIFIABLE"
+   ],
+   "errors": [],
+   "detail": "no readback declared: no readback is declared in the Thing Description or the review"
+  }
+ },
+ "credential_leak": {
+  "manifest_declares_names_only": [
+   "WOT_USER",
+   "WOT_PASSWORD"
+  ],
+  "password_found_in_manifest_log_or_audit": false
+ },
+ "wrong_credentials": {
+  "device_status": [
+   [
+    "OFFLINE",
+    "the Thing rejected the credentials (HTTP 401)"
+   ]
+  ]
+ },
+ "incomplete_td_unreviewed": {
+  "exposed": {
+   "properties": 4,
+   "actions": 0
+  },
+  "counts": {
+   "properties": {
+    "mapped": 4,
+    "review": 8,
+    "unsupported": 0
+   },
+   "actions": {
+    "mapped": 0,
+    "review": 4,
+    "unsupported": 0
+   },
+   "events": {
+    "mapped": 0,
+    "review": 0,
+    "unsupported": 1
+   },
+   "security": {
+    "mapped": 0,
+    "review": 1,
+    "unsupported": 0
+   }
+  },
+  "reasons": {
+   "mapped": 4,
+   "no_measurement_time": 4,
+   "action_unreviewed": 4,
+   "unit_missing": 3,
+   "writable_not_exposed": 1,
+   "event_unsupported": 1,
+   "credentials_required": 1
+  },
+  "connectable": true,
+  "unsupported": [
+   "events/overheat: event_unsupported"
+  ],
+  "needs_review": [
+   "actions/selfTest: action_unreviewed",
+   "actions/setProgram: action_unreviewed",
+   "actions/start: action_unreviewed",
+   "actions/stop: action_unreviewed",
+   "properties/stirRate: unit_missing",
+   "properties/targetTemperature: unit_missing",
+   "properties/targetTemperature: writable_not_exposed",
+   "properties/temperature: unit_missing",
+   "security: credentials_required"
+  ]
+ },
+ "incomplete_td_with_same_review": {
+  "exposed": {
+   "properties": 4,
+   "actions": 0
+  },
+  "counts": {
+   "properties": {
+    "mapped": 4,
+    "review": 8,
+    "unsupported": 0
+   },
+   "actions": {
+    "mapped": 0,
+    "review": 4,
+    "unsupported": 0
+   },
+   "events": {
+    "mapped": 0,
+    "review": 0,
+    "unsupported": 1
+   },
+   "security": {
+    "mapped": 0,
+    "review": 1,
+    "unsupported": 0
+   }
+  },
+  "reasons": {
+   "mapped": 4,
+   "no_measurement_time": 4,
+   "action_unreviewed": 4,
+   "unit_missing": 3,
+   "writable_not_exposed": 1,
+   "event_unsupported": 1,
+   "credentials_required": 1
+  },
+  "connectable": true,
+  "unsupported": [
+   "events/overheat: event_unsupported"
+  ],
+  "needs_review": [
+   "actions/selfTest: action_unreviewed",
+   "actions/setProgram: action_unreviewed",
+   "actions/start: action_unreviewed",
+   "actions/stop: action_unreviewed",
+   "properties/stirRate: unit_missing",
+   "properties/targetTemperature: unit_missing",
+   "properties/targetTemperature: writable_not_exposed",
+   "properties/temperature: unit_missing",
+   "security: credentials_required"
+  ]
+ },
+ "incomplete_td_with_completed_review": {
+  "exposed": {
+   "properties": 4,
+   "actions": 3
+  },
+  "counts": {
+   "properties": {
+    "mapped": 4,
+    "review": 8,
+    "unsupported": 0
+   },
+   "actions": {
+    "mapped": 3,
+    "review": 3,
+    "unsupported": 0
+   },
+   "events": {
+    "mapped": 0,
+    "review": 0,
+    "unsupported": 1
+   },
+   "security": {
+    "mapped": 0,
+    "review": 1,
+    "unsupported": 0
+   }
+  },
+  "reasons": {
+   "unit_missing": 5,
+   "mapped": 4,
+   "no_measurement_time": 4,
+   "mapped_from_override": 3,
+   "writable_not_exposed": 1,
+   "action_unreviewed": 1,
+   "event_unsupported": 1,
+   "credentials_required": 1
+  },
+  "connectable": true,
+  "unsupported": [
+   "events/overheat: event_unsupported"
+  ],
+  "needs_review": [
+   "actions/selfTest: action_unreviewed",
+   "actions/setProgram: unit_missing",
+   "properties/stirRate: unit_missing",
+   "properties/targetTemperature: unit_missing",
+   "properties/targetTemperature: writable_not_exposed",
+   "properties/temperature: unit_missing",
+   "security: credentials_required"
+  ]
+ },
+ "incomplete_td_out_of_range": {
+  "state": "VERIFIED",
+  "outcome": "succeeded",
+  "path": [
+   "CREATED",
+   "VALIDATING",
+   "APPROVED",
+   "DISPATCHED",
+   "ACCEPTED",
+   "APPLIED",
+   "VERIFIED"
+  ],
+  "errors": [],
+  "detail": "readback 500 1 matches",
+  "note": "no limit was declared and the reviewer accepted that, so OpenMHS forwarded 500. This stand-in's setProgram has no range check of its own, so the device accepted it and readback confirmed 500: nothing in the chain stopped it. With the complete description the same request was DENIED by OpenMHS (20..300)."
+ }
+}

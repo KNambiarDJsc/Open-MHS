@@ -3,7 +3,10 @@
 //! Every command except `serve` and `demo` is a client of a running gateway; the CLI
 //! never touches devices, policy or the journal directly (ADR-0001).
 
+mod bench;
 mod demo;
+mod discover;
+mod evidence;
 mod output;
 mod profiles;
 pub mod scaffold;
@@ -61,6 +64,15 @@ enum Cmd {
     Serve(ServeArgs),
     /// Start a throwaway gateway with the virtual lab and walk through a guided scenario.
     Demo(DemoArgs),
+    /// Measure a throwaway gateway on this machine, through its real API: read, command
+    /// and event latency, concurrent reads, watch timing. Simulated devices only.
+    Bench(BenchArgs),
+    /// Ask addresses you name for their identity (SCPI `*IDN?`, which changes nothing) and
+    /// list what answers. Proposes only: nothing is connected, registered or granted.
+    Discover {
+        #[command(subcommand)]
+        command: DiscoverCmd,
+    },
     /// Show who you are to the gateway and what it is running.
     Info,
     /// List or inspect registered devices.
@@ -82,8 +94,37 @@ enum Cmd {
         #[command(subcommand)]
         command: PlansCmd,
     },
+    /// Reviewed, versioned plans with typed parameters (spec/procedures.md).
+    Procedures {
+        #[command(subcommand)]
+        command: ProceduresCmd,
+    },
     /// Read a property from the device (authorized and audited).
     Read { device: String, capability: String },
+    /// Follow the state fabric (ADR-0023): observations you may subscribe to, availability
+    /// changes, and command state changes, as they happen.
+    Events(EventsArgs),
+    /// Sample a capability that declares `subscribe` and print each reading until stopped.
+    Watch {
+        device: String,
+        capability: String,
+        /// How often, e.g. 500ms or 2s (at least 200ms).
+        #[arg(long, default_value = "1s", value_parser = parse_duration_ms)]
+        every: u64,
+        /// How long, e.g. 30s or 5m (at most 1h).
+        #[arg(long = "for", default_value = "1m", value_parser = parse_duration_ms)]
+        ttl: u64,
+    },
+    /// Find capabilities by what they can do: quantity, unit, operation, a value in range.
+    Find(FindArgs),
+    /// What the journal says happened on a device: confirmed values, refusals and the limits
+    /// behind them, tracking error, readback latency, unresolved outcomes (ADR-0022).
+    /// As an agent it covers your own commands; as the operator, everyone's.
+    Insights {
+        device: String,
+        /// Only this capability.
+        capability: Option<String>,
+    },
     /// Submit a write (properties) or invoke (actions) and wait for its receipt.
     Exec(ExecArgs),
     /// Inspect and manage commands.
@@ -241,6 +282,44 @@ enum AdapterCmd {
 }
 
 #[derive(Args)]
+struct EventsArgs {
+    /// Only these devices (`*` patterns). Repeatable.
+    #[arg(long = "device")]
+    devices: Vec<String>,
+    /// Only these kinds: observation, availability, command. Repeatable.
+    #[arg(long = "kind", value_parser = parse_enum::<openmhs_types::event::EventKind>)]
+    kinds: Vec<openmhs_types::event::EventKind>,
+    /// Start from the oldest event still kept instead of from now.
+    #[arg(long)]
+    from_start: bool,
+    /// Keep waiting for new events instead of printing what is there and stopping.
+    #[arg(long)]
+    follow: bool,
+}
+
+#[derive(Args)]
+struct FindArgs {
+    /// Capability name, `*` patterns allowed.
+    #[arg(long)]
+    name: Option<String>,
+    /// Physical quantity, e.g. voltage, temperature.
+    #[arg(long)]
+    quantity: Option<String>,
+    /// Unit, e.g. V, Cel.
+    #[arg(long)]
+    unit: Option<String>,
+    /// read, write, subscribe or invoke.
+    #[arg(long = "op", value_parser = parse_enum::<Operation>)]
+    operation: Option<Operation>,
+    /// A value it must accept (inside its declared range).
+    #[arg(long)]
+    value: Option<f64>,
+    /// Only devices that are not OFFLINE.
+    #[arg(long)]
+    available: bool,
+}
+
+#[derive(Args)]
 struct McpArgs {
     /// Gateway URL. Defaults to the one in the running gateway's runtime file.
     #[arg(long)]
@@ -249,6 +328,12 @@ struct McpArgs {
     /// policy. Never give a model that power unless you understand the risk.
     #[arg(long)]
     allow_operator: bool,
+    /// Run a throwaway gateway with the virtual lab inside this process and serve MCP
+    /// for it: no separate `serve`, grants or token. The agent may read every simulated
+    /// device and write the power supply; nothing persists and no real hardware is
+    /// touched. One config line is enough to try OpenMHS from an MCP host.
+    #[arg(long, conflicts_with_all = ["url", "allow_operator"])]
+    sim: bool,
 }
 
 #[derive(Args, Clone)]
@@ -314,6 +399,72 @@ pub struct ServeArgs {
     /// MiB. A starting point to test, not a sizing recommendation.
     #[arg(long, default_value_t = openmhs_gateway::DEFAULT_JOURNAL_RESERVE_BYTES / (1024 * 1024))]
     journal_reserve_mib: u64,
+}
+
+#[derive(Subcommand)]
+enum DiscoverCmd {
+    /// Modbus TCP devices, by Read Device Identification (function 43/14).
+    Modbus {
+        /// Hosts: 192.168.1.20, 192.168.1.20:502, or a range 192.168.1.20-40 (at most 256).
+        #[arg(required = true)]
+        targets: Vec<String>,
+        #[arg(long, default_value_t = 502)]
+        port: u16,
+        /// Modbus unit id to ask.
+        #[arg(long, default_value_t = 1)]
+        unit: u8,
+        #[arg(long, default_value_t = 800)]
+        timeout_ms: u64,
+    },
+    /// HTTP devices: one GET of each URL given.
+    Http {
+        #[arg(required = true)]
+        urls: Vec<String>,
+        #[arg(long, default_value_t = 2000)]
+        timeout_ms: u64,
+        /// Allow http:// beyond loopback.
+        #[arg(long)]
+        allow_plaintext: bool,
+    },
+    /// MQTT topics: subscribe on a broker for a while and list what is published.
+    Mqtt {
+        /// host or host:port (1883 by default).
+        broker: String,
+        /// Topic filter.
+        #[arg(long, default_value = "#")]
+        topic: String,
+        /// How long to listen, e.g. 3s (at most 30s).
+        #[arg(long = "for", default_value = "3s", value_parser = parse_duration_ms)]
+        listen: u64,
+        /// Allow an unencrypted connection beyond loopback.
+        #[arg(long)]
+        allow_plaintext: bool,
+    },
+    /// SCPI instruments over TCP (LXI, bench supplies, meters).
+    Scpi {
+        /// Hosts: 192.168.1.20, 192.168.1.20:5555, or a range 192.168.1.20-40 (at most 256).
+        #[arg(required = true)]
+        targets: Vec<String>,
+        /// Port for targets that name none.
+        #[arg(long, default_value_t = 5025)]
+        port: u16,
+        /// How long to wait for each answer.
+        #[arg(long, default_value_t = 800)]
+        timeout_ms: u64,
+    },
+}
+
+#[derive(Args)]
+struct BenchArgs {
+    /// Sequential reads to time (also the total for the concurrent run).
+    #[arg(long, default_value_t = 500)]
+    reads: usize,
+    /// Verified writes to time (paced at under 5 a second, the setpoint's rate limit).
+    #[arg(long, default_value_t = 20)]
+    commands: usize,
+    /// Clients reading at once in the concurrent run.
+    #[arg(long, default_value_t = 8)]
+    concurrency: usize,
 }
 
 #[derive(Args)]
@@ -474,6 +625,50 @@ enum ApprovalsCmd {
 }
 
 #[derive(Subcommand)]
+enum ProceduresCmd {
+    /// Every stored procedure, proposed and approved.
+    List,
+    /// One procedure (the newest version unless --version).
+    Show {
+        name: String,
+        #[arg(long)]
+        version: Option<u32>,
+    },
+    /// Store a procedure (a JSON file) as proposed; it cannot run until approved.
+    Propose { file: PathBuf },
+    /// Store a procedure as approved (operator).
+    Add { file: PathBuf },
+    /// Approve a proposed version (operator).
+    Approve { name: String, version: u32 },
+    /// Remove a version (operator).
+    Remove { name: String, version: u32 },
+    /// Dry-run an approved procedure against twins.
+    Check(RunProcedureArgs),
+    /// Run an approved procedure: an ordinary plan, as you.
+    Run(RunProcedureArgs),
+}
+
+#[derive(Args)]
+struct RunProcedureArgs {
+    name: String,
+    #[arg(long)]
+    version: Option<u32>,
+    /// name=value, e.g. voltage=2V. Repeatable.
+    #[arg(long = "param", value_parser = values::parse_param)]
+    params: Vec<(String, serde_json::Value)>,
+}
+
+impl From<RunProcedureArgs> for openmhs_api::RunProcedureParams {
+    fn from(a: RunProcedureArgs) -> Self {
+        Self {
+            name: a.name,
+            version: a.version,
+            params: a.params.into_iter().collect(),
+        }
+    }
+}
+
+#[derive(Subcommand)]
 enum PlansCmd {
     /// Submit a plan (a JSON file); returns when it ends or waits.
     Submit { file: PathBuf },
@@ -581,6 +776,20 @@ enum TokensCmd {
 enum AuditCmd {
     /// Verify the audit log's hash chain.
     Verify,
+    /// Export the complete audit chain and current receipts from one database snapshot.
+    Export {
+        #[arg(long)]
+        out: PathBuf,
+        /// Also save the head checkpoint separately for independent retention.
+        #[arg(long)]
+        checkpoint_out: Option<PathBuf>,
+    },
+    /// Verify an exported bundle offline, optionally against a separately retained checkpoint.
+    VerifyFile {
+        file: PathBuf,
+        #[arg(long)]
+        checkpoint: Option<PathBuf>,
+    },
     /// Show the most recent audit records.
     Tail {
         #[arg(long)]
@@ -626,6 +835,7 @@ fn parse_duration_ms(s: &str) -> Result<u64, String> {
         .parse()
         .map_err(|_| format!("'{s}' is not a duration like 30m, 12h or 7d"))?;
     let unit_ms: u64 = match unit {
+        "ms" => 1,
         "s" => 1_000,
         "m" => 60_000,
         "h" => 3_600_000,
@@ -894,6 +1104,11 @@ fn report_error(json: bool, e: &ClientError) -> u8 {
 fn parse_decision(s: &str) -> Result<openmhs_types::plan::PlanDecision, String> {
     serde_json::from_value(serde_json::Value::String(s.into()))
         .map_err(|_| format!("'{s}' is not resume, retry, compensate or abort"))
+}
+
+fn read_procedure(path: &Path) -> Result<openmhs_types::procedure::ProcedureSpec, String> {
+    let text = std::fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    serde_json::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))
 }
 
 fn read_plan(path: &Path) -> Result<openmhs_types::plan::PlanSpec, String> {
@@ -1399,6 +1614,9 @@ async fn mcp(home: &std::path::Path, token: Option<&str>, args: McpArgs) -> u8 {
         .with_writer(std::io::stderr)
         .with_target(false)
         .try_init();
+    if args.sim {
+        return mcp_sim().await;
+    }
     if token.is_none() && !args.allow_operator {
         eprintln!(
             "error: `openmhs mcp` needs an agent token (--token or OPENMHS_TOKEN). Create one \
@@ -1433,11 +1651,168 @@ async fn mcp(home: &std::path::Path, token: Option<&str>, args: McpArgs) -> u8 {
     }
 }
 
+/// `openmhs mcp --sim`: the whole gateway in one process, for trying OpenMHS from an MCP
+/// host without any setup. The MCP server gets an agent token minted here, scoped to the
+/// virtual lab; the operator token never leaves this function, so the model cannot
+/// approve its own commands or change policy (the same boundary as `openmhs mcp`).
+async fn mcp_sim() -> u8 {
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis())
+        .unwrap_or_default();
+    let home = std::env::temp_dir().join(format!("openmhs-mcp-sim-{}-{stamp}", std::process::id()));
+    let mut config = GatewayConfig::new(&home);
+    config.listen = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 0);
+    config.simulation = true;
+    let gateway = match openmhs_gateway::start(config).await {
+        Ok(g) => g,
+        Err(e) => {
+            eprintln!("error: cannot start the virtual lab: {e}");
+            return exit::ERROR;
+        }
+    };
+    let code = match mcp_sim_session(&gateway.url, &gateway.operator_token).await {
+        Ok(()) => exit::OK,
+        Err(e) => {
+            eprintln!("error: {e}");
+            exit::ERROR
+        }
+    };
+    if let Err(e) = gateway.shutdown().await {
+        eprintln!("warning: gateway shutdown: {e}");
+    }
+    let _ = std::fs::remove_dir_all(&home);
+    code
+}
+
+async fn mcp_sim_session(url: &str, operator_token: &str) -> Result<(), String> {
+    let operator = Client::new(url, operator_token).map_err(|e| e.to_string())?;
+    let read = Grant {
+        id: "sim-read".into(),
+        principal: "agent:*".into(),
+        device: "sim.*".into(),
+        capability: "*".into(),
+        operations: vec![Operation::Read],
+        effect: Effect::Allow,
+        max_side_effect: None,
+        reason: None,
+    };
+    let psu = Grant {
+        id: "sim-psu".into(),
+        principal: "agent:*".into(),
+        device: "sim.psu-01".into(),
+        capability: "power.output.*".into(),
+        operations: vec![Operation::Write],
+        effect: Effect::Allow,
+        max_side_effect: Some(SideEffect::Reversible),
+        reason: None,
+    };
+    for g in [read, psu] {
+        operator.add_grant(g).await.map_err(|e| e.to_string())?;
+    }
+    let scopes = ["sim.*:*:read", "sim.psu-01:*:write"]
+        .map(|s| parse_scope(s).expect("static scope"))
+        .to_vec();
+    let token = operator
+        .create_token(CreateTokenParams::scoped("agent:sim", Role::Agent, scopes))
+        .await
+        .map_err(|e| e.to_string())?;
+    let agent = Client::new(url, &token.token).map_err(|e| e.to_string())?;
+    eprintln!(
+        "openmhs mcp --sim: virtual lab only (sim.thermo-01, sim.psu-01, sim.axis-01);          the agent can read all and write the power supply; nothing persists."
+    );
+    openmhs_mcp::serve_stdio(openmhs_mcp::OpenMhsServer::new(agent, false))
+        .await
+        .map_err(|e| format!("MCP session ended: {e}"))
+}
+
 async fn run(cli: Cli) -> u8 {
     let home = cli.home.clone().unwrap_or_else(default_home);
     match cli.command {
+        Cmd::Audit {
+            command: AuditCmd::VerifyFile { file, checkpoint },
+        } => {
+            return evidence::verify_file(cli.json, &file, checkpoint.as_deref());
+        }
         Cmd::Serve(args) => return serve(home, args).await,
         Cmd::Demo(args) => return demo::run(args.keep).await,
+        Cmd::Discover {
+            command:
+                DiscoverCmd::Scpi {
+                    targets,
+                    port,
+                    timeout_ms,
+                },
+        } => return discover::run(cli.json, &targets, port, timeout_ms).await,
+        Cmd::Discover {
+            command:
+                DiscoverCmd::Modbus {
+                    targets,
+                    port,
+                    unit,
+                    timeout_ms,
+                },
+        } => {
+            let targets = match discover::expand(&targets, port) {
+                Ok(t) => t,
+                Err(e) => {
+                    eprintln!("error: {e}");
+                    return exit::ERROR;
+                }
+            };
+            let d =
+                discover::modbus(targets, unit, std::time::Duration::from_millis(timeout_ms)).await;
+            return discover::finish(cli.json, &d);
+        }
+        Cmd::Discover {
+            command:
+                DiscoverCmd::Http {
+                    urls,
+                    timeout_ms,
+                    allow_plaintext,
+                },
+        } => {
+            if urls.len() > discover::MAX_TARGETS {
+                eprintln!("error: at most {} URLs per run", discover::MAX_TARGETS);
+                return exit::ERROR;
+            }
+            for u in &urls {
+                let Ok(parsed) = reqwest::Url::parse(u) else {
+                    eprintln!("error: '{u}' is not a URL");
+                    return exit::ERROR;
+                };
+                let host = parsed.host_str().unwrap_or_default();
+                if let Err(e) =
+                    discover::check_plaintext(host, parsed.scheme() == "http", allow_plaintext)
+                {
+                    eprintln!("error: {e}");
+                    return exit::ERROR;
+                }
+            }
+            let d = discover::http(urls, std::time::Duration::from_millis(timeout_ms)).await;
+            return discover::finish(cli.json, &d);
+        }
+        Cmd::Discover {
+            command:
+                DiscoverCmd::Mqtt {
+                    broker,
+                    topic,
+                    listen,
+                    allow_plaintext,
+                },
+        } => {
+            let host = broker.rsplit_once(':').map_or(broker.as_str(), |(h, _)| h);
+            if let Err(e) = discover::check_plaintext(host, true, allow_plaintext) {
+                eprintln!("error: {e}");
+                return exit::ERROR;
+            }
+            let listen = std::time::Duration::from_millis(listen.min(30_000));
+            let d = discover::mqtt(&broker, &topic, listen).await;
+            return discover::finish(cli.json, &d);
+        }
+        Cmd::Bench(args) => {
+            return bench::run(cli.json, args.reads, args.commands, args.concurrency).await;
+        }
         Cmd::Mcp(args) => return mcp(&home, cli.token.as_deref(), args).await,
         Cmd::Conformance(args) => return conformance(cli.json, args).await,
         Cmd::Profile {
@@ -1493,6 +1868,8 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
     match cmd {
         Cmd::Serve(_)
         | Cmd::Demo(_)
+        | Cmd::Bench(_)
+        | Cmd::Discover { .. }
         | Cmd::Mcp(_)
         | Cmd::Conformance(_)
         | Cmd::Profile { .. }
@@ -1602,9 +1979,163 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
                 show(json, &client.cancel_plan(&id, reason).await?, output::plan);
             }
         },
+        Cmd::Procedures { command } => match command {
+            ProceduresCmd::List => {
+                show(json, &client.procedures().await?, |l| output::procedures(l))
+            }
+            ProceduresCmd::Show { name, version } => {
+                show(json, &client.procedure(&name, version).await?, |p| {
+                    output::procedures(std::slice::from_ref(p))
+                });
+            }
+            ProceduresCmd::Propose { file } => {
+                let spec = match read_procedure(&file) {
+                    Ok(s) => s,
+                    Err(m) => {
+                        eprintln!("error: {m}");
+                        return Ok(exit::ERROR);
+                    }
+                };
+                show(json, &client.propose_procedure(spec).await?, |p| {
+                    output::procedures(std::slice::from_ref(p))
+                });
+            }
+            ProceduresCmd::Add { file } => {
+                let spec = match read_procedure(&file) {
+                    Ok(s) => s,
+                    Err(m) => {
+                        eprintln!("error: {m}");
+                        return Ok(exit::ERROR);
+                    }
+                };
+                show(json, &client.add_procedure(spec).await?, |p| {
+                    output::procedures(std::slice::from_ref(p))
+                });
+            }
+            ProceduresCmd::Approve { name, version } => {
+                show(
+                    json,
+                    &client.approve_procedure(&name, version).await?,
+                    |p| output::procedures(std::slice::from_ref(p)),
+                );
+            }
+            ProceduresCmd::Remove { name, version } => {
+                show(json, &client.remove_procedure(&name, version).await?, |p| {
+                    output::procedures(std::slice::from_ref(p))
+                });
+            }
+            ProceduresCmd::Check(args) => {
+                let p = client.check_procedure(args.into()).await?;
+                show(json, &p, output::plan_preflight);
+                return Ok(plan_preflight_exit(&p));
+            }
+            ProceduresCmd::Run(args) => {
+                let p = client.run_procedure(args.into()).await?;
+                show(json, &p, output::plan);
+                return Ok(plan_exit(&p));
+            }
+        },
         Cmd::Read { device, capability } => {
             let r = client.read(&device, &capability).await?;
             show(json, &r, output::read_result);
+        }
+        Cmd::Events(args) => {
+            let mut params = openmhs_api::EventsPollParams {
+                after: args.from_start.then_some(0),
+                devices: args.devices,
+                kinds: args.kinds,
+                limit: Some(500),
+                ..Default::default()
+            };
+            loop {
+                let b = client.poll_events(params.clone()).await?;
+                if b.missed > 0 {
+                    eprintln!("({} event(s) dropped before they could be read)", b.missed);
+                }
+                for e in &b.events {
+                    if json {
+                        output::json_line(e);
+                    } else {
+                        output::event(e);
+                    }
+                }
+                if !args.follow {
+                    break;
+                }
+                params.stream = Some(b.stream);
+                params.after = Some(b.next);
+                params.wait_ms = 25_000;
+            }
+        }
+        Cmd::Watch {
+            device,
+            capability,
+            every,
+            ttl,
+        } => {
+            let start = client
+                .poll_events(openmhs_api::EventsPollParams::default())
+                .await?;
+            let w = client
+                .create_watch(openmhs_api::WatchParams {
+                    device: device.clone(),
+                    capability: capability.clone(),
+                    interval_ms: every,
+                    ttl_ms: Some(ttl),
+                })
+                .await?;
+            eprintln!(
+                "watching {device} {capability} every {every} ms until {} (watch {})",
+                w.expires_at, w.id
+            );
+            let mut params = openmhs_api::EventsPollParams {
+                stream: Some(start.stream),
+                after: Some(start.next),
+                devices: vec![device.clone()],
+                kinds: vec![openmhs_types::event::EventKind::Observation],
+                limit: Some(500),
+                wait_ms: 25_000,
+            };
+            let ends = std::time::Instant::now() + std::time::Duration::from_millis(ttl);
+            while let Some(left) = ends.checked_duration_since(std::time::Instant::now()) {
+                params.wait_ms = u64::try_from(left.as_millis())
+                    .unwrap_or(25_000)
+                    .min(25_000);
+                let b = client.poll_events(params.clone()).await?;
+                for e in &b.events {
+                    if let openmhs_types::event::EventBody::Observation { capability: c, .. } =
+                        &e.body
+                        && *c == capability
+                    {
+                        if json {
+                            output::json_line(e);
+                        } else {
+                            output::event(e);
+                        }
+                    }
+                }
+                params.after = Some(b.next);
+            }
+        }
+        Cmd::Find(args) => {
+            let q = openmhs_api::selection::CapabilityQuery {
+                name: args.name,
+                quantity: args.quantity,
+                unit: args.unit,
+                operation: args.operation,
+                value: args.value,
+                max_side_effect: None,
+                available_only: args.available,
+            };
+            show(
+                json,
+                &client.find_capabilities(&q).await?,
+                output::selection,
+            );
+        }
+        Cmd::Insights { device, capability } => {
+            let i = client.insights(&device, capability.as_deref()).await?;
+            show(json, &i, output::insights);
         }
         Cmd::Exec(args) => {
             let request = match build_request(client, &args).await {
@@ -1777,6 +2308,24 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
             }
         },
         Cmd::Audit { command } => match command {
+            AuditCmd::Export {
+                out,
+                checkpoint_out,
+            } => {
+                let bundle = client.export_evidence().await?;
+                evidence::save(&out, &bundle).map_err(ClientError::Protocol)?;
+                if let Some(path) = checkpoint_out {
+                    evidence::save(&path, &bundle.checkpoint).map_err(ClientError::Protocol)?;
+                }
+                show(json, &bundle.checkpoint, |checkpoint| {
+                    println!(
+                        "exported through sequence {} to {}",
+                        checkpoint.seq,
+                        out.display()
+                    );
+                });
+            }
+            AuditCmd::VerifyFile { .. } => unreachable!("handled before connecting"),
             AuditCmd::Verify => {
                 let v = client.verify_audit().await?;
                 show(json, &v, output::audit_verify);

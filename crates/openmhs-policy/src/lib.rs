@@ -10,6 +10,9 @@ pub mod authz;
 pub mod constraints;
 mod glob;
 
+/// `*` wildcard matching, as grant and scope patterns use it.
+pub use glob::matches as glob_matches;
+
 pub use auth::{AuthMethod, Caller, CallerRecord, PrincipalKind, Scope};
 pub use authz::{AuthzDecision, Effect, Grant, Policy};
 pub use constraints::{

@@ -248,6 +248,56 @@ fn duplicate_submission_runs_once() {
 }
 
 #[test]
+fn evidence_export_is_operator_only_and_verifies_offline_with_a_checkpoint() {
+    let files = tempfile::tempdir().unwrap();
+    let bundle_path = files.path().join("evidence.json");
+    let checkpoint_path = files.path().join("checkpoint.json");
+    let bundle = bundle_path.to_str().unwrap();
+    let checkpoint = checkpoint_path.to_str().unwrap();
+    let gw = Gateway::start();
+    let agent = gw.agent_token();
+    gw.grant_psu("allow");
+    assert_eq!(set_volts(&gw, &agent, "1V", &[]).0, OK);
+    let (code, _) = gw.cli(Some(&agent), &["audit", "export", "--out", bundle]);
+    assert_eq!(code, DENIED);
+    assert!(!bundle_path.exists());
+    let (code, head) = gw.op(&[
+        "audit",
+        "export",
+        "--out",
+        bundle,
+        "--checkpoint-out",
+        checkpoint,
+    ]);
+    assert_eq!(code, OK, "{head}");
+    let original = std::fs::read(&bundle_path).unwrap();
+    // Re-exporting may not overwrite evidence retained by the operator.
+    assert_eq!(gw.op(&["audit", "export", "--out", bundle]).0, ERROR);
+    assert_eq!(std::fs::read(&bundle_path).unwrap(), original);
+    drop(gw);
+    let verify = || {
+        let output = Command::new(BIN)
+            .arg("--json")
+            .arg("--home")
+            .arg(files.path().join("no-gateway"))
+            .args(["audit", "verify-file", bundle, "--checkpoint", checkpoint])
+            .output()
+            .unwrap();
+        let result: Value = serde_json::from_slice(&output.stdout).unwrap();
+        (output.status.code().unwrap(), result)
+    };
+    let (code, result) = verify();
+    assert_eq!(code, OK, "{result}");
+    assert_eq!(result["complete"], true);
+    let mut corrupted: Value = serde_json::from_slice(&original).unwrap();
+    corrupted["receipts"][0]["principal"] = "forged".into();
+    std::fs::write(&bundle_path, serde_json::to_vec(&corrupted).unwrap()).unwrap();
+    let (code, result) = verify();
+    assert_eq!(code, FAILED, "{result}");
+    assert_eq!(result["valid"], false);
+}
+
+#[test]
 fn timeout_becomes_unknown_outcome_and_reconciles() {
     let gw = Gateway::start();
     let agent = gw.agent_token();
@@ -537,4 +587,511 @@ fn mcp_needs_an_agent_token() {
     assert_eq!(out.status.code(), Some(ERROR));
     assert!(String::from_utf8_lossy(&out.stderr).contains("agent token"));
     assert!(out.stdout.is_empty(), "stdout is reserved for MCP");
+}
+
+/// `openmhs mcp --sim` is a complete lab behind one command: an MCP host needs no gateway,
+/// grants or token. It reads every simulated device, writes the supply (confirmed by
+/// readback), and is still refused what it was not granted.
+#[test]
+fn mcp_sim_is_a_working_lab_in_one_command() {
+    use std::io::{BufRead, BufReader, Write};
+
+    let mut child = Command::new(BIN)
+        .args(["mcp", "--sim"])
+        .env_remove("OPENMHS_TOKEN")
+        .env_remove("OPENMHS_HOME")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn()
+        .unwrap();
+    let mut stdin = child.stdin.take().unwrap();
+    let mut stdout = BufReader::new(child.stdout.take().unwrap());
+    let mut rpc = |id: u64, method: &str, params: Value| -> Value {
+        let line =
+            serde_json::json!({ "jsonrpc": "2.0", "id": id, "method": method, "params": params });
+        writeln!(stdin, "{line}").unwrap();
+        stdin.flush().unwrap();
+        loop {
+            let mut buf = String::new();
+            assert_ne!(
+                stdout.read_line(&mut buf).unwrap(),
+                0,
+                "server closed stdout"
+            );
+            let v: Value = serde_json::from_str(&buf).unwrap();
+            if v["id"] == id {
+                if method == "initialize" {
+                    let done = serde_json::json!({ "jsonrpc": "2.0", "method": "notifications/initialized" });
+                    writeln!(stdin, "{done}").unwrap();
+                    stdin.flush().unwrap();
+                }
+                return v["result"].clone();
+            }
+        }
+    };
+    rpc(
+        1,
+        "initialize",
+        serde_json::json!({
+            "protocolVersion": "2025-11-25", "capabilities": {},
+            "clientInfo": { "name": "cli-test", "version": "0" }
+        }),
+    );
+
+    let devices = rpc(
+        2,
+        "tools/call",
+        serde_json::json!({ "name": "list_devices", "arguments": {} }),
+    );
+    assert_eq!(
+        devices["structuredContent"]["devices"]
+            .as_array()
+            .map(Vec::len),
+        Some(3),
+        "{devices}"
+    );
+
+    let write = rpc(
+        3,
+        "tools/call",
+        serde_json::json!({ "name": "submit_command", "arguments": {
+            "device": PSU, "capability": SETPOINT,
+            "value": { "value": 2.0, "unit": "V" }, "idempotency_key": "sim-1" } }),
+    );
+    assert_eq!(write["structuredContent"]["confirmed"], true, "{write}");
+
+    let home = rpc(
+        4,
+        "tools/call",
+        serde_json::json!({ "name": "submit_command", "arguments": {
+            "device": "sim.axis-01", "capability": "axis.home",
+            "params": {}, "idempotency_key": "sim-2" } }),
+    );
+    assert_eq!(home["isError"], true, "the axis was not granted: {home}");
+    assert_eq!(home["structuredContent"]["reached_device"], false);
+
+    drop(stdin);
+    let status = child.wait().unwrap();
+    assert!(status.success(), "{status:?}");
+}
+
+/// `--sim` brings its own agent; pointing it at someone else's gateway or an operator
+/// token is a contradiction, not a silent override.
+#[test]
+fn mcp_sim_refuses_to_mix_with_a_real_gateway() {
+    let out = Command::new(BIN)
+        .args(["mcp", "--sim", "--allow-operator"])
+        .stdin(Stdio::null())
+        .output()
+        .unwrap();
+    assert_ne!(out.status.code(), Some(OK));
+    assert!(out.stdout.is_empty());
+}
+
+/// `openmhs insights` reports what the journal recorded for the caller, and nothing it did
+/// not: a refusal with its numbers, then a confirmed value.
+#[test]
+fn insights_report_refusals_and_confirmed_values() {
+    let gw = Gateway::start();
+    gw.grant_psu("allow");
+    let token = gw.agent_token();
+
+    let (code, _) = set_volts(&gw, &token, "9V", &["--idempotency-key", "i1"]);
+    assert_eq!(code, DENIED);
+    let (code, _) = set_volts(&gw, &token, "2V", &["--idempotency-key", "i2"]);
+    assert_eq!(code, OK);
+
+    let (code, out) = gw.cli(Some(&token), &["insights", PSU]);
+    assert_eq!(code, OK, "{out}");
+    let cap = &out["capabilities"][0];
+    assert_eq!(cap["capability"], SETPOINT);
+    assert_eq!(cap["refusals"][0]["code"], "command.slew_exceeded");
+    assert_eq!(cap["refusals"][0]["latest_details"]["max_change"], 2.0);
+    assert_eq!(cap["verified"]["latest"], 2.0);
+
+    // The plain-text form says the same in words.
+    let text = Command::new(BIN)
+        .args(["insights", PSU, "--home"])
+        .arg(gw.home())
+        .args(["--token", &token])
+        .output()
+        .unwrap();
+    let text = String::from_utf8_lossy(&text.stdout);
+    assert!(text.contains("refused 1x  command.slew_exceeded"), "{text}");
+    assert!(text.contains("confirmed 1x"), "{text}");
+}
+
+/// The state fabric and selection from the command line: `find` names the streamable
+/// voltage, `watch` prints one JSON line per sample, and nothing streams without a
+/// subscribe grant.
+#[test]
+fn find_and_watch_a_streamable_measurement() {
+    let gw = Gateway::start();
+    gw.grant_psu("allow");
+    let token = gw.agent_token();
+
+    let (code, found) = gw.cli(Some(&token), &["find", "--unit", "V", "--op", "subscribe"]);
+    assert_eq!(code, OK, "{found}");
+    assert_eq!(
+        found["matches"][0]["capability"],
+        "power.output.voltage.measured"
+    );
+
+    let watch = |token: &str| {
+        Command::new(BIN)
+            .args(["--json", "--home"])
+            .arg(gw.home())
+            .args(["--token", token])
+            .args([
+                "watch",
+                PSU,
+                "power.output.voltage.measured",
+                "--every",
+                "200ms",
+                "--for",
+                "2s",
+            ])
+            .output()
+            .unwrap()
+    };
+    let refused = watch(&token);
+    assert_ne!(refused.status.code(), Some(OK), "no subscribe grant yet");
+
+    let (code, out) = gw.op(&[
+        "grants",
+        "add",
+        "--id",
+        "psu-subscribe",
+        "--principal",
+        "agent:*",
+        "--device",
+        PSU,
+        "--capability",
+        "*",
+        "--ops",
+        "subscribe",
+        "--effect",
+        "allow",
+    ]);
+    assert_eq!(code, OK, "{out}");
+    let out = watch(&token);
+    assert_eq!(
+        out.status.code(),
+        Some(OK),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let lines: Vec<Value> = String::from_utf8_lossy(&out.stdout)
+        .lines()
+        .map(|l| serde_json::from_str(l).unwrap())
+        .collect();
+    assert!(lines.len() >= 3, "{} samples in 2 s", lines.len());
+    assert!(
+        lines
+            .iter()
+            .all(|e| e["kind"] == "observation" && e["cause"] == "watch")
+    );
+}
+
+/// Procedures from the command line: the operator adds one from a file, the agent runs it
+/// with `--param`, and an out-of-range value is refused.
+#[test]
+fn an_operator_adds_a_procedure_and_an_agent_runs_it_with_params() {
+    let gw = Gateway::start();
+    gw.grant_psu("allow");
+    let token = gw.agent_token();
+    let file = gw.home().join("set.json");
+    std::fs::write(
+        &file,
+        serde_json::json!({
+            "name": "psu.set", "version": 1,
+            "params": { "voltage": { "type": "quantity", "unit": "V", "min": 0, "max": 2 } },
+            "plan": { "steps": [ { "id": "set", "request": {
+                "target": { "device": PSU, "capability": SETPOINT },
+                "operation": "write", "value": { "$param": "voltage" } } } ] }
+        })
+        .to_string(),
+    )
+    .unwrap();
+    let path = file.to_string_lossy().into_owned();
+    let (code, out) = gw.op(&["procedures", "add", &path]);
+    assert_eq!(code, OK, "{out}");
+    assert_eq!(out["status"], "approved");
+
+    let (code, out) = gw.cli(
+        Some(&token),
+        &["procedures", "run", "psu.set", "--param", "voltage=1V"],
+    );
+    assert_eq!(code, OK, "{out}");
+    assert_eq!(out["state"], "SUCCEEDED");
+
+    let (code, _) = gw.cli(
+        Some(&token),
+        &["procedures", "run", "psu.set", "--param", "voltage=9V"],
+    );
+    assert_ne!(code, OK);
+    let (code, _) = gw.cli(Some(&token), &["procedures", "add", &path]);
+    assert_ne!(code, OK, "only an operator adds an approved procedure");
+}
+
+/// `openmhs bench` measures a real gateway and says what it ran on.
+#[test]
+fn bench_reports_measured_latencies_and_its_conditions() {
+    let out = Command::new(BIN)
+        .args([
+            "--json",
+            "bench",
+            "--reads",
+            "20",
+            "--commands",
+            "2",
+            "--concurrency",
+            "2",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(
+        out.status.code(),
+        Some(OK),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let r: Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(r["read"]["samples"], 20);
+    assert_eq!(r["command"]["samples"], 2);
+    assert!(r["read"]["p50_ms"].as_f64().unwrap() > 0.0);
+    assert!(r["profile"] == "debug" || r["profile"] == "release");
+    assert!(r["note"].as_str().unwrap().contains("Not a capacity claim"));
+}
+
+/// `openmhs discover scpi` lists what identifies itself, ignores what does not, and sends
+/// nothing but the identity query.
+#[test]
+fn discover_finds_instruments_and_sends_only_the_identity_query() {
+    use std::io::{BufRead, BufReader, Write};
+    use std::sync::{Arc, Mutex};
+
+    let heard = Arc::new(Mutex::new(Vec::<String>::new()));
+    let serve = |answer: &'static str| {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let heard = heard.clone();
+        std::thread::spawn(move || {
+            for stream in listener.incoming().flatten() {
+                let mut out = stream.try_clone().unwrap();
+                let mut lines = BufReader::new(stream);
+                let mut line = String::new();
+                while lines.read_line(&mut line).unwrap_or(0) > 0 {
+                    heard.lock().unwrap().push(line.trim_end().to_owned());
+                    let _ = writeln!(out, "{answer}");
+                    line.clear();
+                }
+            }
+        });
+        port
+    };
+    let instrument = serve("ACME,PSU-1,SN42,1.0");
+    let not_an_instrument = serve("hello");
+    let closed = {
+        let l = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        l.local_addr().unwrap().port()
+    };
+
+    let out = Command::new(BIN)
+        .args(["--json", "discover", "scpi", "--timeout-ms", "500"])
+        .args([instrument, not_an_instrument, closed].map(|p| format!("127.0.0.1:{p}")))
+        .output()
+        .unwrap();
+    assert_eq!(
+        out.status.code(),
+        Some(OK),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let d: Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(d["asked"], 3);
+    assert_eq!(d["silent"], 2);
+    let c = &d["candidates"][0];
+    assert_eq!(c["address"], format!("127.0.0.1:{instrument}"));
+    assert_eq!(c["identity"], "ACME,PSU-1,SN42,1.0");
+    assert!(
+        c["next"]
+            .as_str()
+            .unwrap()
+            .starts_with("openmhs profile new scpi")
+    );
+    let heard = heard.lock().unwrap();
+    assert!(!heard.is_empty());
+    assert!(heard.iter().all(|l| l == "*IDN?"), "{heard:?}");
+}
+
+/// Modbus discovery sends only Read Device Identification, and reports both a device that
+/// identifies itself and one that answers with an exception.
+#[test]
+fn discover_modbus_asks_only_for_the_identity() {
+    use std::io::{Read, Write};
+    use std::sync::{Arc, Mutex};
+
+    let heard = Arc::new(Mutex::new(Vec::<Vec<u8>>::new()));
+    let serve = |identifies: bool| {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let heard = heard.clone();
+        std::thread::spawn(move || {
+            for mut s in listener.incoming().flatten() {
+                let mut req = [0u8; 11];
+                if s.read_exact(&mut req).is_err() {
+                    continue;
+                }
+                heard.lock().unwrap().push(req.to_vec());
+                let pdu: Vec<u8> = if identifies {
+                    let mut p = vec![0x2B, 0x0E, 0x01, 0x01, 0x00, 0x00, 0x02];
+                    for (id, text) in [(0u8, "ACME"), (1, "CHAMBER-9")] {
+                        p.extend([id, text.len() as u8]);
+                        p.extend(text.as_bytes());
+                    }
+                    p
+                } else {
+                    vec![0xAB, 0x01]
+                };
+                let len = (pdu.len() + 1) as u16;
+                let mut out = vec![req[0], req[1], 0, 0];
+                out.extend(len.to_be_bytes());
+                out.push(req[6]);
+                out.extend(pdu);
+                let _ = s.write_all(&out);
+            }
+        });
+        port
+    };
+    let named = serve(true);
+    let shy = serve(false);
+    let out = Command::new(BIN)
+        .args(["--json", "discover", "modbus"])
+        .args([named, shy].map(|p| format!("127.0.0.1:{p}")))
+        .output()
+        .unwrap();
+    assert_eq!(
+        out.status.code(),
+        Some(OK),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let d: Value = serde_json::from_slice(&out.stdout).unwrap();
+    let ids: Vec<String> = d["candidates"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|c| c["identity"].as_str().unwrap().to_owned())
+        .collect();
+    assert!(ids.contains(&"ACME,CHAMBER-9".to_owned()), "{ids:?}");
+    assert!(ids.iter().any(|i| i.contains("exception 1")), "{ids:?}");
+    for req in heard.lock().unwrap().iter() {
+        assert_eq!(
+            &req[7..],
+            &[0x2B, 0x0E, 0x01, 0x00],
+            "only function 43/14 is sent"
+        );
+    }
+}
+
+/// HTTP discovery is one GET per URL, and refuses plaintext beyond loopback unless asked.
+#[test]
+fn discover_http_gets_each_url_once_and_guards_plaintext() {
+    use std::io::{BufRead, BufReader, Write};
+    use std::sync::{Arc, Mutex};
+
+    let methods = Arc::new(Mutex::new(Vec::<String>::new()));
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    {
+        let methods = methods.clone();
+        std::thread::spawn(move || {
+            for s in listener.incoming().flatten() {
+                let mut r = BufReader::new(s.try_clone().unwrap());
+                let mut first = String::new();
+                let _ = r.read_line(&mut first);
+                methods
+                    .lock()
+                    .unwrap()
+                    .push(first.split(' ').next().unwrap_or("").to_owned());
+                let mut out = s;
+                let _ = out.write_all(
+                    b"HTTP/1.1 200 OK\r\nServer: lamp-fw/1.2\r\nContent-Type: application/json\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{}",
+                );
+            }
+        });
+    }
+    let out = Command::new(BIN)
+        .args([
+            "--json",
+            "discover",
+            "http",
+            &format!("http://127.0.0.1:{port}/status"),
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(
+        out.status.code(),
+        Some(OK),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let d: Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert!(
+        d["candidates"][0]["identity"]
+            .as_str()
+            .unwrap()
+            .contains("server lamp-fw/1.2")
+    );
+    assert_eq!(*methods.lock().unwrap(), ["GET"]);
+
+    let refused = Command::new(BIN)
+        .args(["discover", "http", "http://192.0.2.1/"])
+        .output()
+        .unwrap();
+    assert_eq!(refused.status.code(), Some(ERROR));
+    assert!(String::from_utf8_lossy(&refused.stderr).contains("--allow-plaintext"));
+}
+
+/// MQTT discovery subscribes, lists the topics a node publishes, and publishes nothing.
+#[test]
+fn discover_mqtt_lists_the_topics_a_broker_carries() {
+    let rt = tokio::runtime::Runtime::new().unwrap();
+    let profile = openmhs_mqtt::load(include_str!(
+        "../../../adapters/openmhs-mqtt/profiles/greenhouse-node.json"
+    ))
+    .unwrap();
+    let listener = rt
+        .block_on(tokio::net::TcpListener::bind("127.0.0.1:0"))
+        .unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let sim = openmhs_mqtt::sim::MqttSim::new(profile);
+    rt.spawn(sim.serve(listener));
+
+    let out = Command::new(BIN)
+        .args([
+            "--json",
+            "discover",
+            "mqtt",
+            &format!("127.0.0.1:{port}"),
+            "--for",
+            "2s",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(
+        out.status.code(),
+        Some(OK),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let d: Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(d["asked"], 1);
+    assert!(
+        !d["candidates"].as_array().unwrap().is_empty(),
+        "the node's retained state topics are listed: {d}"
+    );
+    drop(rt);
 }

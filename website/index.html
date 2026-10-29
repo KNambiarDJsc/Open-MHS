@@ -77,6 +77,9 @@
 cd Open-MHS
 cargo install --locked --path crates/openmhs-cli    # installs openmhs and openmhsd
 openmhs demo                                        # guided tour, about 10 seconds</code></pre>
+    <p>Already using an MCP host such as Claude Code? One line gives it a throwaway virtual
+    lab, with no gateway to start and no token to copy:</p>
+<pre><code>claude mcp add openmhs-sim -- openmhs mcp --sim</code></pre>
     <p>Then run the gateway yourself, or connect your own device, from the
     <a href="docs.html">docs</a>. The full demo run is on the <a href="reports.html">reports</a> page.</p>
 

@@ -44,6 +44,11 @@ pub struct PolicyRecord {
 pub struct AdapterResult {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub acknowledged: Option<bool>,
+    /// An opaque identifier the device or its server gave the accepted work, as reported by
+    /// the adapter (for example a LabThings invocation id). For matching an unresolved
+    /// command to the work it started; never used to decide anything.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub external_ref: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub reported_applied: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

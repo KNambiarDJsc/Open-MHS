@@ -370,7 +370,10 @@ impl Conn {
                         return Err(format!("unknown progress event {:?}", p.event));
                     }
                     if let Some(progress) = lock(&self.progress).get(&p.command_id) {
-                        progress.accepted();
+                        match p.external_ref {
+                            Some(r) => progress.accepted_with_ref(r),
+                            None => progress.accepted(),
+                        }
                     }
                 }
                 "fixture.deliveries" => {

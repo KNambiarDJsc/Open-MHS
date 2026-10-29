@@ -146,6 +146,7 @@ fn verdict(status: StepStatus, held: bool) -> StepVerdict {
         | StepStatus::CompensationFailed
         | StepStatus::CompensationUncertain => StepVerdict::Allowed,
         StepStatus::Failed | StepStatus::Uncertain => StepVerdict::Refused,
+        StepStatus::Skipped => StepVerdict::Skipped,
         StepStatus::Pending | StepStatus::Running | StepStatus::WaitingApproval => {
             StepVerdict::NotReached
         }
@@ -234,7 +235,15 @@ impl Engine {
                     if cap.value.is_none() || !cap.supports(Operation::Read) {
                         continue;
                     }
-                    if let Ok(v) = self.read_device(&real, &cap.name).await {
+                    if let Ok(v) = self
+                        .read_device(
+                            &real,
+                            &cap.name,
+                            openmhs_types::event::ObservationCause::Preflight,
+                            None,
+                        )
+                        .await
+                    {
                         let age = u64::try_from(v.timestamp.ms_until(self.now())).unwrap_or(0);
                         lock(&adapter.values).insert(cap.name.clone(), (v.value, age, v.quality));
                         reads += 1;
@@ -361,9 +370,12 @@ impl Engine {
     ) -> Result<PlanPreflight, EngineError> {
         let ok = lease.available
             && outcome == PlanState::Succeeded
-            && steps
-                .iter()
-                .all(|s| matches!(s.verdict, StepVerdict::Allowed | StepVerdict::NeedsApproval));
+            && steps.iter().all(|s| {
+                matches!(
+                    s.verdict,
+                    StepVerdict::Allowed | StepVerdict::NeedsApproval | StepVerdict::Skipped
+                )
+            });
         let result = PlanPreflight {
             ok,
             lease,

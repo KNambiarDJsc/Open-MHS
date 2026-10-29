@@ -131,8 +131,136 @@ impl Client {
         self.call(method::DEVICES_LIST, serde_json::json!({})).await
     }
 
+    /// Effective operations visible to this credential. The result is advisory and
+    /// carries a short expiry; command submission performs a fresh authorization check.
+    pub async fn allowed_operations(
+        &self,
+        device: Option<&str>,
+    ) -> Result<AllowedOperations, ClientError> {
+        self.call(
+            method::ACCESS_ALLOWED_OPERATIONS,
+            AllowedOperationsParams {
+                device: device.map(str::to_owned),
+            },
+        )
+        .await
+    }
+
     /// Whether devices answer, are busy or leased (ADR-0019). `device` narrows it to one;
     /// `refresh` probes devices not checked in the last second first.
+    /// Events after `after` (ADR-0023). Pass the previous batch's `stream` and `next` to
+    /// continue; `wait_ms` waits for one when there are none.
+    pub async fn poll_events(
+        &self,
+        params: crate::EventsPollParams,
+    ) -> Result<openmhs_types::event::EventBatch, ClientError> {
+        self.call(method::EVENTS_POLL, params).await
+    }
+
+    pub async fn create_watch(
+        &self,
+        params: crate::WatchParams,
+    ) -> Result<openmhs_types::event::Watch, ClientError> {
+        self.call(method::WATCHES_CREATE, params).await
+    }
+
+    pub async fn watches(&self) -> Result<Vec<openmhs_types::event::Watch>, ClientError> {
+        self.call(method::WATCHES_LIST, serde_json::json!({})).await
+    }
+
+    pub async fn cancel_watch(
+        &self,
+        watch_id: &str,
+    ) -> Result<openmhs_types::event::Watch, ClientError> {
+        self.call(
+            method::WATCHES_CANCEL,
+            crate::IdParams {
+                id: watch_id.to_owned(),
+            },
+        )
+        .await
+    }
+
+    pub async fn procedures(
+        &self,
+    ) -> Result<Vec<openmhs_types::procedure::Procedure>, ClientError> {
+        self.call(method::PROCEDURES_LIST, serde_json::json!({}))
+            .await
+    }
+
+    pub async fn procedure(
+        &self,
+        name: &str,
+        version: Option<u32>,
+    ) -> Result<openmhs_types::procedure::Procedure, ClientError> {
+        let r = crate::ProcedureRef {
+            name: name.to_owned(),
+            version,
+        };
+        self.call(method::PROCEDURES_GET, r).await
+    }
+
+    /// Store a procedure as proposed; it cannot run until an operator approves it.
+    pub async fn propose_procedure(
+        &self,
+        procedure: openmhs_types::procedure::ProcedureSpec,
+    ) -> Result<openmhs_types::procedure::Procedure, ClientError> {
+        self.call(
+            method::PROCEDURES_PROPOSE,
+            crate::ProcedureParams { procedure },
+        )
+        .await
+    }
+
+    /// Store a procedure as approved (operator).
+    pub async fn add_procedure(
+        &self,
+        procedure: openmhs_types::procedure::ProcedureSpec,
+    ) -> Result<openmhs_types::procedure::Procedure, ClientError> {
+        self.call(method::PROCEDURES_ADD, crate::ProcedureParams { procedure })
+            .await
+    }
+
+    pub async fn approve_procedure(
+        &self,
+        name: &str,
+        version: u32,
+    ) -> Result<openmhs_types::procedure::Procedure, ClientError> {
+        let r = crate::ProcedureRef {
+            name: name.to_owned(),
+            version: Some(version),
+        };
+        self.call(method::PROCEDURES_APPROVE, r).await
+    }
+
+    pub async fn remove_procedure(
+        &self,
+        name: &str,
+        version: u32,
+    ) -> Result<openmhs_types::procedure::Procedure, ClientError> {
+        let r = crate::ProcedureRef {
+            name: name.to_owned(),
+            version: Some(version),
+        };
+        self.call(method::PROCEDURES_REMOVE, r).await
+    }
+
+    /// Dry-run an approved procedure with `params`, like `plans.preflight`.
+    pub async fn check_procedure(
+        &self,
+        params: crate::RunProcedureParams,
+    ) -> Result<openmhs_types::plan::PlanPreflight, ClientError> {
+        self.call(method::PROCEDURES_CHECK, params).await
+    }
+
+    /// Run an approved procedure with `params`: an ordinary plan, as this caller.
+    pub async fn run_procedure(
+        &self,
+        params: crate::RunProcedureParams,
+    ) -> Result<openmhs_types::plan::Plan, ClientError> {
+        self.call(method::PROCEDURES_RUN, params).await
+    }
+
     pub async fn device_status(
         &self,
         device: Option<&str>,
@@ -413,6 +541,34 @@ impl Client {
             .await
     }
 
+    /// What the journal says happened for `device` (optionally one capability), from the
+    /// newest commands this credential may list: refusals and the numbers behind them,
+    /// confirmed values, tracking error, readback latency, unresolved outcomes (ADR-0022).
+    pub async fn insights(
+        &self,
+        device: &str,
+        capability: Option<&str>,
+    ) -> Result<crate::insights::Insights, ClientError> {
+        const WINDOW: usize = 500;
+        // A missing device must not look like an empty, successful history window.
+        self.describe(device).await?;
+        let receipts = self.commands(Vec::new(), Some(WINDOW)).await?;
+        Ok(crate::insights::summarize(
+            &receipts, device, capability, WINDOW,
+        ))
+    }
+
+    /// Which registered devices can do what `query` asks (capability-based selection).
+    /// Candidates only: whether a command is allowed is decided when it is checked or sent.
+    pub async fn find_capabilities(
+        &self,
+        query: &crate::selection::CapabilityQuery,
+    ) -> Result<crate::selection::Selection, ClientError> {
+        let descriptors = self.devices().await?;
+        let statuses = self.device_status(None, false).await?;
+        Ok(crate::selection::select(&descriptors, &statuses, query))
+    }
+
     pub async fn approve(&self, command_id: &str) -> Result<Receipt, ClientError> {
         self.call(method::COMMANDS_APPROVE, id(command_id)).await
     }
@@ -502,6 +658,14 @@ impl Client {
 
     pub async fn verify_audit(&self) -> Result<AuditVerifyResult, ClientError> {
         self.call(method::AUDIT_VERIFY, serde_json::json!({})).await
+    }
+
+    /// Consistent snapshot of the complete audit chain and current command receipts.
+    /// Operator only. Verify offline with `openmhs_types::evidence::verify_evidence`.
+    pub async fn export_evidence(
+        &self,
+    ) -> Result<openmhs_types::evidence::EvidenceBundle, ClientError> {
+        self.call(method::AUDIT_EXPORT, serde_json::json!({})).await
     }
 
     pub async fn audit_tail(&self, limit: Option<usize>) -> Result<Vec<AuditEntry>, ClientError> {

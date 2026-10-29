@@ -453,3 +453,69 @@ async fn a_hung_device_has_at_most_one_outstanding_probe() {
         "the abandoned call still holds the device's only probe slot"
     );
 }
+
+#[test]
+fn backoff_doubles_is_capped_and_is_spread_by_device() {
+    use openmhs_engine::{MAX_PROBE_BACKOFF_MS, probe_backoff_ms};
+    assert_eq!(
+        probe_backoff_ms(5_000, 0, "d"),
+        5_000,
+        "answering: base interval"
+    );
+    let mut last = 0;
+    for failures in 1..=6 {
+        let wait = probe_backoff_ms(5_000, failures, "d");
+        let floor = 5_000u64 << failures;
+        assert!(
+            (floor.min(MAX_PROBE_BACKOFF_MS)..=floor.min(MAX_PROBE_BACKOFF_MS) * 5 / 4)
+                .contains(&wait),
+            "{failures}: {wait}"
+        );
+        assert!(wait > last / 2, "no collapse");
+        last = wait;
+    }
+    // Never more than the cap plus its spread, however long it has been failing.
+    assert!(probe_backoff_ms(5_000, u32::MAX, "d") <= MAX_PROBE_BACKOFF_MS * 5 / 4);
+    // A base interval above the cap is the operator's choice and is not shortened.
+    assert!(probe_backoff_ms(600_000, 3, "d") >= 600_000);
+    // Devices that failed together are not all probed on the same tick.
+    let waits: std::collections::BTreeSet<u64> = (0..50)
+        .map(|n| probe_backoff_ms(5_000, 3, &format!("lab.dev-{n}")))
+        .collect();
+    assert!(waits.len() > 25, "{} distinct waits", waits.len());
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_sweep_probes_a_dead_device_less_and_less_often_and_a_live_one_at_the_base_rate() {
+    let (engine, psu) = offline_psu().await;
+    let mut probes = 0;
+    for _ in 0..40 {
+        tokio::time::sleep(Duration::from_millis(1_000)).await;
+        probes += engine.sweep_availability(1_000).await.unwrap();
+    }
+    // 40 s with a 1 s base would be 40 probes. Waits of ~2, 4, 8, 16 s give a handful.
+    assert!((3..=8).contains(&probes), "{probes} probes in 40 s");
+    assert_eq!(availability(&engine), Availability::Offline);
+    assert_eq!(
+        audit_kinds(&engine, "device.availability").len(),
+        0,
+        "no change, no record"
+    );
+
+    // An explicit refresh (devices.status) is not backed off.
+    assert_eq!(engine.refresh_availability(0).await.unwrap(), 1);
+
+    // Back online: seen at once by a command, and the base rate applies again.
+    psu.clear_faults();
+    let r = engine
+        .submit(&agent(), &write(SETPOINT, volts(1.0)))
+        .await
+        .unwrap();
+    assert_eq!(r.state, CommandState::Verified, "{r:?}");
+    let mut again = 0;
+    for _ in 0..5 {
+        tokio::time::sleep(Duration::from_millis(1_000)).await;
+        again += engine.sweep_availability(1_000).await.unwrap();
+    }
+    assert_eq!(again, 5, "an answering device is probed every interval");
+}

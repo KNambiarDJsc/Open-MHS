@@ -8,10 +8,12 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 
 use openmhs_policy::{Caller, CallerRecord, PrincipalKind};
+use openmhs_types::descriptor::Operation;
 use openmhs_types::plan::{
     DEFAULT_PLAN_LEASE_TTL_MS, DecisionRecord, OnFailure, Plan, PlanDecision, PlanSpec, PlanState,
     PlanStep, StepRecord, StepStatus, execution_order,
 };
+use openmhs_types::receipt::Decision;
 use openmhs_types::schema::{self, Schema};
 use openmhs_types::{
     CommandRequest, CommandState, ErrorObject, Outcome, Receipt, RequestOperation,
@@ -27,6 +29,22 @@ use crate::journal::JournalError;
 pub(super) struct PlanRuntime {
     locks: Mutex<HashMap<String, Arc<tokio::sync::Mutex<()>>>>,
     cancelling: Mutex<HashSet<String>>,
+}
+
+/// Why conditions did not all hold.
+enum Unmet {
+    /// A usable reading definitely failed a comparison.
+    False(ErrorObject),
+    /// It could not be decided: unreadable, stale, bad quality, or not comparable.
+    Unknown(ErrorObject),
+}
+
+impl Unmet {
+    fn into_error(self) -> ErrorObject {
+        match self {
+            Unmet::False(e) | Unmet::Unknown(e) => e,
+        }
+    }
 }
 
 fn refused(code: &str, message: impl Into<String>) -> EngineError {
@@ -154,7 +172,7 @@ impl Engine {
             {
                 errors.push(e);
             }
-            for p in &s.preconditions {
+            for p in s.preconditions.iter().chain(&s.when) {
                 let readable = self
                     .descriptor(&p.device)
                     .and_then(|d| d.capability(&p.capability).cloned())
@@ -399,18 +417,33 @@ impl Engine {
         caller: &Caller,
         step: &PlanStep,
     ) -> Result<(), ErrorObject> {
-        for p in &step.preconditions {
-            let failed = |msg: String| {
-                ErrorObject::new("plan.precondition.failed", msg)
-                    .detail("step", step.id.clone())
+        self.evaluate_conditions(caller, &step.id, &step.preconditions, "precondition")
+            .await
+            .map_err(Unmet::into_error)
+    }
+
+    /// Read each condition fresh and compare. `False` only when a usable reading definitely
+    /// fails the comparison; anything else that keeps it from being decided is `Unknown`.
+    async fn evaluate_conditions(
+        &self,
+        caller: &Caller,
+        step: &str,
+        conditions: &[openmhs_types::plan::StepPrecondition],
+        what: &str,
+    ) -> Result<(), Unmet> {
+        for p in conditions {
+            let err = |code: &str, msg: String| {
+                ErrorObject::new(code, msg)
+                    .detail("step", step.to_owned())
                     .detail("device", p.device.clone())
                     .detail("capability", p.capability.clone())
             };
+            let unknown = |msg: String| Unmet::Unknown(err("plan.precondition.failed", msg));
             let spec = self
                 .descriptor(&p.device)
                 .and_then(|d| d.capability(&p.capability).and_then(|c| c.value.clone()))
                 .ok_or_else(|| {
-                    failed(format!(
+                    unknown(format!(
                         "'{}' on '{}' is no longer readable",
                         p.capability, p.device
                     ))
@@ -419,13 +452,13 @@ impl Engine {
                 .read(caller, &p.device, &p.capability)
                 .await
                 .map_err(|e| {
-                    failed(format!(
+                    unknown(format!(
                         "could not read '{}' on '{}': {e}",
                         p.capability, p.device
                     ))
                 })?;
             if !reading.is_usable(self.now(), p.max_age_ms) {
-                return Err(failed(format!(
+                return Err(unknown(format!(
                     "the reading of '{}' on '{}' is stale or of bad quality",
                     p.capability, p.device
                 )));
@@ -433,21 +466,42 @@ impl Engine {
             match openmhs_policy::condition_holds(&spec, &reading.value, p.op, &p.value) {
                 Ok(true) => {}
                 Ok(false) => {
-                    return Err(failed(p.description.clone().unwrap_or_else(|| {
-                        format!(
-                            "'{}' on '{}' does not satisfy the step's precondition",
-                            p.capability, p.device
+                    return Err(Unmet::False(
+                        err(
+                            "plan.precondition.failed",
+                            p.description.clone().unwrap_or_else(|| {
+                                format!(
+                                    "'{}' on '{}' does not satisfy the step's {what}",
+                                    p.capability, p.device
+                                )
+                            }),
                         )
-                    }))
-                    .detail(
-                        "observed",
-                        serde_json::to_value(&reading.value).unwrap_or_default(),
+                        .detail(
+                            "observed",
+                            serde_json::to_value(&reading.value).unwrap_or_default(),
+                        ),
                     ));
                 }
-                Err(msg) => return Err(failed(msg)),
+                Err(msg) => return Err(unknown(msg)),
             }
         }
         Ok(())
+    }
+
+    /// Record a step as not run, with why. Nothing was sent for it.
+    fn skip(&self, plan: &mut Plan, step: &str, reason: String) -> Result<(), EngineError> {
+        if let Some(s) = plan.step_mut(step) {
+            s.status = StepStatus::Skipped;
+            s.error = Some(
+                ErrorObject::new("plan.step.skipped", reason.clone())
+                    .detail("step", step.to_owned()),
+            );
+        }
+        self.save_plan(
+            plan,
+            "plan.step.skipped",
+            serde_json::json!({ "step": step, "reason": reason }),
+        )
     }
 
     /// Submit a request for a step (or its compensation) and record the command.
@@ -489,6 +543,11 @@ impl Engine {
     }
 
     async fn next_step(&self, caller: &Caller, plan: &mut Plan) -> Result<(), EngineError> {
+        if plan.spec.parallel
+            && let Some(batch) = self.parallel_batch(caller, plan)
+        {
+            return self.run_batch(caller, plan, batch).await;
+        }
         let next = plan
             .order
             .iter()
@@ -512,6 +571,22 @@ impl Engine {
                 Some(format!("step '{step_id}' is missing")),
             );
         };
+        if let Some(dep) = step.after.iter().find(|d| {
+            plan.step(d)
+                .is_some_and(|r| r.status == StepStatus::Skipped)
+        }) {
+            let why = format!("step '{dep}', which it depends on, was skipped");
+            return self.skip(plan, &step_id, why);
+        }
+        match self
+            .evaluate_conditions(caller, &step_id, &step.when, "condition")
+            .await
+        {
+            Ok(()) => {}
+            Err(Unmet::False(e)) => return self.skip(plan, &step_id, e.message),
+            // Not knowing is not "false": a condition that cannot be decided fails the step.
+            Err(Unmet::Unknown(e)) => return self.fail(plan, &step_id, e),
+        }
         if let Err(e) = self.check_preconditions(caller, &step).await {
             return self.fail(plan, &step_id, e);
         }
@@ -530,6 +605,296 @@ impl Engine {
             Ok(receipt) => self.apply(plan, &step_id, &receipt),
             Err(e) => self.fail(plan, &step_id, e),
         }
+    }
+
+    /// The ready steps to run together (ADR-0025): led by the first ready step in declared
+    /// order, then every later ready step whose devices and shared resources do not overlap
+    /// any already chosen. A step that policy would hold for approval never joins a batch.
+    /// `None` unless at least two qualify.
+    fn parallel_batch(&self, caller: &Caller, plan: &Plan) -> Option<Vec<String>> {
+        let graph = self.graph();
+        let mut chosen: Vec<(String, openmhs_types::graph::Claim)> = Vec::new();
+        for id in &plan.order {
+            if plan
+                .step(id)
+                .is_none_or(|r| r.status != StepStatus::Pending)
+            {
+                continue;
+            }
+            let step = plan.spec_step(id)?;
+            let ready = step.after.iter().all(|d| {
+                plan.step(d)
+                    .is_some_and(|r| r.status == StepStatus::Succeeded)
+            });
+            let joins = ready && self.allowed_outright(caller, &step.request);
+            if chosen.is_empty() && !joins {
+                // The first ready step leads; if it cannot run in a batch, run it alone.
+                return None;
+            }
+            if !joins {
+                continue;
+            }
+            let acted: Vec<&str> = std::iter::once(&step.request)
+                .chain(step.compensate.as_ref())
+                .filter_map(|v| v["target"]["device"].as_str())
+                .collect();
+            let claim = graph.claim(acted, std::iter::empty());
+            if chosen.iter().any(|(_, c)| c.overlaps(&claim)) {
+                continue;
+            }
+            chosen.push((id.clone(), claim));
+        }
+        (chosen.len() >= 2).then(|| chosen.into_iter().map(|(id, _)| id).collect())
+    }
+
+    /// Whether policy allows `request` for `caller` without approval right now.
+    fn allowed_outright(&self, caller: &Caller, request: &serde_json::Value) -> bool {
+        let (Some(device), Some(capability)) = (
+            request["target"]["device"].as_str(),
+            request["target"]["capability"].as_str(),
+        ) else {
+            return false;
+        };
+        let op = match request["operation"].as_str() {
+            Some("write") => Operation::Write,
+            Some("invoke") => Operation::Invoke,
+            _ => return false,
+        };
+        let Some(cap) = self
+            .descriptor(device)
+            .and_then(|d| d.capability(capability).cloned())
+        else {
+            return false;
+        };
+        self.policy()
+            .authorize(caller.principal(), device, &cap, op)
+            .decision
+            == Decision::Allow
+    }
+
+    /// Run a batch of independent steps: their checks one at a time, then their commands at
+    /// once, then, after every command has settled, the plan's reaction decided once.
+    async fn run_batch(
+        &self,
+        caller: &Caller,
+        plan: &mut Plan,
+        batch: Vec<String>,
+    ) -> Result<(), EngineError> {
+        plan.current = batch.first().cloned();
+        if let Err(e) = self.keep_lease(caller, plan) {
+            let why = format!("could not keep the plan's lease: {}", e.message);
+            return self.wait_for_decision(plan, why);
+        }
+        // Checks first. A failure here is a step failure before anything was sent; if it
+        // stops the plan, none of the batch is sent.
+        let mut go: Vec<(String, serde_json::Value)> = Vec::new();
+        for id in &batch {
+            let Some(step) = plan.spec_step(id).cloned() else {
+                continue;
+            };
+            match self
+                .evaluate_conditions(caller, id, &step.when, "condition")
+                .await
+            {
+                Ok(()) => {}
+                Err(Unmet::False(e)) => {
+                    self.skip(plan, id, e.message)?;
+                    continue;
+                }
+                Err(Unmet::Unknown(e)) => {
+                    self.fail(plan, id, e)?;
+                }
+            }
+            if plan.state == PlanState::Running
+                && let Err(e) = self.check_preconditions(caller, &step).await
+            {
+                self.fail(plan, id, e)?;
+            }
+            if plan.state != PlanState::Running {
+                return Ok(());
+            }
+            if plan
+                .step(id)
+                .is_some_and(|r| r.status == StepStatus::Pending)
+            {
+                go.push((id.clone(), step.request.clone()));
+            }
+        }
+        for (id, _) in &go {
+            if let Some(s) = plan.step_mut(id) {
+                s.status = StepStatus::Running;
+            }
+            self.save_plan(
+                plan,
+                "plan.step.started",
+                serde_json::json!({ "step": id, "parallel": go.len() }),
+            )?;
+        }
+        let mut sends = tokio::task::JoinSet::new();
+        for (i, (id, request)) in go.iter().enumerate() {
+            let attempt = plan.step(id).map_or(0, |s| s.commands.len()) + 1;
+            let keyed = with_key(request, &step_key(&plan.id, id, attempt));
+            let (engine, caller) = (self.clone(), caller.clone());
+            sends.spawn(async move { (i, engine.submit(&caller, &keyed).await) });
+        }
+        let mut results: Vec<(usize, Result<Receipt, EngineError>)> = Vec::new();
+        while let Some(done) = sends.join_next().await {
+            if let Ok(r) = done {
+                results.push(r);
+            }
+        }
+        results.sort_by_key(|(i, _)| *i);
+
+        // Record each result as a forward result; decide the plan's reaction once, after.
+        let mut uncertain: Option<String> = None;
+        let mut held: Option<(String, String)> = None;
+        let mut failed: Option<(String, String)> = None;
+        let results_seen: HashSet<usize> = results.iter().map(|(i, _)| *i).collect();
+        for (i, result) in results {
+            let id = go[i].0.clone();
+            let receipt = match result {
+                Ok(r) => r,
+                Err(e) => {
+                    let e = step_error(e)?;
+                    if let Some(s) = plan.step_mut(&id) {
+                        s.status = StepStatus::Failed;
+                        s.error = Some(e.clone());
+                    }
+                    self.save_plan(
+                        plan,
+                        "plan.step.failed",
+                        serde_json::json!({ "step": id, "error": e }),
+                    )?;
+                    failed.get_or_insert((id, format!("step failed: {} ({})", e.message, e.code)));
+                    continue;
+                }
+            };
+            self.inner
+                .journal
+                .link_plan_command(&receipt.command_id, &plan.id, &id)?;
+            if let Some(s) = plan.step_mut(&id) {
+                s.commands.push(receipt.command_id.clone());
+            }
+            match settle(&receipt) {
+                Settled::Done => {
+                    if let Some(s) = plan.step_mut(&id) {
+                        s.status = StepStatus::Succeeded;
+                        s.error = None;
+                    }
+                    self.save_plan(
+                        plan,
+                        "plan.step.succeeded",
+                        serde_json::json!({ "step": id, "command_id": receipt.command_id }),
+                    )?;
+                }
+                Settled::Held => {
+                    if held.is_some() {
+                        // Only one held command per plan: withdraw this one (nothing was
+                        // sent) and run its step again later.
+                        self.withdraw_held(plan, &id, &receipt)?;
+                    } else {
+                        if let Some(s) = plan.step_mut(&id) {
+                            s.status = StepStatus::WaitingApproval;
+                        }
+                        held = Some((id, receipt.command_id.clone()));
+                    }
+                }
+                Settled::Uncertain(e) => {
+                    if let Some(s) = plan.step_mut(&id) {
+                        s.status = StepStatus::Uncertain;
+                        s.error = Some(e.clone());
+                    }
+                    uncertain.get_or_insert(format!("step '{id}': {}", e.message));
+                }
+                Settled::Failed(e) => {
+                    if let Some(s) = plan.step_mut(&id) {
+                        s.status = StepStatus::Failed;
+                        s.error = Some(e.clone());
+                    }
+                    self.save_plan(
+                        plan,
+                        "plan.step.failed",
+                        serde_json::json!({ "step": id, "error": e }),
+                    )?;
+                    failed.get_or_insert((
+                        id.clone(),
+                        format!("step '{id}' failed: {} ({})", e.message, e.code),
+                    ));
+                }
+            }
+        }
+        // A step whose task ended without a result may have sent its command: uncertain.
+        for (i, (id, _)) in go.iter().enumerate() {
+            if !results_seen.contains(&i) {
+                if let Some(s) = plan.step_mut(id) {
+                    s.status = StepStatus::Uncertain;
+                }
+                uncertain.get_or_insert(format!(
+                    "step '{id}': its command's task ended without a result; it may have been sent"
+                ));
+            }
+        }
+        if let Some(why) = uncertain {
+            // Never guessed: a person decides, and nothing is compensated by itself.
+            if let Some((id, command)) = held.take() {
+                self.withdraw_held_by_id(plan, &id, &command)?;
+            }
+            return self.wait_for_decision(plan, why);
+        }
+        if let Some((id, command)) = held {
+            if failed.is_none() {
+                plan.current = Some(id.clone());
+                plan.state = PlanState::WaitingApproval;
+                plan.reason = Some(format!(
+                    "step '{id}' (command {command}) is waiting for approval"
+                ));
+                return self.save_plan(
+                    plan,
+                    "plan.waiting_approval",
+                    serde_json::json!({ "step": id, "command_id": command }),
+                );
+            }
+            self.withdraw_held_by_id(plan, &id, &command)?;
+        }
+        if let Some((id, why)) = failed {
+            plan.current = Some(id.clone());
+            return self.after_failure(plan, &id, why);
+        }
+        Ok(())
+    }
+
+    /// Withdraw a held command the plan will not wait on: cancelling sends nothing, and the
+    /// step goes back to pending.
+    fn withdraw_held(
+        &self,
+        plan: &mut Plan,
+        step: &str,
+        receipt: &Receipt,
+    ) -> Result<(), EngineError> {
+        self.withdraw_held_by_id(plan, step, &receipt.command_id)
+    }
+
+    fn withdraw_held_by_id(
+        &self,
+        plan: &mut Plan,
+        step: &str,
+        command_id: &str,
+    ) -> Result<(), EngineError> {
+        let r = self.inner.journal.transition(
+            command_id,
+            CommandState::Cancelled,
+            self.now(),
+            Some(format!(
+                "plan {} withdrew it to run its parallel steps safely",
+                plan.id
+            )),
+            |_| {},
+        )?;
+        self.publish_command(&r);
+        if let Some(s) = plan.step_mut(step) {
+            s.status = StepStatus::Pending;
+        }
+        Ok(())
     }
 
     async fn next_compensation(&self, caller: &Caller, plan: &mut Plan) -> Result<(), EngineError> {
@@ -647,6 +1012,11 @@ impl Engine {
             "plan.step.failed",
             serde_json::json!({ "step": step, "error": e }),
         )?;
+        self.after_failure(plan, step, why)
+    }
+
+    /// What a definite failure of `step` does to the plan: its `on_failure`.
+    fn after_failure(&self, plan: &mut Plan, step: &str, why: String) -> Result<(), EngineError> {
         match plan
             .spec_step(step)
             .map_or(OnFailure::Halt, |s| s.on_failure)
@@ -874,13 +1244,14 @@ impl Engine {
             && let Some(r) = self.inner.journal.receipt(c)?
             && r.state == CommandState::AwaitingApproval
         {
-            self.inner.journal.transition(
+            let r = self.inner.journal.transition(
                 c,
                 CommandState::Cancelled,
                 self.now(),
                 Some(format!("plan {} ended by {by}", plan.id)),
                 |_| {},
             )?;
+            self.publish_command(&r);
         }
         Ok(())
     }
@@ -952,7 +1323,9 @@ impl Engine {
             {
                 continue;
             }
-            if let Some(step) = plan.current.clone() {
+            // With parallel steps more than one may have been in flight.
+            let in_flight: Vec<String> = plan.steps.iter().map(|s| s.id.clone()).collect();
+            for step in in_flight {
                 self.settle_interrupted(&mut plan, &step)?;
             }
             plan.state = PlanState::AwaitingDecision;

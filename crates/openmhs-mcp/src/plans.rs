@@ -27,6 +27,10 @@ pub struct PlanInput {
     /// 1 to 100 steps. They run one at a time in dependency order; among ready steps,
     /// the one listed first runs first.
     pub steps: Vec<StepInput>,
+    /// Run ready steps on separate devices at the same time. Steps that share a device or
+    /// resource, or that need approval, still run one at a time.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub parallel: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
@@ -37,11 +41,8 @@ pub struct StepInput {
     pub id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    /// A write or invoke request, without an idempotency_key (the plan makes one per
-    /// attempt), e.g. {"target": {"device": "sim.psu-01", "capability":
-    /// "power.output.enabled"}, "operation": "write", "value": true} or {"target":
-    /// {"device": "sim.axis-01", "capability": "axis.move_absolute"}, "operation":
-    /// "invoke", "params": {"position": {"value": 50, "unit": "mm"}}}.
+    /// A write or invoke request, without an idempotency_key (the plan makes one per attempt).
+    /// Use device and capability ids returned by discovery tools.
     pub request: Value,
     /// Ids of steps that must have succeeded first.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -50,6 +51,11 @@ pub struct StepInput {
     /// without sending anything.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub preconditions: Vec<PreconditionInput>,
+    /// Readings that decide whether the step runs at all: if one is definitely false
+    /// the step is skipped (and so is every step after it in `after`), and nothing is
+    /// sent for it. A reading that is missing or stale fails the step instead.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub when: Vec<PreconditionInput>,
     /// What a definite failure does: `halt` (default: stop, leave completed steps as
     /// they are), `compensate` (undo completed steps, newest first) or `ask` (wait for a
     /// human). An unknown outcome always waits for a human.

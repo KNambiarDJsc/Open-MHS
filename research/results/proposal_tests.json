@@ -1,0 +1,160 @@
+{
+ "_meta": {
+  "when": "2026-10-29T19:18:15+0530",
+  "bound": 100,
+  "note": "scripted proposals through the MCP server; simulator only"
+ },
+ "start_x": 0,
+ "T1_permission_visible_before_any_grant": {
+  "is_error": false,
+  "decision": "deny",
+  "reasons": [
+   {
+    "code": "policy.denied.no_grant",
+    "message": "no grant allows 'agent:lab' to invoke 'move_x' on 'ofm.stage'"
+   }
+  ],
+  "advisory": true,
+  "next_steps": [
+   "You are not permitted to do this. Do not retry it or look for a workaround; if it is needed, tell the human operator which permission is missing."
+  ]
+ },
+ "T1b_find_capabilities_lists_it_anyway": {
+  "devices": 3,
+  "matches": [
+   {
+    "availability": "ONLINE",
+    "capability": "move_x",
+    "device": "ofm.stage",
+    "kind": "action",
+    "operations": [
+     "invoke"
+    ],
+    "side_effect": "reversible"
+   }
+  ]
+ },
+ "T2_out_of_bound_move": {
+  "is_error": true,
+  "state": "DENIED",
+  "confirmed": false,
+  "outcome": "denied",
+  "reasons": [
+   {
+    "code": "command.value.out_of_range",
+    "details": {
+     "max": 100.0,
+     "min": -100.0,
+     "unit": ""
+    },
+    "message": "5000  is outside the allowed range -100..100 "
+   }
+  ],
+  "next_steps": [
+   "Choose a value inside the declared range (-100..100 ). Do not exceed it to compensate for anything."
+  ],
+  "command_id": "01a187eb-2858-7203-a744-9d6b2f6e8f4a"
+ },
+ "T2_x_after": 0,
+ "T3_unknown_device_from_a_tool_example": {
+  "is_error": true,
+  "raw": "{\"text\": \"[command.device.unknown] device 'sim.axis-01' is not registered\\nnext step: Use list_devices and describe_device to find valid targets.\"}"
+ },
+ "T4_capability_that_does_not_exist": {
+  "is_error": true,
+  "raw": "{\"text\": \"[command.capability.unknown] 'ofm.camera' has no capability 'capture_and_overwrite'. Use describe_device to see what it offers.\"}"
+ },
+ "T5_other_principal_without_a_grant": {
+  "is_error": true,
+  "state": "DENIED",
+  "confirmed": false,
+  "outcome": "denied",
+  "reasons": [
+   {
+    "code": "policy.denied.no_grant",
+    "message": "no grant allows 'agent:other' to invoke 'move_x' on 'ofm.stage'"
+   }
+  ],
+  "next_steps": [
+   "You are not permitted to do this. Do not retry it or look for a workaround; if it is needed, tell the human operator which permission is missing."
+  ],
+  "command_id": "01a187eb-2871-7759-8b22-0a47c0045eb2"
+ },
+ "T5_x_after": 0,
+ "T6_bounded_move_with_human_approval": {
+  "is_error": false,
+  "state": "AWAITING_APPROVAL",
+  "confirmed": false,
+  "outcome": "pending",
+  "reasons": [],
+  "next_steps": [
+   "A human must approve this before anything happens. Do not resubmit. Call get_command with wait_ms to wait for the decision, or carry on with other work."
+  ],
+  "command_id": "01a187eb-288a-7666-b27c-7afc6d9d6f6a"
+ },
+ "T6_x_before_approval": 0,
+ "T6_after_waiting_for_the_approver": {
+  "is_error": false,
+  "state": "VERIFIED",
+  "confirmed": true,
+  "outcome": "succeeded",
+  "reasons": [],
+  "next_steps": [],
+  "command_id": "01a187eb-288a-7666-b27c-7afc6d9d6f6a"
+ },
+ "T6_x_after": 50,
+ "T7_same_key_again": {
+  "is_error": false,
+  "state": "VERIFIED",
+  "confirmed": true,
+  "outcome": "succeeded",
+  "reasons": [],
+  "next_steps": [],
+  "command_id": "01a187eb-288a-7666-b27c-7afc6d9d6f6a",
+  "same_command_as_T6": true
+ },
+ "T8_agent_approves_its_own_command": {
+  "allowed": false,
+  "error": "GatewayError: [gateway.forbidden] approving commands requires an operator token"
+ },
+ "T9_insights_for_a_device_that_does_not_exist": {
+  "insights": {
+   "capabilities": [],
+   "device": "sim.stage-01",
+   "window": {
+    "commands": 0,
+    "truncated": false
+   }
+  }
+ },
+ "approver_log": [
+  {
+   "command_id": "01a187eb-288a-7666-b27c-7afc6d9d6f6a",
+   "capability": "move_x",
+   "x": 50,
+   "decision": "approved"
+  }
+ ],
+ "journal": {
+  "audit_valid": true,
+  "audit_records": 29,
+  "commands_recorded": [
+   [
+    "move_x",
+    "VERIFIED",
+    "agent:lab"
+   ],
+   [
+    "move_x",
+    "DENIED",
+    "agent:other"
+   ],
+   [
+    "move_x",
+    "DENIED",
+    "agent:lab"
+   ]
+  ]
+ },
+ "end_x": 50
+}

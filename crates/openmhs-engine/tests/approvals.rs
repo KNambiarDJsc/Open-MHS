@@ -390,7 +390,7 @@ async fn policy_still_applies_after_approval() {
 }
 
 /// If the held command is altered in the journal after it was held, approving it fails
-/// closed: the fingerprint is recomputed from what is stored now.
+/// closed. Receipt integrity prevents even a denial transition from rebinding corrupted data.
 #[tokio::test(start_paused = true)]
 async fn tampering_with_a_held_command_is_caught_at_approval() {
     let (engine, psu) = setup(ask_to_enable()).await;
@@ -404,9 +404,15 @@ async fn tampering_with_a_held_command_is_caught_at_approval() {
         )
         .unwrap();
     assert_eq!(changed, 1, "the test must really change the stored command");
-    let out = engine.approve(&approver(), &r.command_id).await.unwrap();
-    assert_eq!(out.state, Denied);
-    assert_eq!(codes(&out), vec!["approval.mismatch"]);
+    let error = engine
+        .approve(&approver(), &r.command_id)
+        .await
+        .unwrap_err();
+    assert_eq!(error.code(), "journal.receipt_integrity");
+    assert_eq!(
+        engine.receipt(&r.command_id).unwrap_err().code(),
+        "journal.receipt_integrity"
+    );
     assert_eq!(psu.execute_calls(), 0);
 }
 

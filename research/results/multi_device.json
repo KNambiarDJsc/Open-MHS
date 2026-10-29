@@ -1,0 +1,307 @@
+{
+ "_meta": {
+  "when": "2026-10-29T19:21:51+0530",
+  "note": "simulators only; stage bound is an experiment choice"
+ },
+ "R1_clean": {
+  "world_before": {
+   "stage_x": 0,
+   "hotplate_target": 40.0,
+   "hotplate_state": "idle"
+  },
+  "plan_after_submit": {
+   "state": "WAITING_APPROVAL",
+   "reason": "step 'move' (command 01a187ee-7447-70a5-b3d9-d3c88cfe970f) is waiting for approval",
+   "current": "move",
+   "steps": {
+    "heat": "SUCCEEDED",
+    "move": "WAITING_APPROVAL",
+    "stop": "PENDING"
+   }
+  },
+  "plan_when_it_stopped": {
+   "state": "SUCCEEDED",
+   "reason": null,
+   "current": "stop",
+   "steps": {
+    "heat": "SUCCEEDED",
+    "move": "SUCCEEDED",
+    "stop": "SUCCEEDED"
+   }
+  },
+  "world_when_plan_stopped": {
+   "stage_x": 50,
+   "hotplate_target": 40.0,
+   "hotplate_state": "idle"
+  },
+  "world_after": {
+   "stage_x": 50,
+   "hotplate_target": 40.0,
+   "hotplate_state": "idle"
+  },
+  "report": {
+   "commands": [
+    {
+     "capability": "set_program",
+     "state": "VERIFIED",
+     "approved_by": null,
+     "ref": null
+    },
+    {
+     "capability": "move_x",
+     "state": "VERIFIED",
+     "approved_by": "operator:local",
+     "ref": "labthings:e51729e4-ccbd-43f3-9841-fbf54343e9d5"
+    },
+    {
+     "capability": "stop",
+     "state": "UNVERIFIABLE",
+     "approved_by": null,
+     "ref": null
+    }
+   ],
+   "audit_valid": true,
+   "audit_records": 50,
+   "inconsistent_receipts": [],
+   "contracts": [
+    "lab.hotplate",
+    "ofm.stage"
+   ]
+  },
+  "approvals": [
+   {
+    "command_id": "01a187ee-7447-70a5-b3d9-d3c88cfe970f",
+    "x": 50,
+    "decision": "approved"
+   }
+  ]
+ },
+ "R2_fault_reconcile_resume": {
+  "world_before": {
+   "stage_x": 0,
+   "hotplate_target": 40.0,
+   "hotplate_state": "idle"
+  },
+  "plan_after_submit": {
+   "state": "WAITING_APPROVAL",
+   "reason": "step 'move' (command 01a187ee-8208-7253-a8ff-b8a40311ec03) is waiting for approval",
+   "current": "move",
+   "steps": {
+    "heat": "SUCCEEDED",
+    "move": "WAITING_APPROVAL",
+    "stop": "PENDING"
+   }
+  },
+  "plan_when_it_stopped": {
+   "state": "AWAITING_DECISION",
+   "reason": "step 'move': command 01a187ee-8208-7253-a8ff-b8a40311ec03 is UnknownOutcome: it may or may not have taken effect; reconcile it, then decide",
+   "current": "move",
+   "steps": {
+    "heat": "SUCCEEDED",
+    "move": "UNCERTAIN",
+    "stop": "PENDING"
+   }
+  },
+  "world_when_plan_stopped": {
+   "stage_x": 50,
+   "hotplate_target": 40.0,
+   "hotplate_state": "heating"
+  },
+  "move_command": {
+   "state": "CommandState.UNKNOWN_OUTCOME",
+   "ref": "labthings:1b386c2f-2f6c-49c3-ab18-cc62cf52d2ed"
+  },
+  "world_after_waiting": {
+   "stage_x": 50,
+   "hotplate_target": 40.0,
+   "hotplate_state": "heating"
+  },
+  "reconcile": {
+   "state": "CommandState.RECONCILED_APPLIED"
+  },
+  "plan_after_decision": {
+   "state": "SUCCEEDED",
+   "reason": null,
+   "current": "stop",
+   "steps": {
+    "heat": "SUCCEEDED",
+    "move": "SUCCEEDED",
+    "stop": "SUCCEEDED"
+   }
+  },
+  "world_after": {
+   "stage_x": 50,
+   "hotplate_target": 40.0,
+   "hotplate_state": "cooling"
+  },
+  "report": {
+   "commands": [
+    {
+     "capability": "set_program",
+     "state": "VERIFIED",
+     "approved_by": null,
+     "ref": null
+    },
+    {
+     "capability": "move_x",
+     "state": "RECONCILED_APPLIED",
+     "approved_by": "operator:local",
+     "ref": "labthings:1b386c2f-2f6c-49c3-ab18-cc62cf52d2ed"
+    },
+    {
+     "capability": "stop",
+     "state": "UNVERIFIABLE",
+     "approved_by": null,
+     "ref": null
+    }
+   ],
+   "audit_valid": true,
+   "audit_records": 53,
+   "inconsistent_receipts": [],
+   "contracts": [
+    "lab.hotplate",
+    "ofm.stage"
+   ]
+  },
+  "approvals": [
+   {
+    "command_id": "01a187ee-8208-7253-a8ff-b8a40311ec03",
+    "x": 50,
+    "decision": "approved"
+   }
+  ]
+ },
+ "R3_fault_compensate": {
+  "world_before": {
+   "stage_x": 0,
+   "hotplate_target": 40.0,
+   "hotplate_state": "cooling"
+  },
+  "plan_after_submit": {
+   "state": "WAITING_APPROVAL",
+   "reason": "step 'move' (command 01a187ee-9e2c-73d3-8fc7-72f58ee743bc) is waiting for approval",
+   "current": "move",
+   "steps": {
+    "heat": "SUCCEEDED",
+    "move": "WAITING_APPROVAL",
+    "stop": "PENDING"
+   }
+  },
+  "plan_when_it_stopped": {
+   "state": "AWAITING_DECISION",
+   "reason": "step 'move': command 01a187ee-9e2c-73d3-8fc7-72f58ee743bc is UnknownOutcome: it may or may not have taken effect; reconcile it, then decide",
+   "current": "move",
+   "steps": {
+    "heat": "SUCCEEDED",
+    "move": "UNCERTAIN",
+    "stop": "PENDING"
+   }
+  },
+  "world_when_plan_stopped": {
+   "stage_x": 50,
+   "hotplate_target": 40.0,
+   "hotplate_state": "heating"
+  },
+  "move_command": {
+   "state": "CommandState.UNKNOWN_OUTCOME",
+   "ref": "labthings:6e6eb3b0-bcbc-42a7-b027-7f73453faf9b"
+  },
+  "world_after_waiting": {
+   "stage_x": 50,
+   "hotplate_target": 40.0,
+   "hotplate_state": "heating"
+  },
+  "reconcile": {
+   "state": "CommandState.RECONCILED_APPLIED"
+  },
+  "plan_after_decision": {
+   "state": "COMPENSATED",
+   "reason": null,
+   "current": "heat",
+   "steps": {
+    "heat": "COMPENSATED",
+    "move": "SUCCEEDED",
+    "stop": "PENDING"
+   }
+  },
+  "world_after": {
+   "stage_x": 50,
+   "hotplate_target": 40.0,
+   "hotplate_state": "cooling"
+  },
+  "report": {
+   "commands": [
+    {
+     "capability": "set_program",
+     "state": "VERIFIED",
+     "approved_by": null,
+     "ref": null
+    },
+    {
+     "capability": "move_x",
+     "state": "RECONCILED_APPLIED",
+     "approved_by": "operator:local",
+     "ref": "labthings:6e6eb3b0-bcbc-42a7-b027-7f73453faf9b"
+    },
+    {
+     "capability": "stop",
+     "state": "UNVERIFIABLE",
+     "approved_by": null,
+     "ref": null
+    }
+   ],
+   "audit_valid": true,
+   "audit_records": 53,
+   "inconsistent_receipts": [],
+   "contracts": [
+    "lab.hotplate",
+    "ofm.stage"
+   ]
+  },
+  "approvals": [
+   {
+    "command_id": "01a187ee-9e2c-73d3-8fc7-72f58ee743bc",
+    "x": 50,
+    "decision": "approved"
+   }
+  ]
+ },
+ "D1_script_clean": {
+  "script_log": [
+   "heating started",
+   "move completed",
+   "heating stopped"
+  ],
+  "world_after": {
+   "stage_x": 50,
+   "hotplate_target": 40.0,
+   "hotplate_state": "cooling"
+  },
+  "record_left_behind": "the script's own print output only"
+ },
+ "D2_script_fault_bare": {
+  "script_log": [
+   "heating started",
+   "script stopped: RemoteDisconnected"
+  ],
+  "world_after": {
+   "stage_x": 50,
+   "hotplate_target": 40.0,
+   "hotplate_state": "heating"
+  },
+  "record_left_behind": "the script's own print output only"
+ },
+ "D3_script_fault_cleanup": {
+  "script_log": [
+   "heating started",
+   "script stopped: RemoteDisconnected",
+   "cleanup: heating stopped"
+  ],
+  "world_after": {
+   "stage_x": 50,
+   "hotplate_target": 40.0,
+   "hotplate_state": "cooling"
+  },
+  "record_left_behind": "the script's own print output only"
+ }
+}

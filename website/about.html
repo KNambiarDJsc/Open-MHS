@@ -80,10 +80,13 @@
     Claude Desktop, an IDE agent, your own client) can use them. Write a tool once, and
     every compatible agent can call it.</p>
     <p>OpenMHS includes an MCP server, <code>openmhs mcp</code>. Through it an agent sees
-    tools such as <code>list_devices</code>, <code>describe_device</code>,
-    <code>read_state</code>, <code>check_command</code>, <code>submit_command</code> and
-    <code>submit_plan</code>. The server holds only an agent's token, so everything the
-    agent does is checked and recorded by the gateway like any other client.</p>
+    tools such as <code>list_devices</code>, <code>find_capabilities</code>,
+    <code>describe_device</code>, <code>read_state</code>, <code>check_command</code>,
+    <code>submit_command</code>, <code>submit_plan</code>, <code>watch_state</code> and
+    <code>poll_events</code> (to follow measurements and its own commands), and
+    <code>get_insights</code> (what its earlier commands did). The server holds only an
+    agent's token, so everything the agent does is checked and recorded by the gateway like
+    any other client.</p>
 
     <h3 id="mhs">MHS, the Model Hardware Standard</h3>
     <p>MCP was designed for software. Machines add problems software does not have: units,

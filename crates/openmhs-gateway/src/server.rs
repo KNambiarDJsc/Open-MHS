@@ -12,16 +12,18 @@ use axum::routing::post;
 use openmhs_api::{
     AcquireLeaseParams, ApprovalActionParams, ApprovalRequestParams, AuditEntry, AuditTailParams,
     AuditVerifyResult, CancelPlanParams, CommandIdParams, CreateTokenParams, CreatedToken,
-    DecidePlanParams, DeviceParams, DeviceStatusParams, ErrorData, GatewayInfo, GrantParams,
-    IdParams, ListApprovalsParams, ListCommandsParams, ListLeasesParams, ListPlansParams,
-    PlanParams, RPC_PATH, ReadParams, ReadResult, ReleaseLeaseParams, RenewLeaseParams,
-    ResolveParams, Role, RotateTokenParams, RpcError, RpcRequest, RpcResponse, SimFaultParams,
-    SimFaultResult, SubmitParams, method, rpc_code,
+    DecidePlanParams, DeviceParams, DeviceStatusParams, ErrorData, EventsPollParams, GatewayInfo,
+    GrantParams, IdParams, ListApprovalsParams, ListCommandsParams, ListLeasesParams,
+    ListPlansParams, PlanParams, ProcedureParams, ProcedureRef, RPC_PATH, ReadParams, ReadResult,
+    ReleaseLeaseParams, RenewLeaseParams, ResolveParams, Role, RotateTokenParams, RpcError,
+    RpcRequest, RpcResponse, RunProcedureParams, SimFaultParams, SimFaultResult, SubmitParams,
+    WatchParams, method, rpc_code,
 };
 use openmhs_engine::journal::sha256_hex;
 use openmhs_engine::{Engine, EngineError};
 use openmhs_policy::{AuthMethod, Caller, Policy, Scope};
 use openmhs_sim::SimControl;
+use openmhs_types::descriptor::Operation;
 use openmhs_types::{Clock, ErrorObject};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
@@ -80,6 +82,8 @@ pub(crate) struct Shared {
     pub reported: Mutex<std::collections::HashSet<(String, &'static str)>>,
     /// Serializes policy edits so concurrent grant changes can't lose each other.
     pub policy_store: tokio::sync::Mutex<PolicyStore>,
+    /// Procedures (spec/procedures.md).
+    pub procedures: tokio::sync::Mutex<crate::store::ProcedureStore>,
     pub sims: BTreeMap<String, Arc<dyn SimControl>>,
 }
 
@@ -193,6 +197,10 @@ fn engine_error(e: EngineError) -> RpcError {
             command_id,
         }),
     }
+}
+
+fn procedure_error(e: ErrorObject) -> RpcError {
+    gateway_error(&e.code.clone(), e.message.clone(), vec![e])
 }
 
 fn forbidden(what: &str) -> RpcError {
@@ -338,9 +346,254 @@ async fn dispatch(
 
         method::DEVICES_LIST => ok(engine.devices()),
 
+        method::ACCESS_ALLOWED_OPERATIONS => {
+            let p: openmhs_api::AllowedOperationsParams = params(raw)?;
+            const FRESH_FOR_MS: u64 = 10_000;
+            let now = shared.clock.now();
+            let policy = engine.policy();
+            let policy_json = serde_json::to_string(&policy).unwrap_or_default();
+            let policy_revision = format!("sha256:{}", sha256_hex(&policy_json));
+            let mut descriptors = engine.devices();
+            if let Some(device) = p.device.as_deref() {
+                let Some(descriptor) = descriptors.iter().find(|d| d.device.id == device).cloned()
+                else {
+                    return Err(unknown_device(device));
+                };
+                descriptors = vec![descriptor];
+            }
+            let mut operations = Vec::new();
+            for descriptor in descriptors {
+                let descriptor_bytes = serde_json::to_string(&descriptor).unwrap_or_default();
+                let descriptor_sha256 = format!("sha256:{}", sha256_hex(&descriptor_bytes));
+                for capability in &descriptor.capabilities {
+                    for operation in &capability.operations {
+                        if !session.caller.in_scope(
+                            &descriptor.device.id,
+                            &capability.name,
+                            *operation,
+                        ) {
+                            continue;
+                        }
+                        let decision = policy.authorize(
+                            &session.principal,
+                            &descriptor.device.id,
+                            capability,
+                            *operation,
+                        );
+                        let access = match decision.decision {
+                            openmhs_types::receipt::Decision::Allow => "allowed",
+                            openmhs_types::receipt::Decision::RequireApproval => {
+                                "requires_approval"
+                            }
+                            openmhs_types::receipt::Decision::Deny => continue,
+                        };
+                        operations.push(openmhs_api::AllowedOperation {
+                            device: descriptor.device.id.clone(),
+                            capability: capability.name.clone(),
+                            operation: match operation {
+                                Operation::Read => "read",
+                                Operation::Write => "write",
+                                Operation::Subscribe => "subscribe",
+                                Operation::Invoke => "invoke",
+                            }
+                            .into(),
+                            access: access.into(),
+                            descriptor_sha256: descriptor_sha256.clone(),
+                        });
+                    }
+                }
+            }
+            ok(openmhs_api::AllowedOperations {
+                principal: session.principal.clone(),
+                policy_revision,
+                generated_at: now.to_rfc3339(),
+                expires_at: now.plus_ms(FRESH_FOR_MS).to_rfc3339(),
+                advisory: true,
+                operations,
+            })
+        }
+
         // Visible to every caller, like the devices and leases it is built from (ADR-0019).
         // A refresh probes only devices not checked in the last second, so callers cannot
         // turn it into a flood of device traffic.
+        method::PROCEDURES_LIST => ok(shared.procedures.lock().await.list()),
+
+        method::PROCEDURES_GET => {
+            let p: ProcedureRef = params(raw)?;
+            let store = shared.procedures.lock().await;
+            match store.get(&p.name, p.version, false) {
+                Some(found) => ok(found.clone()),
+                None => Err(procedure_error(crate::store::unknown_procedure(
+                    &p.name, p.version,
+                ))),
+            }
+        }
+
+        method::PROCEDURES_PROPOSE | method::PROCEDURES_ADD => {
+            let adding = method_name == method::PROCEDURES_ADD;
+            if adding {
+                require_operator("adding an approved procedure")?;
+            }
+            let p: ProcedureParams = params(raw)?;
+            openmhs_types::procedure::validate(&p.procedure)
+                .map_err(|errors| engine_error(EngineError::InvalidRequest(errors)))?;
+            let now = shared.clock.now();
+            let sha256 = sha256_hex(&openmhs_types::procedure::canonical(&p.procedure));
+            let procedure = openmhs_types::procedure::Procedure {
+                spec: p.procedure,
+                status: if adding {
+                    openmhs_types::procedure::ProcedureStatus::Approved
+                } else {
+                    openmhs_types::procedure::ProcedureStatus::Proposed
+                },
+                sha256,
+                proposed_by: session.principal.clone(),
+                proposed_at: now,
+                approved_by: adding.then(|| session.principal.clone()),
+                approved_at: adding.then_some(now),
+            };
+            let stored = shared
+                .procedures
+                .lock()
+                .await
+                .insert(procedure)
+                .map_err(procedure_error)?;
+            shared.audit(
+                if adding { "procedure.added" } else { "procedure.proposed" },
+                &stored.spec.name,
+                json!({ "version": stored.spec.version, "sha256": stored.sha256, "by": session.principal }),
+            )?;
+            ok(stored)
+        }
+
+        method::PROCEDURES_APPROVE => {
+            require_operator("approving a procedure")?;
+            let p: ProcedureRef = params(raw)?;
+            let version = p.version.ok_or_else(|| {
+                procedure_error(ErrorObject::new(
+                    "procedure.version",
+                    "name the version to approve",
+                ))
+            })?;
+            let approved = shared
+                .procedures
+                .lock()
+                .await
+                .approve(&p.name, version, &session.principal, shared.clock.now())
+                .map_err(procedure_error)?;
+            shared.audit(
+                "procedure.approved",
+                &p.name,
+                json!({ "version": version, "sha256": approved.sha256, "by": session.principal, "proposed_by": approved.proposed_by }),
+            )?;
+            ok(approved)
+        }
+
+        method::PROCEDURES_REMOVE => {
+            require_operator("removing a procedure")?;
+            let p: ProcedureRef = params(raw)?;
+            let version = p.version.ok_or_else(|| {
+                procedure_error(ErrorObject::new(
+                    "procedure.version",
+                    "name the version to remove",
+                ))
+            })?;
+            let removed = shared
+                .procedures
+                .lock()
+                .await
+                .remove(&p.name, version)
+                .map_err(procedure_error)?;
+            shared.audit(
+                "procedure.removed",
+                &p.name,
+                json!({ "version": version, "sha256": removed.sha256, "by": session.principal }),
+            )?;
+            ok(removed)
+        }
+
+        method::PROCEDURES_CHECK | method::PROCEDURES_RUN => {
+            let running = method_name == method::PROCEDURES_RUN;
+            let p: RunProcedureParams = params(raw)?;
+            let procedure = {
+                let store = shared.procedures.lock().await;
+                match store.get(&p.name, p.version, true) {
+                    Some(found) => found.clone(),
+                    None => {
+                        let proposed = store.get(&p.name, p.version, false).is_some();
+                        return Err(procedure_error(if proposed {
+                            ErrorObject::new(
+                                "procedure.not_approved",
+                                format!(
+                                    "'{}' is proposed but not approved; an operator must approve it first",
+                                    p.name
+                                ),
+                            )
+                        } else {
+                            crate::store::unknown_procedure(&p.name, p.version)
+                        }));
+                    }
+                }
+            };
+            let plan =
+                openmhs_types::procedure::expand(&procedure.spec, &procedure.sha256, &p.params)
+                    .map_err(|errors| engine_error(EngineError::InvalidRequest(errors)))?;
+            let engine = engine.clone();
+            let caller = session.caller.clone();
+            if !running {
+                return ok(
+                    detached(async move { engine.preflight_plan(&caller, plan).await }).await?,
+                );
+            }
+            let started = detached(async move { engine.submit_plan(&caller, plan).await }).await?;
+            shared.audit(
+                "procedure.run",
+                &procedure.spec.name,
+                json!({
+                    "version": procedure.spec.version, "sha256": procedure.sha256,
+                    "principal": session.principal, "plan_id": started.id,
+                }),
+            )?;
+            ok(started)
+        }
+
+        method::EVENTS_POLL => {
+            let p: EventsPollParams = params(raw)?;
+            let query = openmhs_engine::EventQuery {
+                stream: p.stream,
+                after: p.after,
+                filter: openmhs_engine::EventFilter {
+                    devices: p.devices,
+                    kinds: p.kinds,
+                },
+                limit: p.limit.unwrap_or(DEFAULT_LIST_LIMIT),
+                wait_ms: p.wait_ms,
+            };
+            ok(engine.poll_events(&session.caller, operator, &query).await)
+        }
+
+        method::WATCHES_CREATE => {
+            let p: WatchParams = params(raw)?;
+            ok(engine
+                .create_watch(
+                    &session.caller,
+                    &p.device,
+                    &p.capability,
+                    p.interval_ms,
+                    p.ttl_ms,
+                )
+                .map_err(engine_error)?)
+        }
+
+        method::WATCHES_LIST => ok(engine.watches(&session.caller, operator)),
+
+        method::WATCHES_CANCEL => {
+            let p: IdParams = params(raw)?;
+            ok(engine
+                .cancel_watch(&session.caller, &p.id, operator)
+                .map_err(engine_error)?)
+        }
+
         method::DEVICES_STATUS => {
             let p: DeviceStatusParams = params(raw)?;
             if p.refresh {
@@ -716,6 +969,7 @@ async fn dispatch(
                 let released = engine
                     .release_credential_leases(&info.id, &session.principal)
                     .map_err(engine_error)?;
+                engine.end_watches_of_credential(&info.id);
                 shared.audit(
                     "token.revoked",
                     &info.id,
@@ -746,6 +1000,7 @@ async fn dispatch(
             let released = engine
                 .release_credential_leases(&old.id, &session.principal)
                 .map_err(engine_error)?;
+            engine.end_watches_of_credential(&old.id);
             shared.audit(
                 "token.rotated",
                 &info.id,
@@ -756,6 +1011,14 @@ async fn dispatch(
                 }),
             )?;
             ok(CreatedToken { info, token })
+        }
+
+        method::AUDIT_EXPORT => {
+            require_operator("exporting audit evidence")?;
+            ok(engine
+                .journal()
+                .export_evidence()
+                .map_err(|e| gateway_error("gateway.journal", e.to_string(), vec![]))?)
         }
 
         method::AUDIT_VERIFY => {

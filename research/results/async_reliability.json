@@ -1,0 +1,2264 @@
+{
+ "_meta": {
+  "openmhs_commit": "74bae6b",
+  "labthings_fastapi": "0.3.0 (761441e)",
+  "when": "2026-10-29T18:07:47+0530",
+  "note": "simulators only; ground truth read directly from the LabThings server"
+ },
+ "S01": {
+  "title": "accepted but not yet completed",
+  "openmhs_states_seen": [
+   [
+    "ACCEPTED",
+    0.2,
+    "running",
+    1
+   ],
+   [
+    "APPLIED",
+    3.83,
+    "completed",
+    40
+   ]
+  ],
+  "final": {
+   "command_id": "01a187a9-1b96-75a1-8d3d-6262ec6db5c1",
+   "external_ref": "labthings:f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+   "state": "VERIFIED",
+   "outcome": "succeeded",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "APPLIED",
+    "VERIFIED"
+   ],
+   "last_detail": "readback 40 matches",
+   "errors": [],
+   "verification": {
+    "matched": true,
+    "reason": null,
+    "observed": 40
+   }
+  },
+  "truth_after": {
+   "position": 40,
+   "jobs_started": 76,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "2a1dc6a0-2cf6-4c31-828d-5473213bf4e3",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+     "action": "move_to",
+     "status": "completed"
+    }
+   ]
+  },
+  "premature_success": false,
+  "jobs_delta": 1
+ },
+ "S03": {
+  "title": "action error part-way",
+  "final": {
+   "command_id": "01a187a9-31fb-7404-8bcb-addc0d0d73ca",
+   "external_ref": "labthings:1ab34e43-73b5-4d90-b418-731d09380518",
+   "state": "FAILED",
+   "outcome": "failed",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "FAILED"
+   ],
+   "last_detail": "device rejected the command: invocation 1ab34e43-73b5-4d90-b418-731d09380518 raised an error (motor stalled (simulated fault)); how far the action got is not stated, so check the device's state before relying on it",
+   "errors": [],
+   "verification": null
+  },
+  "truth_after": {
+   "position": 14,
+   "jobs_started": 78,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "2a1dc6a0-2cf6-4c31-828d-5473213bf4e3",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6e18615d-77ea-4949-bc00-40de7da85a8e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ab34e43-73b5-4d90-b418-731d09380518",
+     "action": "move_to",
+     "status": "error"
+    }
+   ]
+  },
+  "position_reached_target": false,
+  "followup": {
+   "command_id": "01a187a9-3523-7120-8899-6c7d833303c6",
+   "external_ref": "labthings:1ee07726-4516-45f5-b918-5d42b4301268",
+   "state": "VERIFIED",
+   "outcome": "succeeded",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "APPLIED",
+    "VERIFIED"
+   ],
+   "last_detail": "readback 5 matches",
+   "errors": [],
+   "verification": {
+    "matched": true,
+    "reason": null,
+    "observed": 5
+   }
+  },
+  "adapter_ledger": [
+   "post",
+   "accepted",
+   "terminal",
+   "post",
+   "accepted",
+   "terminal"
+  ],
+  "jobs_delta": 2
+ },
+ "S04": {
+  "title": "cancelled externally",
+  "cancel_http": 200,
+  "final": {
+   "command_id": "01a187a9-3e77-7333-aca1-df4db5bf0db7",
+   "external_ref": "labthings:e6b83809-bf32-48f5-92c4-5435ed7692ce",
+   "state": "FAILED",
+   "outcome": "failed",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "FAILED"
+   ],
+   "last_detail": "device rejected the command: invocation e6b83809-bf32-48f5-92c4-5435ed7692ce was cancelled (The action was cancelled.); how far the action got is not stated, so check the device's state before relying on it",
+   "errors": [],
+   "verification": null
+  },
+  "truth_after": {
+   "position": 15,
+   "jobs_started": 81,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "2a1dc6a0-2cf6-4c31-828d-5473213bf4e3",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6e18615d-77ea-4949-bc00-40de7da85a8e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ab34e43-73b5-4d90-b418-731d09380518",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "1ee07726-4516-45f5-b918-5d42b4301268",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "54fe4ea5-2062-4f88-8a21-3f7ee3347a4c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "e6b83809-bf32-48f5-92c4-5435ed7692ce",
+     "action": "move_to",
+     "status": "cancelled"
+    }
+   ]
+  },
+  "stopped_partway": true,
+  "jobs_delta": 1
+ },
+ "S05": {
+  "title": "caller deadline passes before completion",
+  "first": {
+   "command_id": "01a187a9-497a-7023-a7e8-4cd8db2e0a88",
+   "external_ref": "labthings:8bf0dc96-2c58-4d95-bb5d-7ed5a5887412",
+   "state": "UNKNOWN_OUTCOME",
+   "outcome": "uncertain",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "TIMED_OUT",
+    "UNKNOWN_OUTCOME"
+   ],
+   "last_detail": "may or may not have taken effect; not retried; reconcile by readback",
+   "errors": [],
+   "verification": null
+  },
+  "truth_at_unknown": {
+   "position": 20,
+   "jobs_started": 83,
+   "busy": true,
+   "invocations": [
+    {
+     "id": "2a1dc6a0-2cf6-4c31-828d-5473213bf4e3",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6e18615d-77ea-4949-bc00-40de7da85a8e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ab34e43-73b5-4d90-b418-731d09380518",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "1ee07726-4516-45f5-b918-5d42b4301268",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "54fe4ea5-2062-4f88-8a21-3f7ee3347a4c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "e6b83809-bf32-48f5-92c4-5435ed7692ce",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "64dce43a-080e-49c1-a50a-efdd577062c9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bf0dc96-2c58-4d95-bb5d-7ed5a5887412",
+     "action": "move_to",
+     "status": "running"
+    }
+   ]
+  },
+  "followup_while_unresolved": {
+   "command_id": "01a187a9-4f97-77a7-b46b-32913cfb3c5e",
+   "external_ref": null,
+   "state": "DENIED",
+   "outcome": "denied",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "DENIED"
+   ],
+   "last_detail": "command 01a187a9-497a-7023-a7e8-4cd8db2e0a88 on 'lab.bench' 'move_to' may or may not have taken effect; reconcile it, or have an operator resolve it, before sending this again",
+   "errors": [
+    {
+     "code": "command.outcome_unresolved",
+     "message": "command 01a187a9-497a-7023-a7e8-4cd8db2e0a88 on 'lab.bench' 'move_to' may or may not have taken effect; reconcile it, or have an operator resolve it, before sending this again"
+    }
+   ],
+   "verification": null
+  },
+  "truth_after": {
+   "position": 70,
+   "jobs_started": 83,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "2a1dc6a0-2cf6-4c31-828d-5473213bf4e3",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6e18615d-77ea-4949-bc00-40de7da85a8e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ab34e43-73b5-4d90-b418-731d09380518",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "1ee07726-4516-45f5-b918-5d42b4301268",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "54fe4ea5-2062-4f88-8a21-3f7ee3347a4c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "e6b83809-bf32-48f5-92c4-5435ed7692ce",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "64dce43a-080e-49c1-a50a-efdd577062c9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bf0dc96-2c58-4d95-bb5d-7ed5a5887412",
+     "action": "move_to",
+     "status": "completed"
+    }
+   ]
+  },
+  "reconcile": {
+   "command_id": "01a187a9-497a-7023-a7e8-4cd8db2e0a88",
+   "external_ref": "labthings:8bf0dc96-2c58-4d95-bb5d-7ed5a5887412",
+   "state": "RECONCILED_APPLIED",
+   "outcome": "succeeded",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "TIMED_OUT",
+    "UNKNOWN_OUTCOME",
+    "RECONCILED_APPLIED"
+   ],
+   "last_detail": "reconciled by readback 70",
+   "errors": [],
+   "verification": {
+    "matched": true,
+    "reason": null,
+    "observed": 70
+   }
+  },
+  "invocation_id_in_error": true,
+  "invocation_id_in_adapter_ledger": true,
+  "jobs_delta": 1
+ },
+ "S06": {
+  "title": "status polling lost after acceptance",
+  "first": {
+   "command_id": "01a187a9-649e-7085-984e-d95b629d2763",
+   "external_ref": "labthings:1fee867e-3530-4e43-b3cf-04c38f5f0cdc",
+   "state": "UNKNOWN_OUTCOME",
+   "outcome": "uncertain",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "UNKNOWN_OUTCOME"
+   ],
+   "last_detail": "[adapter.disconnected] lost contact with invocation 1fee867e-3530-4e43-b3cf-04c38f5f0cdc (http://127.0.0.1:60844/action_invocations/1fee867e-3530-4e43-b3cf-04c38f5f0cdc) after it was accepted (Remote end closed connection without response); its outcome is unknown; not retried",
+   "errors": [],
+   "verification": null
+  },
+  "truth_after": {
+   "position": 55,
+   "jobs_started": 85,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "2a1dc6a0-2cf6-4c31-828d-5473213bf4e3",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6e18615d-77ea-4949-bc00-40de7da85a8e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ab34e43-73b5-4d90-b418-731d09380518",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "1ee07726-4516-45f5-b918-5d42b4301268",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "54fe4ea5-2062-4f88-8a21-3f7ee3347a4c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "e6b83809-bf32-48f5-92c4-5435ed7692ce",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "64dce43a-080e-49c1-a50a-efdd577062c9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bf0dc96-2c58-4d95-bb5d-7ed5a5887412",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bc79b48-6fb4-4fd0-817d-9433e04bad5b",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1fee867e-3530-4e43-b3cf-04c38f5f0cdc",
+     "action": "move_to",
+     "status": "completed"
+    }
+   ]
+  },
+  "reconcile": {
+   "command_id": "01a187a9-649e-7085-984e-d95b629d2763",
+   "external_ref": "labthings:1fee867e-3530-4e43-b3cf-04c38f5f0cdc",
+   "state": "RECONCILED_APPLIED",
+   "outcome": "succeeded",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "UNKNOWN_OUTCOME",
+    "RECONCILED_APPLIED"
+   ],
+   "last_detail": "reconciled by readback 55",
+   "errors": [],
+   "verification": {
+    "matched": true,
+    "reason": null,
+    "observed": 55
+   }
+  },
+  "adapter_ledger": [
+   "post",
+   "accepted",
+   "poll_lost"
+  ],
+  "jobs_delta": 1
+ },
+ "S07": {
+  "title": "invocation unknown to the server (404)",
+  "first": {
+   "command_id": "01a187a9-7509-7765-87fa-9531c927298e",
+   "external_ref": "labthings:65131408-ee42-4c17-bf58-c499f7cc791e",
+   "state": "UNKNOWN_OUTCOME",
+   "outcome": "uncertain",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "UNKNOWN_OUTCOME"
+   ],
+   "last_detail": "[adapter.disconnected] invocation 65131408-ee42-4c17-bf58-c499f7cc791e is no longer known to the server (expired or restarted); its outcome is unknown; not retried",
+   "errors": [],
+   "verification": null
+  },
+  "truth_after": {
+   "position": 45,
+   "jobs_started": 87,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "2a1dc6a0-2cf6-4c31-828d-5473213bf4e3",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6e18615d-77ea-4949-bc00-40de7da85a8e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ab34e43-73b5-4d90-b418-731d09380518",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "1ee07726-4516-45f5-b918-5d42b4301268",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "54fe4ea5-2062-4f88-8a21-3f7ee3347a4c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "e6b83809-bf32-48f5-92c4-5435ed7692ce",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "64dce43a-080e-49c1-a50a-efdd577062c9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bf0dc96-2c58-4d95-bb5d-7ed5a5887412",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bc79b48-6fb4-4fd0-817d-9433e04bad5b",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1fee867e-3530-4e43-b3cf-04c38f5f0cdc",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "768af540-27df-4243-ae35-1a2de7135be1",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "65131408-ee42-4c17-bf58-c499f7cc791e",
+     "action": "move_to",
+     "status": "completed"
+    }
+   ]
+  },
+  "reconcile": {
+   "command_id": "01a187a9-7509-7765-87fa-9531c927298e",
+   "external_ref": "labthings:65131408-ee42-4c17-bf58-c499f7cc791e",
+   "state": "RECONCILED_APPLIED",
+   "outcome": "succeeded",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "UNKNOWN_OUTCOME",
+    "RECONCILED_APPLIED"
+   ],
+   "last_detail": "reconciled by readback 45",
+   "errors": [],
+   "verification": {
+    "matched": true,
+    "reason": null,
+    "observed": 45
+   }
+  },
+  "jobs_delta": 1
+ },
+ "S08": {
+  "title": "status returns after the client gave up",
+  "first": {
+   "command_id": "01a187a9-8292-728f-a3e8-51ca57f021db",
+   "external_ref": "labthings:1bc706de-1ad4-4ab9-8bde-42942d61b8de",
+   "state": "UNKNOWN_OUTCOME",
+   "outcome": "uncertain",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "UNKNOWN_OUTCOME"
+   ],
+   "last_detail": "[adapter.disconnected] lost contact with invocation 1bc706de-1ad4-4ab9-8bde-42942d61b8de (http://127.0.0.1:61017/action_invocations/1bc706de-1ad4-4ab9-8bde-42942d61b8de) after it was accepted (timed out); its outcome is unknown; not retried",
+   "errors": [],
+   "verification": null
+  },
+  "truth_after": {
+   "position": 35,
+   "jobs_started": 89,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "2a1dc6a0-2cf6-4c31-828d-5473213bf4e3",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6e18615d-77ea-4949-bc00-40de7da85a8e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ab34e43-73b5-4d90-b418-731d09380518",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "1ee07726-4516-45f5-b918-5d42b4301268",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "54fe4ea5-2062-4f88-8a21-3f7ee3347a4c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "e6b83809-bf32-48f5-92c4-5435ed7692ce",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "64dce43a-080e-49c1-a50a-efdd577062c9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bf0dc96-2c58-4d95-bb5d-7ed5a5887412",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bc79b48-6fb4-4fd0-817d-9433e04bad5b",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1fee867e-3530-4e43-b3cf-04c38f5f0cdc",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "768af540-27df-4243-ae35-1a2de7135be1",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "65131408-ee42-4c17-bf58-c499f7cc791e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ae89386-8b20-4ea9-b75c-090ada97deae",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1bc706de-1ad4-4ab9-8bde-42942d61b8de",
+     "action": "move_to",
+     "status": "completed"
+    }
+   ]
+  },
+  "reconcile": {
+   "command_id": "01a187a9-8292-728f-a3e8-51ca57f021db",
+   "external_ref": "labthings:1bc706de-1ad4-4ab9-8bde-42942d61b8de",
+   "state": "RECONCILED_APPLIED",
+   "outcome": "succeeded",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "UNKNOWN_OUTCOME",
+    "RECONCILED_APPLIED"
+   ],
+   "last_detail": "reconciled by readback 35",
+   "errors": [],
+   "verification": {
+    "matched": true,
+    "reason": null,
+    "observed": 35
+   }
+  },
+  "job_completed_normally": true,
+  "jobs_delta": 1
+ },
+ "S09": {
+  "title": "adapter crash during an outstanding action",
+  "killed": [
+   "30068"
+  ],
+  "first": {
+   "command_id": "01a187a9-8fda-7488-8f3d-3b918ea801d9",
+   "external_ref": "labthings:ca31b4d7-b699-45fc-9e7a-a9b1ae044c99",
+   "state": "UNKNOWN_OUTCOME",
+   "outcome": "uncertain",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "UNKNOWN_OUTCOME"
+   ],
+   "last_detail": "[adapter.disconnected] adapter process lost during execute: process exited (exit code: 1); not retried",
+   "errors": [],
+   "verification": null
+  },
+  "truth_after": {
+   "position": 75,
+   "jobs_started": 91,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "2a1dc6a0-2cf6-4c31-828d-5473213bf4e3",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6e18615d-77ea-4949-bc00-40de7da85a8e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ab34e43-73b5-4d90-b418-731d09380518",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "1ee07726-4516-45f5-b918-5d42b4301268",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "54fe4ea5-2062-4f88-8a21-3f7ee3347a4c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "e6b83809-bf32-48f5-92c4-5435ed7692ce",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "64dce43a-080e-49c1-a50a-efdd577062c9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bf0dc96-2c58-4d95-bb5d-7ed5a5887412",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bc79b48-6fb4-4fd0-817d-9433e04bad5b",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1fee867e-3530-4e43-b3cf-04c38f5f0cdc",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "768af540-27df-4243-ae35-1a2de7135be1",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "65131408-ee42-4c17-bf58-c499f7cc791e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ae89386-8b20-4ea9-b75c-090ada97deae",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1bc706de-1ad4-4ab9-8bde-42942d61b8de",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "ba8e24c2-98b9-44be-8a83-c7ee426f165f",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "ca31b4d7-b699-45fc-9e7a-a9b1ae044c99",
+     "action": "move_to",
+     "status": "completed"
+    }
+   ]
+  },
+  "device_status_after": [
+   "ONLINE"
+  ],
+  "reconcile": {
+   "command_id": "01a187a9-8fda-7488-8f3d-3b918ea801d9",
+   "external_ref": "labthings:ca31b4d7-b699-45fc-9e7a-a9b1ae044c99",
+   "state": "RECONCILED_APPLIED",
+   "outcome": "succeeded",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "UNKNOWN_OUTCOME",
+    "RECONCILED_APPLIED"
+   ],
+   "last_detail": "reconciled by readback 75",
+   "errors": [],
+   "verification": {
+    "matched": true,
+    "reason": null,
+    "observed": 75
+   }
+  },
+  "adapter_ledger": [
+   "post",
+   "accepted"
+  ],
+  "jobs_delta": 1
+ },
+ "S10": {
+  "title": "gateway restart with an unresolved action",
+  "client_saw": "GatewayUnreachableError: cannot reach the gateway at http://127.0.0.1:58981/rpc: [WinError 10054] An existing connection was forcibly closed by the remote host",
+  "truth_after_kill": {
+   "position": 65,
+   "jobs_started": 93,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "2a1dc6a0-2cf6-4c31-828d-5473213bf4e3",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6e18615d-77ea-4949-bc00-40de7da85a8e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ab34e43-73b5-4d90-b418-731d09380518",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "1ee07726-4516-45f5-b918-5d42b4301268",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "54fe4ea5-2062-4f88-8a21-3f7ee3347a4c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "e6b83809-bf32-48f5-92c4-5435ed7692ce",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "64dce43a-080e-49c1-a50a-efdd577062c9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bf0dc96-2c58-4d95-bb5d-7ed5a5887412",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bc79b48-6fb4-4fd0-817d-9433e04bad5b",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1fee867e-3530-4e43-b3cf-04c38f5f0cdc",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "768af540-27df-4243-ae35-1a2de7135be1",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "65131408-ee42-4c17-bf58-c499f7cc791e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ae89386-8b20-4ea9-b75c-090ada97deae",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1bc706de-1ad4-4ab9-8bde-42942d61b8de",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "ba8e24c2-98b9-44be-8a83-c7ee426f165f",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "ca31b4d7-b699-45fc-9e7a-a9b1ae044c99",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "3004be43-2576-45be-9e43-365d3f8c6e6f",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "450ac1db-6d9c-4c05-b64a-95c91c8dec62",
+     "action": "move_to",
+     "status": "completed"
+    }
+   ]
+  },
+  "after_restart": [
+   {
+    "command_id": "01a187a9-b3ba-74d7-aa10-b59d3d3d9f9f",
+    "external_ref": "labthings:450ac1db-6d9c-4c05-b64a-95c91c8dec62",
+    "state": "UNKNOWN_OUTCOME",
+    "outcome": "uncertain",
+    "path": [
+     "CREATED",
+     "VALIDATING",
+     "APPROVED",
+     "DISPATCHED",
+     "ACCEPTED",
+     "UNKNOWN_OUTCOME"
+    ],
+    "last_detail": "gateway restarted during execution; not retried",
+    "errors": [],
+    "verification": null
+   }
+  ],
+  "reconcile": {
+   "command_id": "01a187a9-b3ba-74d7-aa10-b59d3d3d9f9f",
+   "external_ref": "labthings:450ac1db-6d9c-4c05-b64a-95c91c8dec62",
+   "state": "RECONCILED_APPLIED",
+   "outcome": "succeeded",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "UNKNOWN_OUTCOME",
+    "RECONCILED_APPLIED"
+   ],
+   "last_detail": "reconciled by readback 65",
+   "errors": [],
+   "verification": {
+    "matched": true,
+    "reason": null,
+    "observed": 65
+   }
+  },
+  "next_command": {
+   "command_id": "01a187a9-d063-76b1-a48c-de0b9a0b55b4",
+   "external_ref": "labthings:0a551c02-32bf-449f-be9b-6b1f0b03617a",
+   "state": "VERIFIED",
+   "outcome": "succeeded",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "APPLIED",
+    "VERIFIED"
+   ],
+   "last_detail": "readback 5 matches",
+   "errors": [],
+   "verification": {
+    "matched": true,
+    "reason": null,
+    "observed": 5
+   }
+  },
+  "jobs_delta_before_next": 1,
+  "jobs_delta": 2
+ },
+ "S11": {
+  "title": "duplicate requests",
+  "same_key": {
+   "state": "ACCEPTED",
+   "jobs_started": 1
+  },
+  "different_key_while_unresolved": {
+   "first": {
+    "command_id": "01a187a9-e268-736e-a127-492f05cc0c4b",
+    "external_ref": "labthings:c1fe0d89-0a63-4e43-81cb-9e93051ca85a",
+    "state": "UNKNOWN_OUTCOME",
+    "outcome": "uncertain",
+    "path": [
+     "CREATED",
+     "VALIDATING",
+     "APPROVED",
+     "DISPATCHED",
+     "ACCEPTED",
+     "TIMED_OUT",
+     "UNKNOWN_OUTCOME"
+    ],
+    "last_detail": "may or may not have taken effect; not retried; reconcile by readback",
+    "errors": [],
+    "verification": null
+   },
+   "second": {
+    "command_id": "01a187a9-e721-709b-a886-e4f750ea970c",
+    "external_ref": null,
+    "state": "DENIED",
+    "outcome": "denied",
+    "path": [
+     "CREATED",
+     "VALIDATING",
+     "DENIED"
+    ],
+    "last_detail": "command 01a187a9-e268-736e-a127-492f05cc0c4b on 'lab.bench' 'move_to' may or may not have taken effect; reconcile it, or have an operator resolve it, before sending this again",
+    "errors": [
+     {
+      "code": "command.outcome_unresolved",
+      "message": "command 01a187a9-e268-736e-a127-492f05cc0c4b on 'lab.bench' 'move_to' may or may not have taken effect; reconcile it, or have an operator resolve it, before sending this again"
+     }
+    ],
+    "verification": null
+   },
+   "jobs_started_by_both": 1
+  },
+  "direct_labthings_two_posts": {
+   "jobs_started": 2
+  }
+ },
+ "S12": {
+  "title": "stale readback served by an intermediary (stamp=received, readback_skew_ms=0)",
+  "first": {
+   "command_id": "01a187aa-04f6-74ad-8506-8c51791e44f0",
+   "external_ref": "labthings:d779df1e-2de2-4dc0-80fa-aa2087d5596b",
+   "state": "VERIFICATION_FAILED",
+   "outcome": "failed",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "APPLIED",
+    "VERIFICATION_FAILED"
+   ],
+   "last_detail": "readback 0 does not match expected 50",
+   "errors": [],
+   "verification": {
+    "matched": false,
+    "reason": null,
+    "observed": 0
+   }
+  },
+  "truth_after": {
+   "position": 50,
+   "jobs_started": 101,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "2a1dc6a0-2cf6-4c31-828d-5473213bf4e3",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6e18615d-77ea-4949-bc00-40de7da85a8e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ab34e43-73b5-4d90-b418-731d09380518",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "1ee07726-4516-45f5-b918-5d42b4301268",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "54fe4ea5-2062-4f88-8a21-3f7ee3347a4c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "e6b83809-bf32-48f5-92c4-5435ed7692ce",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "64dce43a-080e-49c1-a50a-efdd577062c9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bf0dc96-2c58-4d95-bb5d-7ed5a5887412",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bc79b48-6fb4-4fd0-817d-9433e04bad5b",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1fee867e-3530-4e43-b3cf-04c38f5f0cdc",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "768af540-27df-4243-ae35-1a2de7135be1",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "65131408-ee42-4c17-bf58-c499f7cc791e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ae89386-8b20-4ea9-b75c-090ada97deae",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1bc706de-1ad4-4ab9-8bde-42942d61b8de",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "ba8e24c2-98b9-44be-8a83-c7ee426f165f",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "ca31b4d7-b699-45fc-9e7a-a9b1ae044c99",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "3004be43-2576-45be-9e43-365d3f8c6e6f",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "450ac1db-6d9c-4c05-b64a-95c91c8dec62",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "0a551c02-32bf-449f-be9b-6b1f0b03617a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "21481c6c-31cf-4f61-a881-28ad58d12540",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "5e7bfab6-bd32-42e2-9f86-60eb6916fe88",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "c1fe0d89-0a63-4e43-81cb-9e93051ca85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "369175eb-f2f9-47f2-8eca-43bc673be3a4",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8caf9b94-ab37-41c3-976c-3f50d541046c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "9149df40-862d-4e5c-920c-536ed51872bf",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "d779df1e-2de2-4dc0-80fa-aa2087d5596b",
+     "action": "move_to",
+     "status": "completed"
+    }
+   ]
+  },
+  "openmhs_blamed_device": true,
+  "jobs_delta": 1
+ },
+ "S12-date": {
+  "title": "stale readback served by an intermediary (stamp=date_header, readback_skew_ms=1000)",
+  "first": {
+   "command_id": "01a187aa-2d26-732b-94ff-22d2fff17de8",
+   "external_ref": "labthings:6092e3c2-5192-4b5d-88d0-e016924b1242",
+   "state": "UNVERIFIABLE",
+   "outcome": "unverified",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "APPLIED",
+    "UNVERIFIABLE"
+   ],
+   "last_detail": "readings were older than the command; none can show its effect",
+   "errors": [],
+   "verification": {
+    "matched": null,
+    "reason": "every reading was older than the command, so none can show its effect",
+    "observed": null
+   }
+  },
+  "truth_after": {
+   "position": 50,
+   "jobs_started": 103,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "2a1dc6a0-2cf6-4c31-828d-5473213bf4e3",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6e18615d-77ea-4949-bc00-40de7da85a8e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ab34e43-73b5-4d90-b418-731d09380518",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "1ee07726-4516-45f5-b918-5d42b4301268",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "54fe4ea5-2062-4f88-8a21-3f7ee3347a4c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "e6b83809-bf32-48f5-92c4-5435ed7692ce",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "64dce43a-080e-49c1-a50a-efdd577062c9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bf0dc96-2c58-4d95-bb5d-7ed5a5887412",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bc79b48-6fb4-4fd0-817d-9433e04bad5b",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1fee867e-3530-4e43-b3cf-04c38f5f0cdc",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "768af540-27df-4243-ae35-1a2de7135be1",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "65131408-ee42-4c17-bf58-c499f7cc791e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ae89386-8b20-4ea9-b75c-090ada97deae",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1bc706de-1ad4-4ab9-8bde-42942d61b8de",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "ba8e24c2-98b9-44be-8a83-c7ee426f165f",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "ca31b4d7-b699-45fc-9e7a-a9b1ae044c99",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "3004be43-2576-45be-9e43-365d3f8c6e6f",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "450ac1db-6d9c-4c05-b64a-95c91c8dec62",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "0a551c02-32bf-449f-be9b-6b1f0b03617a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "21481c6c-31cf-4f61-a881-28ad58d12540",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "5e7bfab6-bd32-42e2-9f86-60eb6916fe88",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "c1fe0d89-0a63-4e43-81cb-9e93051ca85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "369175eb-f2f9-47f2-8eca-43bc673be3a4",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8caf9b94-ab37-41c3-976c-3f50d541046c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "9149df40-862d-4e5c-920c-536ed51872bf",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "d779df1e-2de2-4dc0-80fa-aa2087d5596b",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "b9bd5f3d-4126-4a30-ae65-4df1f36b0ace",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6092e3c2-5192-4b5d-88d0-e016924b1242",
+     "action": "move_to",
+     "status": "completed"
+    }
+   ]
+  },
+  "openmhs_blamed_device": false,
+  "jobs_delta": 1
+ },
+ "S04b": {
+  "title": "cancel request on an action that ignores it (direct LabThings)",
+  "cancel_http": 200,
+  "just_after_cancel_position_and_status": [
+   16,
+   "running"
+  ],
+  "half_second_later": [
+   27,
+   "running"
+  ],
+  "truth_after": {
+   "position": 60,
+   "jobs_started": 105,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "2a1dc6a0-2cf6-4c31-828d-5473213bf4e3",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6e18615d-77ea-4949-bc00-40de7da85a8e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ab34e43-73b5-4d90-b418-731d09380518",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "1ee07726-4516-45f5-b918-5d42b4301268",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "54fe4ea5-2062-4f88-8a21-3f7ee3347a4c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "e6b83809-bf32-48f5-92c4-5435ed7692ce",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "64dce43a-080e-49c1-a50a-efdd577062c9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bf0dc96-2c58-4d95-bb5d-7ed5a5887412",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bc79b48-6fb4-4fd0-817d-9433e04bad5b",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1fee867e-3530-4e43-b3cf-04c38f5f0cdc",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "768af540-27df-4243-ae35-1a2de7135be1",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "65131408-ee42-4c17-bf58-c499f7cc791e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ae89386-8b20-4ea9-b75c-090ada97deae",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1bc706de-1ad4-4ab9-8bde-42942d61b8de",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "ba8e24c2-98b9-44be-8a83-c7ee426f165f",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "ca31b4d7-b699-45fc-9e7a-a9b1ae044c99",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "3004be43-2576-45be-9e43-365d3f8c6e6f",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "450ac1db-6d9c-4c05-b64a-95c91c8dec62",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "0a551c02-32bf-449f-be9b-6b1f0b03617a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "21481c6c-31cf-4f61-a881-28ad58d12540",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "5e7bfab6-bd32-42e2-9f86-60eb6916fe88",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "c1fe0d89-0a63-4e43-81cb-9e93051ca85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "369175eb-f2f9-47f2-8eca-43bc673be3a4",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8caf9b94-ab37-41c3-976c-3f50d541046c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "9149df40-862d-4e5c-920c-536ed51872bf",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "d779df1e-2de2-4dc0-80fa-aa2087d5596b",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "b9bd5f3d-4126-4a30-ae65-4df1f36b0ace",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6092e3c2-5192-4b5d-88d0-e016924b1242",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "9ce578ba-9fed-4707-984e-c3dcdec647b9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "5bb18a1e-8df7-4672-b97d-19f4259a78bb",
+     "action": "move_uncancellable",
+     "status": "completed"
+    }
+   ]
+  },
+  "still_moved_after_cancel": true
+ },
+ "S12b": {
+  "title": "stale reading used to reconcile (stamp=received, readback_skew_ms=0)",
+  "first": {
+   "command_id": "01a187aa-6827-7003-8249-a212152efd24",
+   "external_ref": "labthings:b718ff8a-d073-45ca-9f42-363c33f09f40",
+   "state": "UNKNOWN_OUTCOME",
+   "outcome": "uncertain",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "TIMED_OUT",
+    "UNKNOWN_OUTCOME"
+   ],
+   "last_detail": "may or may not have taken effect; not retried; reconcile by readback",
+   "errors": [],
+   "verification": null
+  },
+  "truth_after": {
+   "position": 50,
+   "jobs_started": 107,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "2a1dc6a0-2cf6-4c31-828d-5473213bf4e3",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6e18615d-77ea-4949-bc00-40de7da85a8e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ab34e43-73b5-4d90-b418-731d09380518",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "1ee07726-4516-45f5-b918-5d42b4301268",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "54fe4ea5-2062-4f88-8a21-3f7ee3347a4c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "e6b83809-bf32-48f5-92c4-5435ed7692ce",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "64dce43a-080e-49c1-a50a-efdd577062c9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bf0dc96-2c58-4d95-bb5d-7ed5a5887412",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bc79b48-6fb4-4fd0-817d-9433e04bad5b",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1fee867e-3530-4e43-b3cf-04c38f5f0cdc",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "768af540-27df-4243-ae35-1a2de7135be1",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "65131408-ee42-4c17-bf58-c499f7cc791e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ae89386-8b20-4ea9-b75c-090ada97deae",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1bc706de-1ad4-4ab9-8bde-42942d61b8de",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "ba8e24c2-98b9-44be-8a83-c7ee426f165f",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "ca31b4d7-b699-45fc-9e7a-a9b1ae044c99",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "3004be43-2576-45be-9e43-365d3f8c6e6f",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "450ac1db-6d9c-4c05-b64a-95c91c8dec62",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "0a551c02-32bf-449f-be9b-6b1f0b03617a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "21481c6c-31cf-4f61-a881-28ad58d12540",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "5e7bfab6-bd32-42e2-9f86-60eb6916fe88",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "c1fe0d89-0a63-4e43-81cb-9e93051ca85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "369175eb-f2f9-47f2-8eca-43bc673be3a4",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8caf9b94-ab37-41c3-976c-3f50d541046c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "9149df40-862d-4e5c-920c-536ed51872bf",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "d779df1e-2de2-4dc0-80fa-aa2087d5596b",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "b9bd5f3d-4126-4a30-ae65-4df1f36b0ace",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6092e3c2-5192-4b5d-88d0-e016924b1242",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "9ce578ba-9fed-4707-984e-c3dcdec647b9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "5bb18a1e-8df7-4672-b97d-19f4259a78bb",
+     "action": "move_uncancellable",
+     "status": "completed"
+    },
+    {
+     "id": "42a99062-970d-44c8-87a3-9393ac43f5b2",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "b718ff8a-d073-45ca-9f42-363c33f09f40",
+     "action": "move_to",
+     "status": "completed"
+    }
+   ]
+  },
+  "reconcile": {
+   "command_id": "01a187aa-6827-7003-8249-a212152efd24",
+   "external_ref": "labthings:b718ff8a-d073-45ca-9f42-363c33f09f40",
+   "state": "RECONCILED_NOT_APPLIED",
+   "outcome": "failed",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "TIMED_OUT",
+    "UNKNOWN_OUTCOME",
+    "RECONCILED_NOT_APPLIED"
+   ],
+   "last_detail": "reconciled by readback 0",
+   "errors": [],
+   "verification": {
+    "matched": false,
+    "reason": null,
+    "observed": 0
+   }
+  },
+  "dangerous": true,
+  "jobs_delta": 1
+ },
+ "S12b-date": {
+  "title": "stale reading used to reconcile (stamp=date_header, readback_skew_ms=1000)",
+  "first": {
+   "command_id": "01a187aa-8414-7784-9f1e-26b35d9f1af7",
+   "external_ref": "labthings:0467e46c-912d-4c3d-adbb-f9a0f9f4c187",
+   "state": "UNKNOWN_OUTCOME",
+   "outcome": "uncertain",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "TIMED_OUT",
+    "UNKNOWN_OUTCOME"
+   ],
+   "last_detail": "may or may not have taken effect; not retried; reconcile by readback",
+   "errors": [],
+   "verification": null
+  },
+  "truth_after": {
+   "position": 50,
+   "jobs_started": 109,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "2a1dc6a0-2cf6-4c31-828d-5473213bf4e3",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6e18615d-77ea-4949-bc00-40de7da85a8e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ab34e43-73b5-4d90-b418-731d09380518",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "1ee07726-4516-45f5-b918-5d42b4301268",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "54fe4ea5-2062-4f88-8a21-3f7ee3347a4c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "e6b83809-bf32-48f5-92c4-5435ed7692ce",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "64dce43a-080e-49c1-a50a-efdd577062c9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bf0dc96-2c58-4d95-bb5d-7ed5a5887412",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bc79b48-6fb4-4fd0-817d-9433e04bad5b",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1fee867e-3530-4e43-b3cf-04c38f5f0cdc",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "768af540-27df-4243-ae35-1a2de7135be1",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "65131408-ee42-4c17-bf58-c499f7cc791e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ae89386-8b20-4ea9-b75c-090ada97deae",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1bc706de-1ad4-4ab9-8bde-42942d61b8de",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "ba8e24c2-98b9-44be-8a83-c7ee426f165f",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "ca31b4d7-b699-45fc-9e7a-a9b1ae044c99",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "3004be43-2576-45be-9e43-365d3f8c6e6f",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "450ac1db-6d9c-4c05-b64a-95c91c8dec62",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "0a551c02-32bf-449f-be9b-6b1f0b03617a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "21481c6c-31cf-4f61-a881-28ad58d12540",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "5e7bfab6-bd32-42e2-9f86-60eb6916fe88",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "c1fe0d89-0a63-4e43-81cb-9e93051ca85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "369175eb-f2f9-47f2-8eca-43bc673be3a4",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8caf9b94-ab37-41c3-976c-3f50d541046c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "9149df40-862d-4e5c-920c-536ed51872bf",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "d779df1e-2de2-4dc0-80fa-aa2087d5596b",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "b9bd5f3d-4126-4a30-ae65-4df1f36b0ace",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6092e3c2-5192-4b5d-88d0-e016924b1242",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "9ce578ba-9fed-4707-984e-c3dcdec647b9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "5bb18a1e-8df7-4672-b97d-19f4259a78bb",
+     "action": "move_uncancellable",
+     "status": "completed"
+    },
+    {
+     "id": "42a99062-970d-44c8-87a3-9393ac43f5b2",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "b718ff8a-d073-45ca-9f42-363c33f09f40",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8f03545c-d4f3-46b9-87b0-401eaa1e2b5e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "0467e46c-912d-4c3d-adbb-f9a0f9f4c187",
+     "action": "move_to",
+     "status": "completed"
+    }
+   ]
+  },
+  "reconcile": {
+   "refused": "GatewayError: [command.not_reconcilable] cannot reconcile: the only reading of 'position' available was measured at 2026-10-29T12:37:38Z, older than the command (given up on); it cannot show whether the command took effect. Try again when the device reports a current value, or have an operator resol"
+  },
+  "dangerous": false,
+  "jobs_delta": 1
+ },
+ "S12c": {
+  "title": "Date-header stamping, uncached, readback_skew_ms=1000",
+  "first": {
+   "command_id": "01a187aa-9580-73d2-a38d-84d11cdbd404",
+   "external_ref": "labthings:5fe5783e-cece-486e-ba57-5ab857d44c6b",
+   "state": "VERIFIED",
+   "outcome": "succeeded",
+   "path": [
+    "CREATED",
+    "VALIDATING",
+    "APPROVED",
+    "DISPATCHED",
+    "ACCEPTED",
+    "APPLIED",
+    "VERIFIED"
+   ],
+   "last_detail": "readback 50 matches",
+   "errors": [],
+   "verification": {
+    "matched": true,
+    "reason": null,
+    "observed": 50
+   }
+  },
+  "truth_after": {
+   "position": 50,
+   "jobs_started": 111,
+   "busy": false,
+   "invocations": [
+    {
+     "id": "2a1dc6a0-2cf6-4c31-828d-5473213bf4e3",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "f07d5f31-77e1-4d70-b18d-3233dd38e85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6e18615d-77ea-4949-bc00-40de7da85a8e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ab34e43-73b5-4d90-b418-731d09380518",
+     "action": "move_to",
+     "status": "error"
+    },
+    {
+     "id": "1ee07726-4516-45f5-b918-5d42b4301268",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "54fe4ea5-2062-4f88-8a21-3f7ee3347a4c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "e6b83809-bf32-48f5-92c4-5435ed7692ce",
+     "action": "move_to",
+     "status": "cancelled"
+    },
+    {
+     "id": "64dce43a-080e-49c1-a50a-efdd577062c9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bf0dc96-2c58-4d95-bb5d-7ed5a5887412",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8bc79b48-6fb4-4fd0-817d-9433e04bad5b",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1fee867e-3530-4e43-b3cf-04c38f5f0cdc",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "768af540-27df-4243-ae35-1a2de7135be1",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "65131408-ee42-4c17-bf58-c499f7cc791e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1ae89386-8b20-4ea9-b75c-090ada97deae",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "1bc706de-1ad4-4ab9-8bde-42942d61b8de",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "ba8e24c2-98b9-44be-8a83-c7ee426f165f",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "ca31b4d7-b699-45fc-9e7a-a9b1ae044c99",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "3004be43-2576-45be-9e43-365d3f8c6e6f",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "450ac1db-6d9c-4c05-b64a-95c91c8dec62",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "0a551c02-32bf-449f-be9b-6b1f0b03617a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "21481c6c-31cf-4f61-a881-28ad58d12540",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "5e7bfab6-bd32-42e2-9f86-60eb6916fe88",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "c1fe0d89-0a63-4e43-81cb-9e93051ca85a",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "369175eb-f2f9-47f2-8eca-43bc673be3a4",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8caf9b94-ab37-41c3-976c-3f50d541046c",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "9149df40-862d-4e5c-920c-536ed51872bf",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "d779df1e-2de2-4dc0-80fa-aa2087d5596b",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "b9bd5f3d-4126-4a30-ae65-4df1f36b0ace",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "6092e3c2-5192-4b5d-88d0-e016924b1242",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "9ce578ba-9fed-4707-984e-c3dcdec647b9",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "5bb18a1e-8df7-4672-b97d-19f4259a78bb",
+     "action": "move_uncancellable",
+     "status": "completed"
+    },
+    {
+     "id": "42a99062-970d-44c8-87a3-9393ac43f5b2",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "b718ff8a-d073-45ca-9f42-363c33f09f40",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "8f03545c-d4f3-46b9-87b0-401eaa1e2b5e",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "0467e46c-912d-4c3d-adbb-f9a0f9f4c187",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "d32ac508-222e-4649-8478-9ae3409ddeba",
+     "action": "move_to",
+     "status": "completed"
+    },
+    {
+     "id": "5fe5783e-cece-486e-ba57-5ab857d44c6b",
+     "action": "move_to",
+     "status": "completed"
+    }
+   ]
+  },
+  "jobs_delta": 1
+ }
+}

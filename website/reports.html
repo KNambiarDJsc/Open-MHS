@@ -82,14 +82,14 @@
     </table>
     </div>
     <h3>Gate results on Windows</h3>
-    <p>Rows are from the M10 gate, except the <code>cargo test</code> count, which was re-run on 2026-10-28.</p>
+    <p>Rows are from the M10 gate, except the <code>cargo test</code> and Python counts, which were re-run on 2026-10-28.</p>
     <div class="table-scroll">
     <table>
       <tr><th>Step</th><th>Result</th></tr>
       <tr><td><code>cargo fmt</code>, <code>cargo clippy -D warnings</code>, <code>cargo deny check</code></td><td><span class="tag ok">pass</span></td></tr>
-      <tr><td><code>cargo test --workspace</code></td><td><span class="tag ok">pass</span> 369 tests, 0 failed, 68 test binaries (<code>main</code> at <code>37c56fb</code>, Windows 11)</td></tr>
+      <tr><td><code>cargo test --workspace</code></td><td><span class="tag ok">pass</span> 416 tests, 0 failed, 73 test binaries (branch <code>dx/mcp-sim</code> at <code>5dd82c9</code>, Windows 11; <code>main</code> at <code>37c56fb</code> had 369)</td></tr>
       <tr><td>Schema, registry, matrix and release-version checks</td><td><span class="tag ok">pass</span> 78 schema documents, 11 registry entries, 9 reports</td></tr>
-      <tr><td>Python SDK tests and tool tests</td><td><span class="tag ok">pass</span></td></tr>
+      <tr><td>Python SDK tests and tool tests</td><td><span class="tag ok">pass</span> 45 tests (same branch and date)</td></tr>
       <tr><td>Documentation build with link check</td><td><span class="tag ok">pass</span> 0 broken links</td></tr>
     </table>
     </div>
@@ -253,6 +253,10 @@
       read the operator token. The adapter host has no OS sandbox.</li>
       <li><strong>No signed descriptors or signed audit export.</strong> Rate and slew
       history, and simulator state, reset on restart.</li>
+      <li><strong>The journal still grows until its limit.</strong> A size limit and reserve
+      exist; archiving and retention are a draft design, not built.</li>
+      <li><strong>Events live in memory.</strong> A restart loses them and ends every watch;
+      individual watch samples are not audited, only their start and end.</li>
     </ul>
 
     <h2 id="roadmap">Roadmap</h2>
@@ -270,7 +274,11 @@
       <tr><td>M8</td><td>Identity and trust: scoped credentials, approval records, signed manifests, threat model</td><td><span class="tag ok">done</span> pending review</td></tr>
       <tr><td>M9</td><td>Capability graph, leases, plans with twin preflight, stop lane, L3 conformance</td><td><span class="tag ok">done</span> pending review</td></tr>
       <tr><td>M10</td><td>Release readiness: binaries, PyPI, docs site, adapter registry, compatibility matrix, governance</td><td><span class="tag warn">built</span> nothing published; see <a href="#m10">blockers</a></td></tr>
-      <tr><td>M11+</td><td>Advanced track, design documents first: WASM-sandboxed adapters, OpenTelemetry, remote and federated gateways, fleets, assisted adapter generation, hardware-in-the-loop rigs, OPC UA, ros2_control and SiLA 2 bridges, device attestation</td><td><span class="tag info">planned</span></td></tr>
+      <tr><td>M11</td><td>Release readiness and green CI on all three systems</td><td><span class="tag warn">in progress</span> macOS CI has not completed</td></tr>
+      <tr><td>M12</td><td>First physical validation: an ESP32 driving one LED, observed with a multimeter</td><td><span class="tag info">planned</span> runbook written, not run</td></tr>
+      <tr><td>M17a</td><td>State fabric (events, watches, <code>subscribe</code>), capability-based selection, insights, <code>mcp --sim</code></td><td><span class="tag ok">built</span> on a branch, not merged</td></tr>
+      <tr><td>M18&ndash;M20</td><td>Procedures, a model-agnostic agent harness, conditional plan steps, SCPI discovery, <code>openmhs bench</code>. Parallel plan steps and federation are designed, not built</td><td><span class="tag ok">built</span> on a branch, not merged</td></tr>
+      <tr><td>Later</td><td>Advanced track, design documents first: WASM-sandboxed adapters, OpenTelemetry, remote and federated gateways, fleets, assisted adapter generation, hardware-in-the-loop rigs, OPC UA, ros2_control and SiLA 2 bridges, device attestation</td><td><span class="tag info">planned</span></td></tr>
     </table>
     </div>
     <p>Source: <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/roadmap.md">docs/roadmap.md</a>,

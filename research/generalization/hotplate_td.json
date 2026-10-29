@@ -1,0 +1,73 @@
+{
+  "@context": ["https://www.w3.org/2022/wot/td/v1.1", { "@language": "en" }],
+  "id": "urn:dev:ops:32473-Hotplate-4421",
+  "title": "Stirring hotplate",
+  "description": "A laboratory hotplate with a temperature probe and a magnetic stirrer.",
+  "securityDefinitions": { "basic_sc": { "scheme": "basic", "in": "header" } },
+  "security": ["basic_sc"],
+  "base": "http://127.0.0.1:5200/",
+  "properties": {
+    "temperature": {
+      "title": "Plate temperature",
+      "type": "number", "unit": "degC", "minimum": -20, "maximum": 400,
+      "readOnly": true, "observable": true,
+      "forms": [{ "href": "properties/temperature", "op": "readproperty", "contentType": "application/json" }]
+    },
+    "targetTemperature": {
+      "title": "Target temperature",
+      "type": "number", "unit": "degC", "minimum": 20, "maximum": 300,
+      "forms": [
+        { "href": "properties/targetTemperature", "op": "readproperty", "htv:methodName": "GET" },
+        { "href": "properties/targetTemperature", "op": "writeproperty", "htv:methodName": "PUT" }
+      ]
+    },
+    "state": {
+      "title": "Operating state",
+      "type": "string", "enum": ["idle", "heating", "cooling", "fault"], "readOnly": true,
+      "forms": [{ "href": "properties/state", "op": "readproperty" }]
+    },
+    "stirRate": {
+      "title": "Stirrer speed",
+      "type": "integer", "unit": "rpm", "minimum": 0, "maximum": 1500, "readOnly": true,
+      "forms": [{ "href": "properties/stirRate", "op": "readproperty" }]
+    }
+  },
+  "actions": {
+    "start": {
+      "title": "Start heating to the target temperature",
+      "safe": false, "idempotent": true,
+      "forms": [{ "href": "actions/start", "op": "invokeaction", "htv:methodName": "POST" }]
+    },
+    "stop": {
+      "title": "Stop heating",
+      "safe": false, "idempotent": true,
+      "forms": [{ "href": "actions/stop", "op": "invokeaction", "htv:methodName": "POST" }]
+    },
+    "selfTest": {
+      "title": "Run the built-in self test (no heating)",
+      "safe": true, "idempotent": true,
+      "output": { "type": "object", "properties": { "ok": { "type": "boolean" } } },
+      "forms": [{ "href": "actions/selfTest", "op": "invokeaction", "htv:methodName": "POST" }]
+    },
+    "setProgram": {
+      "title": "Heat to a temperature and hold it for a time",
+      "safe": false, "idempotent": false,
+      "input": {
+        "type": "object",
+        "properties": {
+          "temperature": { "type": "number", "unit": "degC", "minimum": 20, "maximum": 300 },
+          "minutes": { "type": "integer", "unit": "min", "minimum": 1, "maximum": 600 }
+        },
+        "required": ["temperature", "minutes"]
+      },
+      "forms": [{ "href": "actions/setProgram", "op": "invokeaction", "htv:methodName": "POST" }]
+    }
+  },
+  "events": {
+    "overheat": {
+      "title": "Plate above its safe limit",
+      "data": { "type": "number", "unit": "degC" },
+      "forms": [{ "href": "events/overheat", "op": "subscribeevent", "subprotocol": "sse" }]
+    }
+  }
+}

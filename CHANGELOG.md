@@ -7,6 +7,76 @@ and the entry will say so under **Changed** or **Removed**.
 
 ## [Unreleased]
 
+### Added
+
+- Receipt digests in new command audit events, operator `audit.export`, and offline
+  `audit verify-file` with independently retained checkpoint support. Verification reports
+  legacy receipts as incomplete coverage and detects changed/missing current receipts.
+  Status, replay and transition operations reject digest mismatches with
+  `journal.receipt_integrity`. This is consistency checking, not a signed or tamper-proof log.
+- Principal-scoped `get_allowed_operations` / `access.allowed_operations` discovery with
+  policy and descriptor digests and a short advisory expiry. MCP instructions use discovered
+  device ids, and insights rejects unknown devices using the existing error code.
+
+- Provenance in the audit trail (from the LabThings/OpenFlexure study, `research/`): an adapter
+  may report the device's own reference for a command (`progress.accepted(external_ref=...)`,
+  `adapter_result.external_ref`, at most 256 characters); the `ACCEPTED` audit record carries it
+  as `device reference <ref>`, and `device.registered` records `descriptor_sha256`, the hash of
+  the validated descriptor in canonical form. The W3C Thing Description importer and generic
+  HTTP/LabThings adapter (`adapters/python/wot/`) record the description's hash in the
+  descriptor's `extensions`.
+- `research/`: reproducible simulator-only study (importer coverage, async-action failure
+  scenarios, 225-run fault-injection benchmark, provenance experiments, multi-device plan,
+  natural-language experiments) and a decision memo. No hardware claims.
+
+- `openmhs mcp --sim`: an MCP server that brings its own throwaway virtual-lab gateway and
+  agent credential, so an MCP host needs one config line and no separate `serve`, grants or
+  token. The agent can read the simulated devices and write the power supply; the operator
+  token never reaches the MCP server. Simulated devices only.
+- Insights ([ADR-0022](docs/adr/0022-insights-from-the-journal.md)): MCP tool `get_insights`,
+  `Client::insights` and `openmhs insights` summarize an agent's earlier commands on a device:
+  refusals with the numbers that bound them, confirmed values, tracking error, readback
+  latency and unresolved outcomes. A read of the journal only; it changes no limit, grant or
+  descriptor. `examples/agent-loop/learning_agent.py` shows a second session reaching its
+  target without a refusal.
+- State fabric ([ADR-0023](docs/adr/0023-state-fabric.md)): `events.poll` streams observations,
+  availability changes and command transitions from a bounded in-memory buffer, reporting
+  any it had to drop (`missed`); `watches.create` samples a capability that declares
+  `subscribe`. Both are authorized as the specification's `subscribe` operation (scope and
+  grant), checked at delivery and before every sample. MCP tools `watch_state`,
+  `poll_events`, `cancel_watch`; `openmhs events` and `openmhs watch`; Python client methods.
+- Capability-based selection: MCP `find_capabilities`, `openmhs find`,
+  `Client::find_capabilities`.
+- [docs/strategy/PLATFORM_ARCHITECTURE.md](docs/strategy/PLATFORM_ARCHITECTURE.md): verified
+  gap matrix for the platform brief, subsystem contracts, and designs for procedures, DAG
+  plans, a model-agnostic harness, discovery and federation (not implemented).
+- Model-agnostic agent harness `openmhs.agent` ([docs/agent-harness.md](docs/agent-harness.md)):
+  Claude (official SDK), any OpenAI-compatible server (local models included) and a scripted
+  provider. Only gateway tools, a confirmation hook for physical calls, `check_plan` before
+  `submit_plan`, step and time budgets, a transcript, and a run turned into a draft plan.
+  `python -m openmhs.agent`.
+- Procedures ([spec/procedures.md](spec/procedures.md)): versioned, parameterized plans.
+  Anyone may propose; only an operator approves; a run is an ordinary plan as the caller.
+  `procedures.*` API, MCP `list_procedures` / `check_procedure` / `run_procedure` /
+  `propose_procedure`, `openmhs procedures`, Python client methods.
+- Conditional plan steps (`when`, [ADR-0024](docs/adr/0024-conditional-steps.md)): a false
+  condition skips the step and its dependents; one that cannot be decided fails the step.
+- Parallel plan steps (`"parallel": true`, [ADR-0025](docs/adr/0025-parallel-steps.md)): ready steps
+  on disjoint devices and resources run together; every branch settles before the plan reacts.
+- Discovery for Modbus TCP, HTTP and MQTT, read-only like SCPI.
+- `openmhs bench` ([docs/benchmarks.md](docs/benchmarks.md)): wall-clock read, command, event
+  and watch timing through the real API.
+- `openmhs discover scpi`: asks named addresses `*IDN?` and proposes profiles; registers
+  nothing.
+
+### Changed
+
+- Watches sample at a fixed rate (the first benchmark showed them drifting).
+- The gateway registers devices concurrently at start (at most 16 at a time), so many
+  switched-off devices cost a few probe timeouts rather than one each.
+- The periodic availability sweep backs off for devices that keep not answering (doubling,
+  capped at 5 minutes, with jitter). Commands and `devices status` still probe on demand.
+
 ## [0.1.0] - 2026-10-28
 
 The first release. **Pre-alpha: no adapter has been run against physical hardware, and

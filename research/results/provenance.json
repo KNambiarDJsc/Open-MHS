@@ -1,0 +1,220 @@
+{
+ "P1": {
+  "doc": "A complete trace of one command, exported, and checked against the device's own records.",
+  "fields_present": {
+   "principal": true,
+   "credential_id": true,
+   "request": true,
+   "authorization": true,
+   "lifecycle": true,
+   "device_reference": true,
+   "device_result": false,
+   "verification": true
+  },
+  "authorization": {
+   "decision": "allow",
+   "rules": [
+    "w"
+   ],
+   "approved_by": null,
+   "errors": []
+  },
+  "final_state": "VERIFIED",
+  "device_reference": "labthings:8a6d2e63-d687-464e-afad-fd1def7190a4",
+  "device_reference_found_on_labthings_server": true,
+  "device_reference_in_hash_chained_record": true,
+  "descriptor_sha256_recorded": [
+   true
+  ],
+  "td_source_in_contract": null,
+  "audit": {
+   "records": 22,
+   "valid": true,
+   "first_invalid": null,
+   "anchor": {
+    "seq": 22,
+    "hash": "bc2338131e988ca9e3aba21bf716ff0f71afb81a00f4bc0d56250553ba079d42",
+    "at": "2026-10-29T14:06:18.781Z"
+   }
+  },
+  "receipts_inconsistent_with_chain": [],
+  "report_files": [
+   "D:\\openmhs-research\\work\\prov-p1-report.json",
+   "D:\\openmhs-research\\work\\prov-p1-report.md"
+  ]
+ },
+ "P2": {
+  "doc": "Edit one chained record's data, leave the hashes alone.",
+  "records": 29,
+  "edited_seq": 14,
+  "gateway_says": {
+   "records": 32,
+   "valid": false,
+   "first_invalid": 14
+  }
+ },
+ "P3": {
+  "doc": "Edit a record and recompute every later hash: what someone with the file can do.",
+  "edited_seq": 14,
+  "gateway_says": {
+   "records": 32,
+   "valid": true,
+   "first_invalid": null
+  },
+  "reading": "no secret is in the chain, so a rewrite that recomputes every later hash passes"
+ },
+ "P4": {
+  "doc": "Delete a record from the middle.",
+  "deleted_seq": 14,
+  "gateway_says": {
+   "records": 31,
+   "valid": false,
+   "first_invalid": 15
+  }
+ },
+ "P5": {
+  "doc": "Remove the newest records, with and without an anchor kept elsewhere.",
+  "records_removed": 8,
+  "anchor_kept_elsewhere": {
+   "seq": 29,
+   "hash": "32a4e0da880809cb1c99845aedcaa8b72fa8f5463511b75a5547c94d7df0e997",
+   "at": "2026-10-29T14:06:30.254Z"
+  },
+  "gateway_says": {
+   "records": 24,
+   "valid": true,
+   "first_invalid": null
+  },
+  "against_anchor": {
+   "earlier": {
+    "seq": 29,
+    "hash": "32a4e0da880809cb1c99845aedcaa8b72fa8f5463511b75a5547c94d7df0e997",
+    "at": "2026-10-29T14:06:30.254Z"
+   },
+   "present": false,
+   "hash_matches": false,
+   "verdict": "TRUNCATED OR REWRITTEN: the earlier head is missing or different",
+   "records_since": -5
+  }
+ },
+ "P6": {
+  "doc": "Edit only the receipt row, which the chain does not cover.",
+  "gateway_chain_says": {
+   "valid": true,
+   "first_invalid": null
+  },
+  "receipt_now_shows": "FAILED",
+  "report_flags_receipts_inconsistent_with_chain": true
+ },
+ "P7": {
+  "doc": "A hard kill in the middle of a command: is the chain intact, and what does the record say?",
+  "device_busy_at_kill": true,
+  "chain_after_kill": {
+   "records": 24,
+   "valid": true,
+   "first_invalid": null
+  },
+  "command_after_restart": {
+   "state": "CommandState.UNKNOWN_OUTCOME",
+   "path": [
+    "CommandState.CREATED",
+    "CommandState.VALIDATING",
+    "CommandState.APPROVED",
+    "CommandState.DISPATCHED",
+    "CommandState.ACCEPTED",
+    "CommandState.UNKNOWN_OUTCOME"
+   ]
+  },
+  "device_ground_truth_after": 77,
+  "note": "a kill leaves a valid chain; the unfinished command is not silently completed"
+ },
+ "P8": {
+  "doc": "Storage exhaustion: a journal with a hard size limit. Does the gateway refuse before it",
+  "limit_mib": 3,
+  "reserve_mib": 1,
+  "journal_bytes_at_start": 4096,
+  "commands_executed_before_refusal": 448,
+  "refusal": "storage.exhausted: the journal is within its critical reserve of its size limit (2097152 of 3145728 bytes used), so nothing was sent; new commands and reads ar",
+  "journal_bytes_at_refusal": 2097152,
+  "device_jobs_started": 448,
+  "no_job_without_a_command": true,
+  "read_when_full": "GatewayError: [storage.exhausted] the journal is within its critical reserve of its size limit (2097152 of 3145728 bytes used), so not",
+  "chain_valid_after": true
+ },
+ "P9": {
+  "doc": "LabThings forgets an invocation after its retention time. OpenMHS should still hold the story.",
+  "status_on_labthings_right_after": 200,
+  "status_on_labthings_after_330s": 200,
+  "labthings_body_after": {
+   "status": "completed",
+   "id": "0346cb4a-6b9c-4c4f-996e-83d833d99bf6",
+   "action": "/bench/move_to",
+   "href": "http://127.0.0.1:5100/action_invocations/0346cb4a-6b9c-4c4f-996e-83d833d99bf6",
+   "timeStarted": "2026-10-29T18:45:56.603714",
+   "timeRequested": "2026-10-29T18:45:56.602461",
+   "timeCompleted": "2026-10-29T18:45:56.852195",
+   "links": [
+    {
+     "href": "http://127.0.0.1:5100/action_invocations/0346cb4a-6b9c-4c4f-996e-83d833d99bf6",
+     "type": null,
+     "rel": "self",
+     "anchor": null
+    },
+    {
+     "href": "http://127.0.0.1:5100/action_invocations/0346cb4a-6b9c-4c4f-996e-83d833d99bf6/output",
+     "type": null,
+     "rel": "output",
+     "anchor": null
+    }
+   ],
+   "input": {
+    "target": 10,
+    "seconds": 0.2,
+    "fail_after": -1.0
+   },
+   "output": null,
+   "log": [],
+   "error": null
+  },
+  "openmhs_still_has": {
+   "state": "VERIFIED",
+   "device_reference": "labthings:0346cb4a-6b9c-4c4f-996e-83d833d99bf6",
+   "verification": {
+    "mode": "readback",
+    "expected": 10,
+    "matched": true,
+    "observed": 10,
+    "observed_at": "2026-10-29T13:15:57.068Z",
+    "observed_source": "simulator",
+    "quality": "GOOD",
+    "reason": null
+   }
+  },
+  "followup_checked_by_hand": {
+   "note": "the P9 code was extended afterwards to do this itself (provenance_experiments.py); this follow-up was run by hand against the same invocation id, about 7 minutes after it finished",
+   "invocation": "0346cb4a-6b9c-4c4f-996e-83d833d99bf6",
+   "status_before_any_new_action": 200,
+   "status_after_one_new_action_was_invoked": 404,
+   "body": {
+    "detail": "No action invocation found with ID {id}"
+   }
+  }
+ },
+ "P1b": {
+  "doc": "Does a changed Thing Description change the contract hash recorded at registration?",
+  "A_original": {
+   "td_sha256": "0b0b2d21aab85a77",
+   "descriptor_sha256_in_audit": "028d92ce43492a13"
+  },
+  "B_original_imported_again": {
+   "td_sha256": "0b0b2d21aab85a77",
+   "descriptor_sha256_in_audit": "028d92ce43492a13"
+  },
+  "C_one_word_added_to_the_description": {
+   "td_sha256": "dd0988de6a235d4e",
+   "descriptor_sha256_in_audit": "a7c4890dc2a5eb3f"
+  },
+  "reading": "same description, same hash; any change to the description changes the recorded hash. Hashes truncated to 16 hex characters here. Run by hand with the importer's command-line path (the benchmark harness builds manifests directly and does not add the source record).",
+  "note_on_P1": "P1's td_source_in_contract is null because the experiment harness does not use the importer's command line"
+ }
+}

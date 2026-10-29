@@ -166,6 +166,79 @@ class Client:
             params["device"] = device
         return [DeviceStatus.from_dict(s) for s in self.call("devices.status", params)]
 
+    # ------------------------------------------------------------ procedures
+
+    def procedures(self) -> list[dict[str, Any]]:
+        """Stored procedures (spec/procedures.md), proposed and approved."""
+        return self.call("procedures.list", {})
+
+    def propose_procedure(self, procedure: Mapping[str, Any]) -> dict[str, Any]:
+        """Store a procedure as proposed. It cannot run until an operator approves it."""
+        return self.call("procedures.propose", {"procedure": dict(procedure)})
+
+    def approve_procedure(self, name: str, version: int) -> dict[str, Any]:
+        """Approve a proposed version (operator)."""
+        return self.call("procedures.approve", {"name": name, "version": version})
+
+    def check_procedure(self, name: str, params: Mapping[str, Any] | None = None,
+                        version: int | None = None) -> dict[str, Any]:
+        return self.call("procedures.check", self._run_params(name, params, version))
+
+    def run_procedure(self, name: str, params: Mapping[str, Any] | None = None,
+                      version: int | None = None) -> dict[str, Any]:
+        """Run an approved procedure: an ordinary plan, as this caller, with every check."""
+        return self.call("procedures.run", self._run_params(name, params, version))
+
+    @staticmethod
+    def _run_params(name: str, params: Mapping[str, Any] | None,
+                    version: int | None) -> dict[str, Any]:
+        p: dict[str, Any] = {"name": name, "params": dict(params or {})}
+        if version is not None:
+            p["version"] = version
+        return p
+
+    # ------------------------------------------------------------ state fabric
+
+    def poll_events(
+        self,
+        after: int | None = None,
+        *,
+        stream: str | None = None,
+        devices: list[str] | None = None,
+        kinds: list[str] | None = None,
+        limit: int | None = None,
+        wait_ms: int = 0,
+    ) -> dict[str, Any]:
+        """Events after ``after`` (ADR-0023): ``{"stream", "events", "next", "missed"}``.
+
+        Pass the previous batch's ``stream`` and ``next`` to continue. Without ``after``,
+        only events from now on. ``missed`` > 0 means the bounded buffer dropped events
+        before you read them: read current values instead of assuming. Events are
+        notifications; ``read`` or a command's receipt is the evidence."""
+        params: dict[str, Any] = {"wait_ms": wait_ms}
+        for key, value in (("after", after), ("stream", stream), ("devices", devices),
+                           ("kinds", kinds), ("limit", limit)):
+            if value is not None:
+                params[key] = value
+        return self.call("events.poll", params)
+
+    def create_watch(
+        self, device: str, capability: str, interval_ms: int, ttl_ms: int | None = None
+    ) -> dict[str, Any]:
+        """Sample a capability that declares ``subscribe`` into the event stream. Needs a
+        ``subscribe`` grant; a second watch on the same capability replaces the first."""
+        params: dict[str, Any] = {
+            "device": device, "capability": capability, "interval_ms": interval_ms}
+        if ttl_ms is not None:
+            params["ttl_ms"] = ttl_ms
+        return self.call("watches.create", params)
+
+    def watches(self) -> list[dict[str, Any]]:
+        return self.call("watches.list", {})
+
+    def cancel_watch(self, watch_id: str) -> dict[str, Any]:
+        return self.call("watches.cancel", {"id": watch_id})
+
     def describe(self, device: str) -> Descriptor:
         return Descriptor.from_dict(self.call("devices.describe", {"device": device}))
 
