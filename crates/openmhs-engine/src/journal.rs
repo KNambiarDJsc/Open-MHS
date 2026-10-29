@@ -9,6 +9,10 @@ use std::path::Path;
 use std::sync::{Mutex, MutexGuard};
 
 use openmhs_policy::Expectation;
+pub use openmhs_types::evidence::AuditRecord;
+use openmhs_types::evidence::{
+    AuditCheckpoint, EvidenceBundle, GENESIS, audit_hash as hash_record, receipt_digest,
+};
 use openmhs_types::receipt::TransitionRecord;
 use openmhs_types::{Approval, ApprovalStatus, CommandState, ErrorObject, Receipt, Timestamp};
 use rusqlite::{Connection, OptionalExtension, Transaction, params};
@@ -16,8 +20,6 @@ use sha2::{Digest, Sha256};
 
 mod leases;
 mod plans;
-
-const GENESIS: &str = "0000000000000000000000000000000000000000000000000000000000000000";
 
 #[derive(Debug, thiserror::Error)]
 pub enum JournalError {
@@ -67,17 +69,6 @@ pub enum Inserted {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AuditRecord {
-    pub seq: i64,
-    pub at_ms: i64,
-    pub kind: String,
-    pub subject: String,
-    pub data: String,
-    pub prev_hash: String,
-    pub hash: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AuditVerification {
     pub records: u64,
     /// Sequence number of the first record that fails verification, if any.
@@ -92,12 +83,6 @@ impl AuditVerification {
 
 pub struct Journal {
     conn: Mutex<Connection>,
-}
-
-fn hash_record(prev: &str, seq: i64, at_ms: i64, kind: &str, subject: &str, data: &str) -> String {
-    let mut h = Sha256::new();
-    h.update(format!("{prev}\n{seq}\n{at_ms}\n{kind}\n{subject}\n{data}").as_bytes());
-    h.finalize().iter().map(|b| format!("{b:02x}")).collect()
 }
 
 pub fn sha256_hex(data: &str) -> String {
@@ -206,7 +191,8 @@ impl Journal {
                 data      TEXT NOT NULL,
                 prev_hash TEXT NOT NULL,
                 hash      TEXT NOT NULL
-            );",
+            );
+            CREATE INDEX IF NOT EXISTS audit_subject ON audit(subject, seq);",
         )?;
         Ok(Self {
             conn: Mutex::new(conn),
@@ -284,8 +270,10 @@ impl Journal {
                 )
                 .optional()?;
             if let Some((json, request_hash)) = existing {
+                let receipt: Receipt = serde_json::from_str(&json)?;
+                Self::check_receipt(&tx, &receipt)?;
                 return Ok(Inserted::Existing {
-                    receipt: serde_json::from_str(&json)?,
+                    receipt,
                     request_hash,
                 });
             }
@@ -296,7 +284,8 @@ impl Journal {
             r.created_at,
             "command.created",
             &r.command_id,
-            &serde_json::json!({ "principal": r.principal, "request": r.request, "request_hash": request_hash, "origin": origin }),
+            &serde_json::json!({ "principal": r.principal, "request": r.request, "request_hash": request_hash, "origin": origin,
+                "receipt_digest": { "version": 1, "sha256": receipt_digest(&r)? } }),
         )?;
         r.audit_hash = Some(hash);
         tx.execute(
@@ -343,6 +332,8 @@ impl Journal {
         update: impl FnOnce(&mut Receipt),
     ) -> Result<Receipt, JournalError> {
         let mut r = Self::load(tx, command_id)?;
+        // Never bind a changed stored receipt into a fresh, apparently valid digest.
+        Self::check_receipt(tx, &r)?;
         let from = r.state;
         if !from.can_transition_to(to) {
             return Err(JournalError::IllegalTransition { from, to });
@@ -360,7 +351,8 @@ impl Journal {
             at,
             "command.transition",
             command_id,
-            &serde_json::json!({ "from": from, "to": to, "detail": detail }),
+            &serde_json::json!({ "from": from, "to": to, "detail": detail,
+                "receipt_digest": { "version": 1, "sha256": receipt_digest(&r)? } }),
         )?;
         r.audit_hash = Some(hash);
         tx.execute(
@@ -653,8 +645,12 @@ impl Journal {
     }
 
     pub fn receipt(&self, command_id: &str) -> Result<Option<Receipt>, JournalError> {
-        match Self::load(&self.lock(), command_id) {
-            Ok(r) => Ok(Some(r)),
+        let conn = self.lock();
+        match Self::load(&conn, command_id) {
+            Ok(r) => {
+                Self::check_receipt(&conn, &r)?;
+                Ok(Some(r))
+            }
             Err(JournalError::NotFound(_)) => Ok(None),
             Err(e) => Err(e),
         }
@@ -699,8 +695,11 @@ impl Journal {
         let mut out = Vec::new();
         for row in stmt.query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))? {
             let (json, state) = row?;
+            let receipt: Receipt = serde_json::from_str(&json)?;
+            Self::check_state(&receipt, &state)?;
             if names.contains(&state.as_str()) {
-                out.push(serde_json::from_str(&json)?);
+                Self::check_receipt(&conn, &receipt)?;
+                out.push(receipt);
             }
         }
         Ok(out)
@@ -748,8 +747,11 @@ impl Journal {
             Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
         })? {
             let (json, state) = row?;
+            let receipt: Receipt = serde_json::from_str(&json)?;
+            Self::check_state(&receipt, &state)?;
             if names.is_empty() || names.contains(&state.as_str()) {
-                out.push(serde_json::from_str(&json)?);
+                Self::check_receipt(&conn, &receipt)?;
+                out.push(receipt);
                 if out.len() >= limit {
                     break;
                 }
@@ -760,6 +762,10 @@ impl Journal {
 
     pub fn audit_records(&self) -> Result<Vec<AuditRecord>, JournalError> {
         let conn = self.lock();
+        Self::read_audit(&conn)
+    }
+
+    fn read_audit(conn: &Connection) -> Result<Vec<AuditRecord>, JournalError> {
         let mut stmt = conn.prepare(
             "SELECT seq, at_ms, kind, subject, data, prev_hash, hash FROM audit ORDER BY seq",
         )?;
@@ -775,6 +781,69 @@ impl Journal {
             })
         })?;
         Ok(rows.collect::<Result<_, _>>()?)
+    }
+
+    fn check_state(receipt: &Receipt, state: &str) -> Result<(), JournalError> {
+        if state_name(receipt.state) != state {
+            return Err(refuse(
+                "journal.receipt_integrity",
+                format!(
+                    "stored state differs from receipt for {}",
+                    receipt.command_id
+                ),
+            ));
+        }
+        Ok(())
+    }
+
+    fn check_receipt(conn: &Connection, receipt: &Receipt) -> Result<(), JournalError> {
+        let latest: Option<(String, String)> = conn.query_row(
+            "SELECT data, hash FROM audit WHERE subject = ?1 AND kind IN ('command.created', 'command.transition') ORDER BY seq DESC LIMIT 1",
+            [&receipt.command_id], |row| Ok((row.get(0)?, row.get(1)?)),
+        ).optional()?;
+        if let Some((data, hash)) = latest {
+            let data: serde_json::Value = serde_json::from_str(&data)?;
+            if let Some(digest) = data.get("receipt_digest")
+                && (digest["version"] != 1
+                    || digest["sha256"].as_str() != Some(receipt_digest(receipt)?.as_str())
+                    || receipt.audit_hash.as_deref() != Some(hash.as_str()))
+            {
+                return Err(refuse(
+                    "journal.receipt_integrity",
+                    format!("receipt integrity failed for {}", receipt.command_id),
+                ));
+            }
+        } else {
+            return Err(refuse(
+                "journal.receipt_integrity",
+                format!("missing audit record for {}", receipt.command_id),
+            ));
+        }
+        Ok(())
+    }
+
+    /// Export audit and receipt rows from one SQLite read transaction. No truncation or
+    /// filtering: omitted receipts or chain records must be visible to the offline verifier.
+    pub fn export_evidence(&self) -> Result<EvidenceBundle, JournalError> {
+        let mut conn = self.lock();
+        let tx = conn.transaction()?;
+        let audit = Self::read_audit(&tx)?;
+        let receipts = {
+            let mut stmt = tx.prepare("SELECT receipt FROM commands ORDER BY command_id")?;
+            let mut receipts = Vec::new();
+            for row in stmt.query_map([], |row| row.get::<_, String>(0))? {
+                receipts.push(serde_json::from_str(&row?)?);
+            }
+            receipts
+        };
+        let checkpoint = AuditCheckpoint::at_head(&audit);
+        tx.commit()?;
+        Ok(EvidenceBundle {
+            version: 1,
+            audit,
+            receipts,
+            checkpoint,
+        })
     }
 
     /// Recompute the hash chain. Detects edited, reordered, inserted or deleted records

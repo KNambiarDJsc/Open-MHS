@@ -65,6 +65,7 @@ pub mod method {
     pub const TOKENS_REVOKE: &str = "tokens.revoke";
     pub const TOKENS_ROTATE: &str = "tokens.rotate";
     pub const AUDIT_VERIFY: &str = "audit.verify";
+    pub const AUDIT_EXPORT: &str = "audit.export";
     pub const AUDIT_TAIL: &str = "audit.tail";
     pub const SIM_FAULT: &str = "sim.fault";
     pub const PLANS_SUBMIT: &str = "plans.submit";

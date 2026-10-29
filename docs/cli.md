@@ -1,6 +1,6 @@
 # `openmhs` command line
 
-All commands except `serve`, `demo`, `conformance`, `profile new`, `profile check`, `adapter check` and `adapter new` are clients of a running gateway. They find it
+All commands except `serve`, `demo`, `conformance`, `profile new`, `profile check`, `adapter check`, `adapter new` and `audit verify-file` are clients of a running gateway. They find it
 through the runtime file in the gateway home: `--home`, else `$OPENMHS_HOME`, else the
 per-user local data directory.
 
@@ -68,6 +68,8 @@ openmhs read sim.thermo-01 temperature.ambient
 | `grants list` / `grants add …` / `grants revoke <id>` | Policy (operator) |
 | `tokens create <principal> [--role agent\|operator] (--scope DEVICE:CAPABILITY:OPS … \| --any-scope) [--ttl 12h]` / `tokens list` / `tokens revoke <id>` / `tokens rotate <id> [--ttl …]` | Credentials (operator). A credential reaches only its scopes, and only what grants also allow; it expires at `--ttl`; revoked credentials stay listed ([spec/authorization.md](../spec/authorization.md) §7) |
 | `audit verify` / `audit tail [--limit N]` | Audit log (operator) |
+| `audit export --out FILE [--checkpoint-out FILE]` | Export all audit/receipt evidence from one snapshot (operator). Creates new files and refuses overwrites |
+| `audit verify-file FILE [--checkpoint FILE]` | Verify exported evidence offline, with optional independently retained checkpoint. Exits 3 on invalid evidence or legacy receipts with incomplete digest coverage ([details](architecture/AUDIT_EVIDENCE.md)) |
 | `sim fault <device> <fault>` / `sim faults` | Fault injection (operator, `serve --sim` only) |
 | `conformance [--device ID]… [--profile FILE]… [--adapter-manifest FILE]… [--report-dir DIR] [--seed N]` | Run the conformance suite against the built-in simulators, protocol profiles' simulators, or out-of-process adapters started in fixture mode (their manifests must point at a simulator, never a real device); no gateway needed. Exit 0 when each reaches its declared level ([spec/conformance.md](../spec/conformance.md)) |
 | `adapter check FILE…` | Validate adapter permission manifests; starts nothing. Exit 0 when all are valid |

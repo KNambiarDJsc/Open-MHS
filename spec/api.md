@@ -90,6 +90,7 @@ apply to everyone. A role never bypasses authorization for device access.
 | `tokens.create` | op | `principal`, `role`, `scopes`, `ttl_ms?` | credential (secret shown once). No scopes: it authorizes nothing ([authorization.md](authorization.md) §7) |
 | `tokens.list` / `tokens.revoke` / `tokens.rotate` | op | — / `id` / `id`, `ttl_ms?` | credential infos / revoked (its open approvals withdrawn) / replacement (secret shown once; old one revoked) |
 | `audit.verify` | op | — | `records`, `valid`, `first_invalid?` |
+| `audit.export` | op | — | versioned complete audit/receipt snapshot and head checkpoint from one read transaction; verify offline as described in [audit evidence](../docs/architecture/AUDIT_EVIDENCE.md) |
 | `audit.tail` | op | `limit?` | audit records |
 | `sim.fault` | op | `device`, `fault` | message; only with `serve --sim` |
 

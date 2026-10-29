@@ -64,7 +64,7 @@ class LlmAgentWithoutKey(unittest.TestCase):
         p = self.run_example("--print-tools")
         self.assertEqual(p.returncode, 0, p.stderr.decode("utf-8", "replace"))
         tools = {t["name"]: t for t in json.loads(p.stdout)}
-        self.assertEqual(len(tools), 22)
+        self.assertEqual(len(tools), 23)
         for t in tools.values():
             self.assertEqual(set(t), {"name", "description", "input_schema"})
             self.assertEqual(t["input_schema"]["type"], "object")
@@ -73,6 +73,7 @@ class LlmAgentWithoutKey(unittest.TestCase):
         self.assertTrue(tools["submit_plan"]["description"].startswith("[CHANGES THE PHYSICAL WORLD]"))
         self.assertTrue(tools["read_state"]["description"].startswith("[read-only]"))
         self.assertTrue(tools["check_plan"]["description"].startswith("[read-only]"))
+        self.assertTrue(tools["get_allowed_operations"]["description"].startswith("[read-only]"))
 
 
 if __name__ == "__main__":

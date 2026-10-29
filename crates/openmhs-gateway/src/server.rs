@@ -1013,6 +1013,14 @@ async fn dispatch(
             ok(CreatedToken { info, token })
         }
 
+        method::AUDIT_EXPORT => {
+            require_operator("exporting audit evidence")?;
+            ok(engine
+                .journal()
+                .export_evidence()
+                .map_err(|e| gateway_error("gateway.journal", e.to_string(), vec![]))?)
+        }
+
         method::AUDIT_VERIFY => {
             require_operator("verifying the audit log")?;
             let v = engine.verify_audit().map_err(engine_error)?;

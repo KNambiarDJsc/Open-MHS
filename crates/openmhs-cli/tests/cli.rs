@@ -248,6 +248,56 @@ fn duplicate_submission_runs_once() {
 }
 
 #[test]
+fn evidence_export_is_operator_only_and_verifies_offline_with_a_checkpoint() {
+    let files = tempfile::tempdir().unwrap();
+    let bundle_path = files.path().join("evidence.json");
+    let checkpoint_path = files.path().join("checkpoint.json");
+    let bundle = bundle_path.to_str().unwrap();
+    let checkpoint = checkpoint_path.to_str().unwrap();
+    let gw = Gateway::start();
+    let agent = gw.agent_token();
+    gw.grant_psu("allow");
+    assert_eq!(set_volts(&gw, &agent, "1V", &[]).0, OK);
+    let (code, _) = gw.cli(Some(&agent), &["audit", "export", "--out", bundle]);
+    assert_eq!(code, DENIED);
+    assert!(!bundle_path.exists());
+    let (code, head) = gw.op(&[
+        "audit",
+        "export",
+        "--out",
+        bundle,
+        "--checkpoint-out",
+        checkpoint,
+    ]);
+    assert_eq!(code, OK, "{head}");
+    let original = std::fs::read(&bundle_path).unwrap();
+    // Re-exporting may not overwrite evidence retained by the operator.
+    assert_eq!(gw.op(&["audit", "export", "--out", bundle]).0, ERROR);
+    assert_eq!(std::fs::read(&bundle_path).unwrap(), original);
+    drop(gw);
+    let verify = || {
+        let output = Command::new(BIN)
+            .arg("--json")
+            .arg("--home")
+            .arg(files.path().join("no-gateway"))
+            .args(["audit", "verify-file", bundle, "--checkpoint", checkpoint])
+            .output()
+            .unwrap();
+        let result: Value = serde_json::from_slice(&output.stdout).unwrap();
+        (output.status.code().unwrap(), result)
+    };
+    let (code, result) = verify();
+    assert_eq!(code, OK, "{result}");
+    assert_eq!(result["complete"], true);
+    let mut corrupted: Value = serde_json::from_slice(&original).unwrap();
+    corrupted["receipts"][0]["principal"] = "forged".into();
+    std::fs::write(&bundle_path, serde_json::to_vec(&corrupted).unwrap()).unwrap();
+    let (code, result) = verify();
+    assert_eq!(code, FAILED, "{result}");
+    assert_eq!(result["valid"], false);
+}
+
+#[test]
 fn timeout_becomes_unknown_outcome_and_reconciles() {
     let gw = Gateway::start();
     let agent = gw.agent_token();

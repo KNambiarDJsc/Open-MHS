@@ -132,7 +132,34 @@ impl CommandState {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use proptest::prelude::*;
     use std::collections::HashSet;
+
+    proptest! {
+        #[test]
+        fn generated_histories_never_redispatch_or_skip_acknowledgement(
+            attempts in prop::collection::vec(0usize..CommandState::ALL.len(), 0..128)
+        ) {
+            let mut current = Created;
+            let mut dispatched = false;
+            let mut acknowledged = false;
+            let mut uncertain = false;
+            for attempt in attempts {
+                let next = CommandState::ALL[attempt];
+                if current.can_transition_to(next) {
+                    if next == Dispatched {
+                        prop_assert!(!dispatched && !uncertain);
+                        dispatched = true;
+                    }
+                    if next == Accepted { acknowledged = true; }
+                    if next == Applied { prop_assert!(acknowledged); }
+                    if next == UnknownOutcome { uncertain = true; }
+                    current = next;
+                    if current == Verified { prop_assert!(dispatched && acknowledged && !uncertain); }
+                }
+            }
+        }
+    }
 
     #[test]
     fn table_has_unique_sources_and_no_self_loops() {

@@ -1,5 +1,10 @@
 # Errors
 
+`journal.receipt_integrity` means a stored receipt no longer matches its last recorded
+digest, audit pointer or indexed lifecycle state. Status/replay/recovery operations fail
+closed for the affected data; they do not construct a fresh receipt that appears verified.
+Export the journal evidence for inspection. See [receipt integrity](../docs/architecture/AUDIT_EVIDENCE.md).
+
 ## Error object
 
 Schema: `schemas/common.schema.json#/$defs/error`.

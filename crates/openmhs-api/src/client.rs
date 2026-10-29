@@ -660,6 +660,14 @@ impl Client {
         self.call(method::AUDIT_VERIFY, serde_json::json!({})).await
     }
 
+    /// Consistent snapshot of the complete audit chain and current command receipts.
+    /// Operator only. Verify offline with `openmhs_types::evidence::verify_evidence`.
+    pub async fn export_evidence(
+        &self,
+    ) -> Result<openmhs_types::evidence::EvidenceBundle, ClientError> {
+        self.call(method::AUDIT_EXPORT, serde_json::json!({})).await
+    }
+
     pub async fn audit_tail(&self, limit: Option<usize>) -> Result<Vec<AuditEntry>, ClientError> {
         self.call(method::AUDIT_TAIL, AuditTailParams { limit })
             .await

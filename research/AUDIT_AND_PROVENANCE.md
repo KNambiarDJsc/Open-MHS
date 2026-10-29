@@ -1,5 +1,10 @@
 # Audit and provenance
 
+Historical study results below describe the research commit, not a rerun of the current
+kernel. Subsequent work added receipt digests, offline verification and independently
+retained checkpoint comparison; see [current evidence design](../docs/architecture/AUDIT_EVIDENCE.md).
+The original measurements and raw result files are retained unchanged.
+
 Phase 6. Dr Bowman's interest was in OpenMHS's audit trail. This phase asks what an investigator
 could reconstruct afterwards about a command on a LabThings device, what damage to the record the
 trail would notice, and what it would not. **The trail is tamper-evident for edits and deletions in

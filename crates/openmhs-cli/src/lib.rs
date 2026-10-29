@@ -6,6 +6,7 @@
 mod bench;
 mod demo;
 mod discover;
+mod evidence;
 mod output;
 mod profiles;
 pub mod scaffold;
@@ -775,6 +776,20 @@ enum TokensCmd {
 enum AuditCmd {
     /// Verify the audit log's hash chain.
     Verify,
+    /// Export the complete audit chain and current receipts from one database snapshot.
+    Export {
+        #[arg(long)]
+        out: PathBuf,
+        /// Also save the head checkpoint separately for independent retention.
+        #[arg(long)]
+        checkpoint_out: Option<PathBuf>,
+    },
+    /// Verify an exported bundle offline, optionally against a separately retained checkpoint.
+    VerifyFile {
+        file: PathBuf,
+        #[arg(long)]
+        checkpoint: Option<PathBuf>,
+    },
     /// Show the most recent audit records.
     Tail {
         #[arg(long)]
@@ -1714,6 +1729,11 @@ async fn mcp_sim_session(url: &str, operator_token: &str) -> Result<(), String> 
 async fn run(cli: Cli) -> u8 {
     let home = cli.home.clone().unwrap_or_else(default_home);
     match cli.command {
+        Cmd::Audit {
+            command: AuditCmd::VerifyFile { file, checkpoint },
+        } => {
+            return evidence::verify_file(cli.json, &file, checkpoint.as_deref());
+        }
         Cmd::Serve(args) => return serve(home, args).await,
         Cmd::Demo(args) => return demo::run(args.keep).await,
         Cmd::Discover {
@@ -2288,6 +2308,24 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
             }
         },
         Cmd::Audit { command } => match command {
+            AuditCmd::Export {
+                out,
+                checkpoint_out,
+            } => {
+                let bundle = client.export_evidence().await?;
+                evidence::save(&out, &bundle).map_err(ClientError::Protocol)?;
+                if let Some(path) = checkpoint_out {
+                    evidence::save(&path, &bundle.checkpoint).map_err(ClientError::Protocol)?;
+                }
+                show(json, &bundle.checkpoint, |checkpoint| {
+                    println!(
+                        "exported through sequence {} to {}",
+                        checkpoint.seq,
+                        out.display()
+                    );
+                });
+            }
+            AuditCmd::VerifyFile { .. } => unreachable!("handled before connecting"),
             AuditCmd::Verify => {
                 let v = client.verify_audit().await?;
                 show(json, &v, output::audit_verify);

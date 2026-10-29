@@ -45,7 +45,8 @@ measured. Native controllers remain responsible for timing-sensitive control loo
 
 1. Land and verify the agent-facing correctness milestone.
 2. Add crash-window, property-based and storage-exhaustion tests to the standalone engine.
-3. Bind receipts to audit records and document checkpoint threat assumptions.
+3. Receipt binding and offline checkpoint verification are implemented in
+   [AUDIT_EVIDENCE.md](AUDIT_EVIDENCE.md); automate independent checkpoint retention next.
 4. Add resource ownership semantics and test stale owners; do not call a lease a fence unless
    the device/controller rejects stale epochs.
 5. Prototype one edge-to-control-plane path with an outbox/inbox and simulator-only chaos.

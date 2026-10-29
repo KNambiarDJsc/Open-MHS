@@ -53,12 +53,18 @@ after intersecting credential scopes with current policy. The response carries p
 descriptor SHA-256 digests, generation/expiry timestamps, and an advisory marker. It is not
 an authorization token; the engine checks every command at dispatch.
 
-## Not implemented in this milestone
+## Durable evidence milestone and remaining work
+
+Receipt integrity and offline evidence export are implemented in the subsequent local
+milestone; see [AUDIT_EVIDENCE.md](AUDIT_EVIDENCE.md). New command events bind the full
+receipt, and a stored receipt with a digest mismatch cannot advance to a later state.
+Legacy events are reported as incomplete coverage. Deterministic restart tests cover
+durable command boundaries and retain native references without device redispatch.
 
 The lifecycle already has a versioned state enum and an exhaustive transition table; the
 main gap is broader fault/property testing, not an absent state machine. Distributed
 PostgreSQL, transport, edge replication, native fencing, external audit anchors, receipt
-digests, signed checkpoints, OpenTelemetry and deployment automation remain later work.
+signatures, OpenTelemetry and deployment automation remain later work.
 They must be justified against the standalone journal and tested invariants before adoption.
 
 The LabThings adapter currently reports external invocation references when available. Its

@@ -9,6 +9,15 @@ and the entry will say so under **Changed** or **Removed**.
 
 ### Added
 
+- Receipt digests in new command audit events, operator `audit.export`, and offline
+  `audit verify-file` with independently retained checkpoint support. Verification reports
+  legacy receipts as incomplete coverage and detects changed/missing current receipts.
+  Status, replay and transition operations reject digest mismatches with
+  `journal.receipt_integrity`. This is consistency checking, not a signed or tamper-proof log.
+- Principal-scoped `get_allowed_operations` / `access.allowed_operations` discovery with
+  policy and descriptor digests and a short advisory expiry. MCP instructions use discovered
+  device ids, and insights rejects unknown devices using the existing error code.
+
 - Provenance in the audit trail (from the LabThings/OpenFlexure study, `research/`): an adapter
   may report the device's own reference for a command (`progress.accepted(external_ref=...)`,
   `adapter_result.external_ref`, at most 256 characters); the `ACCEPTED` audit record carries it
