@@ -370,4 +370,8 @@ if __name__ == "__main__":
             RESULTS[sid] = {"title": ALL[sid].__doc__, "harness_error": f"{type(e).__name__}: {e}",
                             "trace": traceback.format_exc()[-600:]}
             print(f"[{sid}] HARNESS ERROR {e}", file=sys.stderr)
-    print(json.dumps(RESULTS, indent=1, default=str))
+    meta = {"openmhs_commit": __import__("subprocess").run(["git", "rev-parse", "--short", "HEAD"], capture_output=True,
+                                                              text=True, cwd=str(lab.REPO)).stdout.strip(),
+            "labthings_fastapi": "0.3.0 (761441e)", "when": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+            "note": "simulators only; ground truth read directly from the LabThings server"}
+    print(json.dumps({"_meta": meta, **RESULTS}, indent=1, default=str))

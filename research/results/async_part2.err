@@ -1,5 +1,0 @@
-[S04] cancelled externally
-[S05] caller deadline passes before completion
-[S06] status polling lost after acceptance
-[S07] invocation unknown to the server (404)
-[S08] status returns after the client gave up

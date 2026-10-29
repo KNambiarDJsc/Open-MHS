@@ -1,0 +1,16 @@
+[S01] accepted but not yet completed
+[S03] action error part-way
+[S04] cancelled externally
+[S05] caller deadline passes before completion
+[S06] status polling lost after acceptance
+[S07] invocation unknown to the server (404)
+[S08] status returns after the client gave up
+[S09] adapter crash during an outstanding action
+[S10] gateway restart with an unresolved action
+[S11] duplicate requests
+[S12] stale readback served by an intermediary (stamp=received, readback_skew_ms=0)
+[S12-date] stale readback served by an intermediary (stamp=date_header, readback_skew_ms=1000)
+[S04b] cancel request on an action that ignores it (direct LabThings)
+[S12b] stale reading used to reconcile (stamp=received, readback_skew_ms=0)
+[S12b-date] stale reading used to reconcile (stamp=date_header, readback_skew_ms=1000)
+[S12c] Date-header stamping, uncached, readback_skew_ms=1000

@@ -1,4 +1,0 @@
-[S09] HARNESS ERROR [command.invalid_state] command 01a18795-544d-714e-ab5c-8a46e3652d16 is Verified; cannot reconcile
-[S10] gateway restart with an unresolved action
-[S11] duplicate requests
-[S12] stale readback served by an intermediary
