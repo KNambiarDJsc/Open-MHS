@@ -5,6 +5,23 @@ point: what OpenMHS is, what state the repository and machine are in, what was j
 do next, and the rules that apply. Everything claimed here was observed in this repository unless
 marked *unverified*.
 
+## 0. Where everything is (this machine)
+
+| What | Location | In git? |
+|---|---|---|
+| The project (repo, branch `research/labthings-wot`) | `C:\Users\HP\Open-MHS` | yes (`origin` = https://github.com/KNambiarDJsc/Open-MHS) |
+| Handoff docs (this file, the brief, diagrams) | `C:\Users\HP\Open-MHS\docs\handoff` | yes |
+| Research study (docs, harness, results) | `C:\Users\HP\Open-MHS\research` | yes |
+| Research environment: venv (labthings-fastapi 0.3.0, OpenFlexure server), `ofm-sim`, `labbench`, gateway homes `work\`, logs, copied gateway binary `bin\openmhs-new.exe` | `D:\openmhs-research` | **no** |
+| Private Ollama model store (qwen2.5:3b), server log | `D:\ollama-models` | **no** |
+| Old release-build cargo target (the maintainer may delete) | `D:\openmhs-release-target` | **no** |
+| Claude Code session transcript (full history of the study) | `C:\Users\HP\.claude\projects\C--Users-HP\3aa0011c-3129-4e49-884b-2efaf7c56f40.jsonl` | no |
+| Claude's project memory | `C:\Users\HP\.claude\projects\C--Users-HP\memory\` | no |
+| Stale code graph (git-excluded; report copied to `docs/handoff/graphify`) | `C:\Users\HP\Open-MHS\graphify-out` | no |
+
+The D: items are not needed to read or build the repository, only to re-run the study's
+experiments (section 8). They hold several GB; do not copy them into the repository.
+
 ## 1. Read in this order
 
 1. This file.
