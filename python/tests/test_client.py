@@ -6,6 +6,7 @@ import socket
 import threading
 import time
 import unittest
+from unittest.mock import patch
 
 from support import AXIS, PSU, SETPOINT, Gateway, default_grants, grant
 from test_models import jsonschema, receipt_validator
@@ -217,6 +218,53 @@ class UnknownOutcome(unittest.TestCase):
             settled = op.resolve(r.command_id, applied=False, reason="panel shows 0 V")
             self.assertIs(settled.state, CommandState.RECONCILED_NOT_APPLIED)
             self.assertTrue(settled.transitions[-1].detail.endswith(": panel shows 0 V"))
+
+
+class RecoverableExecution(unittest.TestCase):
+    def test_lost_submit_response_recovers_receipt_without_resubmitting(self) -> None:
+        with Gateway() as gw:
+            agent, _ = gw.agent("agent:recoverable")
+            original_submit = agent.submit
+            calls = 0
+
+            def lose_response(request, approval_id=None, *, timeout=None):
+                nonlocal calls
+                calls += 1
+                original_submit(request, approval_id=approval_id, timeout=timeout)
+                raise GatewayUnreachableError("simulated lost response")
+
+            with patch.object(agent, "submit", side_effect=lose_response):
+                run = agent.execute(_set(1.25))
+
+            self.assertEqual(calls, 1)
+            self.assertTrue(run.receipt.confirmed)
+            self.assertEqual(run.receipt.idempotency_key, run.idempotency_key)
+            self.assertIsNone(run.action_required)
+            self.assertEqual(
+                agent.command_by_key(PSU, run.idempotency_key).command_id,
+                run.receipt.command_id,
+            )
+            self.assertIsNone(gw.operator().command_by_key(PSU, run.idempotency_key))
+
+    def test_missing_status_is_retained_as_a_recoverable_handle(self) -> None:
+        with Gateway() as gw:
+            agent, _ = gw.agent("agent:not-admitted")
+            with patch.object(agent, "submit", side_effect=GatewayUnreachableError("offline")):
+                run = agent.execute(_set(1.5), idempotency_key="persist-me")
+
+            self.assertIsNone(run.receipt)
+            self.assertEqual(run.action_required, "check_status")
+            self.assertIsNone(run.refresh())
+            self.assertEqual(run.idempotency_key, "persist-me")
+
+    def test_wait_is_bounded_and_reconcile_requires_uncertainty(self) -> None:
+        with Gateway() as gw:
+            agent, _ = gw.agent("agent:bounded")
+            run = agent.execute(_set(1.75))
+            self.assertTrue(run.receipt.confirmed)
+            self.assertEqual(run.wait(timeout=0).command_id, run.receipt.command_id)
+            with self.assertRaises(ValueError):
+                run.reconcile()
 
 
 class Credentials(unittest.TestCase):

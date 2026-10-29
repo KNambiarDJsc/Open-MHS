@@ -9,8 +9,11 @@ from __future__ import annotations
 
 import itertools
 import json
+import math
+import time
 import urllib.error
 import urllib.request
+import uuid
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
@@ -47,6 +50,7 @@ from .models import (
 from .runtime import RuntimeInfo, default_home
 
 RPC_PATH = "/rpc"
+_USE_CLIENT_TIMEOUT = object()
 
 
 #: A scope that reaches everything; grants still decide (``create_token(any_scope=True)``).
@@ -104,7 +108,13 @@ class Client:
 
     # -------------------------------------------------------------- transport
 
-    def call(self, method: str, params: Mapping[str, Any] | None = None) -> Any:
+    def call(
+        self,
+        method: str,
+        params: Mapping[str, Any] | None = None,
+        *,
+        timeout: Any = _USE_CLIENT_TIMEOUT,
+    ) -> Any:
         """Call any method and return the raw JSON result."""
         body = json.dumps(
             {"jsonrpc": "2.0", "id": next(self._ids), "method": method, "params": params or {}}
@@ -120,7 +130,8 @@ class Client:
             },
         )
         try:
-            with self._opener.open(req, timeout=self._timeout) as resp:
+            request_timeout = self._timeout if timeout is _USE_CLIENT_TIMEOUT else timeout
+            with self._opener.open(req, timeout=request_timeout) as resp:
                 raw = resp.read()
         except urllib.error.HTTPError as e:
             if e.code == 401:
@@ -250,14 +261,20 @@ class Client:
 
     # -------------------------------------------------------------- commands
 
-    def submit(self, request: Mapping[str, Any], approval_id: str | None = None) -> Receipt:
+    def submit(
+        self,
+        request: Mapping[str, Any],
+        approval_id: str | None = None,
+        *,
+        timeout: Any = _USE_CLIENT_TIMEOUT,
+    ) -> Receipt:
         """Submit a raw command request (command.schema.json) and wait for its receipt:
         terminal, ``UNKNOWN_OUTCOME`` or ``AWAITING_APPROVAL``. With ``approval_id``, spend
         an approved request for exactly this command (see ``request_approval``)."""
         params: dict[str, Any] = {"request": dict(request)}
         if approval_id is not None:
             params["approval_id"] = approval_id
-        return Receipt.from_dict(self.call("commands.submit", params))
+        return Receipt.from_dict(self.call("commands.submit", params, timeout=timeout))
 
     def write(
         self,
@@ -288,6 +305,74 @@ class Client:
 
     def command(self, command_id: str) -> Receipt:
         return Receipt.from_dict(self.call("commands.get", {"command_id": command_id}))
+
+    def command_by_key(
+        self,
+        device: str,
+        idempotency_key: str,
+        *,
+        timeout: Any = _USE_CLIENT_TIMEOUT,
+    ) -> Receipt | None:
+        """Find this principal's durable receipt by target device and idempotency key.
+
+        This is the recovery path when a submit response was lost. It never submits or
+        dispatches anything.
+        """
+        try:
+            raw = self.call(
+                "commands.get_by_key",
+                {"device": device, "idempotency_key": idempotency_key},
+                timeout=timeout,
+            )
+        except GatewayError as exc:
+            if exc.code == "command.unknown":
+                return None
+            raise
+        return Receipt.from_dict(raw)
+
+    def execute(
+        self,
+        request: Mapping[str, Any],
+        *,
+        idempotency_key: str | None = None,
+        approval_id: str | None = None,
+        timeout: float = 30.0,
+    ) -> Execution:
+        """Submit once and return a handle that can recover its receipt by stable key.
+
+        If the HTTP response is lost or malformed, the handle performs one status lookup.
+        It never repeats the physical command. Reuse the returned key to recover the same
+        command after a process restart.
+        """
+        if not math.isfinite(timeout) or timeout <= 0:
+            raise ValueError("timeout must be finite and positive")
+        saved_request = dict(request)
+        target = saved_request.get("target")
+        if not isinstance(target, Mapping) or not isinstance(target.get("device"), str):
+            raise ValueError("request.target.device is required for recoverable execution")
+        device = target["device"]
+        supplied_key = saved_request.get("idempotency_key")
+        if idempotency_key is not None and supplied_key is not None and idempotency_key != supplied_key:
+            raise ValueError("idempotency_key conflicts with request.idempotency_key")
+        key = idempotency_key if idempotency_key is not None else supplied_key
+        if key is None:
+            key = uuid.uuid4().hex
+        if not isinstance(key, str) or not key or len(key) > 128:
+            raise ValueError("idempotency_key must be a non-empty string of at most 128 characters")
+        saved_request["idempotency_key"] = key
+        run = Execution(self, device, key)
+        try:
+            run.receipt = self.submit(
+                saved_request, approval_id=approval_id, timeout=timeout,
+            )
+        except (GatewayUnreachableError, ProtocolError) as exc:
+            run.submit_error = exc
+            try:
+                run.refresh(timeout=min(timeout, 1.0))
+            except (GatewayUnreachableError, ProtocolError):
+                # Keep the handle and key so the caller can look up status when reachable.
+                pass
+        return run
 
     def commands(
         self, states: Iterable[CommandState | str] = (), limit: int | None = None
@@ -475,6 +560,77 @@ class Client:
     def sim_fault(self, device: str, fault: str) -> str:
         """Inject a simulator fault (``serve --sim`` only), e.g. ``"stale=5000"``."""
         return str(self.call("sim.fault", {"device": device, "fault": fault})["message"])
+
+
+class Execution:
+    """Recoverable handle for one submitted command; it never resubmits the request."""
+
+    def __init__(self, client: Client, device: str, idempotency_key: str) -> None:
+        self._client = client
+        self.device = device
+        self.idempotency_key = idempotency_key
+        self.receipt: Receipt | None = None
+        self.submit_error: Exception | None = None
+
+    @property
+    def action_required(self) -> str | None:
+        """Next safe step, if any: status lookup, approval, reconciliation, or a person."""
+        if self.receipt is None:
+            return "check_status"
+        if self.receipt.uncertain:
+            return "reconcile"
+        if self.receipt.pending:
+            if self.receipt.state == CommandState.AWAITING_APPROVAL:
+                return "approval"
+            return "check_status"
+        if self.receipt.outcome == "unverified":
+            return "human_verification"
+        return None
+
+    def refresh(self, *, timeout: Any = _USE_CLIENT_TIMEOUT) -> Receipt | None:
+        """Fetch the latest durable receipt; no command is submitted."""
+        self.receipt = self._client.command_by_key(
+            self.device, self.idempotency_key, timeout=timeout,
+        )
+        return self.receipt
+
+    def wait(self, timeout: float, poll_interval: float = 0.2) -> Receipt | None:
+        """Poll status up to a finite number of seconds; uncertainty is returned immediately."""
+        if (
+            not math.isfinite(timeout)
+            or not math.isfinite(poll_interval)
+            or timeout < 0
+            or poll_interval <= 0
+        ):
+            raise ValueError("timeout must be finite and non-negative; poll_interval must be finite and positive")
+        deadline = time.monotonic() + timeout
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                return self.receipt
+            try:
+                receipt = self.refresh(timeout=remaining)
+            except (GatewayUnreachableError, ProtocolError) as exc:
+                self.submit_error = exc
+                return self.receipt
+            if receipt is not None and (
+                not receipt.pending or receipt.state == CommandState.AWAITING_APPROVAL
+            ):
+                return receipt
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                return receipt
+            time.sleep(min(poll_interval, remaining))
+
+    def reconcile(self) -> Receipt:
+        """Explicitly request readback reconciliation for an uncertain command only."""
+        receipt = self.refresh()
+        if receipt is None:
+            raise ValueError("command is not yet present in the gateway journal")
+        if not receipt.uncertain:
+            raise ValueError("only an UNKNOWN_OUTCOME command can be reconciled")
+        self.receipt = self._client.reconcile(receipt.command_id)
+        return self.receipt
 
 
 def _request(

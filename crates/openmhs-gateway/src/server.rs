@@ -11,9 +11,9 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use openmhs_api::{
     AcquireLeaseParams, ApprovalActionParams, ApprovalRequestParams, AuditEntry, AuditTailParams,
-    AuditVerifyResult, CancelPlanParams, CommandIdParams, CreateTokenParams, CreatedToken,
-    DecidePlanParams, DeviceParams, DeviceStatusParams, ErrorData, EventsPollParams, GatewayInfo,
-    GrantParams, IdParams, ListApprovalsParams, ListCommandsParams, ListLeasesParams,
+    AuditVerifyResult, CancelPlanParams, CommandIdParams, CommandKeyParams, CreateTokenParams,
+    CreatedToken, DecidePlanParams, DeviceParams, DeviceStatusParams, ErrorData, EventsPollParams,
+    GatewayInfo, GrantParams, IdParams, ListApprovalsParams, ListCommandsParams, ListLeasesParams,
     ListPlansParams, PlanParams, ProcedureParams, ProcedureRef, RPC_PATH, ReadParams, ReadResult,
     ReleaseLeaseParams, RenewLeaseParams, ResolveParams, Role, RotateTokenParams, RpcError,
     RpcRequest, RpcResponse, RunProcedureParams, SimFaultParams, SimFaultResult, SubmitParams,
@@ -760,6 +760,15 @@ async fn dispatch(
                 .map_err(engine_error)?
                 .filter(|r| operator || r.principal == session.principal)
                 .ok_or_else(|| unknown_command(&p.command_id))?;
+            ok(receipt)
+        }
+
+        method::COMMANDS_GET_BY_KEY => {
+            let p: CommandKeyParams = params(raw)?;
+            let receipt = engine
+                .receipt_by_key(&session.principal, &p.device, &p.idempotency_key)
+                .map_err(engine_error)?
+                .ok_or_else(|| unknown_command(&p.idempotency_key))?;
             ok(receipt)
         }
 

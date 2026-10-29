@@ -382,6 +382,16 @@ impl Engine {
         Ok(self.inner.journal.receipt(command_id)?)
     }
 
+    /// Find a caller's command by its idempotency key and target device.
+    pub fn receipt_by_key(
+        &self,
+        principal: &str,
+        device: &str,
+        key: &str,
+    ) -> Result<Option<Receipt>, EngineError> {
+        Ok(self.inner.journal.command_by_key(principal, device, key)?)
+    }
+
     /// Most recent commands first; see [`Journal::list_commands`].
     pub fn commands(
         &self,

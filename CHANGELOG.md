@@ -9,6 +9,10 @@ and the entry will say so under **Changed** or **Removed**.
 
 ### Added
 
+- Principal-scoped command receipt lookup by device and idempotency key, plus a Python SDK
+  execution handle that submits once, recovers a lost response, waits with a caller-bounded
+  deadline, and makes approval, reconciliation, or human verification the explicit next step.
+  It never resends a command after a transport error.
 - Receipt digests in new command audit events, operator `audit.export`, and offline
   `audit verify-file` with independently retained checkpoint support. Verification reports
   legacy receipts as incomplete coverage and detects changed/missing current receipts.

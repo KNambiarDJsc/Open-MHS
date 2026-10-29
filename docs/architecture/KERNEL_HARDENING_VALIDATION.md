@@ -52,8 +52,9 @@ Checkpoints are unsigned. Independent retention is an operator responsibility; t
 own head cannot protect against a consistent full rewrite. A privileged actor controlling
 both journal and retained checkpoints remains outside this mechanism's protection. Full
 exports use memory proportional to journal contents. Signatures, automated external anchors,
-physical evidence truth, cross-gateway fencing, full filesystem/power-loss drills, and the
-high-level SDK recovery API remain unproven or unimplemented. No production-readiness claim.
+physical evidence truth, cross-gateway fencing, and full filesystem/power-loss drills remain
+unproven or unimplemented. The high-level SDK recovery API is covered only by the simulated-
+gateway follow-up below. No production-readiness claim.
 
 ## Exact files in this milestone
 
@@ -71,9 +72,23 @@ high-level SDK recovery API remain unproven or unimplemented. No production-read
 - `docs/cli.md`, `python/tests/test_examples.py`, `research/AUDIT_AND_PROVENANCE.md`,
   `spec/api.md`, `spec/errors.md`
 
+## SDK recovery follow-up — 2026-10-30
+
+The Python SDK now provides `Client.execute()` and an `Execution` handle. It submits once
+with a generated or caller-supplied idempotency key, bounds the submit HTTP call, recovers a
+lost response through principal-scoped `(device, idempotency_key)` lookup, supports bounded
+status polling, and requires an explicit `reconcile()` call for `UNKNOWN_OUTCOME`. It does
+not automatically resend or reconcile. Callers must persist a supplied key before
+submission if they need recovery after their own process restarts.
+
+The new `commands.get_by_key` API returns only the authenticated principal's receipt and
+uses the existing opaque `command.unknown` response when no matching record is visible.
+Validation: `cargo test -p openmhs-gateway` passed; `cargo clippy -p openmhs-api
+-p openmhs-gateway --all-targets -- -D warnings` passed; Python SDK suite: 58 passed.
+These tests exercise simulated gateway behavior only; physical recovery and resource
+fencing remain unproven.
+
 ## Next implementation milestone
 
-Add a receipt-aware SDK API that submits once with a stable key, retrieves the durable
-status even after a lost response, waits within a bounded deadline, and surfaces explicit
-reconciliation or human action without retrying an ambiguous physical command. Follow
-that with resource ownership/fencing semantics before adding distributed transport.
+Add device-local resource ownership and fencing semantics before distributed transport.
+Claim fencing only when the underlying controller can enforce it.

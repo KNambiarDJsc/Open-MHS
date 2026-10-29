@@ -532,6 +532,22 @@ impl Client {
         self.call(method::COMMANDS_GET, id(command_id)).await
     }
 
+    /// Find the authenticated principal's durable receipt after a lost submit response.
+    pub async fn command_by_key(
+        &self,
+        device: &str,
+        idempotency_key: &str,
+    ) -> Result<Receipt, ClientError> {
+        self.call(
+            method::COMMANDS_GET_BY_KEY,
+            CommandKeyParams {
+                device: device.to_owned(),
+                idempotency_key: idempotency_key.to_owned(),
+            },
+        )
+        .await
+    }
+
     pub async fn commands(
         &self,
         states: Vec<CommandState>,

@@ -77,6 +77,7 @@ apply to everyone. A role never bypasses authorization for device access.
 | `commands.submit` | any | `request` (`command.schema.json`), `approval_id?` | receipt (waits until terminal, `UNKNOWN_OUTCOME`, or `AWAITING_APPROVAL`). With `approval_id`, spends an approved request for exactly this command |
 | `commands.preflight` | any | `request` | `decision`, `rules`, `errors?`, `checked_at`: what a submission would get now. Creates no command and runs nothing |
 | `commands.get` | any¹ | `command_id` | receipt |
+| `commands.get_by_key` | any | `device`, `idempotency_key` | authenticated principal's receipt for that device/key; `command.unknown` if none exists |
 | `commands.list` | any¹ | `states?`, `limit?` (default 50, max 500) | receipts, newest first |
 | `commands.cancel` | any² | `command_id` | receipt |
 | `commands.reconcile` | any¹ | `command_id` | receipt |

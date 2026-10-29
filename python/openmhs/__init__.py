@@ -4,7 +4,7 @@ Independent open-source project; not affiliated with Anthropic. Not a safety sys
 OpenMHS supervises software commands and does not replace hardware interlocks.
 """
 
-from .client import Client
+from .client import Client, Execution
 from .errors import (
     GatewayError,
     GatewayUnreachableError,
@@ -69,6 +69,7 @@ __all__ = [
     "Descriptor",
     "DeviceStatus",
     "ErrorObject",
+    "Execution",
     "GatewayError",
     "GatewayInfo",
     "GatewayUnreachableError",

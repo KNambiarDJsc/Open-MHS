@@ -46,6 +46,7 @@ pub mod method {
     pub const COMMANDS_SUBMIT: &str = "commands.submit";
     pub const COMMANDS_PREFLIGHT: &str = "commands.preflight";
     pub const COMMANDS_GET: &str = "commands.get";
+    pub const COMMANDS_GET_BY_KEY: &str = "commands.get_by_key";
     pub const COMMANDS_LIST: &str = "commands.list";
     pub const COMMANDS_APPROVE: &str = "commands.approve";
     pub const COMMANDS_CANCEL: &str = "commands.cancel";
@@ -346,6 +347,13 @@ pub struct ListLeasesParams {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CommandIdParams {
     pub command_id: String,
+}
+
+/// Look up a caller's command after losing the submit response.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CommandKeyParams {
+    pub device: String,
+    pub idempotency_key: String,
 }
 
 /// An operator's account of an `UNKNOWN_OUTCOME` command: whether it took effect, and how
