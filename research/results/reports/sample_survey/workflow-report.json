@@ -1,0 +1,1889 @@
+{
+ "started_at": "2026-10-30T18:30:57+0530",
+ "simulator_only": true,
+ "hardware_accessed": false,
+ "discover": {
+  "things": [
+   "autofocus",
+   "bg_channel_deviations_luv",
+   "bg_color_channels_luv",
+   "camera",
+   "camera_stage_mapping",
+   "gallery",
+   "histo_scan_workflow",
+   "illumination",
+   "raster_workflow",
+   "smart_scan",
+   "snake_workflow",
+   "stage",
+   "system",
+   "timelapse"
+  ],
+  "stage_capabilities": [
+   "axis_inverted.x",
+   "axis_inverted.y",
+   "axis_inverted.z",
+   "backlash_steps.x",
+   "backlash_steps.y",
+   "backlash_steps.z",
+   "calibration_required",
+   "can_calibrate",
+   "move_x",
+   "move_y",
+   "move_z",
+   "moving",
+   "position.x",
+   "position.y",
+   "position.z"
+  ],
+  "numeric_fields": 7,
+  "numeric_fields_with_unit": [],
+  "numeric_fields_without_unit": [
+   "camera.action.capture_to_memory.buffer_max",
+   "camera.action.capture_to_memory.max_attempts",
+   "camera.action.record_framerate.duration",
+   "camera.propertie.blob_density",
+   "camera.propertie.noise_level",
+   "camera.propertie.objective",
+   "camera.propertie.settling_time"
+  ],
+  "importer_findings": {
+   "mapped": 12,
+   "no_measurement_time": 12,
+   "action_unreviewed": 7,
+   "unit_missing": 6,
+   "optional_param_omitted": 6,
+   "keys_from_sample": 3,
+   "mapped_from_override": 3,
+   "undeclared_params": 2,
+   "compound": 1
+  },
+  "allowed_operations": {
+   "advisory": true,
+   "expires_at": "2026-10-30T13:01:08.645Z",
+   "generated_at": "2026-10-30T13:00:58.645Z",
+   "operations": [
+    {
+     "access": "allowed",
+     "capability": "axis_inverted.x",
+     "descriptor_sha256": "sha256:7446b20e81528e871eb9f6575f4d6361200032b304a1223157127921ce43d24a",
+     "device": "ofm.stage",
+     "operation": "read"
+    },
+    {
+     "access": "allowed",
+     "capability": "axis_inverted.y",
+     "descriptor_sha256": "sha256:7446b20e81528e871eb9f6575f4d6361200032b304a1223157127921ce43d24a",
+     "device": "ofm.stage",
+     "operation": "read"
+    },
+    {
+     "access": "allowed",
+     "capability": "axis_inverted.z",
+     "descriptor_sha256": "sha256:7446b20e81528e871eb9f6575f4d6361200032b304a1223157127921ce43d24a",
+     "device": "ofm.stage",
+     "operation": "read"
+    },
+    {
+     "access": "allowed",
+     "capability": "backlash_steps.x",
+     "descriptor_sha256": "sha256:7446b20e81528e871eb9f6575f4d6361200032b304a1223157127921ce43d24a",
+     "device": "ofm.stage",
+     "operation": "read"
+    },
+    {
+     "access": "allowed",
+     "capability": "backlash_steps.y",
+     "descriptor_sha256": "sha256:7446b20e81528e871eb9f6575f4d6361200032b304a1223157127921ce43d24a",
+     "device": "ofm.stage",
+     "operation": "read"
+    },
+    {
+     "access": "allowed",
+     "capability": "backlash_steps.z",
+     "descriptor_sha256": "sha256:7446b20e81528e871eb9f6575f4d6361200032b304a1223157127921ce43d24a",
+     "device": "ofm.stage",
+     "operation": "read"
+    },
+    {
+     "access": "allowed",
+     "capability": "calibration_required",
+     "descriptor_sha256": "sha256:7446b20e81528e871eb9f6575f4d6361200032b304a1223157127921ce43d24a",
+     "device": "ofm.stage",
+     "operation": "read"
+    },
+    {
+     "access": "allowed",
+     "capability": "can_calibrate",
+     "descriptor_sha256": "sha256:7446b20e81528e871eb9f6575f4d6361200032b304a1223157127921ce43d24a",
+     "device": "ofm.stage",
+     "operation": "read"
+    },
+    {
+     "access": "allowed",
+     "capability": "moving",
+     "descriptor_sha256": "sha256:7446b20e81528e871eb9f6575f4d6361200032b304a1223157127921ce43d24a",
+     "device": "ofm.stage",
+     "operation": "read"
+    },
+    {
+     "access": "allowed",
+     "capability": "position.x",
+     "descriptor_sha256": "sha256:7446b20e81528e871eb9f6575f4d6361200032b304a1223157127921ce43d24a",
+     "device": "ofm.stage",
+     "operation": "read"
+    },
+    {
+     "access": "allowed",
+     "capability": "position.y",
+     "descriptor_sha256": "sha256:7446b20e81528e871eb9f6575f4d6361200032b304a1223157127921ce43d24a",
+     "device": "ofm.stage",
+     "operation": "read"
+    },
+    {
+     "access": "allowed",
+     "capability": "position.z",
+     "descriptor_sha256": "sha256:7446b20e81528e871eb9f6575f4d6361200032b304a1223157127921ce43d24a",
+     "device": "ofm.stage",
+     "operation": "read"
+    },
+    {
+     "access": "allowed",
+     "capability": "move_x",
+     "descriptor_sha256": "sha256:7446b20e81528e871eb9f6575f4d6361200032b304a1223157127921ce43d24a",
+     "device": "ofm.stage",
+     "operation": "invoke"
+    },
+    {
+     "access": "allowed",
+     "capability": "move_y",
+     "descriptor_sha256": "sha256:7446b20e81528e871eb9f6575f4d6361200032b304a1223157127921ce43d24a",
+     "device": "ofm.stage",
+     "operation": "invoke"
+    },
+    {
+     "access": "allowed",
+     "capability": "move_z",
+     "descriptor_sha256": "sha256:7446b20e81528e871eb9f6575f4d6361200032b304a1223157127921ce43d24a",
+     "device": "ofm.stage",
+     "operation": "invoke"
+    }
+   ],
+   "policy_revision": "sha256:fbbaaa1c679bae6e37313986880996f6ae29a34ba83cd4196581b0b316e297eb",
+   "principal": "agent:survey"
+  },
+  "start_position": {
+   "x": 0,
+   "y": 0,
+   "z": 0
+  },
+  "note": "No stage quantity declares a unit, so positions are simulator steps throughout."
+ },
+ "procedure": {
+  "kind": "raster survey, serpentine",
+  "points": [
+   [
+    -1000,
+    -1000
+   ],
+   [
+    -500,
+    -1000
+   ],
+   [
+    0,
+    -1000
+   ],
+   [
+    500,
+    -1000
+   ],
+   [
+    1000,
+    -1000
+   ],
+   [
+    1000,
+    -500
+   ],
+   [
+    500,
+    -500
+   ],
+   [
+    0,
+    -500
+   ],
+   [
+    -500,
+    -500
+   ],
+   [
+    -1000,
+    -500
+   ],
+   [
+    -1000,
+    0
+   ],
+   [
+    -500,
+    0
+   ],
+   [
+    0,
+    0
+   ],
+   [
+    500,
+    0
+   ],
+   [
+    1000,
+    0
+   ],
+   [
+    1000,
+    500
+   ],
+   [
+    500,
+    500
+   ],
+   [
+    0,
+    500
+   ],
+   [
+    -500,
+    500
+   ],
+   [
+    -1000,
+    500
+   ],
+   [
+    -1000,
+    1000
+   ],
+   [
+    -500,
+    1000
+   ],
+   [
+    0,
+    1000
+   ],
+   [
+    500,
+    1000
+   ],
+   [
+    1000,
+    1000
+   ]
+  ],
+  "z": 0,
+  "envelope": {
+   "x": 1200,
+   "y": 1200,
+   "z": 400
+  },
+  "approved_by": "experiment operator (the procedure, before execution)",
+  "sha256": "ff3e3df96e31ca1b8ab530dc88eb3ceb7837ba9eca8088e731e5e9f1f63e65c6"
+ },
+ "analysis": {
+  "method": "threshold = 95th-percentile background - 40; opening; connected components (>= 6 px at 1/4 scale); Laplacian variance for sharpness",
+  "background_level": 218.0,
+  "rows": [
+   {
+    "image_id": "img-s00",
+    "x": -1000,
+    "y": -1000,
+    "z": 0,
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 2.33,
+    "contrast": 0.67
+   },
+   {
+    "image_id": "img-s01",
+    "x": -500,
+    "y": -1000,
+    "z": 0,
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.0,
+    "contrast": 0.45
+   },
+   {
+    "image_id": "img-s02",
+    "x": 0,
+    "y": -1000,
+    "z": 0,
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.24,
+    "contrast": 0.51
+   },
+   {
+    "image_id": "img-s03",
+    "x": 500,
+    "y": -1000,
+    "z": 0,
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.52,
+    "contrast": 0.53
+   },
+   {
+    "image_id": "img-s04",
+    "x": 1000,
+    "y": -1000,
+    "z": 0,
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.19,
+    "contrast": 0.51
+   },
+   {
+    "image_id": "img-s05",
+    "x": 1000,
+    "y": -500,
+    "z": 0,
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.94,
+    "contrast": 0.6
+   },
+   {
+    "image_id": "img-s06",
+    "x": 500,
+    "y": -500,
+    "z": 0,
+    "sample_fraction": 0.0133,
+    "features": 2,
+    "sharpness": 3.56,
+    "contrast": 14.77
+   },
+   {
+    "image_id": "img-s07",
+    "x": 0,
+    "y": -500,
+    "z": 0,
+    "sample_fraction": 0.0264,
+    "features": 4,
+    "sharpness": 4.64,
+    "contrast": 19.01
+   },
+   {
+    "image_id": "img-s08",
+    "x": -500,
+    "y": -500,
+    "z": 0,
+    "sample_fraction": 0.0102,
+    "features": 2,
+    "sharpness": 3.43,
+    "contrast": 12.31
+   },
+   {
+    "image_id": "img-s09",
+    "x": -1000,
+    "y": -500,
+    "z": 0,
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 0.89,
+    "contrast": 0.48
+   },
+   {
+    "image_id": "img-s10",
+    "x": -1000,
+    "y": 0,
+    "z": 0,
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.71,
+    "contrast": 0.58
+   },
+   {
+    "image_id": "img-s11",
+    "x": -500,
+    "y": 0,
+    "z": 0,
+    "sample_fraction": 0.3732,
+    "features": 2,
+    "sharpness": 30.63,
+    "contrast": 76.56
+   },
+   {
+    "image_id": "img-s12",
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "sample_fraction": 0.8179,
+    "features": 5,
+    "sharpness": 71.08,
+    "contrast": 67.21
+   },
+   {
+    "image_id": "img-s13",
+    "x": 500,
+    "y": 0,
+    "z": 0,
+    "sample_fraction": 0.3374,
+    "features": 5,
+    "sharpness": 30.14,
+    "contrast": 73.25
+   },
+   {
+    "image_id": "img-s14",
+    "x": 1000,
+    "y": 0,
+    "z": 0,
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 0.79,
+    "contrast": 0.43
+   },
+   {
+    "image_id": "img-s15",
+    "x": 1000,
+    "y": 500,
+    "z": 0,
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.74,
+    "contrast": 0.56
+   },
+   {
+    "image_id": "img-s16",
+    "x": 500,
+    "y": 500,
+    "z": 0,
+    "sample_fraction": 0.0008,
+    "features": 1,
+    "sharpness": 1.61,
+    "contrast": 2.96
+   },
+   {
+    "image_id": "img-s17",
+    "x": 0,
+    "y": 500,
+    "z": 0,
+    "sample_fraction": 0.0268,
+    "features": 7,
+    "sharpness": 5.29,
+    "contrast": 19.88
+   },
+   {
+    "image_id": "img-s18",
+    "x": -500,
+    "y": 500,
+    "z": 0,
+    "sample_fraction": 0.0087,
+    "features": 1,
+    "sharpness": 2.39,
+    "contrast": 11.64
+   },
+   {
+    "image_id": "img-s19",
+    "x": -1000,
+    "y": 500,
+    "z": 0,
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.14,
+    "contrast": 0.44
+   },
+   {
+    "image_id": "img-s20",
+    "x": -1000,
+    "y": 1000,
+    "z": 0,
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 2.18,
+    "contrast": 0.66
+   },
+   {
+    "image_id": "img-s21",
+    "x": -500,
+    "y": 1000,
+    "z": 0,
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 0.89,
+    "contrast": 0.4
+   },
+   {
+    "image_id": "img-s22",
+    "x": 0,
+    "y": 1000,
+    "z": 0,
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 2.06,
+    "contrast": 0.64
+   },
+   {
+    "image_id": "img-s23",
+    "x": 500,
+    "y": 1000,
+    "z": 0,
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.57,
+    "contrast": 0.54
+   },
+   {
+    "image_id": "img-s24",
+    "x": 1000,
+    "y": 1000,
+    "z": 0,
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.05,
+    "contrast": 0.43
+   }
+  ],
+  "deterministic_top3": [
+   "img-s12",
+   "img-s11",
+   "img-s13"
+  ]
+ },
+ "proposal": {
+  "model": "gpt-6-luna",
+  "raw": {
+   "arguments": {
+    "rois": [
+     {
+      "image_id": "img-s12",
+      "reason": "Highest sample fraction (0.8179), 5 features, and highest sharpness (71.08)."
+     },
+     {
+      "image_id": "img-s11",
+      "reason": "Substantial sample fraction (0.3732), sharpness (30.63), and contrast (76.56)."
+     },
+     {
+      "image_id": "img-s13",
+      "reason": "Substantial sample fraction (0.3374), 5 features, and contrast (73.25)."
+     }
+    ],
+    "points": [
+     {
+      "x": 0,
+      "y": 250,
+      "near_image_id": "img-s12"
+     },
+     {
+      "x": 250,
+      "y": 0,
+      "near_image_id": "img-s12"
+     },
+     {
+      "x": -250,
+      "y": 0,
+      "near_image_id": "img-s12"
+     },
+     {
+      "x": 0,
+      "y": -250,
+      "near_image_id": "img-s12"
+     }
+    ],
+    "refocus_image_id": "img-s12",
+    "explanation": "Prioritize the three positions with the largest sample fractions and strongest focus/contrast measurements; refocus the strongest position before nearby sampling."
+   },
+   "text": "",
+   "stop": "tools"
+  },
+  "validation": {
+   "accepted_points": [
+    {
+     "x": 0,
+     "y": 250,
+     "near_image_id": "img-s12"
+    },
+    {
+     "x": 250,
+     "y": 0,
+     "near_image_id": "img-s12"
+    },
+    {
+     "x": -250,
+     "y": 0,
+     "near_image_id": "img-s12"
+    },
+    {
+     "x": 0,
+     "y": -250,
+     "near_image_id": "img-s12"
+    }
+   ],
+   "rejected": [],
+   "rois": [
+    {
+     "image_id": "img-s12",
+     "reason": "Highest sample fraction (0.8179), 5 features, and highest sharpness (71.08)."
+    },
+    {
+     "image_id": "img-s11",
+     "reason": "Substantial sample fraction (0.3732), sharpness (30.63), and contrast (76.56)."
+    },
+    {
+     "image_id": "img-s13",
+     "reason": "Substantial sample fraction (0.3374), 5 features, and contrast (73.25)."
+    }
+   ],
+   "refocus": "img-s12",
+   "fabrication_flags": [],
+   "numeric_claims": {
+    "checked": 9,
+    "unsupported": []
+   }
+  },
+  "usage": {
+   "input_tokens": 1900,
+   "output_tokens": 226,
+   "estimated_cost_usd": 0.000303
+  },
+  "validation_note": "validation recomputed after the run with the numeric-claims check added; the accepted points are unchanged"
+ },
+ "adapt": {
+  "focus_sweep": [
+   {
+    "image_id": "imgmfm300",
+    "x": 0,
+    "y": 0,
+    "z": -300,
+    "sample_fraction": 0.9408,
+    "features": 1,
+    "sharpness": 3.13,
+    "contrast": 44.67
+   },
+   {
+    "image_id": "imgmfm150",
+    "x": 0,
+    "y": 0,
+    "z": -150,
+    "sample_fraction": 0.8913,
+    "features": 1,
+    "sharpness": 4.2,
+    "contrast": 54.61
+   },
+   {
+    "image_id": "imgmfp0",
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "sample_fraction": 0.8162,
+    "features": 5,
+    "sharpness": 71.19,
+    "contrast": 67.24
+   },
+   {
+    "image_id": "imgmfp150",
+    "x": 0,
+    "y": 0,
+    "z": 150,
+    "sample_fraction": 0.8914,
+    "features": 1,
+    "sharpness": 4.65,
+    "contrast": 54.61
+   },
+   {
+    "image_id": "imgmfp300",
+    "x": 0,
+    "y": 0,
+    "z": 300,
+    "sample_fraction": 0.9408,
+    "features": 1,
+    "sharpness": 2.88,
+    "contrast": 44.67
+   }
+  ],
+  "best_z": 0,
+  "follow_ups": [
+   {
+    "image_id": "img-a0",
+    "x": 0,
+    "y": 250,
+    "z": 0,
+    "sample_fraction": 0.6428,
+    "features": 11,
+    "sharpness": 58.44,
+    "contrast": 77.13
+   },
+   {
+    "image_id": "img-a1",
+    "x": 250,
+    "y": 0,
+    "z": 0,
+    "sample_fraction": 0.7868,
+    "features": 5,
+    "sharpness": 66.56,
+    "contrast": 69.39
+   },
+   {
+    "image_id": "img-a2",
+    "x": -250,
+    "y": 0,
+    "z": 0,
+    "sample_fraction": 0.8302,
+    "features": 5,
+    "sharpness": 66.69,
+    "contrast": 67.71
+   },
+   {
+    "image_id": "img-a3",
+    "x": 0,
+    "y": -250,
+    "z": 0,
+    "sample_fraction": 0.6513,
+    "features": 4,
+    "sharpness": 58.39,
+    "contrast": 75.77
+   }
+  ],
+  "approvals": [
+   {
+    "command_id": "01a18ce6-c4ee-7733-a479-2087d7151719",
+    "at": "2026-10-30T18:31:36+0530",
+    "by": "experiment operator"
+   },
+   {
+    "command_id": "01a18ce6-ca21-74b7-879c-9e557cf68de6",
+    "at": "2026-10-30T18:31:37+0530",
+    "by": "experiment operator"
+   },
+   {
+    "command_id": "01a18ce6-cf55-7567-801b-80540b010b8f",
+    "at": "2026-10-30T18:31:39+0530",
+    "by": "experiment operator"
+   },
+   {
+    "command_id": "01a18ce6-d3af-7246-8759-8beb1cd0b9c4",
+    "at": "2026-10-30T18:31:40+0530",
+    "by": "experiment operator"
+   },
+   {
+    "command_id": "01a18ce6-d776-74dc-bd0c-56e337775983",
+    "at": "2026-10-30T18:31:41+0530",
+    "by": "experiment operator"
+   },
+   {
+    "command_id": "01a18ce6-db10-72e7-8844-9ac320d3375f",
+    "at": "2026-10-30T18:31:42+0530",
+    "by": "experiment operator"
+   },
+   {
+    "command_id": "01a18ce6-ded3-74a7-a760-2749d6850931",
+    "at": "2026-10-30T18:31:43+0530",
+    "by": "experiment operator"
+   },
+   {
+    "command_id": "01a18ce6-e4bb-7170-b2e7-c7b12b0a4800",
+    "at": "2026-10-30T18:31:44+0530",
+    "by": "experiment operator"
+   },
+   {
+    "command_id": "01a18ce6-e6f7-749d-9b88-1506d5b91b1a",
+    "at": "2026-10-30T18:31:45+0530",
+    "by": "experiment operator"
+   },
+   {
+    "command_id": "01a18ce6-eadf-76ea-8823-6aed836f8b6f",
+    "at": "2026-10-30T18:31:46+0530",
+    "by": "experiment operator"
+   },
+   {
+    "command_id": "01a18ce6-eccc-75df-9395-a5294f177054",
+    "at": "2026-10-30T18:31:46+0530",
+    "by": "experiment operator"
+   },
+   {
+    "command_id": "01a18ce6-f09c-7657-b2b2-914d5621f204",
+    "at": "2026-10-30T18:31:47+0530",
+    "by": "experiment operator"
+   },
+   {
+    "command_id": "01a18ce6-f55b-714b-9d85-a741959c9bb0",
+    "at": "2026-10-30T18:31:48+0530",
+    "by": "experiment operator"
+   },
+   {
+    "command_id": "01a18ce6-f785-7217-96d6-09a0b6d02ee3",
+    "at": "2026-10-30T18:31:49+0530",
+    "by": "experiment operator"
+   },
+   {
+    "command_id": "01a18ce6-fd41-7700-b023-28eef99842fb",
+    "at": "2026-10-30T18:31:50+0530",
+    "by": "experiment operator"
+   }
+  ]
+ },
+ "ground_truth": {
+  "moves_executed_by_simulator": 41,
+  "moves_recorded_by_openmhs": 41,
+  "faulted_moves": [
+   {
+    "axis": "x",
+    "target": 0,
+    "why": "survey point 12",
+    "key": "4a680d007a314181acfcdb1bd1c3a480",
+    "at": "2026-10-30T18:31:15+0530",
+    "command_id": "01a18ce6-70b0-7406-9682-ee362664e133",
+    "state": "RECONCILED_APPLIED",
+    "device_reference": "labthings:149e46a8-f2c9-4517-9c69-4f8da1f2875f",
+    "suspended": {
+     "at": "2026-10-30T18:31:15+0530",
+     "reason": "outcome unknown after acceptance; workflow suspended, nothing resent"
+    },
+    "reconciled": {
+     "at": "2026-10-30T18:31:18+0530",
+     "state": "RECONCILED_APPLIED"
+    }
+   }
+  ],
+  "faulted_move_executions": [
+   1
+  ],
+  "executions_without_openmhs_reference": [],
+  "final_position": {
+   "x": 0,
+   "y": 0,
+   "z": 0
+  },
+  "start_position": {
+   "x": 0,
+   "y": 0,
+   "z": 0
+  }
+ },
+ "audit": {
+  "chain_valid": true,
+  "records": 376,
+  "verify_file_exit": 0,
+  "verify_file": "{\n  \"valid\": true,\n  \"complete\": true,\n  \"records\": 376,\n  \"receipts\": 41,\n  \"unbound_commands\": [],\n  \"errors\": []\n}\n",
+  "receipts_inconsistent_with_chain": []
+ },
+ "actions": [
+  {
+   "axis": "y",
+   "target": -1000,
+   "why": "survey point 0",
+   "key": "ac246aca34d1438ba918c524583d9201",
+   "at": "2026-10-30T18:30:59+0530",
+   "command_id": "01a18ce6-3197-7357-a33d-b60ca20a0ec2",
+   "state": "VERIFIED",
+   "device_reference": "labthings:a082b7ea-a6f3-4cda-b8cc-caf1c80d4ad9"
+  },
+  {
+   "axis": "x",
+   "target": -1000,
+   "why": "survey point 0",
+   "key": "5afd007fc32b44b19f9bd8c3ef0e6e69",
+   "at": "2026-10-30T18:31:01+0530",
+   "command_id": "01a18ce6-36ca-767e-a0f9-82e2c51c683e",
+   "state": "VERIFIED",
+   "device_reference": "labthings:0eb705a9-1eaa-4126-a0b9-64cc4fd3bc41"
+  },
+  {
+   "axis": "x",
+   "target": -500,
+   "why": "survey point 1",
+   "key": "38f41fb52cf1418a96db4c61ea60fa39",
+   "at": "2026-10-30T18:31:02+0530",
+   "command_id": "01a18ce6-3d6b-764a-a984-7f342670b218",
+   "state": "VERIFIED",
+   "device_reference": "labthings:904b542f-a0bf-4baf-a195-dec943741556"
+  },
+  {
+   "axis": "x",
+   "target": 0,
+   "why": "survey point 2",
+   "key": "6c2556ea64e247bf8dc138123353e6cd",
+   "at": "2026-10-30T18:31:03+0530",
+   "command_id": "01a18ce6-41fb-7641-8c71-fca16f1a82d9",
+   "state": "VERIFIED",
+   "device_reference": "labthings:c7bda5e7-18f0-44c5-bee9-247300b853d9"
+  },
+  {
+   "axis": "x",
+   "target": 500,
+   "why": "survey point 3",
+   "key": "8985268a9260404d918a04ab72442f6c",
+   "at": "2026-10-30T18:31:04+0530",
+   "command_id": "01a18ce6-46cb-74af-8ddb-afd92ceb2db6",
+   "state": "VERIFIED",
+   "device_reference": "labthings:9f532465-71b9-41f0-be3b-da542259600a"
+  },
+  {
+   "axis": "x",
+   "target": 1000,
+   "why": "survey point 4",
+   "key": "5c1dec2938b7454fbd5105fa64f9ed93",
+   "at": "2026-10-30T18:31:06+0530",
+   "command_id": "01a18ce6-4bd5-719a-9c8e-ed559ec20444",
+   "state": "VERIFIED",
+   "device_reference": "labthings:f8a23e78-2277-454c-9647-e2a00599714f"
+  },
+  {
+   "axis": "y",
+   "target": -500,
+   "why": "survey point 5",
+   "key": "2bd9cbd9fc2a4d55a9072a63ac776ff7",
+   "at": "2026-10-30T18:31:07+0530",
+   "command_id": "01a18ce6-505b-71ee-8d3e-ed3454073086",
+   "state": "VERIFIED",
+   "device_reference": "labthings:c715a7af-ace2-4254-b8e5-f9977c7af33d"
+  },
+  {
+   "axis": "x",
+   "target": 500,
+   "why": "survey point 6",
+   "key": "d04862d1c1854f5482b4885e7d344bd8",
+   "at": "2026-10-30T18:31:08+0530",
+   "command_id": "01a18ce6-551c-7509-965f-a0ccc25f7d83",
+   "state": "VERIFIED",
+   "device_reference": "labthings:dcf66349-0606-4c18-bbae-58a1ce3a7d70"
+  },
+  {
+   "axis": "x",
+   "target": 0,
+   "why": "survey point 7",
+   "key": "e83089a0282946dd93614d3337bd04fa",
+   "at": "2026-10-30T18:31:09+0530",
+   "command_id": "01a18ce6-598b-724c-bf3e-87aa09b0b05d",
+   "state": "VERIFIED",
+   "device_reference": "labthings:60abc742-b4dc-4056-95d5-0ed74857d0f4"
+  },
+  {
+   "axis": "x",
+   "target": -500,
+   "why": "survey point 8",
+   "key": "8629c78905b24c229e1b03938fec3516",
+   "at": "2026-10-30T18:31:10+0530",
+   "command_id": "01a18ce6-5e1f-75d9-a4b6-963495891bb6",
+   "state": "VERIFIED",
+   "device_reference": "labthings:7d533730-7ee5-4ad1-a0be-32205e62e0f2"
+  },
+  {
+   "axis": "x",
+   "target": -1000,
+   "why": "survey point 9",
+   "key": "23f90e3f5a6b4cf28c294b62f5a01387",
+   "at": "2026-10-30T18:31:12+0530",
+   "command_id": "01a18ce6-6312-77a9-86be-f528e9486c8d",
+   "state": "VERIFIED",
+   "device_reference": "labthings:e2c4e5c8-7679-4052-86c4-fd305fed6bd2"
+  },
+  {
+   "axis": "y",
+   "target": 0,
+   "why": "survey point 10",
+   "key": "a1d72bd5a878425b9420d2d16991b197",
+   "at": "2026-10-30T18:31:13+0530",
+   "command_id": "01a18ce6-678a-7374-8689-5ab372ffc159",
+   "state": "VERIFIED",
+   "device_reference": "labthings:abd8f23b-6305-40c0-874b-509ea75fd10d"
+  },
+  {
+   "axis": "x",
+   "target": -500,
+   "why": "survey point 11",
+   "key": "94f2e561da7a4f00a5513a5388e30cb1",
+   "at": "2026-10-30T18:31:14+0530",
+   "command_id": "01a18ce6-6bed-72ff-b234-1196ca652488",
+   "state": "VERIFIED",
+   "device_reference": "labthings:d1ebac5e-355e-4e3a-aab0-d73afaba06a0"
+  },
+  {
+   "axis": "x",
+   "target": 0,
+   "why": "survey point 12",
+   "key": "4a680d007a314181acfcdb1bd1c3a480",
+   "at": "2026-10-30T18:31:15+0530",
+   "command_id": "01a18ce6-70b0-7406-9682-ee362664e133",
+   "state": "RECONCILED_APPLIED",
+   "device_reference": "labthings:149e46a8-f2c9-4517-9c69-4f8da1f2875f",
+   "suspended": {
+    "at": "2026-10-30T18:31:15+0530",
+    "reason": "outcome unknown after acceptance; workflow suspended, nothing resent"
+   },
+   "reconciled": {
+    "at": "2026-10-30T18:31:18+0530",
+    "state": "RECONCILED_APPLIED"
+   }
+  },
+  {
+   "axis": "x",
+   "target": 500,
+   "why": "survey point 13",
+   "key": "cdeb9c25c1144c348bd3067f13e1e06b",
+   "at": "2026-10-30T18:31:19+0530",
+   "command_id": "01a18ce6-7f10-70ae-994d-55f1fc84b030",
+   "state": "VERIFIED",
+   "device_reference": "labthings:fd7d5692-0ff1-457d-9e42-94d1f29ba382"
+  },
+  {
+   "axis": "x",
+   "target": 1000,
+   "why": "survey point 14",
+   "key": "252cf256ac534d91942f409dd67f33d9",
+   "at": "2026-10-30T18:31:20+0530",
+   "command_id": "01a18ce6-8373-708f-88a6-ff4f0fbdf06c",
+   "state": "VERIFIED",
+   "device_reference": "labthings:cd1654a3-4287-426e-9164-2d66b44f725c"
+  },
+  {
+   "axis": "y",
+   "target": 500,
+   "why": "survey point 15",
+   "key": "8947e40159314187bdf7056262c3d06e",
+   "at": "2026-10-30T18:31:21+0530",
+   "command_id": "01a18ce6-8810-76b4-8299-670f77f81a43",
+   "state": "VERIFIED",
+   "device_reference": "labthings:48f8a49d-e214-4c77-95cd-6478d89c5d2a"
+  },
+  {
+   "axis": "x",
+   "target": 500,
+   "why": "survey point 16",
+   "key": "a723fde1d3a04319ab8e2f2554eb7d48",
+   "at": "2026-10-30T18:31:22+0530",
+   "command_id": "01a18ce6-8cf1-7700-ad5a-703cfb752e95",
+   "state": "VERIFIED",
+   "device_reference": "labthings:2dc14109-b949-40e7-acb4-ee5b2590d14d"
+  },
+  {
+   "axis": "x",
+   "target": 0,
+   "why": "survey point 17",
+   "key": "40ea28cf32c640189646985d37d894ee",
+   "at": "2026-10-30T18:31:24+0530",
+   "command_id": "01a18ce6-91d8-72ce-a4cc-b497d1f57871",
+   "state": "VERIFIED",
+   "device_reference": "labthings:db5fcbde-d79d-4ac3-8cb1-af7bd8f789fc"
+  },
+  {
+   "axis": "x",
+   "target": -500,
+   "why": "survey point 18",
+   "key": "c8a913d3944d499e9f77888e3e598a60",
+   "at": "2026-10-30T18:31:25+0530",
+   "command_id": "01a18ce6-9697-77d0-8c92-242dbe4bc2b4",
+   "state": "VERIFIED",
+   "device_reference": "labthings:e4a2ca49-5b44-46d5-8792-af77b1385b3a"
+  },
+  {
+   "axis": "x",
+   "target": -1000,
+   "why": "survey point 19",
+   "key": "8bb74534ec1648c3af1b324b38d22a25",
+   "at": "2026-10-30T18:31:26+0530",
+   "command_id": "01a18ce6-9aff-709e-bee7-d3c44b528568",
+   "state": "VERIFIED",
+   "device_reference": "labthings:ef841240-454f-410a-af65-6d80a7a67c95"
+  },
+  {
+   "axis": "y",
+   "target": 1000,
+   "why": "survey point 20",
+   "key": "0351d5d64a8340e38af8f8c34625c0ce",
+   "at": "2026-10-30T18:31:27+0530",
+   "command_id": "01a18ce6-a027-71c0-9f18-3a9687b21eca",
+   "state": "VERIFIED",
+   "device_reference": "labthings:901265ae-b65e-432c-8f13-3f30885012ed"
+  },
+  {
+   "axis": "x",
+   "target": -500,
+   "why": "survey point 21",
+   "key": "ce3191a3c8284454b9cb407ba1866aff",
+   "at": "2026-10-30T18:31:28+0530",
+   "command_id": "01a18ce6-a4eb-7401-b3f6-ccf6979d4d9f",
+   "state": "VERIFIED",
+   "device_reference": "labthings:a6a02b71-87d9-4a58-b192-1ee98a2068b5"
+  },
+  {
+   "axis": "x",
+   "target": 0,
+   "why": "survey point 22",
+   "key": "aaac2ed1cfd841049b2582312525396b",
+   "at": "2026-10-30T18:31:30+0530",
+   "command_id": "01a18ce6-a99e-7377-a799-17699dfc876c",
+   "state": "VERIFIED",
+   "device_reference": "labthings:2159ab80-2bf6-4051-8e43-370f1bdc4208"
+  },
+  {
+   "axis": "x",
+   "target": 500,
+   "why": "survey point 23",
+   "key": "c7fd67538976427591425f949cf071b4",
+   "at": "2026-10-30T18:31:31+0530",
+   "command_id": "01a18ce6-ae33-7257-bdd5-f0ce1eed7c36",
+   "state": "VERIFIED",
+   "device_reference": "labthings:9cc75f81-5040-471e-b398-6ee673ab48ea"
+  },
+  {
+   "axis": "x",
+   "target": 1000,
+   "why": "survey point 24",
+   "key": "a87189d5951043c6b4bb6e4adb9e89f5",
+   "at": "2026-10-30T18:31:32+0530",
+   "command_id": "01a18ce6-b300-7119-a4b5-0f638c263bc1",
+   "state": "VERIFIED",
+   "device_reference": "labthings:cd65e910-1ff7-4f9b-b5dd-ef8ac745d0e3"
+  },
+  {
+   "axis": "y",
+   "target": 0,
+   "why": "refocus target",
+   "key": "374a282496974f1b965f61ad4d92546a",
+   "at": "2026-10-30T18:31:37+0530",
+   "command_id": "01a18ce6-c4ee-7733-a479-2087d7151719",
+   "state": "VERIFIED",
+   "device_reference": "labthings:ac372877-b5bf-4b05-9572-9f0f5e6d5fce"
+  },
+  {
+   "axis": "x",
+   "target": 0,
+   "why": "refocus target",
+   "key": "54992476c57540998e667a223b0f0adc",
+   "at": "2026-10-30T18:31:39+0530",
+   "command_id": "01a18ce6-ca21-74b7-879c-9e557cf68de6",
+   "state": "VERIFIED",
+   "device_reference": "labthings:a51b3d04-a9d8-41dd-a7f0-efa9ebb4e595"
+  },
+  {
+   "axis": "z",
+   "target": -300,
+   "why": "focus sweep",
+   "key": "f2115d27a0974a7083404b35826e9838",
+   "at": "2026-10-30T18:31:39+0530",
+   "command_id": "01a18ce6-cf55-7567-801b-80540b010b8f",
+   "state": "VERIFIED",
+   "device_reference": "labthings:fc416d1a-70bc-48cf-8d4c-69959e37787f"
+  },
+  {
+   "axis": "z",
+   "target": -150,
+   "why": "focus sweep",
+   "key": "544171df62ce4bc2a32ae0df5ac0517d",
+   "at": "2026-10-30T18:31:40+0530",
+   "command_id": "01a18ce6-d3af-7246-8759-8beb1cd0b9c4",
+   "state": "VERIFIED",
+   "device_reference": "labthings:9e1cb4ca-0606-4523-ae63-2c23ccff0e24"
+  },
+  {
+   "axis": "z",
+   "target": 0,
+   "why": "focus sweep",
+   "key": "cf8cee5bf91242869fcc9961be2260fb",
+   "at": "2026-10-30T18:31:41+0530",
+   "command_id": "01a18ce6-d776-74dc-bd0c-56e337775983",
+   "state": "VERIFIED",
+   "device_reference": "labthings:4c3d5bad-f294-41b3-a15c-e73b06272b4c"
+  },
+  {
+   "axis": "z",
+   "target": 150,
+   "why": "focus sweep",
+   "key": "37c9407c622146f2b997a27e2852fe67",
+   "at": "2026-10-30T18:31:42+0530",
+   "command_id": "01a18ce6-db10-72e7-8844-9ac320d3375f",
+   "state": "VERIFIED",
+   "device_reference": "labthings:b35e72a0-6231-4ee8-a1bb-d24f9e5c9f54"
+  },
+  {
+   "axis": "z",
+   "target": 300,
+   "why": "focus sweep",
+   "key": "3c6719c4d42740cea16815eb733d0574",
+   "at": "2026-10-30T18:31:43+0530",
+   "command_id": "01a18ce6-ded3-74a7-a760-2749d6850931",
+   "state": "VERIFIED",
+   "device_reference": "labthings:aece1357-2e5e-4fea-b958-2976c1129a19"
+  },
+  {
+   "axis": "z",
+   "target": 0,
+   "why": "best focus",
+   "key": "1fc61dd82c7f471aab93a341bf7c03ac",
+   "at": "2026-10-30T18:31:45+0530",
+   "command_id": "01a18ce6-e4bb-7170-b2e7-c7b12b0a4800",
+   "state": "VERIFIED",
+   "device_reference": "labthings:6d3c622b-db8d-4fc8-ae9c-9ab47e2075a5"
+  },
+  {
+   "axis": "y",
+   "target": 250,
+   "why": "follow-up 0",
+   "key": "b26a146b8b55404193fcc57777abf80c",
+   "at": "2026-10-30T18:31:45+0530",
+   "command_id": "01a18ce6-e6f7-749d-9b88-1506d5b91b1a",
+   "state": "VERIFIED",
+   "device_reference": "labthings:2432ce0a-9114-4231-9e59-f30309db1da9"
+  },
+  {
+   "axis": "y",
+   "target": 0,
+   "why": "follow-up 1",
+   "key": "356b09136f4842d6b078956a2f54581c",
+   "at": "2026-10-30T18:31:46+0530",
+   "command_id": "01a18ce6-eadf-76ea-8823-6aed836f8b6f",
+   "state": "VERIFIED",
+   "device_reference": "labthings:8d900a5b-0f60-4773-8e1a-0c31903294bb"
+  },
+  {
+   "axis": "x",
+   "target": 250,
+   "why": "follow-up 1",
+   "key": "b8548952489a4a02ada6261aa154997f",
+   "at": "2026-10-30T18:31:47+0530",
+   "command_id": "01a18ce6-eccc-75df-9395-a5294f177054",
+   "state": "VERIFIED",
+   "device_reference": "labthings:ce02dd74-853a-4b16-96a5-80ebdb1b6bf1"
+  },
+  {
+   "axis": "x",
+   "target": -250,
+   "why": "follow-up 2",
+   "key": "16f120b05f984aefb5a806ef8afee908",
+   "at": "2026-10-30T18:31:48+0530",
+   "command_id": "01a18ce6-f09c-7657-b2b2-914d5621f204",
+   "state": "VERIFIED",
+   "device_reference": "labthings:10019c1e-b5f3-4ffa-ba48-b40081a285a7"
+  },
+  {
+   "axis": "y",
+   "target": -250,
+   "why": "follow-up 3",
+   "key": "72a5b447ae6f439c832969e7be1be29c",
+   "at": "2026-10-30T18:31:49+0530",
+   "command_id": "01a18ce6-f55b-714b-9d85-a741959c9bb0",
+   "state": "VERIFIED",
+   "device_reference": "labthings:9a4c4564-eaff-4967-afb6-1c4d34a10df1"
+  },
+  {
+   "axis": "x",
+   "target": 0,
+   "why": "follow-up 3",
+   "key": "65e512e479444048a1e19e65a5238309",
+   "at": "2026-10-30T18:31:49+0530",
+   "command_id": "01a18ce6-f785-7217-96d6-09a0b6d02ee3",
+   "state": "VERIFIED",
+   "device_reference": "labthings:db4199b3-1d8e-4eb0-b3ef-de114315a5c0"
+  },
+  {
+   "axis": "y",
+   "target": 0,
+   "why": "return to start",
+   "key": "1e5878e4580b4756a8a8d9755233ee33",
+   "at": "2026-10-30T18:31:51+0530",
+   "command_id": "01a18ce6-fd41-7700-b023-28eef99842fb",
+   "state": "VERIFIED",
+   "device_reference": "labthings:5f16b5b9-eb94-4f42-b9f9-70bbe26c4ef2"
+  }
+ ],
+ "images": [
+  {
+   "image_id": "img-s00",
+   "captured_at": "2026-10-30T18:31:01+0530",
+   "sha256": "8135e20d75cba2cf0480372509e588b1b832d3f47bb799f8dcbfaa58169b8600",
+   "bytes": 17842,
+   "camera_invocation": "0dd11d5e-4e61-4d90-b479-3cd9f81645fe",
+   "x": -1000,
+   "y": -1000,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 2.33,
+    "contrast": 0.67
+   }
+  },
+  {
+   "image_id": "img-s01",
+   "captured_at": "2026-10-30T18:31:02+0530",
+   "sha256": "5f06431c7fef35f7eefa3577f3dfa1470c0d14511e205eb9f582d4c63ad45d11",
+   "bytes": 12696,
+   "camera_invocation": "e7962740-bf79-49a8-afce-d9d5918cf924",
+   "x": -500,
+   "y": -1000,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.0,
+    "contrast": 0.45
+   }
+  },
+  {
+   "image_id": "img-s02",
+   "captured_at": "2026-10-30T18:31:04+0530",
+   "sha256": "c2375f7cfc73cf8cc9f5b28fa4f7ef4fcdff894ccfd0745bc175c6ac90728c77",
+   "bytes": 14196,
+   "camera_invocation": "f3ea3881-aa45-4b75-bd7f-8ea8a7e68de2",
+   "x": 0,
+   "y": -1000,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.24,
+    "contrast": 0.51
+   }
+  },
+  {
+   "image_id": "img-s03",
+   "captured_at": "2026-10-30T18:31:05+0530",
+   "sha256": "fca2b9d30323cff4017e0e6aea652cf740a238a16f8cb1a5927283f6c913b436",
+   "bytes": 14372,
+   "camera_invocation": "5ee39db5-8b14-4532-bd4a-096144d01cee",
+   "x": 500,
+   "y": -1000,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.52,
+    "contrast": 0.53
+   }
+  },
+  {
+   "image_id": "img-s04",
+   "captured_at": "2026-10-30T18:31:06+0530",
+   "sha256": "c35b0db78b3ab0a5997204cb050648cabd215af98b29a7921d6d7619bd9a3284",
+   "bytes": 13943,
+   "camera_invocation": "0366b879-4382-4fb0-aacb-7761ab2011da",
+   "x": 1000,
+   "y": -1000,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.19,
+    "contrast": 0.51
+   }
+  },
+  {
+   "image_id": "img-s05",
+   "captured_at": "2026-10-30T18:31:07+0530",
+   "sha256": "19b47878480b755d2eb2f00eefb0335b7e3ebabe5b52533e3d66a9d2e37492dd",
+   "bytes": 16500,
+   "camera_invocation": "eddabcfc-860e-461b-877b-4c6f627ab89f",
+   "x": 1000,
+   "y": -500,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.94,
+    "contrast": 0.6
+   }
+  },
+  {
+   "image_id": "img-s06",
+   "captured_at": "2026-10-30T18:31:08+0530",
+   "sha256": "1590dac7a0b85232e7da94ee48b68589891ee152e81d7c6fdccf022303c3bcab",
+   "bytes": 17990,
+   "camera_invocation": "6136ad2c-f65a-4fe6-86eb-ac2e66cdd529",
+   "x": 500,
+   "y": -500,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0133,
+    "features": 2,
+    "sharpness": 3.56,
+    "contrast": 14.77
+   }
+  },
+  {
+   "image_id": "img-s07",
+   "captured_at": "2026-10-30T18:31:10+0530",
+   "sha256": "58cdbd1e5711aae04758373fb7846aaeb73f399edc328801888adeb3c91ab294",
+   "bytes": 17648,
+   "camera_invocation": "c75f84b7-2cc5-4153-bd08-22fa8732cf0f",
+   "x": 0,
+   "y": -500,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0263,
+    "features": 4,
+    "sharpness": 4.64,
+    "contrast": 19.01
+   }
+  },
+  {
+   "image_id": "img-s08",
+   "captured_at": "2026-10-30T18:31:11+0530",
+   "sha256": "1345ebbbfb35d6e3989de834d6bf83335fcc93dac5e87cd9c0f1733e52aa9090",
+   "bytes": 17340,
+   "camera_invocation": "9c45d8af-7aea-49f2-ae09-53537aa62d39",
+   "x": -500,
+   "y": -500,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0102,
+    "features": 2,
+    "sharpness": 3.43,
+    "contrast": 12.31
+   }
+  },
+  {
+   "image_id": "img-s09",
+   "captured_at": "2026-10-30T18:31:12+0530",
+   "sha256": "4c33cdd740cde4ccf02f16390e2f0be284be930a9f28dfd40b6c39bf833a584b",
+   "bytes": 12985,
+   "camera_invocation": "b528cd32-110f-4cc0-813b-42cf331c904a",
+   "x": -1000,
+   "y": -500,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 0.89,
+    "contrast": 0.48
+   }
+  },
+  {
+   "image_id": "img-s10",
+   "captured_at": "2026-10-30T18:31:13+0530",
+   "sha256": "cac690324193421a47a8fb05e7e0bad5ad3a0e634e9269e70338e2aebf3eb273",
+   "bytes": 14995,
+   "camera_invocation": "561f1f85-63ed-4962-8de2-f56680e6a6f5",
+   "x": -1000,
+   "y": 0,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.71,
+    "contrast": 0.58
+   }
+  },
+  {
+   "image_id": "img-s11",
+   "captured_at": "2026-10-30T18:31:14+0530",
+   "sha256": "85004ab318827cab11c0980d551e888128f6c508816aae88f83ff45b8507cfb5",
+   "bytes": 51237,
+   "camera_invocation": "fb73ccd7-cdc1-41ab-b2c0-16c84c43a822",
+   "x": -500,
+   "y": 0,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.3725,
+    "features": 2,
+    "sharpness": 30.63,
+    "contrast": 76.56
+   }
+  },
+  {
+   "image_id": "img-s12",
+   "captured_at": "2026-10-30T18:31:18+0530",
+   "sha256": "c2a387e70806a1015f6724ef089260e453675acd0c11d7f1e18e8344759713f6",
+   "bytes": 96938,
+   "camera_invocation": "b2922aef-8ff8-4fdb-8596-84746b5c4b66",
+   "x": 0,
+   "y": 0,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.8166,
+    "features": 5,
+    "sharpness": 71.08,
+    "contrast": 67.21
+   }
+  },
+  {
+   "image_id": "img-s13",
+   "captured_at": "2026-10-30T18:31:19+0530",
+   "sha256": "8c190409a8ad2b935d39d5dc2eb65cd3382a66820e29e72553f8713f382e8e67",
+   "bytes": 49199,
+   "camera_invocation": "2bed176f-8390-4ae1-aa9a-8419784b78de",
+   "x": 500,
+   "y": 0,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.3368,
+    "features": 5,
+    "sharpness": 30.14,
+    "contrast": 73.25
+   }
+  },
+  {
+   "image_id": "img-s14",
+   "captured_at": "2026-10-30T18:31:20+0530",
+   "sha256": "01ad47568bfcd81cb4207781acf5d9783720e4f3dd8611b1adfa90e754b41392",
+   "bytes": 12590,
+   "camera_invocation": "de27773e-3177-4ffa-940b-23f4c250f3e3",
+   "x": 1000,
+   "y": 0,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 0.79,
+    "contrast": 0.43
+   }
+  },
+  {
+   "image_id": "img-s15",
+   "captured_at": "2026-10-30T18:31:22+0530",
+   "sha256": "4e8ac3c550b806893e3ca8edaadaf145c159057cd57f3221253b4bd3bff84858",
+   "bytes": 15754,
+   "camera_invocation": "a919722a-6eba-4764-9015-901f4162e793",
+   "x": 1000,
+   "y": 500,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.74,
+    "contrast": 0.56
+   }
+  },
+  {
+   "image_id": "img-s16",
+   "captured_at": "2026-10-30T18:31:23+0530",
+   "sha256": "ab7ed40c8c728a4a9ba717b80a59ab431398c6508518a4170460f01273304825",
+   "bytes": 14419,
+   "camera_invocation": "908af2b9-367b-4f8a-8d9d-5894bb8d5d7d",
+   "x": 500,
+   "y": 500,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0008,
+    "features": 1,
+    "sharpness": 1.61,
+    "contrast": 2.96
+   }
+  },
+  {
+   "image_id": "img-s17",
+   "captured_at": "2026-10-30T18:31:24+0530",
+   "sha256": "7604449681127211edd42b9c55d08f3043259a50928a23a906ab1ce9f0d164a7",
+   "bytes": 19683,
+   "camera_invocation": "eb0f7fb8-f54c-462c-af01-3b15ae8c8acd",
+   "x": 0,
+   "y": 500,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0267,
+    "features": 6,
+    "sharpness": 5.29,
+    "contrast": 19.88
+   }
+  },
+  {
+   "image_id": "img-s18",
+   "captured_at": "2026-10-30T18:31:25+0530",
+   "sha256": "938f9ecf8ad24dd4fa3af7f5b72e46810573e95cd7453ce4219fe3dee3823be1",
+   "bytes": 15428,
+   "camera_invocation": "655b620f-e1a7-407a-add0-0674d8f83670",
+   "x": -500,
+   "y": 500,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0087,
+    "features": 1,
+    "sharpness": 2.39,
+    "contrast": 11.64
+   }
+  },
+  {
+   "image_id": "img-s19",
+   "captured_at": "2026-10-30T18:31:26+0530",
+   "sha256": "878cda8ca3a7b3bdb8be0a59a4d9de13571494e928939a18f680fedcfb7525ec",
+   "bytes": 13068,
+   "camera_invocation": "7310b4c4-53f6-4d51-8b45-d22845e5c4a0",
+   "x": -1000,
+   "y": 500,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.14,
+    "contrast": 0.44
+   }
+  },
+  {
+   "image_id": "img-s20",
+   "captured_at": "2026-10-30T18:31:28+0530",
+   "sha256": "b5308f75a3e2158cc601e8dd6b7711c2ee77087b62e44949d957497ddc2a8a1d",
+   "bytes": 17654,
+   "camera_invocation": "1539ed19-b640-4b3c-8246-e0c1585c638b",
+   "x": -1000,
+   "y": 1000,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 2.18,
+    "contrast": 0.66
+   }
+  },
+  {
+   "image_id": "img-s21",
+   "captured_at": "2026-10-30T18:31:29+0530",
+   "sha256": "34eba7bc3f8a639ef99b78c138fb2f803bddc130ddbaf32f9d652da5379eb25a",
+   "bytes": 12164,
+   "camera_invocation": "2f70382b-ce7f-4a12-a5e5-64b4f6c69917",
+   "x": -500,
+   "y": 1000,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 0.89,
+    "contrast": 0.4
+   }
+  },
+  {
+   "image_id": "img-s22",
+   "captured_at": "2026-10-30T18:31:30+0530",
+   "sha256": "f1e537a11a30d3cd270bc2147e6045961e70458872f4781b5f96e2a9a1b52a14",
+   "bytes": 17665,
+   "camera_invocation": "f4d42558-c5c6-4b6b-8a24-91d83e1869a7",
+   "x": 0,
+   "y": 1000,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 2.06,
+    "contrast": 0.64
+   }
+  },
+  {
+   "image_id": "img-s23",
+   "captured_at": "2026-10-30T18:31:31+0530",
+   "sha256": "6cb89da1a8882a13d4ccc1cc6cce251366ee7e9f1a7bce9a745f15766a3565c0",
+   "bytes": 14726,
+   "camera_invocation": "20feac19-6f97-44e3-beab-9786b4b95d69",
+   "x": 500,
+   "y": 1000,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.57,
+    "contrast": 0.54
+   }
+  },
+  {
+   "image_id": "img-s24",
+   "captured_at": "2026-10-30T18:31:32+0530",
+   "sha256": "debec2abfc179898140cf85a72d3d37f1fc7919c2215c566fc8071b28a407bc8",
+   "bytes": 13139,
+   "camera_invocation": "07ac6429-a8e1-4aa8-bdad-d05c752f8684",
+   "x": 1000,
+   "y": 1000,
+   "z": 0,
+   "phase": "survey",
+   "metrics": {
+    "sample_fraction": 0.0,
+    "features": 0,
+    "sharpness": 1.05,
+    "contrast": 0.43
+   }
+  },
+  {
+   "image_id": "imgmfm300",
+   "captured_at": "2026-10-30T18:31:40+0530",
+   "sha256": "e96f6be81dcc1363a070c9679962da4327a45bf3dc57a0419dd9eb106b80ca0f",
+   "bytes": 38483,
+   "camera_invocation": "b8c8dc57-7424-4edc-be9f-c84ee0c0938b",
+   "x": 0,
+   "y": 0,
+   "z": -300,
+   "phase": "focus",
+   "metrics": {
+    "sample_fraction": 0.9408,
+    "features": 1,
+    "sharpness": 3.13,
+    "contrast": 44.67
+   }
+  },
+  {
+   "image_id": "imgmfm150",
+   "captured_at": "2026-10-30T18:31:41+0530",
+   "sha256": "7619724993d3565ceffb615ac53efa8b0f07557f837a9615f53c9e78fa4c0327",
+   "bytes": 54825,
+   "camera_invocation": "bc87c414-9372-4da6-bda4-c5e95b580f75",
+   "x": 0,
+   "y": 0,
+   "z": -150,
+   "phase": "focus",
+   "metrics": {
+    "sample_fraction": 0.8913,
+    "features": 1,
+    "sharpness": 4.2,
+    "contrast": 54.61
+   }
+  },
+  {
+   "image_id": "imgmfp0",
+   "captured_at": "2026-10-30T18:31:42+0530",
+   "sha256": "aca9d86571e2f271c54662ec7b75eb8145e25287db7a274c4c454e72d070620f",
+   "bytes": 97667,
+   "camera_invocation": "f5c207b9-9a8c-43ca-8b1b-a8862cdaaf23",
+   "x": 0,
+   "y": 0,
+   "z": 0,
+   "phase": "focus",
+   "metrics": {
+    "sample_fraction": 0.8162,
+    "features": 5,
+    "sharpness": 71.19,
+    "contrast": 67.24
+   }
+  },
+  {
+   "image_id": "imgmfp150",
+   "captured_at": "2026-10-30T18:31:42+0530",
+   "sha256": "e1187a0239d67fd79094137626c1432b471676d8b05a0f1bc0971a7e7c35de7d",
+   "bytes": 55753,
+   "camera_invocation": "39be58d5-40f0-4e99-9abc-a4011ae6bd93",
+   "x": 0,
+   "y": 0,
+   "z": 150,
+   "phase": "focus",
+   "metrics": {
+    "sample_fraction": 0.8914,
+    "features": 1,
+    "sharpness": 4.65,
+    "contrast": 54.61
+   }
+  },
+  {
+   "image_id": "imgmfp300",
+   "captured_at": "2026-10-30T18:31:43+0530",
+   "sha256": "7aa545c8b78b3db93117b95e6b500ab658aabbb727e067719430bfc6fa03b663",
+   "bytes": 37435,
+   "camera_invocation": "3a15a3e2-9b56-4e58-a1f9-a71a0b17761f",
+   "x": 0,
+   "y": 0,
+   "z": 300,
+   "phase": "focus",
+   "metrics": {
+    "sample_fraction": 0.9408,
+    "features": 1,
+    "sharpness": 2.88,
+    "contrast": 44.67
+   }
+  },
+  {
+   "image_id": "img-a0",
+   "captured_at": "2026-10-30T18:31:46+0530",
+   "sha256": "e1c0e085850f58c410ea4f9c5d4b24f93fa465a534546a53dfde930b488681ba",
+   "bytes": 81904,
+   "camera_invocation": "58bb2e6e-b92b-4e79-8ffa-76a065ed086c",
+   "x": 0,
+   "y": 250,
+   "z": 0,
+   "phase": "follow-up",
+   "metrics": {
+    "sample_fraction": 0.6428,
+    "features": 11,
+    "sharpness": 58.44,
+    "contrast": 77.13
+   }
+  },
+  {
+   "image_id": "img-a1",
+   "captured_at": "2026-10-30T18:31:47+0530",
+   "sha256": "61d4bd417a983ecb87b88baff69771f53470d3eb3588e3a79619cbe795edd3ba",
+   "bytes": 93721,
+   "camera_invocation": "afe3f1a1-7d31-434b-92c5-945630b1baf2",
+   "x": 250,
+   "y": 0,
+   "z": 0,
+   "phase": "follow-up",
+   "metrics": {
+    "sample_fraction": 0.7868,
+    "features": 5,
+    "sharpness": 66.56,
+    "contrast": 69.39
+   }
+  },
+  {
+   "image_id": "img-a2",
+   "captured_at": "2026-10-30T18:31:48+0530",
+   "sha256": "678aad9c97c40c7af1623b9dad1a7f52b96ca19e8ea6e555efff917be7ab918e",
+   "bytes": 95576,
+   "camera_invocation": "454686a4-5af9-4d0d-b0a5-68dc7ce553dc",
+   "x": -250,
+   "y": 0,
+   "z": 0,
+   "phase": "follow-up",
+   "metrics": {
+    "sample_fraction": 0.8302,
+    "features": 5,
+    "sharpness": 66.69,
+    "contrast": 67.71
+   }
+  },
+  {
+   "image_id": "img-a3",
+   "captured_at": "2026-10-30T18:31:50+0530",
+   "sha256": "376faad9ea1955eeaaa69dbe4f9c165465f0ea43783a2f5041845259242f7263",
+   "bytes": 82274,
+   "camera_invocation": "d2b0b7e0-c72c-4aea-ac33-0680f8da7677",
+   "x": 0,
+   "y": -250,
+   "z": 0,
+   "phase": "follow-up",
+   "metrics": {
+    "sample_fraction": 0.6513,
+    "features": 4,
+    "sharpness": 58.39,
+    "contrast": 75.77
+   }
+  }
+ ],
+ "versions": {
+  "openmhs_commit": "db950d7",
+  "openflexure_microscope_server": "3.0.0b1 (simulation config)",
+  "labthings_fastapi": "0.3.0",
+  "python": "3.13.4",
+  "os": "Windows-11-10.0.26300-SP0"
+ },
+ "uncertainties": [
+  "Simulator only: images are synthetic and stage motion is a dummy stage; nothing here is physical evidence.",
+  "Stage quantities declare no unit; all positions are simulator steps.",
+  "Image capture is a camera read performed by the workflow, linked by time and position to OpenMHS-verified moves; OpenMHS does not itself attest the image content.",
+  "RECONCILED_APPLIED means a readback after the fault matched the target; it does not prove when the move finished.",
+  "No action remained unresolved.",
+  "Analysis thresholds are fixed choices for this simulator, not validated for real samples."
+ ],
+ "finished_at": "2026-10-30T18:31:54+0530"
+}
