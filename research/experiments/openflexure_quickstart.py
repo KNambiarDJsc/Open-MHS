@@ -55,7 +55,7 @@ class ToolLimitedProvider:
         )
 
 
-def stage_override() -> dict:
+def stage_override(bound: int = BOUND) -> dict:
     """An experiment-only contract. OpenFlexure's TD has no units or stage limits."""
     return {
         "manufacturer": "OpenFlexure (simulator)",
@@ -68,14 +68,14 @@ def stage_override() -> dict:
                 "timing": {"expected_ms": 1000, "timeout_ms": 30000},
                 "omit_params": ["backlash_compensation", "block_cancellation"],
                 "reason": (
-                    f"Experiment-only bound |x| <= {BOUND}; it is not a device or safety limit"
+                    f"Experiment-only bound |x| <= {bound}; it is not a device or safety limit"
                 ),
                 "variants": {
                     BASE_CAPABILITY: {
                         "params": {
                             "x": {
                                 "type": "integer",
-                                "range": {"min": -BOUND, "max": BOUND},
+                                "range": {"min": -bound, "max": bound},
                             }
                         },
                         "verification": {
@@ -178,9 +178,11 @@ def main() -> int:
     parser.add_argument("--drop-polls", action="store_true",
                         help="reset invocation polls after the action is accepted")
     parser.add_argument("--agent-model",
-                        help="use a local OpenAI-compatible LLM instead of the deterministic provider")
+                        help="use an OpenAI-compatible model instead of the deterministic provider")
     parser.add_argument("--agent-base-url", default="http://127.0.0.1:11435/v1",
-                        help="loopback model server URL (default: dedicated Ollama port 11435)")
+                        help="model URL (loopback or official OpenAI API; default is local Ollama)")
+    parser.add_argument("--autonomous-simulator", action="store_true",
+                        help="allow one tightly bounded model-selected move in the simulator without an operator approval pause")
     args = parser.parse_args()
     if not loopback_url(args.base_url):
         parser.error("the demo only connects to an HTTP loopback simulator URL")
@@ -191,10 +193,15 @@ def main() -> int:
                 and args.agent_base_url != "https://api.openai.com/v1"):
             parser.error("the agent model endpoint must be loopback or the official OpenAI API")
         target_x = None
-        scenario_name = "agent-model"
+        scenario_name = "agent-autonomous" if args.autonomous_simulator else "agent-model"
     else:
+        if args.autonomous_simulator:
+            parser.error("--autonomous-simulator requires --agent-model")
         target_x = -50 if args.drop_polls else 50
         scenario_name = "drop-polls" if args.drop_polls else "normal"
+
+    action_bound = 2 if args.autonomous_simulator else BOUND
+    model_target_bound = 2 if args.autonomous_simulator else 20
 
     api = args.base_url.rstrip("/") + "/api/v3"
     proxy = FaultProxy(upstream=args.base_url)
@@ -222,7 +229,7 @@ def main() -> int:
 
     mapping = td_import.map_thing(
         tds["stage"], base_url=proxy_base, device_id=DEVICE,
-        overrides=stage_override(), samples=samples,
+        overrides=stage_override(action_bound), samples=samples,
     )
     if not any(c["name"] == BASE_CAPABILITY for c in mapping.descriptor["capabilities"]):
         raise RuntimeError("the reviewed move_x capability was not generated")
@@ -236,6 +243,7 @@ def main() -> int:
         "normal": "gateway",
         "drop-polls": "gateway-drop-polls",
         "agent-model": "gateway-agent-model",
+        "agent-autonomous": "gateway-agent-autonomous",
     }[scenario_name]
     gateway = Gateway(gateway_home, manifest_path, grants=False).start()
     try:
@@ -247,7 +255,7 @@ def main() -> int:
             {
                 "id": "demo-stage-approval", "principal": "agent:demo", "device": DEVICE,
                 "capability": BASE_CAPABILITY, "operations": ["invoke"],
-                "effect": "require_approval",
+                "effect": "allow" if args.autonomous_simulator else "require_approval",
             },
         ):
             try:
@@ -269,7 +277,10 @@ def main() -> int:
                 max_completion_tokens=512 if openai_api else None,
                 reasoning_effort="none" if openai_api else None,
                 options=None if openai_api else {"num_ctx": 4096, "num_predict": 512},
-                budget_usd=0.50 if openai_api else None,
+                # The previous approved model smoke test used about $0.00076. Keep this
+                # follow-up below the user's $0.50 cumulative ceiling with extra headroom.
+                budget_usd=0.49 if openai_api and args.autonomous_simulator
+                else 0.50 if openai_api else None,
                 input_price_per_million=0.10 if openai_api else None,
                 output_price_per_million=0.50 if openai_api else None,
             )
@@ -279,22 +290,64 @@ def main() -> int:
             provider = ToolLimitedProvider(provider)
         model_provider = provider.provider if isinstance(provider, ToolLimitedProvider) else provider
         task = (
+            "Control the simulated OpenFlexure stage to advance x by exactly one simulator "
+            "coordinate from its current position. First call read_state for ofm.stage and "
+            "position.x. Compute the next integer x, keeping it within -2..2. Use only move_x. "
+            "Call check_command with that exact integer, then submit exactly once with an "
+            "idempotency key. After submission, call read_state again and confirm the new x "
+            "is exactly one greater than the initial reading. These are simulator coordinates, "
+            "not millimetres. Stop after the readback."
+            if args.autonomous_simulator else
             "First call read_state for device ofm.stage and capability position.x. Then "
-            "choose one integer x target "
-            "strictly greater than the current x, within -20..20 simulator coordinates. Use "
-            "only move_x. Call check_command with that exact plain integer before submitting "
-            "it, then submit exactly once with an idempotency key. Do not call list_devices or "
-            "describe coordinates as millimetres. Stop after the one proposal."
+            "choose one integer x target strictly greater than the current x, within -20..20 "
+            "simulator coordinates. Use only move_x. Call check_command with that exact plain "
+            "integer before submitting it, then submit exactly once with an idempotency key. "
+            "Do not call list_devices or describe coordinates as millimetres. Stop after the "
+            "one proposal."
             if args.agent_model else
             "Inspect the simulated stage; check the units and limits; request one bounded target only."
         )
+        control = {"initial_x": None, "checked_params": None, "submit_count": 0}
+
+        def on_step(step):
+            if (args.autonomous_simulator and step.tool == "read_state"
+                    and step.arguments.get("device") == DEVICE
+                    and step.arguments.get("capability") == POSITION_CAPABILITY
+                    and isinstance(step.result, dict)
+                    and isinstance(step.result.get("value"), (int, float))):
+                control["initial_x"] = step.result["value"]
+            if (args.autonomous_simulator and step.tool == "check_command"
+                    and step.arguments.get("device") == DEVICE
+                    and step.arguments.get("capability") == BASE_CAPABILITY
+                    and isinstance(step.result, dict)
+                    and step.result.get("decision") != "deny"):
+                control["checked_params"] = step.arguments.get("params")
+            print(f"[{step.tool}] {json.dumps(step.result, default=str)[:1200]}", flush=True)
+
+        def autonomous_submit_guard(call):
+            params = call.arguments.get("params") or {}
+            target = params.get("x")
+            initial = control["initial_x"]
+            valid = (
+                control["submit_count"] == 0
+                and call.arguments.get("device") == DEVICE
+                and call.arguments.get("capability") == BASE_CAPABILITY
+                and set(params) == {"x"}
+                and type(target) is int
+                and -model_target_bound <= target <= model_target_bound
+                and isinstance(initial, (int, float))
+                and target == initial + 1
+                and control["checked_params"] == params
+            )
+            if valid:
+                control["submit_count"] += 1
+            return valid
         try:
             run = Harness(
                 provider, [OPENMHS, "mcp"], env=agent_env,
                 max_steps=8, max_seconds=180 if args.agent_model else 90,
-                on_step=lambda step: print(
-                    f"[{step.tool}] {json.dumps(step.result, default=str)[:1200]}", flush=True
-                ),
+                confirm=autonomous_submit_guard if args.autonomous_simulator else None,
+                on_step=on_step,
             ).run(task)
         except Exception as exc:
             (scenario_dir / "agent-error.json").write_text(
@@ -321,6 +374,7 @@ def main() -> int:
         )
 
         submitted = run.calls("submit_command")
+        dispatched_submissions = [s for s in submitted if find_command_id(s.result)]
         if args.agent_model:
             # The model can propose only one change, and only inside a narrower review band
             # than the gateway descriptor. Cancel every pending proposal before failing closed.
@@ -332,10 +386,12 @@ def main() -> int:
                         if state_name(receipt) == "AWAITING_APPROVAL":
                             gateway.op.cancel(candidate)
 
-            if len(submitted) != 1:
+            if len(dispatched_submissions) != 1:
                 cancel_pending_submissions()
-                raise RuntimeError(f"the model made {len(submitted)} submit calls; expected exactly one")
-            step = submitted[0]
+                raise RuntimeError(
+                    f"the model dispatched {len(dispatched_submissions)} submit calls; expected exactly one"
+                )
+            step = dispatched_submissions[0]
             arguments = step.arguments
             params = arguments.get("params") or {}
             target_x = params.get("x")
@@ -359,6 +415,12 @@ def main() -> int:
             ):
                 cancel_pending_submissions()
                 raise RuntimeError("the model proposal failed the one-axis, target, readback, or preflight guard")
+            if args.autonomous_simulator and (
+                target_x != initial + 1
+                or not -model_target_bound <= target_x <= model_target_bound
+                or control["submit_count"] != 1
+            ):
+                raise RuntimeError("the autonomous action did not match the one-step target guard")
 
         command_id = find_command_id(submitted[0].result) if submitted else None
         if not command_id:
@@ -366,8 +428,12 @@ def main() -> int:
                                + str(scenario_dir / "agent-trace.json"))
 
         pending = gateway.op.command(command_id)
-        operator_decision = "not_required"
-        if state_name(pending) == "AWAITING_APPROVAL":
+        operator_decision = "not_required_policy_allow" if args.autonomous_simulator else "not_required"
+        if args.autonomous_simulator and state_name(pending) == "AWAITING_APPROVAL":
+            gateway.op.cancel(command_id)
+            operator_decision = "cancelled_unexpected_approval"
+            print("Autonomous simulator policy unexpectedly required approval; cancelled safely.")
+        elif state_name(pending) == "AWAITING_APPROVAL":
             print(f"\nOperator review: {DEVICE}/{BASE_CAPABILITY} with x={target_x}, bound ±{BOUND}.")
             if input("Approve this simulator-only move? [y/N] ").strip().lower() == "y":
                 gateway.op.approve(command_id)
@@ -413,7 +479,7 @@ def main() -> int:
             json.dumps(report, indent=2, default=str) + "\n", encoding="utf-8"
         )
         (scenario_dir / "audit-report.md").write_text(
-            export_report.to_markdown(report) + "\n", encoding="utf-8"
+            export_report.to_markdown(report).rstrip() + "\n", encoding="utf-8"
         )
         print(f"\nFinal command state: {state_name(receipt)}")
         print(f"Audit chain valid: {report['audit']['valid']}; report: {scenario_dir / 'audit-report.md'}")

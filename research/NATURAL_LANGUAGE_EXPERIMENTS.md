@@ -143,7 +143,16 @@ reported x=1 and OpenMHS returned `VERIFIED`. The audit chain was valid (21 reco
 exposed only the state-read, preflight and submit tools and enforced an experiment-only target band
 of -20..20.
 
-This closes the specific question of whether an agent can plausibly call this simulator through
-OpenMHS. It does not change the 32-run results above or establish general reliability, safety,
-physical control, or improvement over a direct client. The reproducible trace and receipt are in
-[`results/reports/openflexure_quickstart/agent-model/`](results/reports/openflexure_quickstart/agent-model/).
+The next run removed the operator approval pause in a separate, isolated simulator gateway. The
+agent received the relative goal “advance x by one simulator coordinate,” read x=0, chose x=1,
+preflighted, submitted once under an allow grant, then read x=1 and stopped. A harness guard
+enforced the exact +1 target, the experiment-only -2..2 contract, and at most one dispatched
+submission. OpenMHS independently verified the action and readback; the audit chain was valid
+(18 records). This run used 9,070 input and 166 output tokens, estimated at $0.00099. Both model
+runs cost an estimated $0.0017462 in total.
+
+The autonomous run demonstrates that an agent can control this simulator through OpenMHS without
+a person approving each command. It does not change the 32-run results above or establish general
+reliability, safety, physical control, or improvement over a direct client. The reproducible
+traces and receipts are in
+[`results/reports/openflexure_quickstart/`](results/reports/openflexure_quickstart/).

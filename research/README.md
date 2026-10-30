@@ -24,8 +24,8 @@ safety, endorsement or collaboration claim is made.
 Code: `experiments/` (harness, including `openflexure_quickstart.py`), `generalization/`
 (second device), and `fixtures/`. Raw results: `results/`. Importer and adapter:
 `../adapters/python/wot/`. The OpenFlexure quickstart has been run; its receipts, traces and audit
-reports are in `results/reports/openflexure_quickstart/`, including a GPT-6 Luna tool-calling run
-that reached `VERIFIED` after operator approval in the simulator. The existing benchmark is separate and
+reports are in `results/reports/openflexure_quickstart/`, including approval-gated and autonomous
+GPT-6 Luna tool-calling runs that reached `VERIFIED` in the simulator. The existing benchmark is separate and
 must not be presented as an OpenFlexure result. The LabThings unit metadata generation/import
 probe passed; HTTP endpoint serialization was not separately exercised. Results are recorded in
 `experiments/labthings_units_probe.py` and `results/reports/labthings_units_probe.json`. All

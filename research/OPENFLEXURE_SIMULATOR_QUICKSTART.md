@@ -1,8 +1,8 @@
 # OpenMHS × OpenFlexure simulator quickstart
 
-This is a simulator-only walkthrough of discovery, a bounded operator-approved stage request,
-and the resulting audit evidence. It does not control a physical microscope. It supports both a
-deterministic provider and a real OpenAI-compatible model using the same OpenMHS MCP tools.
+This is a simulator-only walkthrough of discovery, bounded stage requests, and the resulting
+audit evidence. It does not control a physical microscope. It supports deterministic, approval-
+gated, and autonomous-in-simulation runs through the same OpenMHS MCP tools.
 
 The stage's Thing Description does **not** declare coordinate units or mechanical limits.
 The demo does not call coordinates millimetres. It records integer simulator coordinates,
@@ -71,7 +71,7 @@ waits for the simulator to settle, and asks OpenMHS to reconcile from readback. 
 x=-50 readback is distinct from the pre-command value; it is still evidence from the simulator,
 not proof of physical completion or sensor truth.
 
-## Model-driven simulator run
+## Approval-gated model run
 
 Set `OPENAI_API_KEY` in the shell, then run the small-cost GPT-6 Luna experiment:
 
@@ -91,6 +91,32 @@ approval before dispatch. GPT-6 Luna's Chat Completions function calling require
 `reasoning_effort=none`; the experiment sets that explicitly. A cost estimate and token usage
 are saved with the trace. Do not put the API key in the repository or in a command transcript.
 
+## Autonomous agent simulator run
+
+The agent can also execute one simulator action without an approval pause. This mode gives its
+isolated gateway an invoke grant only for `ofm.stage/move_x`; the imported action contract is
+narrowed to `-2..2` simulator coordinates. A pre-send guard allows exactly one submit only when
+it follows a fresh read and a non-denied preflight for the identical parameters, and the target is
+exactly one coordinate above the read value. The task asks the agent to read, compute that target,
+submit once, and independently read back the new state. A second or mismatched submission is held
+by the harness. This experiment-only grant does not apply to any other gateway or device.
+
+```powershell
+$env:OPENMHS_BIN = (Resolve-Path .\target\debug\openmhs.exe).Path
+$env:OPENMHS_RESEARCH_WORK = (Join-Path $PWD 'target\openflexure-autonomous-agent')
+python research\experiments\openflexure_quickstart.py `
+  --agent-model gpt-6-luna `
+  --agent-base-url https://api.openai.com/v1 `
+  --autonomous-simulator
+```
+
+The autonomous run reserves headroom for the earlier model run by setting its own estimated
+request ceiling to $0.49. It uses the same 512-token completion cap and GPT-6 Luna's required
+`reasoning_effort=none`. The live OpenFlexure Thing Description is imported into the adapter;
+WoT Thing Descriptions provide machine-readable interaction affordances for properties and
+actions ([W3C TD 1.1](https://www.w3.org/TR/wot-thing-description11/)). OpenFlexure documents
+its motorised stage and scripted automation capabilities on its [project site](https://openflexure.org/).
+
 ## Recorded run
 
 Both runs completed on 2026-10-30 against the OpenFlexure simulator at `127.0.0.1:5000`:
@@ -100,6 +126,7 @@ Both runs completed on 2026-10-30 against the OpenFlexure simulator at `127.0.0.
 | Normal | x=50 | `VERIFIED` | 50, matched | valid, 30 records |
 | Lost poll after acceptance | x=-50 | `RECONCILED_APPLIED` | -50, matched | valid, 46 records |
 | GPT-6 Luna agent | x=1 | `VERIFIED` | 1, matched | valid, 21 records |
+| GPT-6 Luna autonomous simulator agent | x=0→1 | `VERIFIED` | 1, matched | valid, 18 records |
 
 Reports and agent traces are in
 [`results/reports/openflexure_quickstart/`](results/reports/openflexure_quickstart/).
@@ -108,13 +135,15 @@ The package versions and summary are in
 The lost-poll report includes an earlier recovery record at x=50; the x=-50 entry shows the
 distinct 50-to-minus-50 readback transition.
 
-The deterministic scenarios and the GPT-6 Luna scenario both call the real OpenMHS MCP tools.
-For the model run, the model read x=0, chose x=1, preflighted that exact integer, and submitted
-once. An operator approved the pending request; the command became `VERIFIED` after simulator
-readback matched. The trace records 6,887 input tokens and 135 output tokens, with an estimated
-API cost of $0.000756 at the published standard rates. This is evidence of one constrained
-simulator task, not a general reliability claim. The cached local 9B model did not complete the
-same tool sequence.
+All scenarios use the real OpenMHS MCP tools. In the approval-gated run, the model read x=0,
+chose x=1, and waited for operator approval before `VERIFIED`. In the autonomous run, it read x=0,
+computed x=1 for the relative goal, preflighted, submitted without a review prompt, then read x=1
+and stopped. The second run's audit records allow authorization, dispatch, simulator execution,
+and readback verification. It used 9,070 input tokens and 166 output tokens, estimated at
+$0.00099. Both model runs together used about $0.00175 at standard rates, below the $0.50 limit.
+This is a successful, tightly constrained simulator demonstration, not a general reliability,
+safety, or physical-control claim. The cached local 9B model did not complete the same tool
+sequence.
 
 ## Direct versus mediated execution
 

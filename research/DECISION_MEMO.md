@@ -9,8 +9,8 @@ statements that were superseded after that snapshot. In particular, the three ag
 listed in question 1(d-f) and decision 2 below are now addressed on `main`; use the current
 repository code and [COLLABORATION_BRIEF.md](COLLABORATION_BRIEF.md) for the present status. The
 OpenFlexure quickstart ran successfully against the simulator, a LabThings 0.3.0 in-memory probe
-verified unit metadata in generated descriptions, and a GPT-6 Luna smoke test completed one
-operator-approved simulator move. None is physical validation.
+verified unit metadata in generated descriptions, and GPT-6 Luna completed both an approval-gated
+move and one autonomous-in-simulation move. None is physical validation.
 
 ## The ten questions
 
@@ -52,12 +52,12 @@ all 50 actions stayed behind review (44 override lines for one bounded stage mov
 measure time and make no speed claim; what was counted is decisions (WOT_IMPORTER_RESULTS.md).
 
 **5. Can natural-language agents work reliably with unfamiliar lab devices?**
-**Still not shown.** The 32-run study used a 3B local model that could not use either tool layer
-correctly and asserted state, freshness and permissions it had not observed. A later constrained
-GPT-6 Luna call read one simulator value, chose x=1, passed matching preflight and completed after
-human approval. That demonstrates a model-to-MCP-to-receipt path for one task, not reliable
-operation across tasks or devices (NATURAL_LANGUAGE_EXPERIMENTS.md and
-OPENFLEXURE_SIMULATOR_QUICKSTART.md).
+**Still not shown generally.** The 32-run study used a 3B local model that could not use either
+tool layer correctly and asserted state, freshness and permissions it had not observed. Later
+constrained GPT-6 Luna runs both read x=0, chose x=1 and passed preflight; one completed after
+operator approval, and one did so autonomously under a one-action simulator-only guard. They
+demonstrate control of this simulator through MCP but do not establish reliable operation across
+tasks or devices (NATURAL_LANGUAGE_EXPERIMENTS.md and OPENFLEXURE_SIMULATOR_QUICKSTART.md).
 
 **6. Does OpenMHS add reliability, or duplicate what LabThings has?**
 It adds a different thing. It does not duplicate invocation tracking. It adds duplicate
@@ -77,7 +77,7 @@ a trade of completion for certainty.
 | Timestamp-less reads can make a verifying system infer the wrong thing; Date header helps to ~1 s | S12 family, F6/F6b | Moderate |
 | TDs omit safety facts | 0 of 50 actions, 0 units on OpenFlexure's descriptions | Strong for this server set |
 | The audit chain detects edits and deletions in the middle only | P2-P5 | Strong for the cases run |
-| Agents are more accurate through OpenMHS | **no** | Not tested by the single successful smoke run |
+| Agents are more accurate through OpenMHS | **no** | Not tested by these simulator smoke runs |
 | Anything on hardware | none | None |
 
 **8. What reusable integration would help LabThings?**

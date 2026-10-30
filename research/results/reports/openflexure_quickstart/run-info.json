@@ -25,6 +25,30 @@
     "report": "agent-model/audit-report.md",
     "trace": "agent-model/agent-trace.json"
   },
+  "autonomous_model_agent": {
+    "provider": "OpenAI Chat Completions through OpenMHS MCP",
+    "model": "gpt-6-luna",
+    "reasoning_effort": "none",
+    "simulator_only": true,
+    "goal": "advance x by exactly one simulator coordinate from live state",
+    "initial_position_x": 0,
+    "requested_position_x": 1,
+    "final_state": "VERIFIED",
+    "observed_position_x": 1,
+    "audit_valid": true,
+    "audit_records": 18,
+    "operator_approval_required": false,
+    "experiment_bound": [-2, 2],
+    "maximum_successful_submissions": 1,
+    "input_tokens": 9070,
+    "output_tokens": 166,
+    "estimated_api_cost_usd": 0.00099,
+    "configured_request_ceiling_usd": 0.49,
+    "total_estimated_api_cost_usd_across_model_runs": 0.0017462,
+    "cumulative_budget_ceiling_usd": 0.5,
+    "report": "agent-autonomous/audit-report.md",
+    "trace": "agent-autonomous/agent-trace.json"
+  },
   "hardware_accessed": false,
   "scenarios": {
     "normal": {

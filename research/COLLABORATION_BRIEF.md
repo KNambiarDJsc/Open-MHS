@@ -30,8 +30,9 @@ No LabThings or OpenFlexure code was modified, copied or vendored. No hardware w
   actions, with ground truth read from the server.
 - A provenance study of the audit trail, and a two-device workflow with an injected fault.
 - A historical natural-language study with a small local model, which was too weak to show
-  agent reliability. A later constrained GPT-6 Luna run read the OpenFlexure simulator stage,
-  chose x=1, passed preflight and completed after operator approval; see the quickstart evidence.
+  agent reliability. Later constrained GPT-6 Luna runs read and controlled the OpenFlexure
+  simulator stage through OpenMHS, including one autonomous-in-simulation move; see the quickstart
+  evidence.
 - A live OpenFlexure simulator walkthrough in
   [OPENFLEXURE_SIMULATOR_QUICKSTART.md](OPENFLEXURE_SIMULATOR_QUICKSTART.md): x=50 finished
   `VERIFIED`; then an injected lost poll during a bounded x=-50 request was reconciled from
@@ -70,8 +71,8 @@ externally held anchor, cannot be detected by the local chain alone.
 - No hardware validation, no compatibility claim for a physical OpenFlexure microscope, no safety
   or certification claim.
 - No endorsement or involvement by Dr Bowman, the University of Glasgow, LabThings or OpenFlexure.
-- No claim that OpenMHS makes language-model agents more accurate; the single successful
-  simulator task does not compare agent accuracy or establish reliability.
+- No claim that OpenMHS makes language-model agents more accurate; the constrained simulator runs
+  do not compare agent accuracy or establish general reliability.
 - The benchmark is a trade, not a win: OpenMHS removed duplicate executions and out-of-limit
   dispatch, and a careful hand-written client matched it on duplicates.
 

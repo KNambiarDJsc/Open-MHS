@@ -1,0 +1,126 @@
+{
+  "stopped": "done",
+  "text": "Advanced `ofm.stage` x from 0 to 1. The readback confirms the new value is exactly one greater than the initial value.",
+  "steps": [
+    {
+      "tool": "read_state",
+      "arguments": {
+        "device": "ofm.stage",
+        "capability": "position.x"
+      },
+      "is_error": false,
+      "held": null,
+      "result": {
+        "age_ms": 9,
+        "capability": "position.x",
+        "device": "ofm.stage",
+        "quality": "GOOD",
+        "source": "simulator",
+        "timestamp": "2026-10-30T05:17:57.552Z",
+        "usable": true,
+        "value": 0
+      }
+    },
+    {
+      "tool": "check_command",
+      "arguments": {
+        "device": "ofm.stage",
+        "capability": "move_x",
+        "params": {
+          "x": 1
+        }
+      },
+      "is_error": false,
+      "held": null,
+      "result": {
+        "advisory": true,
+        "decision": "allow",
+        "next_steps": [
+          "Allowed right now. Submit it with submit_command; it is checked again then."
+        ],
+        "reasons": [],
+        "rules": [
+          "demo-stage-approval"
+        ],
+        "would_require_approval": false
+      }
+    },
+    {
+      "tool": "submit_command",
+      "arguments": {
+        "device": "ofm.stage",
+        "capability": "move_x",
+        "params": {
+          "x": 1
+        },
+        "idempotency_key": "ofm-stage-move-x-0-to-1-20261030"
+      },
+      "is_error": false,
+      "held": null,
+      "result": {
+        "capability": "move_x",
+        "command_id": "01a18b3e-6879-73a4-aabf-ab9590bd2a6c",
+        "confirmed": true,
+        "device": "ofm.stage",
+        "next_steps": [],
+        "outcome": "succeeded",
+        "reached_device": true,
+        "reasons": [],
+        "state": "VERIFIED",
+        "summary": "move_x on ofm.stage: done and confirmed by reading the device back.",
+        "verification": {
+          "capability": "position.x",
+          "expected": 1,
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-30T05:18:05.815Z",
+            "value": 1
+          }
+        }
+      }
+    },
+    {
+      "tool": "read_state",
+      "arguments": {
+        "device": "ofm.stage",
+        "capability": "position.x"
+      },
+      "is_error": false,
+      "held": null,
+      "result": {
+        "age_ms": 4,
+        "capability": "position.x",
+        "device": "ofm.stage",
+        "quality": "GOOD",
+        "source": "simulator",
+        "timestamp": "2026-10-30T05:18:07.655Z",
+        "usable": true,
+        "value": 1
+      }
+    }
+  ],
+  "usage": {
+    "input_tokens": 9070,
+    "output_tokens": 166,
+    "estimated_cost_usd": 0.00099
+  },
+  "execution": {
+    "command_id": "01a18b3e-6879-73a4-aabf-ab9590bd2a6c",
+    "operator_decision": "not_required_policy_allow",
+    "final_state": "VERIFIED",
+    "verification": {
+      "mode": "readback",
+      "expected": 1,
+      "matched": true,
+      "observed": 1,
+      "observed_at": "2026-10-30T05:18:05.815Z",
+      "observed_source": "simulator",
+      "quality": "GOOD",
+      "reason": null
+    },
+    "audit_valid": true
+  }
+}
