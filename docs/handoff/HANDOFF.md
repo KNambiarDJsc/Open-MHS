@@ -1,9 +1,9 @@
 # OpenMHS handoff (Claude Code to Codex)
 
-Written 2026-10-30 because the previous agent's usage budget ran out. This is the single entry
-point: what OpenMHS is, what state the repository and machine are in, what was just done, what to
-do next, and the rules that apply. Everything claimed here was observed in this repository unless
-marked *unverified*.
+**Historical snapshot, superseded by [CLAUDE_HANDOFF_2026-10-30.md](CLAUDE_HANDOFF_2026-10-30.md).**
+This file records the state at the start of 2026-10-30, before the execution-kernel hardening,
+OpenFlexure agent experiments, and direct merge to `main`. Its branch, test, and open-item claims
+are stale. Read the current handoff first and verify against the current repository before acting.
 
 ## 0. Where everything is (this machine)
 
