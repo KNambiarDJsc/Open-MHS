@@ -117,6 +117,45 @@ WoT Thing Descriptions provide machine-readable interaction affordances for prop
 actions ([W3C TD 1.1](https://www.w3.org/TR/wot-thing-description11/)). OpenFlexure documents
 its motorised stage and scripted automation capabilities on its [project site](https://openflexure.org/).
 
+## Guided natural-language mini-survey
+
+This experiment lets the agent inspect the live Thing Description, identify its read and move
+capabilities, and carry out a tiny four-leg square on the simulator. The human supplied the goal
+in natural language; the agent selected the discovered `move_x` and `move_y` capability names
+and targets. It began from the simulator's reported `(0, 0)` and attempted `+x, +y, -x, -y`,
+reading the changed coordinate after every command.
+
+The isolated gateway exposed device listing, description, state read, preflight and submission.
+Its token could read state and invoke only `ofm.stage/move_x` and `ofm.stage/move_y`. Each
+submission had to match the next exact one-coordinate step, follow an allowed preflight for the
+same parameters, and stay within the experiment-only `-2..2` coordinate bound. A fresh matching
+readback was required before the next step. The experiment did not ask for or use physical units;
+the Thing Description does not declare any.
+
+To reproduce, start the loopback simulator as described above, set `OPENAI_API_KEY` in the shell,
+build the CLI, then run:
+
+```powershell
+$env:OPENMHS_BIN = (Resolve-Path .\target\debug\openmhs.exe).Path
+$env:OPENMHS_RESEARCH_WORK = (Join-Path $PWD 'target\openflexure-guided-square')
+python research\experiments\guided_openflexure_square.py
+```
+
+The run used GPT-6 Luna with `reasoning_effort=none`, 74,180 input tokens and 740 output tokens.
+At the recorded standard rates, its estimated API cost was $0.007788. Including the preceding
+OpenAI model runs recorded above, the estimated total was $0.0095342 against the user's $0.50
+ceiling. Cost is an estimate from token counts and standard rates, not a billing statement.
+
+| Scenario | Agent-discovered actions | Readbacks | End state | Audit |
+|---|---|---|---|---|
+| Guided mini-survey | `move_x(1)`, `move_y(1)`, `move_x(0)`, `move_y(0)` | 1, 1, 0, 0; each matched | `(0, 0)`, returned to start | all four `VERIFIED`; valid, 52 records |
+
+The model was allowed to choose from the live-discovered interface, but the pre-send guard encoded
+this exact four-step experiment. This is a guided tool-use demonstration on a simulator, not an
+open-ended microscope operator, general reliability result, safety case, or physical validation.
+The trace and audit export are in
+[`results/reports/openflexure_quickstart/guided-square/`](results/reports/openflexure_quickstart/guided-square/).
+
 ## Recorded run
 
 Both runs completed on 2026-10-30 against the OpenFlexure simulator at `127.0.0.1:5000`:

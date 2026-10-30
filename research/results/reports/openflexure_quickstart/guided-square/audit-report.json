@@ -1,0 +1,385 @@
+{
+  "generated_at": "2026-10-30T11:03:03+0530",
+  "caveat": "A view of the gateway's journal. It is only as trustworthy as the journal; the audit chain detects alteration and reordering of the records present, not removal of the newest ones (compare the anchor) and not a gateway that lied. It records the device's reports, not the physical truth.",
+  "audit": {
+    "records": 52,
+    "valid": true,
+    "first_invalid": null,
+    "anchor": {
+      "seq": 52,
+      "hash": "433e025441db57708df02742ec89e8909000f0a6f0b6d8dbb4b2540ea958ebe5",
+      "at": "2026-10-30T05:33:03.418Z"
+    }
+  },
+  "device_contracts": [
+    {
+      "seq": 2,
+      "device": "ofm.stage",
+      "descriptor_sha256": "097a631e82122538694677b4322491dc0c6e258293275f05da2e89859a225039",
+      "adapter": {
+        "id": "openmhs.py.wot",
+        "version": "0.1.0"
+      },
+      "at": "2026-10-30T05:31:05.79Z"
+    },
+    {
+      "seq": 51,
+      "device": "ofm.stage",
+      "descriptor_sha256": "097a631e82122538694677b4322491dc0c6e258293275f05da2e89859a225039",
+      "adapter": {
+        "id": "openmhs.py.wot",
+        "version": "0.1.0"
+      },
+      "at": "2026-10-30T05:33:03.412Z"
+    }
+  ],
+  "plans": [],
+  "commands": [
+    {
+      "command_id": "01a18b4a-7dc5-723f-a9fc-942715124d57",
+      "principal": "agent:guided-square",
+      "credential_id": "[redacted]",
+      "request": {
+        "idempotency_key": "square-x-leg1-20261030",
+        "operation": "invoke",
+        "params": {
+          "x": 1
+        },
+        "target": {
+          "capability": "move_x",
+          "device": "ofm.stage"
+        }
+      },
+      "authorization": {
+        "decision": "allow",
+        "rules": [
+          "guided-square-x"
+        ],
+        "approved_by": null,
+        "errors": []
+      },
+      "lifecycle": [
+        {
+          "state": "CREATED",
+          "at": "2026-10-30T05:31:17.316Z",
+          "detail": null
+        },
+        {
+          "state": "VALIDATING",
+          "at": "2026-10-30T05:31:17.318Z",
+          "detail": null
+        },
+        {
+          "state": "APPROVED",
+          "at": "2026-10-30T05:31:17.32Z",
+          "detail": null
+        },
+        {
+          "state": "DISPATCHED",
+          "at": "2026-10-30T05:31:17.323Z",
+          "detail": "intent journaled"
+        },
+        {
+          "state": "ACCEPTED",
+          "at": "2026-10-30T05:31:17.354Z",
+          "detail": "device reference labthings:1a89ead5-8b7a-4cf8-befd-d636584f127a"
+        },
+        {
+          "state": "APPLIED",
+          "at": "2026-10-30T05:31:17.495Z",
+          "detail": "device reports applied"
+        },
+        {
+          "state": "VERIFIED",
+          "at": "2026-10-30T05:31:17.626Z",
+          "detail": "readback 1 matches"
+        }
+      ],
+      "final_state": "VERIFIED",
+      "outcome": "succeeded",
+      "device_reference": "labthings:1a89ead5-8b7a-4cf8-befd-d636584f127a",
+      "device_result": null,
+      "device_error": null,
+      "verification": {
+        "mode": "readback",
+        "expected": 1,
+        "matched": true,
+        "observed": 1,
+        "observed_at": "2026-10-30T05:31:17.626Z",
+        "observed_source": "simulator",
+        "quality": "GOOD",
+        "reason": null
+      },
+      "audit_seqs": [
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "receipt_matches_chain": true
+    },
+    {
+      "command_id": "01a18b4a-9874-7428-9ac3-3dd18decd944",
+      "principal": "agent:guided-square",
+      "credential_id": "[redacted]",
+      "request": {
+        "idempotency_key": "square-y-leg2-20261030",
+        "operation": "invoke",
+        "params": {
+          "y": 1
+        },
+        "target": {
+          "capability": "move_y",
+          "device": "ofm.stage"
+        }
+      },
+      "authorization": {
+        "decision": "allow",
+        "rules": [
+          "guided-square-y"
+        ],
+        "approved_by": null,
+        "errors": []
+      },
+      "lifecycle": [
+        {
+          "state": "CREATED",
+          "at": "2026-10-30T05:31:24.148Z",
+          "detail": null
+        },
+        {
+          "state": "VALIDATING",
+          "at": "2026-10-30T05:31:24.153Z",
+          "detail": null
+        },
+        {
+          "state": "APPROVED",
+          "at": "2026-10-30T05:31:24.156Z",
+          "detail": null
+        },
+        {
+          "state": "DISPATCHED",
+          "at": "2026-10-30T05:31:24.161Z",
+          "detail": "intent journaled"
+        },
+        {
+          "state": "ACCEPTED",
+          "at": "2026-10-30T05:31:24.191Z",
+          "detail": "device reference labthings:d661dfc1-fffb-471d-80cb-2bc3a30ee5be"
+        },
+        {
+          "state": "APPLIED",
+          "at": "2026-10-30T05:31:24.322Z",
+          "detail": "device reports applied"
+        },
+        {
+          "state": "VERIFIED",
+          "at": "2026-10-30T05:31:24.466Z",
+          "detail": "readback 1 matches"
+        }
+      ],
+      "final_state": "VERIFIED",
+      "outcome": "succeeded",
+      "device_reference": "labthings:d661dfc1-fffb-471d-80cb-2bc3a30ee5be",
+      "device_result": null,
+      "device_error": null,
+      "verification": {
+        "mode": "readback",
+        "expected": 1,
+        "matched": true,
+        "observed": 1,
+        "observed_at": "2026-10-30T05:31:24.466Z",
+        "observed_source": "simulator",
+        "quality": "GOOD",
+        "reason": null
+      },
+      "audit_seqs": [
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "receipt_matches_chain": true
+    },
+    {
+      "command_id": "01a18b4a-acb0-72a3-aecc-98d2906ecd23",
+      "principal": "agent:guided-square",
+      "credential_id": "[redacted]",
+      "request": {
+        "idempotency_key": "square-x-leg3-20261030",
+        "operation": "invoke",
+        "params": {
+          "x": 0
+        },
+        "target": {
+          "capability": "move_x",
+          "device": "ofm.stage"
+        }
+      },
+      "authorization": {
+        "decision": "allow",
+        "rules": [
+          "guided-square-x"
+        ],
+        "approved_by": null,
+        "errors": []
+      },
+      "lifecycle": [
+        {
+          "state": "CREATED",
+          "at": "2026-10-30T05:31:29.328Z",
+          "detail": null
+        },
+        {
+          "state": "VALIDATING",
+          "at": "2026-10-30T05:31:29.333Z",
+          "detail": null
+        },
+        {
+          "state": "APPROVED",
+          "at": "2026-10-30T05:31:29.337Z",
+          "detail": null
+        },
+        {
+          "state": "DISPATCHED",
+          "at": "2026-10-30T05:31:29.342Z",
+          "detail": "intent journaled"
+        },
+        {
+          "state": "ACCEPTED",
+          "at": "2026-10-30T05:31:29.353Z",
+          "detail": "device reference labthings:4c5b866c-abd4-4f7a-9980-9298ffe07085"
+        },
+        {
+          "state": "APPLIED",
+          "at": "2026-10-30T05:31:29.51Z",
+          "detail": "device reports applied"
+        },
+        {
+          "state": "VERIFIED",
+          "at": "2026-10-30T05:31:29.67Z",
+          "detail": "readback 0 matches"
+        }
+      ],
+      "final_state": "VERIFIED",
+      "outcome": "succeeded",
+      "device_reference": "labthings:4c5b866c-abd4-4f7a-9980-9298ffe07085",
+      "device_result": null,
+      "device_error": null,
+      "verification": {
+        "mode": "readback",
+        "expected": 0,
+        "matched": true,
+        "observed": 0,
+        "observed_at": "2026-10-30T05:31:29.669Z",
+        "observed_source": "simulator",
+        "quality": "GOOD",
+        "reason": null
+      },
+      "audit_seqs": [
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39
+      ],
+      "receipt_matches_chain": true
+    },
+    {
+      "command_id": "01a18b4a-c312-7458-8633-4f5b21a85b45",
+      "principal": "agent:guided-square",
+      "credential_id": "[redacted]",
+      "request": {
+        "idempotency_key": "square-y-leg4-20261030",
+        "operation": "invoke",
+        "params": {
+          "y": 0
+        },
+        "target": {
+          "capability": "move_y",
+          "device": "ofm.stage"
+        }
+      },
+      "authorization": {
+        "decision": "allow",
+        "rules": [
+          "guided-square-y"
+        ],
+        "approved_by": null,
+        "errors": []
+      },
+      "lifecycle": [
+        {
+          "state": "CREATED",
+          "at": "2026-10-30T05:31:35.058Z",
+          "detail": null
+        },
+        {
+          "state": "VALIDATING",
+          "at": "2026-10-30T05:31:35.063Z",
+          "detail": null
+        },
+        {
+          "state": "APPROVED",
+          "at": "2026-10-30T05:31:35.064Z",
+          "detail": null
+        },
+        {
+          "state": "DISPATCHED",
+          "at": "2026-10-30T05:31:35.067Z",
+          "detail": "intent journaled"
+        },
+        {
+          "state": "ACCEPTED",
+          "at": "2026-10-30T05:31:35.103Z",
+          "detail": "device reference labthings:71dbcd94-f241-4980-8f2c-a22926c36123"
+        },
+        {
+          "state": "APPLIED",
+          "at": "2026-10-30T05:31:35.258Z",
+          "detail": "device reports applied"
+        },
+        {
+          "state": "VERIFIED",
+          "at": "2026-10-30T05:31:35.387Z",
+          "detail": "readback 0 matches"
+        }
+      ],
+      "final_state": "VERIFIED",
+      "outcome": "succeeded",
+      "device_reference": "labthings:71dbcd94-f241-4980-8f2c-a22926c36123",
+      "device_result": null,
+      "device_error": null,
+      "verification": {
+        "mode": "readback",
+        "expected": 0,
+        "matched": true,
+        "observed": 0,
+        "observed_at": "2026-10-30T05:31:35.387Z",
+        "observed_source": "simulator",
+        "quality": "GOOD",
+        "reason": null
+      },
+      "audit_seqs": [
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48
+      ],
+      "receipt_matches_chain": true
+    }
+  ],
+  "unresolved": [],
+  "receipts_inconsistent_with_chain": []
+}

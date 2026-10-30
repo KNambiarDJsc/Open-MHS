@@ -156,3 +156,23 @@ a person approving each command. It does not change the 32-run results above or 
 reliability, safety, physical control, or improvement over a direct client. The reproducible
 traces and receipts are in
 [`results/reports/openflexure_quickstart/`](results/reports/openflexure_quickstart/).
+
+## Guided capability-discovery mini-survey
+
+A separate GPT-6 Luna agent was asked in natural language to inspect the stage interface and make
+a tiny clockwise square, returning to its starting position. It listed and described the live
+`ofm.stage` Thing, discovered `position.x`, `position.y`, `move_x` and `move_y`, and read the
+initial state `(0, 0)`. It then chose and submitted four single-axis steps (`+x`, `+y`, `-x`,
+`-y`) through OpenMHS MCP. Each exact command passed its preflight, each receipt reached
+`VERIFIED`, and the agent read back the changed coordinate after each leg. The final readbacks
+were `(0, 0)`; no submission was blocked. The gateway audit chain validated with 52 records.
+
+This was a bounded experiment with a harness guard that required the four-step route in order,
+matching preflight, readback between steps, and integer targets within `-2..2`. The model had
+discretion to inspect capabilities and formulate tool calls, while the experiment constrained the
+permitted trajectory. It demonstrates natural-language-guided discovery and execution through
+OpenMHS on this simulator. It does not establish open-ended operation, reliability, safety,
+physical control, or generalization to a real microscope. No hardware was accessed. The model
+used 74,180 input and 740 output tokens; estimated cost was $0.007788, with cumulative estimated
+cost for the recorded OpenAI model runs of $0.0095342 under the $0.50 ceiling. See the
+[guided-square trace, audit report and run record](results/reports/openflexure_quickstart/guided-square/).

@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-30",
+  "simulator": "http://127.0.0.1:5000",
+  "hardware_accessed": false,
+  "model": "gpt-6-luna",
+  "reasoning_effort": "none",
+  "task": "natural-language guided four-leg clockwise square and return to start",
+  "discovered_device": "ofm.stage",
+  "discovered_capabilities": [
+    "position.x",
+    "position.y",
+    "move_x",
+    "move_y"
+  ],
+  "start": {
+    "position.x": 0,
+    "position.y": 0
+  },
+  "end": {
+    "position.x": 0,
+    "position.y": 0
+  },
+  "legs": [
+    {
+      "capability": "move_x",
+      "params": {
+        "x": 1
+      },
+      "readback_capability": "position.x",
+      "readback": 1,
+      "state": "VERIFIED"
+    },
+    {
+      "capability": "move_y",
+      "params": {
+        "y": 1
+      },
+      "readback_capability": "position.y",
+      "readback": 1,
+      "state": "VERIFIED"
+    },
+    {
+      "capability": "move_x",
+      "params": {
+        "x": 0
+      },
+      "readback_capability": "position.x",
+      "readback": 0,
+      "state": "VERIFIED"
+    },
+    {
+      "capability": "move_y",
+      "params": {
+        "y": 0
+      },
+      "readback_capability": "position.y",
+      "readback": 0,
+      "state": "VERIFIED"
+    }
+  ],
+  "all_preflights_allowed": true,
+  "operator_approval_required": false,
+  "experiment_axis_bound": [
+    -2,
+    2
+  ],
+  "successful_submissions": 4,
+  "blocked_submissions": 0,
+  "audit_valid": true,
+  "audit_records": 52,
+  "input_tokens": 74180,
+  "output_tokens": 740,
+  "estimated_api_cost_usd": 0.007788,
+  "prior_model_runs_estimated_usd": 0.0017462,
+  "cumulative_estimated_api_cost_usd": 0.0095342,
+  "cumulative_budget_ceiling_usd": 0.5,
+  "report": "audit-report.md",
+  "trace": "agent-trace.json"
+}
