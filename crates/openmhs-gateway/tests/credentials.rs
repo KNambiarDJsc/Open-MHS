@@ -141,10 +141,12 @@ async fn missing_and_invalid_credentials_are_rejected() {
 #[tokio::test(flavor = "multi_thread")]
 async fn an_expired_credential_is_rejected() {
     let lab = lab().await;
-    let t = issue(&lab, "agent:short", vec![Scope::any()], Some(400)).await;
+    // Wide enough that a slow CI runner cannot let it lapse before the first read (a 400 ms
+    // lifetime did, on Windows); still short enough to keep the test quick.
+    let t = issue(&lab, "agent:short", vec![Scope::any()], Some(3000)).await;
     let c = client(&lab, &t.token);
     c.read(PSU, SETPOINT).await.unwrap();
-    tokio::time::sleep(Duration::from_millis(600)).await;
+    tokio::time::sleep(Duration::from_millis(3200)).await;
     let e = c.read(PSU, SETPOINT).await.unwrap_err();
     assert_eq!(code(e), "credential.expired");
     let e = c.submit(set_voltage(1.0)).await.unwrap_err();
