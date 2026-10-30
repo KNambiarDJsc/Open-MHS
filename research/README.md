@@ -18,6 +18,7 @@ safety, endorsement or collaboration claim is made.
 | 11 Publication assessment | [PUBLICATION_ASSESSMENT.md](PUBLICATION_ASSESSMENT.md) |
 | 12 Collaboration brief (draft, unsent) | [COLLABORATION_BRIEF.md](COLLABORATION_BRIEF.md) |
 | Realistic imaging workflow (discover, survey, analyse, propose, adapt, fault, report) | [SAMPLE_SURVEY_WORKFLOW.md](SAMPLE_SURVEY_WORKFLOW.md) |
+| Technician natural-language session (two MCP servers, one request) | [../examples/openflexure-agent/README.md](../examples/openflexure-agent/README.md) |
 | OpenFlexure simulator walkthrough | [OPENFLEXURE_SIMULATOR_QUICKSTART.md](OPENFLEXURE_SIMULATOR_QUICKSTART.md) |
 | Direct versus OpenMHS comparison | [DIRECT_VS_OPENMHS.md](DIRECT_VS_OPENMHS.md) |
 | WoT units implementation investigation | [WOT_UNITS_PROPOSAL.md](WOT_UNITS_PROPOSAL.md) |
