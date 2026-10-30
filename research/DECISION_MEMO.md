@@ -1,8 +1,16 @@
 # Decision memo: OpenMHS × LabThings × OpenFlexure
 
 For the OpenMHS maintainer. Everything below is from **simulators**; no physical hardware was
-used and no hardware claim is made. Nothing has been pushed, published, proposed upstream or sent
-to anyone. The detail behind each answer is in the numbered documents in this directory.
+used and no hardware claim is made. Nothing has been proposed upstream or sent to anyone. The
+detail behind each answer is in the numbered documents in this directory.
+
+This memo began as a snapshot on the `research/labthings-wot` branch and contains historical
+statements that were superseded after that snapshot. In particular, the three agent-facing issues
+listed in question 1(d-f) and decision 2 below are now addressed on `main`; use the current
+repository code and [COLLABORATION_BRIEF.md](COLLABORATION_BRIEF.md) for the present status. The
+OpenFlexure quickstart ran successfully against the simulator, a LabThings 0.3.0 in-memory probe
+verified unit metadata in generated descriptions, and a GPT-6 Luna smoke test completed one
+operator-approved simulator move. None is physical validation.
 
 ## The ten questions
 
@@ -14,10 +22,10 @@ mutable receipt, a rewrite that recomputes hashes passes, and truncation of the 
 invisible without an off-gateway anchor (AUDIT_AND_PROVENANCE.md; the export now cross-checks
 receipts and supports an anchor, the rest is open); (c) a stale-reading rule that depends on
 measurement time breaks when the device gives none (mitigated, with a stated one-second blind
-spot); (d) tool descriptions contain a concrete example id (`sim.axis-01`) that a small model
-copied in 4 of 4 attempts; (e) `get_insights` on an unknown device returns an empty success, which
-misled the model; (f) there is no tool that answers "what may I do"; (g) the value model cannot
-express nullable or compound values (23 of 106 properties unsupported). (d)-(f) are **not fixed**.
+spot); (d) tool descriptions once contained a concrete example id (`sim.axis-01`); (e)
+`get_insights` on an unknown device once returned an empty success; (f) there was no tool to inspect
+effective access. These three agent-facing gaps are now addressed on `main`. (g) the value model
+cannot express nullable or compound values (23 of 106 properties unsupported).
 
 **2. Which OpenMHS features proved useful?**
 Measured, not asserted: the unresolved-outcome hold plus reconcile-by-readback (15 of 15 correct
@@ -44,10 +52,12 @@ all 50 actions stayed behind review (44 override lines for one bounded stage mov
 measure time and make no speed claim; what was counted is decisions (WOT_IMPORTER_RESULTS.md).
 
 **5. Can natural-language agents work reliably with unfamiliar lab devices?**
-**Not shown.** The only model available (a 3B model on CPU) could not use either tool layer
-correctly, and asserted state, freshness and permissions it had not observed, with and without
-OpenMHS. It reported explicit refusals accurately (8 of 8). A capable model is needed before
-the question can be answered (NATURAL_LANGUAGE_EXPERIMENTS.md).
+**Still not shown.** The 32-run study used a 3B local model that could not use either tool layer
+correctly and asserted state, freshness and permissions it had not observed. A later constrained
+GPT-6 Luna call read one simulator value, chose x=1, passed matching preflight and completed after
+human approval. That demonstrates a model-to-MCP-to-receipt path for one task, not reliable
+operation across tasks or devices (NATURAL_LANGUAGE_EXPERIMENTS.md and
+OPENFLEXURE_SIMULATOR_QUICKSTART.md).
 
 **6. Does OpenMHS add reliability, or duplicate what LabThings has?**
 It adds a different thing. It does not duplicate invocation tracking. It adds duplicate
@@ -67,7 +77,7 @@ a trade of completion for certainty.
 | Timestamp-less reads can make a verifying system infer the wrong thing; Date header helps to ~1 s | S12 family, F6/F6b | Moderate |
 | TDs omit safety facts | 0 of 50 actions, 0 units on OpenFlexure's descriptions | Strong for this server set |
 | The audit chain detects edits and deletions in the middle only | P2-P5 | Strong for the cases run |
-| Agents are more accurate through OpenMHS | **no** | Not supported |
+| Agents are more accurate through OpenMHS | **no** | Not tested by the single successful smoke run |
 | Anything on hardware | none | None |
 
 **8. What reusable integration would help LabThings?**
@@ -93,22 +103,20 @@ brief asks two questions and claims no collaboration, endorsement or hardware va
 
 ## Decisions for you
 
-1. **Push or share this branch?** `research/labthings-wot` is local only. It contains the core
-   changes (device reference and contract hash in the audit; both tested) and the research
-   directory.
-2. **Fix the three open OpenMHS weaknesses?** Placeholder ids in tool descriptions, an error for an
-   unknown device in `get_insights`, and a way to ask what the caller may do. Small; not done, to
-   keep this branch to what the study needed.
+1. **Repository state.** The active branch is `main`; research artifacts and the latest model
+   smoke run are being added directly here, consistent with the maintainer's workflow.
+2. **Agent-facing correctness fixes.** Placeholder-free tool descriptions, an unknown-device
+   error, and an effective-access query are implemented on `main`.
 3. **Contact anyone?** The brief is a draft. Whether, when and by whom it goes out is yours.
 4. **The OpenFlexure fixture** (116 KB of captured simulator output; GPL-3.0 software's output):
    ship, regenerate in CI, or drop.
-5. **A capable-model run** of the natural-language experiments, if you want that question answered.
+5. **A broader capable-model study** remains open; the one-shot OpenFlexure run does not answer
+   the reliability question.
 
 ## State of the work
 
-Branch `research/labthings-wot`, local commits only. Core: `external_ref` on acceptance, the
+Branch `main`. Core: `external_ref` on acceptance, the
 reference chained into the audit, the contract hash at registration; engine tests pass. Importer
 and adapter: `adapters/python/wot/` (25 offline tests). Harness: `research/experiments/`. Results:
-`research/results/`. Servers started for the work (OpenFlexure simulator, LabBench, hotplate, a
-private Ollama on port 11435) are stopped at the end; the user's own Ollama on port 11434 was never
-touched.
+`research/results/`. The OpenFlexure simulator and dedicated local Ollama process used for early
+model attempts are stopped; no physical device was accessed.

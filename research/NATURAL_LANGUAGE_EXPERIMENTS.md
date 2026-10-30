@@ -9,6 +9,12 @@ measurements below do not support one.
 Everything here is a simulator (the OpenFlexure server's simulation configuration). No physical
 hardware, no physical or simulated movement except where stated.
 
+**Historical snapshot:** these model runs preceded the agent-facing fixes now on `main`. In
+particular, tool descriptions no longer include a concrete example device id, `get_insights`
+errors for an unknown device, and `get_allowed_operations` now answers the effective-access
+question. The model-quality results below remain historical; they do not test those later tool
+changes or the new OpenFlexure walkthrough.
+
 ## Setup
 
 | | |
@@ -126,3 +132,18 @@ Not shown:
 If this is to be repeated: use a model that can call tools correctly first (otherwise the
 experiment measures the model), put placeholder identifiers in the tool descriptions, and add a
 tool that answers "what may I do".
+
+## Subsequent constrained OpenFlexure tool-calling smoke test
+
+After the historical study above, GPT-6 Luna completed one separate simulator-only task through
+OpenMHS MCP. It read `ofm.stage/position.x` as 0, selected integer x=1, checked that exact value,
+and submitted once. The configured policy required operator approval; after approval the simulator
+reported x=1 and OpenMHS returned `VERIFIED`. The audit chain was valid (21 records). The run used
+6,887 input and 135 output tokens, with estimated standard-rate cost of $0.0007562. The task
+exposed only the state-read, preflight and submit tools and enforced an experiment-only target band
+of -20..20.
+
+This closes the specific question of whether an agent can plausibly call this simulator through
+OpenMHS. It does not change the 32-run results above or establish general reliability, safety,
+physical control, or improvement over a direct client. The reproducible trace and receipt are in
+[`results/reports/openflexure_quickstart/agent-model/`](results/reports/openflexure_quickstart/agent-model/).

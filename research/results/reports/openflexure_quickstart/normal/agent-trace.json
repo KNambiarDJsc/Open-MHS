@@ -1,0 +1,556 @@
+{
+  "stopped": "done",
+  "text": "Finished the one bounded simulator request.",
+  "steps": [
+    {
+      "tool": "list_devices",
+      "arguments": {},
+      "is_error": false,
+      "held": null,
+      "result": {
+        "devices": [
+          {
+            "availability": "ONLINE",
+            "busy": false,
+            "capabilities": [
+              {
+                "description": "<<device-text Used to convert coordinates between the program frame and the hardware frame. device-text>>",
+                "kind": "property",
+                "name": "axis_inverted.x",
+                "operations": [
+                  "read"
+                ],
+                "side_effect": "none",
+                "value": {
+                  "type": "boolean"
+                }
+              },
+              {
+                "description": "<<device-text Used to convert coordinates between the program frame and the hardware frame. device-text>>",
+                "kind": "property",
+                "name": "axis_inverted.y",
+                "operations": [
+                  "read"
+                ],
+                "side_effect": "none",
+                "value": {
+                  "type": "boolean"
+                }
+              },
+              {
+                "description": "<<device-text Used to convert coordinates between the program frame and the hardware frame. device-text>>",
+                "kind": "property",
+                "name": "axis_inverted.z",
+                "operations": [
+                  "read"
+                ],
+                "side_effect": "none",
+                "value": {
+                  "type": "boolean"
+                }
+              },
+              {
+                "description": "<<device-text A positive number sets the direction of the second move in a backlash correction. For example, consider z=200. If the previous move was more than +200 in z, no correction is needed. If the last movement was negative then a move of -200, followed by +200 will wipe out backlash. device-text>>",
+                "kind": "property",
+                "name": "backlash_steps.x",
+                "operations": [
+                  "read"
+                ],
+                "side_effect": "none",
+                "value": {
+                  "type": "integer"
+                }
+              },
+              {
+                "description": "<<device-text A positive number sets the direction of the second move in a backlash correction. For example, consider z=200. If the previous move was more than +200 in z, no correction is needed. If the last movement was negative then a move of -200, followed by +200 will wipe out backlash. device-text>>",
+                "kind": "property",
+                "name": "backlash_steps.y",
+                "operations": [
+                  "read"
+                ],
+                "side_effect": "none",
+                "value": {
+                  "type": "integer"
+                }
+              },
+              {
+                "description": "<<device-text A positive number sets the direction of the second move in a backlash correction. For example, consider z=200. If the previous move was more than +200 in z, no correction is needed. If the last movement was negative then a move of -200, followed by +200 will wipe out backlash. device-text>>",
+                "kind": "property",
+                "name": "backlash_steps.z",
+                "operations": [
+                  "read"
+                ],
+                "side_effect": "none",
+                "value": {
+                  "type": "integer"
+                }
+              },
+              {
+                "description": "<<device-text Currently the only calibration method for the stage is the z-gear rotation direction in the sangaboard stage. device-text>>",
+                "kind": "property",
+                "name": "calibration_required",
+                "operations": [
+                  "read"
+                ],
+                "side_effect": "none",
+                "value": {
+                  "type": "boolean"
+                }
+              },
+              {
+                "description": "<<device-text Whether the Thing permits calibration. device-text>>",
+                "kind": "property",
+                "name": "can_calibrate",
+                "operations": [
+                  "read"
+                ],
+                "side_effect": "none",
+                "value": {
+                  "type": "boolean"
+                }
+              },
+              {
+                "description": "<<device-text Whether the stage is in motion. device-text>>",
+                "kind": "property",
+                "name": "moving",
+                "operations": [
+                  "read"
+                ],
+                "side_effect": "none",
+                "value": {
+                  "type": "boolean"
+                }
+              },
+              {
+                "description": "<<device-text Current position of the stage. device-text>>",
+                "kind": "property",
+                "name": "position.x",
+                "operations": [
+                  "read"
+                ],
+                "side_effect": "none",
+                "value": {
+                  "type": "integer"
+                }
+              },
+              {
+                "description": "<<device-text Current position of the stage. device-text>>",
+                "kind": "property",
+                "name": "position.y",
+                "operations": [
+                  "read"
+                ],
+                "side_effect": "none",
+                "value": {
+                  "type": "integer"
+                }
+              },
+              {
+                "description": "<<device-text Current position of the stage. device-text>>",
+                "kind": "property",
+                "name": "position.z",
+                "operations": [
+                  "read"
+                ],
+                "side_effect": "none",
+                "value": {
+                  "type": "integer"
+                }
+              },
+              {
+                "description": "<<device-text Make an absolute move. Keyword arguments should be axis names. device-text>>",
+                "kind": "action",
+                "name": "move_x",
+                "operations": [
+                  "invoke"
+                ],
+                "params": {
+                  "x": {
+                    "range": {
+                      "max": 100.0,
+                      "min": -100.0
+                    },
+                    "type": "integer"
+                  }
+                },
+                "side_effect": "reversible"
+              }
+            ],
+            "id": "ofm.stage",
+            "manufacturer": "<<device-text OpenFlexure (simulator) device-text>>",
+            "model": "DummyStage",
+            "name": "DummyStage"
+          }
+        ]
+      }
+    },
+    {
+      "tool": "describe_device",
+      "arguments": {
+        "device": "ofm.stage"
+      },
+      "is_error": false,
+      "held": null,
+      "result": {
+        "descriptor": {
+          "adapter": {
+            "id": "openmhs.py.wot",
+            "version": "0.1.0"
+          },
+          "capabilities": [
+            {
+              "description": "<<device-text Used to convert coordinates between the program frame and the hardware frame. device-text>>",
+              "extensions": {
+                "x-wot": {
+                  "affordance": "properties/axis_inverted",
+                  "field": "x"
+                }
+              },
+              "kind": "property",
+              "name": "axis_inverted.x",
+              "operations": [
+                "read"
+              ],
+              "side_effect": "none",
+              "value": {
+                "type": "boolean"
+              }
+            },
+            {
+              "description": "<<device-text Used to convert coordinates between the program frame and the hardware frame. device-text>>",
+              "extensions": {
+                "x-wot": {
+                  "affordance": "properties/axis_inverted",
+                  "field": "y"
+                }
+              },
+              "kind": "property",
+              "name": "axis_inverted.y",
+              "operations": [
+                "read"
+              ],
+              "side_effect": "none",
+              "value": {
+                "type": "boolean"
+              }
+            },
+            {
+              "description": "<<device-text Used to convert coordinates between the program frame and the hardware frame. device-text>>",
+              "extensions": {
+                "x-wot": {
+                  "affordance": "properties/axis_inverted",
+                  "field": "z"
+                }
+              },
+              "kind": "property",
+              "name": "axis_inverted.z",
+              "operations": [
+                "read"
+              ],
+              "side_effect": "none",
+              "value": {
+                "type": "boolean"
+              }
+            },
+            {
+              "description": "<<device-text A positive number sets the direction of the second move in a backlash correction. For example, consider z=200. If the previous move was more than +200 in z, no correction is needed. If the last movement was negative then a move of -200, followed by +200 will wipe out backlash. device-text>>",
+              "extensions": {
+                "x-wot": {
+                  "affordance": "properties/backlash_steps",
+                  "field": "x"
+                }
+              },
+              "kind": "property",
+              "name": "backlash_steps.x",
+              "operations": [
+                "read"
+              ],
+              "side_effect": "none",
+              "value": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "<<device-text A positive number sets the direction of the second move in a backlash correction. For example, consider z=200. If the previous move was more than +200 in z, no correction is needed. If the last movement was negative then a move of -200, followed by +200 will wipe out backlash. device-text>>",
+              "extensions": {
+                "x-wot": {
+                  "affordance": "properties/backlash_steps",
+                  "field": "y"
+                }
+              },
+              "kind": "property",
+              "name": "backlash_steps.y",
+              "operations": [
+                "read"
+              ],
+              "side_effect": "none",
+              "value": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "<<device-text A positive number sets the direction of the second move in a backlash correction. For example, consider z=200. If the previous move was more than +200 in z, no correction is needed. If the last movement was negative then a move of -200, followed by +200 will wipe out backlash. device-text>>",
+              "extensions": {
+                "x-wot": {
+                  "affordance": "properties/backlash_steps",
+                  "field": "z"
+                }
+              },
+              "kind": "property",
+              "name": "backlash_steps.z",
+              "operations": [
+                "read"
+              ],
+              "side_effect": "none",
+              "value": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "<<device-text Currently the only calibration method for the stage is the z-gear rotation direction in the sangaboard stage. device-text>>",
+              "extensions": {
+                "x-wot": {
+                  "affordance": "properties/calibration_required"
+                }
+              },
+              "kind": "property",
+              "name": "calibration_required",
+              "operations": [
+                "read"
+              ],
+              "side_effect": "none",
+              "value": {
+                "type": "boolean"
+              }
+            },
+            {
+              "description": "<<device-text Whether the Thing permits calibration. device-text>>",
+              "extensions": {
+                "x-wot": {
+                  "affordance": "properties/can_calibrate"
+                }
+              },
+              "kind": "property",
+              "name": "can_calibrate",
+              "operations": [
+                "read"
+              ],
+              "side_effect": "none",
+              "value": {
+                "type": "boolean"
+              }
+            },
+            {
+              "description": "<<device-text Whether the stage is in motion. device-text>>",
+              "extensions": {
+                "x-wot": {
+                  "affordance": "properties/moving"
+                }
+              },
+              "kind": "property",
+              "name": "moving",
+              "operations": [
+                "read"
+              ],
+              "side_effect": "none",
+              "value": {
+                "type": "boolean"
+              }
+            },
+            {
+              "description": "<<device-text Current position of the stage. device-text>>",
+              "extensions": {
+                "x-wot": {
+                  "affordance": "properties/position",
+                  "field": "x"
+                }
+              },
+              "kind": "property",
+              "name": "position.x",
+              "operations": [
+                "read"
+              ],
+              "side_effect": "none",
+              "value": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "<<device-text Current position of the stage. device-text>>",
+              "extensions": {
+                "x-wot": {
+                  "affordance": "properties/position",
+                  "field": "y"
+                }
+              },
+              "kind": "property",
+              "name": "position.y",
+              "operations": [
+                "read"
+              ],
+              "side_effect": "none",
+              "value": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "<<device-text Current position of the stage. device-text>>",
+              "extensions": {
+                "x-wot": {
+                  "affordance": "properties/position",
+                  "field": "z"
+                }
+              },
+              "kind": "property",
+              "name": "position.z",
+              "operations": [
+                "read"
+              ],
+              "side_effect": "none",
+              "value": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "<<device-text Make an absolute move. Keyword arguments should be axis names. device-text>>",
+              "extensions": {
+                "x-wot": {
+                  "affordance": "actions/move_absolute",
+                  "reviewed": true,
+                  "td_declared_safe": false
+                }
+              },
+              "idempotent": false,
+              "kind": "action",
+              "name": "move_x",
+              "operations": [
+                "invoke"
+              ],
+              "params": {
+                "x": {
+                  "range": {
+                    "max": 100.0,
+                    "min": -100.0
+                  },
+                  "type": "integer"
+                }
+              },
+              "side_effect": "reversible",
+              "timing": {
+                "expected_ms": 1000,
+                "timeout_ms": 30000
+              },
+              "verification": {
+                "capability": "position.x",
+                "expect_param": "x",
+                "mode": "readback",
+                "settle_ms": 100,
+                "timeout_ms": 5000,
+                "tolerance": {
+                  "abs": 0.0
+                }
+              }
+            }
+          ],
+          "device": {
+            "description": "<<device-text A dummy stage for testing purposes. This stage should work similarly to a Sangaboard stage, but without any hardware attached. device-text>>",
+            "id": "ofm.stage",
+            "manufacturer": "<<device-text OpenFlexure (simulator) device-text>>",
+            "model": "DummyStage",
+            "name": "DummyStage"
+          },
+          "openmhs": "0.1"
+        }
+      }
+    },
+    {
+      "tool": "read_state",
+      "arguments": {
+        "device": "ofm.stage",
+        "capability": "position.x"
+      },
+      "is_error": false,
+      "held": null,
+      "result": {
+        "age_ms": 2,
+        "capability": "position.x",
+        "device": "ofm.stage",
+        "quality": "GOOD",
+        "source": "simulator",
+        "timestamp": "2026-10-30T04:25:09.602Z",
+        "usable": true,
+        "value": 50
+      }
+    },
+    {
+      "tool": "check_command",
+      "arguments": {
+        "device": "ofm.stage",
+        "capability": "move_x",
+        "params": {
+          "x": {
+            "value": 50,
+            "unit": "mm"
+          }
+        }
+      },
+      "is_error": false,
+      "held": null,
+      "result": {
+        "advisory": true,
+        "decision": "deny",
+        "next_steps": [
+          "Send a value of the declared type. Numbers with units must be quantity objects like {\"value\": 5, \"unit\": \"V\"}; units are never guessed. See describe_device."
+        ],
+        "reasons": [
+          {
+            "code": "command.value.type_mismatch",
+            "message": "expected an integer, got quantity"
+          }
+        ],
+        "rules": [
+          "demo-stage-approval"
+        ],
+        "would_require_approval": false
+      }
+    },
+    {
+      "tool": "submit_command",
+      "arguments": {
+        "device": "ofm.stage",
+        "capability": "move_x",
+        "params": {
+          "x": 50
+        },
+        "idempotency_key": "openflexure-demo-move-x-50",
+        "deadline_ms": 45000
+      },
+      "is_error": false,
+      "held": null,
+      "result": {
+        "capability": "move_x",
+        "command_id": "01a18b0b-3558-729a-bb09-dd42911bfc0f",
+        "confirmed": true,
+        "device": "ofm.stage",
+        "next_steps": [],
+        "outcome": "succeeded",
+        "reached_device": true,
+        "reasons": [],
+        "state": "VERIFIED",
+        "summary": "move_x on ofm.stage: done and confirmed by reading the device back.",
+        "verification": {
+          "capability": "position.x",
+          "expected": 50,
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-10-30T04:22:10.357Z",
+            "value": 50
+          }
+        }
+      }
+    }
+  ]
+}

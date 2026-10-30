@@ -1,0 +1,123 @@
+{
+  "generated_at": "2026-10-30T10:23:39+0530",
+  "caveat": "A view of the gateway's journal. It is only as trustworthy as the journal; the audit chain detects alteration and reordering of the records present, not removal of the newest ones (compare the anchor) and not a gateway that lied. It records the device's reports, not the physical truth.",
+  "audit": {
+    "records": 21,
+    "valid": true,
+    "first_invalid": null,
+    "anchor": {
+      "seq": 21,
+      "hash": "9832a072ad1deaff9c323ce7e82aa1ca65bdb33bef993ec8ac646eb390d30aae",
+      "at": "2026-10-30T04:53:39.042Z"
+    }
+  },
+  "device_contracts": [
+    {
+      "seq": 2,
+      "device": "ofm.stage",
+      "descriptor_sha256": "6c9ca131e9cfce3c8bc64080826e04e6d9b492955c2011716672c7f086908fdb",
+      "adapter": {
+        "id": "openmhs.py.wot",
+        "version": "0.1.0"
+      },
+      "at": "2026-10-30T04:53:20.507Z"
+    }
+  ],
+  "plans": [],
+  "commands": [
+    {
+      "command_id": "01a18b27-d93f-70aa-a987-d1eaa41a64a0",
+      "principal": "agent:demo",
+      "credential_id": "tok_b78d147afa00a1ba",
+      "request": {
+        "idempotency_key": "ofm-stage-move-x-1-20261030",
+        "operation": "invoke",
+        "params": {
+          "x": 1
+        },
+        "target": {
+          "capability": "move_x",
+          "device": "ofm.stage"
+        }
+      },
+      "authorization": {
+        "decision": "require_approval",
+        "rules": [
+          "demo-stage-approval"
+        ],
+        "approved_by": "operator:local",
+        "errors": []
+      },
+      "lifecycle": [
+        {
+          "state": "CREATED",
+          "at": "2026-10-30T04:53:26.975Z",
+          "detail": null
+        },
+        {
+          "state": "VALIDATING",
+          "at": "2026-10-30T04:53:26.982Z",
+          "detail": null
+        },
+        {
+          "state": "AWAITING_APPROVAL",
+          "at": "2026-10-30T04:53:27.01Z",
+          "detail": "waiting for an approver"
+        },
+        {
+          "state": "APPROVED",
+          "at": "2026-10-30T04:53:38.699Z",
+          "detail": "approved by operator:local"
+        },
+        {
+          "state": "DISPATCHED",
+          "at": "2026-10-30T04:53:38.703Z",
+          "detail": "intent journaled"
+        },
+        {
+          "state": "ACCEPTED",
+          "at": "2026-10-30T04:53:38.732Z",
+          "detail": "device reference labthings:8b21cfc4-a3a7-4857-984d-c86f2ddc3559"
+        },
+        {
+          "state": "APPLIED",
+          "at": "2026-10-30T04:53:38.89Z",
+          "detail": "device reports applied"
+        },
+        {
+          "state": "VERIFIED",
+          "at": "2026-10-30T04:53:39.042Z",
+          "detail": "readback 1 matches"
+        }
+      ],
+      "final_state": "VERIFIED",
+      "outcome": "succeeded",
+      "device_reference": "labthings:8b21cfc4-a3a7-4857-984d-c86f2ddc3559",
+      "device_result": null,
+      "device_error": null,
+      "verification": {
+        "mode": "readback",
+        "expected": 1,
+        "matched": true,
+        "observed": 1,
+        "observed_at": "2026-10-30T04:53:39.042Z",
+        "observed_source": "simulator",
+        "quality": "GOOD",
+        "reason": null
+      },
+      "audit_seqs": [
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "receipt_matches_chain": true
+    }
+  ],
+  "unresolved": [],
+  "receipts_inconsistent_with_chain": []
+}

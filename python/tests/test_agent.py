@@ -175,7 +175,9 @@ class OpenAICompatible(unittest.TestCase):
         threading.Thread(target=server.serve_forever, daemon=True).start()
         try:
             provider = OpenAICompatibleProvider(
-                f"http://127.0.0.1:{server.server_port}/v1", "local-model", api_key="")
+                f"http://127.0.0.1:{server.server_port}/v1", "local-model", api_key="",
+                max_tokens=384, options={"num_ctx": 2048},
+                max_completion_tokens=256, reasoning_effort="none")
             cmd, env = lab()
             r = Harness(provider, cmd, env=env).run("what devices are there?")
         finally:
@@ -183,6 +185,10 @@ class OpenAICompatible(unittest.TestCase):
         self.assertEqual(r.stopped, "done")
         self.assertEqual(r.text, "three devices")
         first, second = _FakeChatServer.requests
+        self.assertEqual(first["max_tokens"], 384)
+        self.assertEqual(first["options"], {"num_ctx": 2048})
+        self.assertEqual(first["max_completion_tokens"], 256)
+        self.assertEqual(first["reasoning_effort"], "none")
         names = {t["function"]["name"] for t in first["tools"]}
         self.assertIn("submit_command", names)
         self.assertTrue(all(t["type"] == "function" for t in first["tools"]))
@@ -190,6 +196,15 @@ class OpenAICompatible(unittest.TestCase):
         tool_msg = second["messages"][-1]
         self.assertEqual((tool_msg["role"], tool_msg["tool_call_id"]), ("tool", "call-1"))
         self.assertEqual(len(json.loads(tool_msg["content"])["devices"]), 3)
+
+    def test_cost_ceiling_blocks_before_network_request(self) -> None:
+        provider = OpenAICompatibleProvider(
+            "https://invalid.example/v1", "gpt-6-luna", api_key="",
+            max_completion_tokens=1, budget_usd=0.0,
+            input_price_per_million=0.10, output_price_per_million=0.50,
+        )
+        with self.assertRaisesRegex(RuntimeError, "would exceed"):
+            provider._post("/chat/completions", {"model": "gpt-6-luna", "messages": []})
 
 
 class _FakeAnthropic:

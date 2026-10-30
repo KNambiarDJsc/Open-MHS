@@ -1,0 +1,237 @@
+{
+  "generated_at": "2026-10-30T09:56:15+0530",
+  "caveat": "A view of the gateway's journal. It is only as trustworthy as the journal; the audit chain detects alteration and reordering of the records present, not removal of the newest ones (compare the anchor) and not a gateway that lied. It records the device's reports, not the physical truth.",
+  "audit": {
+    "records": 46,
+    "valid": true,
+    "first_invalid": null,
+    "anchor": {
+      "seq": 46,
+      "hash": "1c41ff1d56c3938e3e0846e2da878bb1f912b9447b142218d11797550a6fa2eb",
+      "at": "2026-10-30T04:26:15.34Z"
+    }
+  },
+  "device_contracts": [
+    {
+      "seq": 2,
+      "device": "ofm.stage",
+      "descriptor_sha256": "6c9ca131e9cfce3c8bc64080826e04e6d9b492955c2011716672c7f086908fdb",
+      "adapter": {
+        "id": "openmhs.py.wot",
+        "version": "0.1.0"
+      },
+      "at": "2026-10-30T04:22:55.732Z"
+    },
+    {
+      "seq": 10,
+      "device": "ofm.stage",
+      "descriptor_sha256": "6c9ca131e9cfce3c8bc64080826e04e6d9b492955c2011716672c7f086908fdb",
+      "adapter": {
+        "id": "openmhs.py.wot",
+        "version": "0.1.0"
+      },
+      "at": "2026-10-30T04:23:07.245Z"
+    },
+    {
+      "seq": 29,
+      "device": "ofm.stage",
+      "descriptor_sha256": "6c9ca131e9cfce3c8bc64080826e04e6d9b492955c2011716672c7f086908fdb",
+      "adapter": {
+        "id": "openmhs.py.wot",
+        "version": "0.1.0"
+      },
+      "at": "2026-10-30T04:26:14.821Z"
+    }
+  ],
+  "plans": [],
+  "commands": [
+    {
+      "command_id": "01a18b0c-15b3-7505-a03a-4a47c169a391",
+      "principal": "agent:demo",
+      "credential_id": "tok_22945e06bf7fbf6b",
+      "request": {
+        "deadline_ms": 45000,
+        "idempotency_key": "openflexure-demo-move-x-50-drop-polls",
+        "operation": "invoke",
+        "params": {
+          "x": 50
+        },
+        "target": {
+          "capability": "move_x",
+          "device": "ofm.stage"
+        }
+      },
+      "authorization": {
+        "decision": "require_approval",
+        "rules": [
+          "demo-stage-approval"
+        ],
+        "approved_by": "operator:local",
+        "errors": []
+      },
+      "lifecycle": [
+        {
+          "state": "CREATED",
+          "at": "2026-10-30T04:23:07.442Z",
+          "detail": null
+        },
+        {
+          "state": "VALIDATING",
+          "at": "2026-10-30T04:23:07.444Z",
+          "detail": null
+        },
+        {
+          "state": "AWAITING_APPROVAL",
+          "at": "2026-10-30T04:23:07.446Z",
+          "detail": "waiting for an approver"
+        },
+        {
+          "state": "APPROVED",
+          "at": "2026-10-30T04:23:07.46Z",
+          "detail": "approved by operator:local"
+        },
+        {
+          "state": "DISPATCHED",
+          "at": "2026-10-30T04:23:07.463Z",
+          "detail": "intent journaled"
+        },
+        {
+          "state": "ACCEPTED",
+          "at": "2026-10-30T04:23:07.497Z",
+          "detail": "device reference labthings:08f9b307-f046-4b25-ad9c-a3bdc6d2bba9"
+        },
+        {
+          "state": "UNKNOWN_OUTCOME",
+          "at": "2026-10-30T04:23:07.625Z",
+          "detail": "[adapter.disconnected] lost contact with invocation 08f9b307-f046-4b25-ad9c-a3bdc6d2bba9 (http://127.0.0.1:61478/api/v3/action_invocations/08f9b307-f046-4b25-ad9c-a3bdc6d2bba9) after it was accepted (Remote end closed connection without response); its outcome is unknown; not retried"
+        },
+        {
+          "state": "RECONCILED_APPLIED",
+          "at": "2026-10-30T04:23:07.684Z",
+          "detail": "reconciled by readback 50"
+        }
+      ],
+      "final_state": "RECONCILED_APPLIED",
+      "outcome": "succeeded",
+      "device_reference": "labthings:08f9b307-f046-4b25-ad9c-a3bdc6d2bba9",
+      "device_result": null,
+      "device_error": "lost contact with invocation 08f9b307-f046-4b25-ad9c-a3bdc6d2bba9 (http://127.0.0.1:61478/api/v3/action_invocations/08f9b307-f046-4b25-ad9c-a3bdc6d2bba9) after it was accepted (Remote end closed connection without response); its outcome is unknown",
+      "verification": {
+        "mode": "readback",
+        "expected": 50,
+        "matched": true,
+        "observed": 50,
+        "observed_at": "2026-10-30T04:23:07.681Z",
+        "observed_source": "simulator",
+        "quality": "GOOD",
+        "reason": null
+      },
+      "audit_seqs": [
+        15,
+        16,
+        18,
+        21,
+        22,
+        23,
+        25,
+        27
+      ],
+      "receipt_matches_chain": true
+    },
+    {
+      "command_id": "01a18b0e-f2b4-740f-95df-3a9e7bc119c8",
+      "principal": "agent:demo",
+      "credential_id": "tok_cd9b613607c461b5",
+      "request": {
+        "deadline_ms": 45000,
+        "idempotency_key": "openflexure-demo-move-x-minus-50-drop-polls",
+        "operation": "invoke",
+        "params": {
+          "x": -50
+        },
+        "target": {
+          "capability": "move_x",
+          "device": "ofm.stage"
+        }
+      },
+      "authorization": {
+        "decision": "require_approval",
+        "rules": [
+          "demo-stage-approval"
+        ],
+        "approved_by": "operator:local",
+        "errors": []
+      },
+      "lifecycle": [
+        {
+          "state": "CREATED",
+          "at": "2026-10-30T04:26:15.091Z",
+          "detail": null
+        },
+        {
+          "state": "VALIDATING",
+          "at": "2026-10-30T04:26:15.093Z",
+          "detail": null
+        },
+        {
+          "state": "AWAITING_APPROVAL",
+          "at": "2026-10-30T04:26:15.096Z",
+          "detail": "waiting for an approver"
+        },
+        {
+          "state": "APPROVED",
+          "at": "2026-10-30T04:26:15.11Z",
+          "detail": "approved by operator:local"
+        },
+        {
+          "state": "DISPATCHED",
+          "at": "2026-10-30T04:26:15.113Z",
+          "detail": "intent journaled"
+        },
+        {
+          "state": "ACCEPTED",
+          "at": "2026-10-30T04:26:15.157Z",
+          "detail": "device reference labthings:47049b3d-01c1-4095-8e35-1dc4fbcbc5ca"
+        },
+        {
+          "state": "UNKNOWN_OUTCOME",
+          "at": "2026-10-30T04:26:15.282Z",
+          "detail": "[adapter.disconnected] lost contact with invocation 47049b3d-01c1-4095-8e35-1dc4fbcbc5ca (http://127.0.0.1:55022/api/v3/action_invocations/47049b3d-01c1-4095-8e35-1dc4fbcbc5ca) after it was accepted (Remote end closed connection without response); its outcome is unknown; not retried"
+        },
+        {
+          "state": "RECONCILED_APPLIED",
+          "at": "2026-10-30T04:26:15.34Z",
+          "detail": "reconciled by readback -50"
+        }
+      ],
+      "final_state": "RECONCILED_APPLIED",
+      "outcome": "succeeded",
+      "device_reference": "labthings:47049b3d-01c1-4095-8e35-1dc4fbcbc5ca",
+      "device_result": null,
+      "device_error": "lost contact with invocation 47049b3d-01c1-4095-8e35-1dc4fbcbc5ca (http://127.0.0.1:55022/api/v3/action_invocations/47049b3d-01c1-4095-8e35-1dc4fbcbc5ca) after it was accepted (Remote end closed connection without response); its outcome is unknown",
+      "verification": {
+        "mode": "readback",
+        "expected": -50,
+        "matched": true,
+        "observed": -50,
+        "observed_at": "2026-10-30T04:26:15.338Z",
+        "observed_source": "simulator",
+        "quality": "GOOD",
+        "reason": null
+      },
+      "audit_seqs": [
+        34,
+        35,
+        37,
+        40,
+        41,
+        42,
+        44,
+        46
+      ],
+      "receipt_matches_chain": true
+    }
+  ],
+  "unresolved": [],
+  "receipts_inconsistent_with_chain": []
+}

@@ -1,0 +1,144 @@
+{
+  "generated_at": "2026-10-30T09:55:09+0530",
+  "caveat": "A view of the gateway's journal. It is only as trustworthy as the journal; the audit chain detects alteration and reordering of the records present, not removal of the newest ones (compare the anchor) and not a gateway that lied. It records the device's reports, not the physical truth.",
+  "audit": {
+    "records": 30,
+    "valid": true,
+    "first_invalid": null,
+    "anchor": {
+      "seq": 30,
+      "hash": "1761e0d132825b45dfc7603e509791e192ff13076f8672b4378959c5900f88a8",
+      "at": "2026-10-30T04:25:09.614Z"
+    }
+  },
+  "device_contracts": [
+    {
+      "seq": 2,
+      "device": "ofm.stage",
+      "descriptor_sha256": "6c9ca131e9cfce3c8bc64080826e04e6d9b492955c2011716672c7f086908fdb",
+      "adapter": {
+        "id": "openmhs.py.wot",
+        "version": "0.1.0"
+      },
+      "at": "2026-10-30T04:22:09.652Z"
+    },
+    {
+      "seq": 23,
+      "device": "ofm.stage",
+      "descriptor_sha256": "6c9ca131e9cfce3c8bc64080826e04e6d9b492955c2011716672c7f086908fdb",
+      "adapter": {
+        "id": "openmhs.py.wot",
+        "version": "0.1.0"
+      },
+      "at": "2026-10-30T04:22:29.057Z"
+    },
+    {
+      "seq": 26,
+      "device": "ofm.stage",
+      "descriptor_sha256": "6c9ca131e9cfce3c8bc64080826e04e6d9b492955c2011716672c7f086908fdb",
+      "adapter": {
+        "id": "openmhs.py.wot",
+        "version": "0.1.0"
+      },
+      "at": "2026-10-30T04:25:09.33Z"
+    }
+  ],
+  "plans": [],
+  "commands": [
+    {
+      "command_id": "01a18b0b-3558-729a-bb09-dd42911bfc0f",
+      "principal": "agent:demo",
+      "credential_id": "tok_5a27581fa2dc8e9d",
+      "request": {
+        "deadline_ms": 45000,
+        "idempotency_key": "openflexure-demo-move-x-50",
+        "operation": "invoke",
+        "params": {
+          "x": 50
+        },
+        "target": {
+          "capability": "move_x",
+          "device": "ofm.stage"
+        }
+      },
+      "authorization": {
+        "decision": "require_approval",
+        "rules": [
+          "demo-stage-approval"
+        ],
+        "approved_by": "operator:local",
+        "errors": []
+      },
+      "lifecycle": [
+        {
+          "state": "CREATED",
+          "at": "2026-10-30T04:22:10.008Z",
+          "detail": null
+        },
+        {
+          "state": "VALIDATING",
+          "at": "2026-10-30T04:22:10.01Z",
+          "detail": null
+        },
+        {
+          "state": "AWAITING_APPROVAL",
+          "at": "2026-10-30T04:22:10.014Z",
+          "detail": "waiting for an approver"
+        },
+        {
+          "state": "APPROVED",
+          "at": "2026-10-30T04:22:10.029Z",
+          "detail": "approved by operator:local"
+        },
+        {
+          "state": "DISPATCHED",
+          "at": "2026-10-30T04:22:10.032Z",
+          "detail": "intent journaled"
+        },
+        {
+          "state": "ACCEPTED",
+          "at": "2026-10-30T04:22:10.082Z",
+          "detail": "device reference labthings:e7661ee0-28d5-4d59-9ebe-1154d2c44ce0"
+        },
+        {
+          "state": "APPLIED",
+          "at": "2026-10-30T04:22:10.224Z",
+          "detail": "device reports applied"
+        },
+        {
+          "state": "VERIFIED",
+          "at": "2026-10-30T04:22:10.358Z",
+          "detail": "readback 50 matches"
+        }
+      ],
+      "final_state": "VERIFIED",
+      "outcome": "succeeded",
+      "device_reference": "labthings:e7661ee0-28d5-4d59-9ebe-1154d2c44ce0",
+      "device_result": null,
+      "device_error": null,
+      "verification": {
+        "mode": "readback",
+        "expected": 50,
+        "matched": true,
+        "observed": 50,
+        "observed_at": "2026-10-30T04:22:10.357Z",
+        "observed_source": "simulator",
+        "quality": "GOOD",
+        "reason": null
+      },
+      "audit_seqs": [
+        11,
+        12,
+        14,
+        17,
+        18,
+        19,
+        20,
+        21
+      ],
+      "receipt_matches_chain": true
+    }
+  ],
+  "unresolved": [],
+  "receipts_inconsistent_with_chain": []
+}

@@ -17,7 +17,16 @@ safety, endorsement or collaboration claim is made.
 | 10 Upstream opportunities | [UPSTREAM_OPPORTUNITIES.md](UPSTREAM_OPPORTUNITIES.md) |
 | 11 Publication assessment | [PUBLICATION_ASSESSMENT.md](PUBLICATION_ASSESSMENT.md) |
 | 12 Collaboration brief (draft, unsent) | [COLLABORATION_BRIEF.md](COLLABORATION_BRIEF.md) |
+| OpenFlexure simulator walkthrough | [OPENFLEXURE_SIMULATOR_QUICKSTART.md](OPENFLEXURE_SIMULATOR_QUICKSTART.md) |
+| Direct versus OpenMHS comparison | [DIRECT_VS_OPENMHS.md](DIRECT_VS_OPENMHS.md) |
+| WoT units implementation investigation | [WOT_UNITS_PROPOSAL.md](WOT_UNITS_PROPOSAL.md) |
 
-Code: `experiments/` (harness), `generalization/` (second device), `fixtures/`. Raw results:
-`results/`. Importer and adapter: `../adapters/python/wot/`. The next phase (distributed
-architecture) is specified in [../docs/handoff/](../docs/handoff/HANDOFF.md).
+Code: `experiments/` (harness, including `openflexure_quickstart.py`), `generalization/`
+(second device), and `fixtures/`. Raw results: `results/`. Importer and adapter:
+`../adapters/python/wot/`. The OpenFlexure quickstart has been run; its receipts, traces and audit
+reports are in `results/reports/openflexure_quickstart/`, including a GPT-6 Luna tool-calling run
+that reached `VERIFIED` after operator approval in the simulator. The existing benchmark is separate and
+must not be presented as an OpenFlexure result. The LabThings unit metadata generation/import
+probe passed; HTTP endpoint serialization was not separately exercised. Results are recorded in
+`experiments/labthings_units_probe.py` and `results/reports/labthings_units_probe.json`. All
+material remains simulator-only until supervised physical validation is separately planned.

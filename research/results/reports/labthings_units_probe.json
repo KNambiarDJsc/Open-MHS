@@ -1,0 +1,15 @@
+{
+  "action_input_x_unit": "mm",
+  "hardware_accessed": false,
+  "labthings_fastapi_version": "0.3.0",
+  "openmhs_import_position_x": {
+    "quantity": "length",
+    "type": "number",
+    "unit": "mm"
+  },
+  "property_units": {
+    "focus_position": "mm",
+    "position_x": "mm"
+  },
+  "server_started": false
+}

@@ -1,0 +1,53 @@
+{
+  "run_date": "2026-10-30",
+  "openmhs_version": "0.1.0",
+  "openmhs_commit": "5051fb5",
+  "openflexure_microscope_server_version": "3.0.0b1",
+  "labthings_fastapi_version": "0.3.0",
+  "simulator_base_url": "http://127.0.0.1:5000",
+  "provider": "deterministic scripted provider through OpenMHS MCP",
+  "model_agent": {
+    "provider": "OpenAI Chat Completions through OpenMHS MCP",
+    "model": "gpt-6-luna",
+    "reasoning_effort": "none",
+    "simulator_only": true,
+    "initial_position_x": 0,
+    "requested_position_x": 1,
+    "final_state": "VERIFIED",
+    "observed_position_x": 1,
+    "audit_valid": true,
+    "audit_records": 21,
+    "operator_approved": true,
+    "input_tokens": 6887,
+    "output_tokens": 135,
+    "estimated_api_cost_usd": 0.0007562,
+    "configured_cost_ceiling_usd": 0.5,
+    "report": "agent-model/audit-report.md",
+    "trace": "agent-model/agent-trace.json"
+  },
+  "hardware_accessed": false,
+  "scenarios": {
+    "normal": {
+      "initial_position_x": 0,
+      "requested_position_x": 50,
+      "final_state": "VERIFIED",
+      "observed_position_x": 50,
+      "audit_valid": true,
+      "audit_records": 30
+    },
+    "drop_polls": {
+      "initial_position_x": 50,
+      "requested_position_x": -50,
+      "final_state": "RECONCILED_APPLIED",
+      "observed_position_x": -50,
+      "audit_valid": true,
+      "audit_records": 46
+    }
+  },
+  "notes": [
+    "The x range -100..100 is a reviewed experiment bound, not a device travel limit.",
+    "The simulator Thing Description declares no stage coordinate unit.",
+    "The lost-poll scenario deliberately reset action invocation polls after acceptance.",
+    "The drop-polls journal includes an earlier setup recovery at x=50 before the x=-50 run."
+  ]
+}

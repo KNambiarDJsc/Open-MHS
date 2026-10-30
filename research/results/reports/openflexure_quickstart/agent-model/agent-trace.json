@@ -1,0 +1,97 @@
+{
+  "stopped": "done",
+  "text": "Proposed `move_x` to x = 1. The command is awaiting human approval; nothing has been sent to the device.",
+  "steps": [
+    {
+      "tool": "read_state",
+      "arguments": {
+        "device": "ofm.stage",
+        "capability": "position.x"
+      },
+      "is_error": false,
+      "held": null,
+      "result": {
+        "age_ms": 1,
+        "capability": "position.x",
+        "device": "ofm.stage",
+        "quality": "GOOD",
+        "source": "simulator",
+        "timestamp": "2026-10-30T04:53:23.343Z",
+        "usable": true,
+        "value": 0
+      }
+    },
+    {
+      "tool": "check_command",
+      "arguments": {
+        "device": "ofm.stage",
+        "capability": "move_x",
+        "params": {
+          "x": 1
+        }
+      },
+      "is_error": false,
+      "held": null,
+      "result": {
+        "advisory": true,
+        "decision": "require_approval",
+        "next_steps": [
+          "Allowed only with human approval. Submitting will hold it until a human decides."
+        ],
+        "reasons": [],
+        "rules": [
+          "demo-stage-approval"
+        ],
+        "would_require_approval": true
+      }
+    },
+    {
+      "tool": "submit_command",
+      "arguments": {
+        "device": "ofm.stage",
+        "capability": "move_x",
+        "params": {
+          "x": 1
+        },
+        "idempotency_key": "ofm-stage-move-x-1-20261030"
+      },
+      "is_error": false,
+      "held": null,
+      "result": {
+        "capability": "move_x",
+        "command_id": "01a18b27-d93f-70aa-a987-d1eaa41a64a0",
+        "confirmed": false,
+        "device": "ofm.stage",
+        "next_steps": [
+          "A human must approve this before anything happens. Do not resubmit. Call get_command with wait_ms to wait for the decision, or carry on with other work."
+        ],
+        "outcome": "pending",
+        "reached_device": false,
+        "reasons": [],
+        "state": "AWAITING_APPROVAL",
+        "summary": "move_x on ofm.stage: waiting for human approval; nothing has been sent yet."
+      }
+    }
+  ],
+  "usage": {
+    "input_tokens": 6887,
+    "output_tokens": 135,
+    "estimated_cost_usd": 0.0007562000000000001
+  },
+  "execution": {
+    "command_id": "01a18b27-d93f-70aa-a987-d1eaa41a64a0",
+    "operator_decision": "approved",
+    "final_state": "VERIFIED",
+    "verification": {
+      "mode": "readback",
+      "expected": 1,
+      "matched": true,
+      "observed": 1,
+      "observed_at": "2026-10-30T04:53:39.042Z",
+      "observed_source": "simulator",
+      "quality": "GOOD",
+      "reason": null
+    },
+    "audit_valid": true
+  }
+}

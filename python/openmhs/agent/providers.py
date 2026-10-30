@@ -146,6 +146,14 @@ class _ChatCompletionsConversation:
             body["temperature"] = self._p.temperature
         if self._p.seed is not None:
             body["seed"] = self._p.seed
+        if self._p.max_tokens is not None:
+            body["max_tokens"] = self._p.max_tokens
+        if self._p.max_completion_tokens is not None:
+            body["max_completion_tokens"] = self._p.max_completion_tokens
+        if self._p.reasoning_effort is not None:
+            body["reasoning_effort"] = self._p.reasoning_effort
+        if self._p.options:
+            body["options"] = self._p.options
         reply = self._p._post("/chat/completions", body)
         choice = reply["choices"][0]
         message = choice["message"]
@@ -178,7 +186,13 @@ class OpenAICompatibleProvider:
 
     def __init__(self, base_url: str, model: str, api_key: str | None = None,
                  timeout: float = 300, retries: int = 2, temperature: float | None = None,
-                 seed: int | None = None) -> None:
+                 seed: int | None = None, max_tokens: int | None = None,
+                 options: dict[str, Any] | None = None,
+                 max_completion_tokens: int | None = None,
+                 reasoning_effort: str | None = None,
+                 budget_usd: float | None = None,
+                 input_price_per_million: float | None = None,
+                 output_price_per_million: float | None = None) -> None:
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.name = f"openai-compatible:{model}"
@@ -186,10 +200,34 @@ class OpenAICompatibleProvider:
         self._timeout = timeout
         self.retries = retries
         self.temperature, self.seed = temperature, seed
+        self.max_tokens = max_tokens
+        self.options = dict(options or {})
+        self.max_completion_tokens = max_completion_tokens
+        self.reasoning_effort = reasoning_effort
+        self.budget_usd = budget_usd
+        self.input_price_per_million = input_price_per_million
+        self.output_price_per_million = output_price_per_million
+        self.input_tokens = 0
+        self.output_tokens = 0
+        self.estimated_cost_usd = 0.0
 
     def _post(self, path: str, body: dict[str, Any]) -> dict[str, Any]:
+        encoded_body = json.dumps(body).encode("utf-8")
+        if (self.budget_usd is not None and self.input_price_per_million is not None
+                and self.output_price_per_million is not None):
+            # Bound cost before each request. Request bytes times two is a deliberately
+            # conservative input-token estimate for this small, ASCII-heavy tool prompt.
+            input_ceiling = self.input_tokens + len(encoded_body) * 2
+            output_ceiling = self.output_tokens + (self.max_completion_tokens or self.max_tokens or 0)
+            ceiling = (input_ceiling * self.input_price_per_million
+                       + output_ceiling * self.output_price_per_million) / 1_000_000
+            if ceiling > self.budget_usd:
+                raise RuntimeError(
+                    f"estimated API cost ceiling ${ceiling:.4f} would exceed "
+                    f"the configured ${self.budget_usd:.2f} budget"
+                )
         req = urllib.request.Request(
-            self.base_url + path, data=json.dumps(body).encode("utf-8"), method="POST",
+            self.base_url + path, data=encoded_body, method="POST",
             headers={"Content-Type": "application/json",
                      **({"Authorization": f"Bearer {self._key}"} if self._key else {})},
         )
@@ -199,7 +237,20 @@ class OpenAICompatibleProvider:
         for attempt in range(self.retries + 1):
             try:
                 with urllib.request.urlopen(req, timeout=self._timeout) as resp:  # noqa: S310
-                    return json.loads(resp.read().decode("utf-8"))
+                    reply = json.loads(resp.read().decode("utf-8"))
+                    usage = reply.get("usage") or {}
+                    used_input = usage.get("prompt_tokens", usage.get("input_tokens", 0))
+                    used_output = usage.get("completion_tokens", usage.get("output_tokens", 0))
+                    if isinstance(used_input, int) and isinstance(used_output, int):
+                        self.input_tokens += used_input
+                        self.output_tokens += used_output
+                        if (self.input_price_per_million is not None
+                                and self.output_price_per_million is not None):
+                            self.estimated_cost_usd = (
+                                self.input_tokens * self.input_price_per_million
+                                + self.output_tokens * self.output_price_per_million
+                            ) / 1_000_000
+                    return reply
             except urllib.error.HTTPError as e:
                 # The server's own explanation is the useful part (an unsupported model, no
                 # tool support, out of memory); keep it.

@@ -29,59 +29,61 @@ No LabThings or OpenFlexure code was modified, copied or vendored. No hardware w
 - A set of failure scenarios and a 225-run fault-injection benchmark against LabThings asynchronous
   actions, with ground truth read from the server.
 - A provenance study of the audit trail, and a two-device workflow with an injected fault.
-- A natural-language experiment with a small local model, which was too weak to show anything
-  about agents.
+- A historical natural-language study with a small local model, which was too weak to show
+  agent reliability. A later constrained GPT-6 Luna run read the OpenFlexure simulator stage,
+  chose x=1, passed preflight and completed after operator approval; see the quickstart evidence.
+- A live OpenFlexure simulator walkthrough in
+  [OPENFLEXURE_SIMULATOR_QUICKSTART.md](OPENFLEXURE_SIMULATOR_QUICKSTART.md): x=50 finished
+  `VERIFIED`; then an injected lost poll during a bounded x=-50 request was reconciled from
+  readback as `RECONCILED_APPLIED`. Both audit chains verified. The provider was deterministic,
+  so this establishes the OpenMHS control path, not language-model tool-use quality. Reports and
+  traces are in `results/reports/openflexure_quickstart/`.
 
 Everything is reproducible from the repository's `research/` directory.
 
 ## What was found that may be of interest to LabThings
 
-1. **Action affordances never say whether they are safe or idempotent.** The Thing Description
-   model has the fields; none of the 50 actions in the OpenFlexure simulator sets them. An importer
-   can therefore expose none of them without a human.
-2. **Property reads carry no measurement time.** A cached response is indistinguishable from a
-   fresh one. In one scenario this led a verifying gateway to conclude "the move did not happen"
-   about a move that had; the HTTP `Date` header helps, with a blind spot of about a second.
-3. **Finished invocations are removed lazily**, only when another action is invoked: one was still
-   served 330 s after finishing, with 300 s documented. Expired and unknown invocations both return
-   `404`, and the message contains a literal `{id}` (a missing `f` in the string, three places in
-   0.3.0).
-4. **Cancelling an action that never checks for cancellation returns 200 "Cancel request sent"**
-   while the action runs on. Documented as cooperative; it surprised the integrator.
+The current LabThings-FastAPI source already models WoT `DataSchema.unit` and action
+`safe`/`idempotent` fields. A runtime probe against LabThings-FastAPI 0.3.0 confirmed that
+Pydantic `Annotated`/`Field(json_schema_extra={"unit": "mm"})` metadata reaches generated TDs
+for data and functional properties and action inputs; OpenMHS imported `mm` as `length/mm`.
+The useful upstream question is whether documenting that existing pattern would help authors.
+See [WOT_UNITS_PROPOSAL.md](WOT_UNITS_PROPOSAL.md) and
+[`experiments/labthings_units_probe.py`](experiments/labthings_units_probe.py).
 
-All four were measured on `labthings-fastapi` 0.3.0 and have not been checked against newer code;
-any may already be fixed. None is an OpenFlexure defect.
+The older reliability observations in this repository were measured against LabThings-FastAPI
+0.3.0. They are historical and have not all been re-run against the current release; they are
+not presented here as current defects.
 
 ## What was found about OpenMHS
 
-The study found and fixed gaps in OpenMHS itself: the device's own reference and a hash of the
-contract in force were not in the chained audit record; an error after acceptance was once
-misclassified as "nothing was sent"; and some of its tool descriptions use example identifiers a
-small model copies. It also showed what the audit trail does not protect against: a rewrite that
-recomputes the hashes, or removal of the newest records without an externally held anchor.
+The study found gaps in OpenMHS itself, and the current `main` code addresses the agent-facing
+ones: tool descriptions no longer seed a concrete device id, `get_insights` reports an unknown
+device as an error, and `get_allowed_operations` exposes the caller's current advisory access.
+The device reference and contract hash are included in audit evidence, and post-acceptance
+failures remain distinct from commands that were never sent. The audit work still documents its
+limits: a rewriter who recomputes hashes, or truncation of the newest records without an
+externally held anchor, cannot be detected by the local chain alone.
 
 ## What is not claimed
 
 - No hardware validation, no compatibility claim for a physical OpenFlexure microscope, no safety
   or certification claim.
 - No endorsement or involvement by Dr Bowman, the University of Glasgow, LabThings or OpenFlexure.
-- No claim that OpenMHS makes language-model agents more accurate; in this study it did not.
+- No claim that OpenMHS makes language-model agents more accurate; the single successful
+  simulator task does not compare agent accuracy or establish reliability.
 - The benchmark is a trade, not a win: OpenMHS removed duplicate executions and out-of-limit
   dispatch, and a careful hand-written client matched it on duplicates.
 
 ## Two questions
 
-1. **Is there a convention, or appetite, for declaring `safe`/`idempotent` on LabThings actions and
-   for stamping property reads with a measurement time?** If one exists we would follow it; if
-   not, we would like to know whether it is something the maintainers would rather see raised as a
-   discussion than as a patch. We will not propose a change without that guidance.
-2. **For audit logging and natural-language interaction, what would a minimally useful trial look
-   like?** For example, a read-only session against the OpenFlexure simulator in which you decide
-   which records must be capturable (who, what, when, under what authorization, what evidence)
-   and tell us what is missing. Nothing beyond the simulator, and nothing that moves a stage
-   without an explicit, bounded approval.
+1. **Which existing OpenFlexure user workflows would most benefit from agent control?**
+2. **Would documenting the existing unit metadata path for LabThings' machine-readable
+   descriptions be useful, and what documentation approach would fit the project?**
 
 ## What we could offer, without commitment
 
-The fault-injection harness and the example Thing, the importer, and the benchmark, for anyone who
-wants to test their own integration against faults.
+The fault-injection harness and example `LabBench` Thing, the importer, the benchmark, and the
+OpenFlexure simulator walkthrough, for anyone who wants to inspect or reproduce the integration.
+The in-memory units serialization probe passed; an HTTP endpoint-level check remains optional.
+This brief remains a draft and has not been sent.
