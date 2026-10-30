@@ -109,3 +109,18 @@ not.
 
 Add versioned ownership epochs and stale-owner checks before distributed transport. Claim
 fencing only when the underlying controller can enforce it.
+
+## Independent re-validation of `main` at `2e5c5a7` — 2026-10-30
+
+Re-run by a second agent on Windows 11 with localhost networking available, using a separate
+cargo target directory on D: (C: had about 220 MB free). Nothing was changed to make tests pass.
+
+| Command | Result |
+|---|---|
+| `cargo test --workspace --no-fail-fast` | 459 passed, 0 failed, 80 test binaries |
+| `cargo clippy --workspace --all-targets -- -D warnings` | passed |
+| `python -m pytest python/tests -q` (gateway reachable) | 59 passed, including `test_agent.py`, whose localhost failures in the earlier sandbox were environmental |
+| `python -m unittest adapters/python/wot/test_td_import.py` | 25 passed |
+
+This confirms the earlier sandbox errors in `test_agent.py` were not a product regression. It does
+not rerun the 225-run research benchmark, and it says nothing about physical devices.

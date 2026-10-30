@@ -171,3 +171,15 @@ untracked simulator directory. Current HEAD at handoff creation matches `origin/
 **Recommended immediate priority:** resolve Webots host prerequisites, then complete the bounded
 read-only telemetry/staleness experiment. Keep it as a compatibility and agent-observation test;
 do not expand to agent-driven robot motion until the read-only path and fault behavior are proven.
+
+## Addendum: first Claude session after this handoff (2026-10-30, evening)
+
+- `main` re-validated on this machine: Rust 459 passed / 0 failed, clippy clean, Python 59 passed
+  (including `test_agent.py`), importer 25 passed (see KERNEL_HARDENING_VALIDATION.md). Build with
+  `CARGO_TARGET_DIR=D:\openmhs-target` because C: has about 220 MB free; point `OPENMHS_BIN` at
+  `D:\openmhs-target\debug\openmhs.exe` for the Python tests.
+- Webots download retried once with `gh release download` to `D:\OpenMHS-Webots`: 0 bytes after
+  about a minute, the same stall as before; stopped and removed. `docker version` gave no answer
+  in 15 s. The Webots experiment still needs the maintainer to install Webots (and a working ROS 2
+  runtime) from a normal browser session. Do not retry the download from this environment.
+
