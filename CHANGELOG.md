@@ -7,7 +7,25 @@ and the entry will say so under **Changed** or **Removed**.
 
 ## [Unreleased]
 
+### Fixed
+
+- A journal write that failed after a command was dispatched (an I/O error, or the journal
+  reaching its size limit) ended the call early: the device lock was released while the
+  adapter call still ran, the command stayed `DISPATCHED`/`ACCEPTED` on record, and the next
+  write to the same capability was sent although the first one's outcome was unknown. Found
+  by the new persistence drills, with injected I/O errors and with SQLite's own
+  `SQLITE_FULL`. The gateway now keeps the device locked until the adapter call ends,
+  settles the command as `UNKNOWN_OUTCOME` (or `EXPIRED` if it was never sent), and holds a
+  command it could not settle like an unknown outcome until recovery
+  ([lifecycle.md](spec/lifecycle.md) §4 rule 7).
+
 ### Added
+
+- Persistence drills (`crates/openmhs-engine/tests/persistence_adversary.rs`): a fault at
+  every durable boundary of a command (before and after commit; one I/O error or a crash
+  followed by a restart), crash during recovery, crash while spending an approval, a
+  journal-size sweep, a real process `abort()` at each dispatch boundary, and journal
+  rollback. Report: [docs/architecture/PERSISTENCE_ADVERSARY.md](docs/architecture/PERSISTENCE_ADVERSARY.md).
 
 - State-changing commands now serialize on declared shared resources as well as individual
   devices, with a stable lock order for multi-resource commands. This is a single-gateway

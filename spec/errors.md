@@ -96,7 +96,7 @@ Produced by the engine (M2). Errors that deny a command appear in the receipt's
 | `command.state.stale` | Required state is missing, stale, or not `GOOD`; `rule_id` names the precondition when there is one |
 | `command.verification.invalid` | The descriptor's verification cannot be applied to this request (indicates a descriptor defect) |
 | `command.not_reconcilable` | `UNKNOWN_OUTCOME` cannot be resolved automatically (no readback declared, or no usable reading) |
-| `command.outcome_unresolved` | An earlier write or invoke to this capability is `UNKNOWN_OUTCOME`, or an unresolved command may affect a shared resource; reconcile or resolve it first ([lifecycle.md](lifecycle.md) §3 rule 3). `details.unresolved` lists the command ids |
+| `command.outcome_unresolved` | An earlier write or invoke to this capability is `UNKNOWN_OUTCOME`, or an unresolved command may affect a shared resource; reconcile or resolve it first ([lifecycle.md](lifecycle.md) §3 rule 3). Also returned while an earlier command is left in flight on record because its outcome could not be journaled (§4 rule 7): restart the gateway so recovery marks it `UNKNOWN_OUTCOME`, then reconcile it. `details.unresolved` lists the command ids |
 | `command.resolve.reason` | `commands.resolve` without a reason |
 | `policy.resolve.not_human` | An agent credential tried to resolve an unknown outcome |
 

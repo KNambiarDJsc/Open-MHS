@@ -1101,7 +1101,9 @@ impl Engine {
 
     /// Hold a non-idempotent repeat on the same capability, and every write sharing a
     /// resource with any unresolved command. The latter prevents another device from
-    /// racing a command whose physical effect remains unknown.
+    /// racing a command whose physical effect remains unknown. A command left in flight on
+    /// record, because its outcome could not be journaled, is held like an unknown one
+    /// until recovery settles it; a stop in flight is just running (it takes no locks).
     fn unresolved_refusal(
         &self,
         device: &str,
@@ -1117,14 +1119,23 @@ impl Engine {
             }
         }
         let related_devices: Vec<String> = related_devices.into_iter().collect();
+        let is_stop = |receipt: &Receipt| {
+            let target = &receipt.request.target;
+            self.device(&target.device).is_some_and(|d| {
+                d.descriptor
+                    .capability(&target.capability)
+                    .is_some_and(|c| c.stop)
+            })
+        };
         match self
             .inner
             .journal
-            .unresolved_commands_on_devices(&related_devices)
+            .open_commands_on_devices(&related_devices)
         {
             Ok(receipts) => {
-                let ids: Vec<String> = receipts
+                let held: Vec<&Receipt> = receipts
                     .iter()
+                    .filter(|receipt| receipt.state == UnknownOutcome || !is_stop(receipt))
                     .filter(|receipt| {
                         let target = &receipt.request.target;
                         if target.device == device {
@@ -1133,18 +1144,26 @@ impl Engine {
                             true
                         }
                     })
-                    .map(|receipt| receipt.command_id.clone())
                     .collect();
-                ids.first().map(|first| {
-                    ErrorObject::new(
-                        "command.outcome_unresolved",
+                let ids: Vec<String> = held.iter().map(|r| r.command_id.clone()).collect();
+                held.first().map(|first| {
+                    let id = &first.command_id;
+                    let message = if first.state == UnknownOutcome {
                         format!(
-                            "command {first} on a shared resource may or may not have taken \
+                            "command {id} on a shared resource may or may not have taken \
                              effect; reconcile it, or have an operator resolve it, before \
                              sending another write"
-                        ),
-                    )
-                    .detail("unresolved", ids.clone())
+                        )
+                    } else {
+                        format!(
+                            "command {id} was sent but its outcome could not be recorded (the \
+                             journal failed), so it may or may not have taken effect; nothing \
+                             more is sent here until it is settled: restart the gateway, whose \
+                             recovery marks it UNKNOWN_OUTCOME, then reconcile it"
+                        )
+                    };
+                    ErrorObject::new("command.outcome_unresolved", message)
+                        .detail("unresolved", ids.clone())
                 })
             }
             Err(e) => Some(ErrorObject::new(
@@ -1212,9 +1231,13 @@ impl Engine {
             );
         }
 
-        self.inner
+        if let Err(e) = self
+            .inner
             .journal
-            .set_expectation(id, &prepared.expectation)?;
+            .set_expectation(id, &prepared.expectation)
+        {
+            return self.settle_unrecorded(id, e.into(), false);
+        }
         {
             let mut history = lock(&device.history);
             let entries = history.entry(cap.name.clone()).or_default();
@@ -1225,7 +1248,9 @@ impl Engine {
             });
         }
         // The intent is durable before the adapter is called (spec/lifecycle.md §4).
-        self.transition(id, Dispatched, Some("intent journaled".into()), |_| {})?;
+        if let Err(e) = self.transition(id, Dispatched, Some("intent journaled".into()), |_| {}) {
+            return self.settle_unrecorded(id, e, false);
+        }
 
         let command = AdapterCommand {
             command_id: id.to_owned(),
@@ -1247,27 +1272,12 @@ impl Engine {
         let sleep = tokio::time::sleep(Duration::from_millis(timeout_ms));
         tokio::pin!(sleep);
         let mut accepted = false;
-
-        let outcome = loop {
-            tokio::select! {
-                biased;
-                res = &mut handle => break ExecOutcome::Finished(res),
-                Some(ProgressEvent::Accepted { external_ref }) = rx.recv(), if !accepted => {
-                    accepted = true;
-                    self.transition(id, Accepted, accepted_detail(external_ref.as_deref()), |r| {
-                        let ar = r.adapter_result.get_or_insert_with(AdapterResult::default);
-                        ar.acknowledged = Some(true);
-                        ar.external_ref = external_ref;
-                    })?;
-                }
-                () = &mut sleep => {
-                    handle.abort();
-                    break ExecOutcome::TimedOut;
-                }
-            }
-        };
-        if !accepted && let Ok(ProgressEvent::Accepted { external_ref }) = rx.try_recv() {
-            accepted = true;
+        // From here the command may be at the device. A journal write that fails must not
+        // end this call early: that would release the device while the adapter still runs
+        // and leave the command looking in flight. It is noted, the call runs to its end,
+        // and the command is settled below.
+        let mut unrecorded: Option<EngineError> = None;
+        let record_accepted = |external_ref: Option<String>| {
             self.transition(
                 id,
                 Accepted,
@@ -1277,9 +1287,110 @@ impl Engine {
                     ar.acknowledged = Some(true);
                     ar.external_ref = external_ref;
                 },
-            )?;
-        }
+            )
+        };
 
+        let outcome = loop {
+            tokio::select! {
+                biased;
+                res = &mut handle => break ExecOutcome::Finished(res),
+                Some(ProgressEvent::Accepted { external_ref }) = rx.recv(), if !accepted => {
+                    accepted = true;
+                    if let Err(e) = record_accepted(external_ref) {
+                        unrecorded.get_or_insert(e);
+                    }
+                }
+                () = &mut sleep => {
+                    handle.abort();
+                    break ExecOutcome::TimedOut;
+                }
+            }
+        };
+        if !accepted && let Ok(ProgressEvent::Accepted { external_ref }) = rx.try_recv() {
+            accepted = true;
+            if let Err(e) = record_accepted(external_ref) {
+                unrecorded.get_or_insert(e);
+            }
+        }
+        match &outcome {
+            ExecOutcome::Finished(Ok(Ok(_))) => self.observe(device, Ok(())),
+            ExecOutcome::Finished(Ok(Err(err))) => self.observe(device, Err(err)),
+            _ => {}
+        }
+        if let Some(e) = unrecorded {
+            return self.settle_unrecorded(id, e, true);
+        }
+        match self
+            .record_outcome(
+                device,
+                id,
+                outcome,
+                accepted,
+                timeout_ms,
+                &prepared.expectation,
+            )
+            .await
+        {
+            Ok(receipt) => Ok(receipt),
+            Err(e) => self.settle_unrecorded(id, e, true),
+        }
+    }
+
+    /// A journal write failed while a command was being dispatched or after. Settle it on
+    /// record if the journal still takes writes: a command that was never sent expires,
+    /// and one that may have reached the device becomes `UNKNOWN_OUTCOME`, never resent.
+    /// If not even that can be written, it stays in flight on record, where the unresolved
+    /// hold keeps related writes back and recovery settles it at the next start.
+    fn settle_unrecorded(
+        &self,
+        id: &str,
+        cause: EngineError,
+        sent: bool,
+    ) -> Result<Receipt, EngineError> {
+        warn!(command = %id, error = %cause, "journal write failed during dispatch");
+        let Ok(Some(receipt)) = self.receipt(id) else {
+            return Err(cause);
+        };
+        let settled = match receipt.state {
+            Approved => self.transition(
+                id,
+                Expired,
+                Some(format!(
+                    "not sent: the dispatch could not be recorded ({cause})"
+                )),
+                |_| {},
+            ),
+            Dispatched | Accepted | TimedOut => self.transition(
+                id,
+                UnknownOutcome,
+                Some(if sent {
+                    format!(
+                        "the outcome could not be recorded ({cause}); may or may not have \
+                         taken effect; not retried"
+                    )
+                } else {
+                    format!(
+                        "recording the dispatch reported a failure ({cause}); the adapter was \
+                         not called; not retried"
+                    )
+                }),
+                |_| {},
+            ),
+            _ => return Err(cause),
+        };
+        settled.map_err(|_| cause)
+    }
+
+    /// Journal what the adapter call came to, and verify an applied command.
+    async fn record_outcome(
+        &self,
+        device: &Arc<Device>,
+        id: &str,
+        outcome: ExecOutcome,
+        accepted: bool,
+        timeout_ms: u64,
+        expectation: &Expectation,
+    ) -> Result<Receipt, EngineError> {
         let with_error = |e: ErrorObject| {
             move |r: &mut Receipt| {
                 r.adapter_result
@@ -1287,12 +1398,6 @@ impl Engine {
                     .error = Some(e);
             }
         };
-        match &outcome {
-            ExecOutcome::Finished(Ok(Ok(_))) => self.observe(device, Ok(())),
-            ExecOutcome::Finished(Ok(Err(err))) => self.observe(device, Err(err)),
-            _ => {}
-        }
-
         match outcome {
             ExecOutcome::TimedOut => {
                 let e = ErrorObject::new(
@@ -1376,7 +1481,7 @@ impl Engine {
                         ar.result = Some(result);
                     }
                 })?;
-                self.verify(device, id, &prepared.expectation).await
+                self.verify(device, id, expectation).await
             }
         }
     }

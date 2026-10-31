@@ -81,8 +81,43 @@ impl AuditVerification {
     }
 }
 
+/// Where an injected fault fires relative to its transaction's commit.
+#[doc(hidden)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FaultPhase {
+    /// The transaction is rolled back: nothing of it is stored.
+    BeforeCommit,
+    /// The transaction is stored, and the caller is told it failed.
+    AfterCommit,
+}
+
+/// What an injected fault does.
+#[doc(hidden)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FaultEffect {
+    /// One I/O error (`SQLITE_IOERR`); later writes succeed.
+    IoError,
+    /// An I/O error, after which the journal refuses every write, as a stopped process
+    /// would make none. Reopening the file models the restart.
+    Crash,
+    /// Abort the process on the spot: no unwinding, no orderly close of the database.
+    Abort,
+}
+
+/// A fault armed at one durable boundary, fired once (persistence drills only). Sites:
+/// `command.created`, `transition:<STATE>`, `expectation`, `approval.consume`,
+/// `audit:<kind>`.
+#[doc(hidden)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Fault {
+    pub site: String,
+    pub phase: FaultPhase,
+    pub effect: FaultEffect,
+}
+
 pub struct Journal {
     conn: Mutex<Connection>,
+    fault: Mutex<Option<Fault>>,
 }
 
 pub fn sha256_hex(data: &str) -> String {
@@ -196,6 +231,7 @@ impl Journal {
         )?;
         Ok(Self {
             conn: Mutex::new(conn),
+            fault: Mutex::new(None),
         })
     }
 
@@ -205,6 +241,36 @@ impl Journal {
         self.conn
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
+    /// Arm a fault for the persistence drills (tests/persistence_adversary.rs). It fires
+    /// once, at the first write that reaches its site and phase.
+    #[doc(hidden)]
+    pub fn inject(&self, fault: Fault) {
+        *self
+            .fault
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner) = Some(fault);
+    }
+
+    /// Fire the armed fault if it is for `site` at `phase`.
+    fn fault(&self, conn: &Connection, site: &str, phase: FaultPhase) -> Result<(), JournalError> {
+        let mut armed = self
+            .fault
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let Some(fault) = armed.take_if(|f| f.site == site && f.phase == phase) else {
+            return Ok(());
+        };
+        match fault.effect {
+            FaultEffect::Abort => std::process::abort(),
+            FaultEffect::Crash => conn.pragma_update(None, "query_only", true)?,
+            FaultEffect::IoError => {}
+        }
+        Err(JournalError::Sqlite(rusqlite::Error::SqliteFailure(
+            rusqlite::ffi::Error::new(rusqlite::ffi::SQLITE_IOERR),
+            Some(format!("injected fault at {site} ({phase:?})")),
+        )))
     }
 
     fn append_audit_tx(
@@ -242,10 +308,13 @@ impl Journal {
         subject: &str,
         data: &serde_json::Value,
     ) -> Result<String, JournalError> {
+        let site = format!("audit:{kind}");
         let mut conn = self.lock();
         let tx = conn.transaction()?;
         let hash = Self::append_audit_tx(&tx, at, kind, subject, data)?;
+        self.fault(&tx, &site, FaultPhase::BeforeCommit)?;
         tx.commit()?;
+        self.fault(&conn, &site, FaultPhase::AfterCommit)?;
         Ok(hash)
     }
 
@@ -303,7 +372,9 @@ impl Journal {
                 serde_json::to_string(&r)?
             ],
         )?;
+        self.fault(&tx, "command.created", FaultPhase::BeforeCommit)?;
         tx.commit()?;
+        self.fault(&conn, "command.created", FaultPhase::AfterCommit)?;
         Ok(Inserted::New(r))
     }
 
@@ -316,10 +387,13 @@ impl Journal {
         detail: Option<String>,
         update: impl FnOnce(&mut Receipt),
     ) -> Result<Receipt, JournalError> {
+        let site = format!("transition:{}", state_name(to));
         let mut conn = self.lock();
         let tx = conn.transaction()?;
         let r = Self::transition_tx(&tx, command_id, to, at, detail, update)?;
+        self.fault(&tx, &site, FaultPhase::BeforeCommit)?;
         tx.commit()?;
+        self.fault(&conn, &site, FaultPhase::AfterCommit)?;
         Ok(r)
     }
 
@@ -628,7 +702,9 @@ impl Journal {
         Self::apply_approval(&tx, &mut a, ApprovalStatus::Consumed, at, None, None)?;
         let approved = a.clone();
         let r = Self::transition_tx(&tx, command_id, to, at, detail, |r| update(r, &approved))?;
+        self.fault(&tx, "approval.consume", FaultPhase::BeforeCommit)?;
         tx.commit()?;
+        self.fault(&conn, "approval.consume", FaultPhase::AfterCommit)?;
         Ok((a, r))
     }
 
@@ -661,10 +737,13 @@ impl Journal {
         command_id: &str,
         expectation: &Expectation,
     ) -> Result<(), JournalError> {
-        self.lock().execute(
+        let conn = self.lock();
+        self.fault(&conn, "expectation", FaultPhase::BeforeCommit)?;
+        conn.execute(
             "UPDATE commands SET expectation = ?1 WHERE command_id = ?2",
             params![serde_json::to_string(expectation)?, command_id],
         )?;
+        self.fault(&conn, "expectation", FaultPhase::AfterCommit)?;
         Ok(())
     }
 
@@ -727,9 +806,12 @@ impl Journal {
         Ok(ids)
     }
 
-    /// Receipts with unknown outcomes on a set of devices, oldest first. This is used to
-    /// hold shared resources whose physical state may still be affected by an old command.
-    pub fn unresolved_commands_on_devices(
+    /// Receipts on a set of devices whose physical effect may still be open, oldest first:
+    /// `UNKNOWN_OUTCOME`, and `DISPATCHED`, `ACCEPTED` or `TIMED_OUT`. This is used to hold
+    /// shared resources whose physical state may still be affected by an old command.
+    /// Called under the devices' command locks, where nothing but a stop is in flight, any
+    /// other command found in flight was abandoned: its outcome could not be recorded.
+    pub fn open_commands_on_devices(
         &self,
         devices: &[String],
     ) -> Result<Vec<Receipt>, JournalError> {
@@ -741,12 +823,18 @@ impl Journal {
             .collect::<Vec<_>>()
             .join(",");
         let sql = format!(
-            "SELECT receipt, state FROM commands WHERE state = ? AND device IN ({placeholders}) \
-             ORDER BY created_ms, command_id"
+            "SELECT receipt, state FROM commands WHERE state IN (?, ?, ?, ?) \
+             AND device IN ({placeholders}) ORDER BY created_ms, command_id"
         );
-        let state = state_name(CommandState::UnknownOutcome);
-        let mut values: Vec<&dyn ToSql> = Vec::with_capacity(devices.len() + 1);
-        values.push(&state);
+        let states = [
+            CommandState::UnknownOutcome,
+            CommandState::Dispatched,
+            CommandState::Accepted,
+            CommandState::TimedOut,
+        ]
+        .map(state_name);
+        let mut values: Vec<&dyn ToSql> = Vec::with_capacity(devices.len() + states.len());
+        values.extend(states.iter().map(|state| state as &dyn ToSql));
         values.extend(devices.iter().map(|device| device as &dyn ToSql));
         let mut stmt = conn.prepare(&sql)?;
         let rows = stmt.query_map(rusqlite::params_from_iter(values), |r| {

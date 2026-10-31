@@ -132,6 +132,19 @@ Agents usually only need the coarse class:
    `APPROVED` becomes `EXPIRED`. Commands in `AWAITING_APPROVAL` keep waiting until
    approved, cancelled, or past their deadline.
 6. Rate- and slew-limit history is kept in memory and starts empty after a restart.
+7. If the journal refuses a write while a command is being dispatched or after (an I/O
+   error, a full disk), the gateway does not end the call early: the device stays locked
+   until the adapter call ends. It then settles the command on record if it still can:
+   one that was never sent becomes `EXPIRED`; one that may have reached the device
+   becomes `UNKNOWN_OUTCOME` (detail `the outcome could not be recorded`), never resent.
+   If not even that can be written, the command stays `DISPATCHED`, `ACCEPTED` or
+   `TIMED_OUT` on record, and is held exactly like `UNKNOWN_OUTCOME` (rule 3) until a
+   restart's recovery settles it. Tested by `crates/openmhs-engine/tests/persistence_adversary.rs`
+   ([PERSISTENCE_ADVERSARY.md](../docs/architecture/PERSISTENCE_ADVERSARY.md)).
+8. The gateway trusts the journal it is given. A journal rolled back to an earlier copy
+   (a restored backup, a lost write-ahead log, a disk that acknowledged writes it did not
+   make) is not detected at start; recovery then believes the older record. Only an audit
+   checkpoint kept elsewhere reveals it (`openmhs audit verify-file --checkpoint`).
 
 ## 5. Reconciliation
 
@@ -168,6 +181,7 @@ never contacts the device.
 | Sent, link lost or answer unreadable | `UNKNOWN_OUTCOME` | No |
 | Device refused it | `REJECTED`, with the device's error | — |
 | Gateway restarted mid-command | `UNKNOWN_OUTCOME` (§4) | No |
+| Journal write failed mid-command (I/O error, disk full) | `UNKNOWN_OUTCOME`, or left in flight on record and held (§4 rule 7) | No |
 
 A caller that stops waiting (a client disconnect, a cancelled request) does not cut the
 command short: it runs to one of these states, and its receipt is fetched later.
