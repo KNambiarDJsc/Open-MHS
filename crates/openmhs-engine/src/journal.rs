@@ -1089,29 +1089,49 @@ impl Journal {
 
     /// Recompute the hash chain. Detects edited, reordered, inserted or deleted records
     /// (deleting the newest records is only detectable against a separately kept head hash).
+    ///
+    /// Streams the records: memory stays constant however long the chain is (the gateway
+    /// runs this on every start; docs/benchmarks.md, "Journal start-up").
     pub fn verify_audit(&self) -> Result<AuditVerification, JournalError> {
-        let records = self.audit_records()?;
+        let conn = self.lock();
+        let mut stmt = conn.prepare(
+            "SELECT seq, at_ms, kind, subject, data, prev_hash, hash FROM audit ORDER BY seq",
+        )?;
+        let mut rows = stmt.query([])?;
         let mut prev = GENESIS.to_owned();
-        for (expected_seq, rec) in (1i64..).zip(&records) {
-            let recomputed = hash_record(
-                &prev,
-                rec.seq,
-                rec.at_ms,
-                &rec.kind,
-                &rec.subject,
-                &rec.data,
-            );
-            if rec.seq != expected_seq || rec.prev_hash != prev || rec.hash != recomputed {
-                return Ok(AuditVerification {
-                    records: records.len() as u64,
-                    first_invalid: Some(rec.seq),
-                });
+        let mut records = 0u64;
+        let mut first_invalid = None;
+        while let Some(row) = rows.next()? {
+            records += 1;
+            if first_invalid.is_some() {
+                continue;
             }
-            prev = rec.hash.clone();
+            let seq: i64 = row.get(0)?;
+            let field = |i: usize| {
+                row.get_ref(i)?.as_str().map_err(|e| {
+                    rusqlite::Error::FromSqlConversionFailure(
+                        i,
+                        rusqlite::types::Type::Text,
+                        Box::new(e),
+                    )
+                })
+            };
+            let (kind, subject, data) = (field(2)?, field(3)?, field(4)?);
+            let recomputed = hash_record(&prev, seq, row.get(1)?, kind, subject, data);
+            let (prev_hash, hash) = (field(5)?, field(6)?);
+            if seq != i64::try_from(records).unwrap_or(i64::MAX)
+                || prev_hash != prev
+                || hash != recomputed
+            {
+                first_invalid = Some(seq);
+                continue;
+            }
+            prev.clear();
+            prev.push_str(hash);
         }
         Ok(AuditVerification {
-            records: records.len() as u64,
-            first_invalid: None,
+            records,
+            first_invalid,
         })
     }
 

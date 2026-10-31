@@ -72,15 +72,39 @@ pub fn audit_hash(
     subject: &str,
     data: &str,
 ) -> String {
-    let bytes = format!("{prev}\n{seq}\n{at_ms}\n{kind}\n{subject}\n{data}");
-    sha256(&bytes)
+    // The SHA-256 of "{prev}\n{seq}\n{at_ms}\n{kind}\n{subject}\n{data}", fed in pieces: a
+    // gateway verifies every record at start, so this avoids building the string.
+    let mut h = Sha256::new();
+    for part in [
+        prev.as_bytes(),
+        b"\n",
+        seq.to_string().as_bytes(),
+        b"\n",
+        at_ms.to_string().as_bytes(),
+        b"\n",
+        kind.as_bytes(),
+        b"\n",
+        subject.as_bytes(),
+        b"\n",
+        data.as_bytes(),
+    ] {
+        h.update(part);
+    }
+    hex(&h.finalize())
 }
 
 fn sha256(data: &str) -> String {
-    Sha256::digest(data.as_bytes())
-        .iter()
-        .map(|b| format!("{b:02x}"))
-        .collect()
+    hex(&Sha256::digest(data.as_bytes()))
+}
+
+fn hex(bytes: &[u8]) -> String {
+    const DIGITS: &[u8; 16] = b"0123456789abcdef";
+    let mut out = String::with_capacity(bytes.len() * 2);
+    for b in bytes {
+        out.push(char::from(DIGITS[usize::from(b >> 4)]));
+        out.push(char::from(DIGITS[usize::from(b & 0x0f)]));
+    }
+    out
 }
 
 /// Version 1: SHA-256 of canonical receipt JSON with only `audit_hash` removed. That
@@ -192,5 +216,37 @@ pub fn verify_evidence(
         receipts: bundle.receipts.len(),
         unbound_commands,
         errors,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The streamed hash is byte for byte the one every existing journal and export was
+    /// written with: SHA-256 of the fields joined by newlines, in lowercase hex.
+    #[test]
+    fn audit_hash_is_unchanged_from_the_joined_string() {
+        let cases = [
+            (
+                GENESIS,
+                1,
+                1_800_000_000_000,
+                "command.created",
+                "cmd-1",
+                r#"{"a":1}"#,
+            ),
+            ("ab", -5, 0, "", "", ""),
+            ("x", i64::MAX, i64::MIN, "k\nind", "subj ect", "d\u{e9}ta\n"),
+        ];
+        for (prev, seq, at, kind, subject, data) in cases {
+            let joined = format!("{prev}\n{seq}\n{at}\n{kind}\n{subject}\n{data}");
+            let expected: String = Sha256::digest(joined.as_bytes())
+                .iter()
+                .map(|b| format!("{b:02x}"))
+                .collect();
+            assert_eq!(audit_hash(prev, seq, at, kind, subject, data), expected);
+            assert_eq!(sha256(&joined), expected);
+        }
     }
 }

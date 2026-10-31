@@ -295,8 +295,10 @@ In order of the migration plan (`docs/architecture/DISTRIBUTED_MIGRATION_PLAN.md
 
 1. **Ownership epochs** and stale-owner refusal, enforced at the device where the controller can.
 2. What the persistence drills cannot reach in software: hard power loss on real storage (a VM
-   or power-cut rig), I/O errors from a faulty disk (a Linux `dm-flakey` job in CI), and the
-   start-up cost of the integrity checks on a large journal.
+   or power-cut rig), I/O errors from a faulty disk (a Linux `dm-flakey` job in CI), and
+   journal start-up on a Raspberry Pi (on a desktop: 6.3 s and 16 MB for a 1 GB journal,
+   [benchmarks.md](../benchmarks.md)). Archiving old audit records (storage RFC) is what
+   bounds start-up beyond the journal limit.
 3. Signed checkpoints, automated external anchoring, per-person operator identity, software hashes
    in the audit.
 4. A distributed mode: central admission ledger and outbox (PostgreSQL), edge inbox and status

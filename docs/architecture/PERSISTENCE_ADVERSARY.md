@@ -117,8 +117,11 @@ the device and another principal cannot; the lease ends at its deadline whatever
 - **Damage to the write-ahead log**: frames carry checksums, so damage ends the log there,
   which is the torn-write or rollback case; not flipped bit by bit.
 - **Procedures** were not faulted separately: a procedure runs as a plan.
-- **Start-up cost** of the new checks (integrity checks and audit-chain verification grow
-  with the journal) on a large, long-running journal: not measured.
+- Start-up cost of the checks on a Raspberry Pi, and from a genuinely cold cache. On a
+  desktop it is measured ([benchmarks.md](../benchmarks.md), "Journal start-up"): a 1 GB
+  journal with 1.7 million audit records opens in 6.3 s with every check, at 16 MB of peak
+  memory. The first measurement found the chain check holding the whole log in memory (969 MB
+  for that journal); it now streams.
 
 ## Checklist (roadmap step 1)
 

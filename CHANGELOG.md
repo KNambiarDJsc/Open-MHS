@@ -33,7 +33,12 @@ and the entry will say so under **Changed** or **Removed**.
   (`journal.corrupt`: `quick_check`, plus the full check of the commands and approvals
   tables, whose unique indexes stop duplicate commands and double-spent approvals) or whose
   audit chain does not verify (`journal.audit_invalid`). Start-up time grows with the
-  journal's size.
+  journal's size: 6.3 s for a 1 GB journal of 1.7 million audit records on a desktop
+  ([benchmarks.md](docs/benchmarks.md), "Journal start-up";
+  `cargo run --release -p openmhs-engine --example journal_startup`).
+- Audit-chain verification streams the records instead of loading the whole log: memory
+  stays at about 15 MB whatever the journal's size (it was the journal's size: 969 MB for
+  1 GB), and hashing is 2.4 times faster with byte-for-byte the same hashes.
 
 ### Added
 
