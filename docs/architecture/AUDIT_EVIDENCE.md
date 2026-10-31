@@ -49,8 +49,16 @@ action. Memory stays flat on both sides (RFC 0002, M2): the gateway streams the 
 from its own read-only connection as SQLite reads it, and the CLI writes the stream to the
 file and then re-reads it to check it is one whole bundle. Commands keep running during an
 export; SQLite cannot checkpoint its write-ahead log past the export's snapshot until it
-ends, so a very slow export lets the log grow. `verify-file` still loads the whole bundle
-into memory; a streaming verifier comes with the segment verifier (M3).
+ends, so a very slow export lets the log grow.
+
+`verify-file` reads the file as a stream and never holds the bundle. What it keeps is one
+small entry per command and per receipt (about 0.7 KB each, measured), so its memory grows
+with the number of commands, not with the length of the audit log: 19 MB for a 100 MB
+export of 11,000 commands, 86 MB for a 940 MB export of 101,000. The members of the file
+may come in any order, and a file that is not exactly one bundle (an unknown, duplicate or
+missing member, trailing data, a cut-off file) is refused as malformed. If a log is
+corrupt in a great many places, the first 1,000 invalid records are listed and the rest
+are counted in one line; `valid` is false either way.
 
 Verification checks sequence continuity, previous hashes, each record hash, the bundle
 head, receipt presence/uniqueness, creation records, latest audit pointers and current

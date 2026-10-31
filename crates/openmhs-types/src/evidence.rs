@@ -117,27 +117,115 @@ pub fn receipt_digest(receipt: &Receipt) -> Result<String, serde_json::Error> {
     Ok(sha256(&canonical_json(&value)))
 }
 
-/// Verify a complete exported chain and its current receipts. `anchor`, when present,
-/// must have been retained independently before this export; the bundle's own head is
-/// only a completeness check, not an external trust root.
-pub fn verify_evidence(
-    bundle: &EvidenceBundle,
-    anchor: Option<&AuditCheckpoint>,
-) -> EvidenceVerification {
-    let mut errors = Vec::new();
-    let mut unbound_commands = Vec::new();
-    if bundle.version != 1 {
-        errors.push(format!("unsupported evidence version {}", bundle.version));
+/// What a command's latest audit record says about its receipt.
+enum Binding {
+    /// The record's data is not JSON.
+    Invalid,
+    /// A legacy record: no `receipt_digest`.
+    Unbound,
+    /// The digest the record commits to.
+    Digest {
+        version_is_1: bool,
+        sha256: Option<String>,
+    },
+}
+
+impl Binding {
+    fn of(data: &str) -> Self {
+        match serde_json::from_str::<serde_json::Value>(data) {
+            Err(_) => Self::Invalid,
+            Ok(data) => match data.get("receipt_digest") {
+                None => Self::Unbound,
+                Some(digest) => Self::Digest {
+                    version_is_1: digest["version"] == 1,
+                    sha256: digest["sha256"].as_str().map(str::to_owned),
+                },
+            },
+        }
     }
-    let mut previous = GENESIS.to_owned();
-    let mut latest = BTreeMap::new();
-    let mut created = BTreeSet::new();
-    for (expected, record) in (1i64..).zip(&bundle.audit) {
+}
+
+struct Latest {
+    hash: String,
+    binding: Binding,
+}
+
+/// What a receipt must be checked against once the whole chain has been seen.
+struct ReceiptFacts {
+    id: String,
+    audit_hash: Option<String>,
+    digest: Option<String>,
+}
+
+/// Errors listed in full; past this the rest are counted, so a wholly corrupt log of
+/// millions of records cannot make the verifier's own output unbounded.
+const MAX_ERRORS: usize = 1000;
+
+/// The verifier as a state machine fed one record at a time, so a long chain is checked
+/// without being held. It keeps only what the checks need, one small entry per command
+/// and per receipt, never the records. `verify_evidence` and the CLI's file verifier
+/// both run on it.
+///
+/// Records and receipts may arrive in any order, as JSON object members may; the
+/// comparisons between them happen in [`finish`](Self::finish).
+pub struct EvidenceVerifier<'a> {
+    anchor: Option<&'a AuditCheckpoint>,
+    version: Option<u32>,
+    checkpoint: Option<AuditCheckpoint>,
+    audit_errors: Vec<String>,
+    audit_error_count: usize,
+    records: usize,
+    head: AuditCheckpoint,
+    anchor_found: bool,
+    latest: BTreeMap<String, Latest>,
+    created: BTreeSet<String>,
+    receipts: Vec<ReceiptFacts>,
+}
+
+impl<'a> EvidenceVerifier<'a> {
+    pub fn new(anchor: Option<&'a AuditCheckpoint>) -> Self {
+        Self {
+            anchor,
+            version: None,
+            checkpoint: None,
+            audit_errors: Vec::new(),
+            audit_error_count: 0,
+            records: 0,
+            head: AuditCheckpoint {
+                seq: 0,
+                hash: GENESIS.into(),
+            },
+            anchor_found: false,
+            latest: BTreeMap::new(),
+            created: BTreeSet::new(),
+            receipts: Vec::new(),
+        }
+    }
+
+    pub fn version(&mut self, version: u32) {
+        self.version = Some(version);
+    }
+
+    pub fn checkpoint(&mut self, checkpoint: AuditCheckpoint) {
+        self.checkpoint = Some(checkpoint);
+    }
+
+    fn audit_error(&mut self, message: String) {
+        self.audit_error_count += 1;
+        if self.audit_errors.len() < MAX_ERRORS {
+            self.audit_errors.push(message);
+        }
+    }
+
+    /// The next audit record, in chain order.
+    pub fn audit(&mut self, record: &AuditRecord) {
+        self.records += 1;
+        let expected = i64::try_from(self.records).unwrap_or(i64::MAX);
         if record.seq != expected
-            || record.prev_hash != previous
+            || record.prev_hash != self.head.hash
             || record.hash
                 != audit_hash(
-                    &previous,
+                    &self.head.hash,
                     record.seq,
                     record.at_ms,
                     &record.kind,
@@ -145,77 +233,236 @@ pub fn verify_evidence(
                     &record.data,
                 )
         {
-            errors.push(format!("invalid audit record at sequence {}", record.seq));
+            self.audit_error(format!("invalid audit record at sequence {}", record.seq));
         }
-        previous.clone_from(&record.hash);
-        if record.kind == "command.created" && !created.insert(record.subject.as_str()) {
-            errors.push(format!("duplicate command creation: {}", record.subject));
+        self.head.seq = record.seq;
+        self.head.hash.clone_from(&record.hash);
+        if let Some(anchor) = self.anchor
+            && record.seq == anchor.seq
+            && record.hash == anchor.hash
+        {
+            self.anchor_found = true;
+        }
+        if record.kind == "command.created" && !self.created.insert(record.subject.clone()) {
+            self.audit_error(format!("duplicate command creation: {}", record.subject));
         }
         if matches!(
             record.kind.as_str(),
             "command.created" | "command.transition"
         ) {
-            latest.insert(record.subject.as_str(), record);
+            self.latest.insert(
+                record.subject.clone(),
+                Latest {
+                    hash: record.hash.clone(),
+                    binding: Binding::of(&record.data),
+                },
+            );
         }
     }
-    if bundle.checkpoint != AuditCheckpoint::at_head(&bundle.audit) {
-        errors.push("bundle checkpoint does not match audit head".into());
+
+    /// The next receipt.
+    pub fn receipt(&mut self, receipt: &Receipt) {
+        self.receipts.push(ReceiptFacts {
+            id: receipt.command_id.clone(),
+            audit_hash: receipt.audit_hash.clone(),
+            digest: receipt_digest(receipt).ok(),
+        });
     }
-    if let Some(anchor) = anchor {
-        let matches = if anchor.seq == 0 {
-            anchor.hash == GENESIS
-        } else {
-            bundle
-                .audit
-                .iter()
-                .any(|r| r.seq == anchor.seq && r.hash == anchor.hash)
-        };
-        if !matches {
-            errors.push("independent checkpoint is missing or does not match".into());
+
+    /// Compare everything seen and report.
+    pub fn finish(self) -> EvidenceVerification {
+        let mut errors = Vec::new();
+        let mut unbound_commands = Vec::new();
+        match self.version {
+            Some(1) => {}
+            Some(version) => errors.push(format!("unsupported evidence version {version}")),
+            None => errors.push("bundle has no version".into()),
         }
-    }
-    let mut seen = BTreeSet::new();
-    for receipt in &bundle.receipts {
-        let id = receipt.command_id.as_str();
-        if !seen.insert(id) {
-            errors.push(format!("duplicate receipt: {id}"));
+        errors.extend(self.audit_errors);
+        let hidden = self.audit_error_count.saturating_sub(MAX_ERRORS);
+        if hidden > 0 {
+            errors.push(format!("{hidden} more invalid audit records not listed"));
         }
-        if !created.contains(id) {
-            errors.push(format!("receipt has no command creation record: {id}"));
+        if self.checkpoint.as_ref() != Some(&self.head) {
+            errors.push("bundle checkpoint does not match audit head".into());
         }
-        let Some(record) = latest.get(id) else {
-            continue;
-        };
-        if receipt.audit_hash.as_deref() != Some(record.hash.as_str()) {
-            errors.push(format!(
-                "receipt audit pointer differs from latest record: {id}"
-            ));
+        if let Some(anchor) = self.anchor {
+            let matches = if anchor.seq == 0 {
+                anchor.hash == GENESIS
+            } else {
+                self.anchor_found
+            };
+            if !matches {
+                errors.push("independent checkpoint is missing or does not match".into());
+            }
         }
-        match serde_json::from_str::<serde_json::Value>(&record.data) {
-            Ok(data) => match data.get("receipt_digest") {
-                None => unbound_commands.push(id.to_owned()),
-                Some(digest) => {
-                    let expected = receipt_digest(receipt).ok();
-                    if digest["version"] != 1 || expected.as_deref() != digest["sha256"].as_str() {
+        let mut seen = BTreeSet::new();
+        for receipt in &self.receipts {
+            let id = receipt.id.as_str();
+            if !seen.insert(id) {
+                errors.push(format!("duplicate receipt: {id}"));
+            }
+            if !self.created.contains(id) {
+                errors.push(format!("receipt has no command creation record: {id}"));
+            }
+            let Some(record) = self.latest.get(id) else {
+                continue;
+            };
+            if receipt.audit_hash.as_deref() != Some(record.hash.as_str()) {
+                errors.push(format!(
+                    "receipt audit pointer differs from latest record: {id}"
+                ));
+            }
+            match &record.binding {
+                Binding::Invalid => errors.push(format!("invalid command audit JSON: {id}")),
+                Binding::Unbound => unbound_commands.push(id.to_owned()),
+                Binding::Digest {
+                    version_is_1,
+                    sha256,
+                } => {
+                    if !version_is_1 || receipt.digest != *sha256 {
                         errors.push(format!("receipt digest mismatch: {id}"));
                     }
                 }
-            },
-            Err(_) => errors.push(format!("invalid command audit JSON: {id}")),
+            }
+        }
+        for id in self.latest.keys() {
+            if !seen.contains(id.as_str()) {
+                errors.push(format!("missing receipt: {id}"));
+            }
+        }
+        EvidenceVerification {
+            valid: errors.is_empty(),
+            complete: errors.is_empty() && unbound_commands.is_empty(),
+            records: self.records,
+            receipts: self.receipts.len(),
+            unbound_commands,
+            errors,
         }
     }
-    for id in latest.keys() {
-        if !seen.contains(id) {
-            errors.push(format!("missing receipt: {id}"));
+}
+
+/// Verify a complete exported chain and its current receipts. `anchor`, when present,
+/// must have been retained independently before this export; the bundle's own head is
+/// only a completeness check, not an external trust root.
+pub fn verify_evidence(
+    bundle: &EvidenceBundle,
+    anchor: Option<&AuditCheckpoint>,
+) -> EvidenceVerification {
+    let mut verifier = EvidenceVerifier::new(anchor);
+    verifier.version(bundle.version);
+    verifier.checkpoint(bundle.checkpoint.clone());
+    bundle.audit.iter().for_each(|r| verifier.audit(r));
+    bundle.receipts.iter().for_each(|r| verifier.receipt(r));
+    verifier.finish()
+}
+
+/// Verify an evidence bundle read from JSON without holding it: the same checks as
+/// [`verify_evidence`] on the same bytes, with memory that grows with the number of
+/// commands, not with the length of the audit log. The bundle must be one JSON object
+/// with exactly the members of [`EvidenceBundle`], in any order.
+pub fn verify_evidence_reader(
+    reader: impl std::io::Read,
+    anchor: Option<&AuditCheckpoint>,
+) -> Result<EvidenceVerification, serde_json::Error> {
+    use serde::de::DeserializeSeed;
+    let mut verifier = EvidenceVerifier::new(anchor);
+    let mut de = serde_json::Deserializer::from_reader(reader);
+    stream::Bundle(&mut verifier).deserialize(&mut de)?;
+    de.end()?;
+    Ok(verifier.finish())
+}
+
+mod stream {
+    use std::fmt;
+
+    use serde::de::{self, DeserializeSeed, MapAccess, SeqAccess, Visitor};
+
+    use super::{AuditCheckpoint, AuditRecord, EvidenceVerifier};
+    use crate::Receipt;
+
+    const MEMBERS: [&str; 4] = ["version", "audit", "receipts", "checkpoint"];
+
+    /// The bundle object: each member is handed to the verifier as it is parsed.
+    pub struct Bundle<'v, 'a>(pub &'v mut EvidenceVerifier<'a>);
+
+    impl<'de> DeserializeSeed<'de> for Bundle<'_, '_> {
+        type Value = ();
+        fn deserialize<D: de::Deserializer<'de>>(self, d: D) -> Result<(), D::Error> {
+            d.deserialize_struct("EvidenceBundle", &MEMBERS, self)
         }
     }
-    EvidenceVerification {
-        valid: errors.is_empty(),
-        complete: errors.is_empty() && unbound_commands.is_empty(),
-        records: bundle.audit.len(),
-        receipts: bundle.receipts.len(),
-        unbound_commands,
-        errors,
+
+    impl<'de> Visitor<'de> for Bundle<'_, '_> {
+        type Value = ();
+        fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            f.write_str("an evidence bundle")
+        }
+        fn visit_map<M: MapAccess<'de>>(self, mut map: M) -> Result<(), M::Error> {
+            let mut seen = [false; 4];
+            while let Some(key) = map.next_key::<String>()? {
+                let Some(index) = MEMBERS.iter().position(|m| *m == key) else {
+                    return Err(de::Error::unknown_field(&key, &MEMBERS));
+                };
+                if std::mem::replace(&mut seen[index], true) {
+                    return Err(de::Error::duplicate_field(MEMBERS[index]));
+                }
+                match index {
+                    0 => self.0.version(map.next_value()?),
+                    1 => map.next_value_seed(Records(self.0))?,
+                    2 => map.next_value_seed(Receipts(self.0))?,
+                    _ => self.0.checkpoint(map.next_value::<AuditCheckpoint>()?),
+                }
+            }
+            match seen.iter().position(|s| !s) {
+                Some(missing) => Err(de::Error::missing_field(MEMBERS[missing])),
+                None => Ok(()),
+            }
+        }
+    }
+
+    struct Records<'v, 'a>(&'v mut EvidenceVerifier<'a>);
+
+    impl<'de> DeserializeSeed<'de> for Records<'_, '_> {
+        type Value = ();
+        fn deserialize<D: de::Deserializer<'de>>(self, d: D) -> Result<(), D::Error> {
+            d.deserialize_seq(self)
+        }
+    }
+
+    impl<'de> Visitor<'de> for Records<'_, '_> {
+        type Value = ();
+        fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            f.write_str("a list of audit records")
+        }
+        fn visit_seq<S: SeqAccess<'de>>(self, mut seq: S) -> Result<(), S::Error> {
+            while let Some(record) = seq.next_element::<AuditRecord>()? {
+                self.0.audit(&record);
+            }
+            Ok(())
+        }
+    }
+
+    struct Receipts<'v, 'a>(&'v mut EvidenceVerifier<'a>);
+
+    impl<'de> DeserializeSeed<'de> for Receipts<'_, '_> {
+        type Value = ();
+        fn deserialize<D: de::Deserializer<'de>>(self, d: D) -> Result<(), D::Error> {
+            d.deserialize_seq(self)
+        }
+    }
+
+    impl<'de> Visitor<'de> for Receipts<'_, '_> {
+        type Value = ();
+        fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            f.write_str("a list of receipts")
+        }
+        fn visit_seq<S: SeqAccess<'de>>(self, mut seq: S) -> Result<(), S::Error> {
+            while let Some(receipt) = seq.next_element::<Receipt>()? {
+                self.0.receipt(&receipt);
+            }
+            Ok(())
+        }
     }
 }
 

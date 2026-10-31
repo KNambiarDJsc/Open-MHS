@@ -1,6 +1,6 @@
 # RFC 0002: Storage engine: restart cost bounded by live state
 
-- **Status:** draft (milestones 1 and 2 implemented; everything after them is a proposal for review)
+- **Status:** draft (milestones 1 and 2 and the streaming verifier implemented; everything after them is a proposal for review)
 - **Author:** OpenMHS maintainers (drafted with Claude Code)
 - **Date:** 2026-10-31
 - **Touches:** journal format / stored journals / API / tooling / security model
@@ -217,7 +217,7 @@ Each milestone ships alone, with its own tests, and leaves every journal readabl
 |---|---|---|---|
 | **M1** | **Index-driven recovery; unfinished set checked against the chain at open** | No | **Done**: below |
 | **M2** | **Bounded API reads: `audit.tail` by `ORDER BY seq DESC LIMIT`, list filters in SQL, `audit.export` streamed to a file (F3–F5)** | No | **Done**: below |
-| M3 | Segment writer and offline verifier: `openmhs audit segment` writes and verifies segments for a seq range; nothing is deleted | No | Round trip: every record and receipt byte for byte; `verify-file` accepts it; bit flips in the file are detected |
+| M3 | Segment writer and offline verifier: `openmhs audit segment` writes and verifies segments for a seq range; nothing is deleted. The streaming `verify-file` it needs is done (below) | No | Round trip: every record and receipt byte for byte; `verify-file` accepts it; bit flips in the file are detected |
 | M4 | Seal records with snapshots; start-up verifies the tail when an external checkpoint covers the last seal | No | Same refusals as today for every adversary case; start-up flat in history |
 | M5 | `command_keys`; compaction behind `--archive` | **Yes**, behind a flag | The archival drills below all pass, and the bit-flip and torn-write drills are rerun on compacted journals |
 | M6 | Event classes and telemetry store (strategy RFC §3–5) | Raw telemetry, by policy | No loss of `CRITICAL` or `SECURITY` records under quota pressure |
@@ -315,6 +315,44 @@ each in fresh processes, medians, warm cache. `L` is the number of unfinished co
   The query-plan unit test, the gateway test above, and the existing CLI export and
   `verify-file` test also cover this milestone.
 
+### Streaming verifier, implemented
+
+`openmhs audit verify-file` used to load the whole bundle, so verifying evidence cost
+memory proportional to the journal; M3's verifier of segments needs the other behaviour, so
+it is done first.
+
+- [`EvidenceVerifier`](../../crates/openmhs-types/src/evidence.rs) is the verifier as a state
+  machine: it is given audit records and receipts one at a time and keeps, per command, the
+  latest record's hash and the receipt digest it commits to, and per receipt its id, pointer
+  and computed digest. It never keeps a record. `verify_evidence` (a whole bundle in memory,
+  as before) now runs on it, and `verify_evidence_reader` feeds it from a JSON reader with
+  serde visitors. So there is one set of checks, not two.
+- Receipts are compared with the chain only at the end, so the members of the file can come
+  in any order, as JSON allows. The report is identical to the old one, including the order
+  of errors. A test keeps the old implementation as a reference and requires equal results
+  for 16 cases (good, edited, missing or duplicate receipts, forged receipt, wrong pointer,
+  version, checkpoint, truncation with and without an anchor, a consistent rewrite, a legacy
+  record, a record that is not JSON, an empty log) in three member orders.
+- A file that is not exactly one bundle is refused: every missing member, an unknown member
+  (also inside a record), a duplicate member, trailing data, a cut-off file.
+- One change in the report: after 1,000 invalid records the rest are counted in one line.
+  Otherwise a wholly corrupt log of 1.7 million records would produce 1.7 million lines.
+- The CLI reads the file through a 64 KiB buffer. The old reader was unbuffered.
+
+Measured with the release CLI of M2 (before) and of this change (after), three runs each,
+on the files `audit export` made from the 100 MB and the 1 GB journals above:
+
+| Export file | Before: time, peak memory | After: time, peak memory |
+|---|---|---|
+| 101 MB (174 k records, 11 k receipts) | 155 s, 130 MB | 1.6 s, 19 MB |
+| 940 MB (1.70 M records, 101 k receipts) | not run | 15 s, 86 MB |
+
+Both gave the same report on the 101 MB file. Most of the old time is the unbuffered file
+reader (many tiny reads), not the checks, so the 155 s is not a fair measure of the checks
+alone. The old verifier was not run on the 940 MB file: the machine had 3.6 GB free and its
+page file is on a full drive. The after memory is 19 MB for 11 k commands and 86 MB for
+101 k, about 0.7 KB per command; that is two measurements, not a fit.
+
 ### Measured
 
 Each call was measured end to end through a real gateway and its own CLI, with the old
@@ -374,7 +412,13 @@ the same session.
 
 1. **Idempotency retention.** Keep keys forever (about 150 bytes per keyed command), or
    change the spec to a documented window after which a key may be reused? This is a
-   contract with callers, not an implementation detail.
+   contract with callers, not an implementation detail. *Standing decision until the
+   owner chooses otherwise: forever, which is what the spec and the code do today.* Nothing
+   in M1–M3 depends on the answer, and no milestone changes the contract. Only M5 does
+   anything with keys: it keeps the permanent `command_keys` index, so a key is still
+   honoured after its command is archived. A retention window would be a separate spec
+   change, with its own RFC and a migration for callers that rely on a key never being
+   reused.
 2. Segment size: by record count, bytes or time? Proposed: bytes, so that a segment's
    verification time is bounded.
 3. Must archived receipts be served by the live API (`commands.get`), or only by offline

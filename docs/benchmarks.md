@@ -118,6 +118,10 @@ On the 1 GB journal:
 The old export was only run on the 100 MB journal, where it peaked at 519 MB in the gateway
 and 477 MB in the CLI. The full table and method are in the RFC.
 
+`audit verify-file` streams the file too: a 101 MB export went from 155 s and 130 MB to
+1.6 s and 19 MB (most of the old time was an unbuffered read), and the 940 MB export takes
+15 s and 86 MB. The old one was not run on the 940 MB file.
+
 **The first measurement changed the code.** The audit chain was first verified by loading
 the whole log into memory: peak memory equalled the journal's size (969 MB for the 1 GB
 journal, 724 MB for the read-heavy one), enough to stop a gateway starting on a Raspberry Pi.

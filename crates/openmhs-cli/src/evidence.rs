@@ -1,11 +1,12 @@
 //! Export files and offline evidence verification. Never opens a gateway or journal: an
-//! export reads through a running gateway.
+//! export reads through a running gateway. Neither an export nor a verification holds the
+//! bundle in memory.
 
 use std::io::Write;
 use std::path::Path;
 
 use openmhs_api::{Client, ClientError};
-use openmhs_types::evidence::{AuditCheckpoint, EvidenceBundle, verify_evidence};
+use openmhs_types::evidence::{AuditCheckpoint, verify_evidence_reader};
 use serde::Serialize;
 use serde::de::{DeserializeOwned, IgnoredAny};
 
@@ -84,20 +85,25 @@ fn load<T: DeserializeOwned>(path: &Path) -> Result<T, String> {
     serde_json::from_reader(file).map_err(|e| format!("{}: {e}", path.display()))
 }
 
+/// Verify the bundle in `path` as it is read: memory grows with the number of commands, not
+/// with the length of the audit log.
 pub fn verify_file(json: bool, path: &Path, checkpoint: Option<&Path>) -> u8 {
-    let input = (|| -> Result<_, String> {
-        let bundle = load::<EvidenceBundle>(path)?;
+    let verified = (|| -> Result<_, String> {
         let anchor = checkpoint.map(load::<AuditCheckpoint>).transpose()?;
-        Ok((bundle, anchor))
+        let file = std::fs::File::open(path).map_err(|e| format!("{}: {e}", path.display()))?;
+        verify_evidence_reader(
+            std::io::BufReader::with_capacity(1 << 16, file),
+            anchor.as_ref(),
+        )
+        .map_err(|e| format!("{}: {e}", path.display()))
     })();
-    let (bundle, anchor) = match input {
-        Ok(input) => input,
+    let result = match verified {
+        Ok(result) => result,
         Err(e) => {
             eprintln!("error: {e}");
             return exit::ERROR;
         }
     };
-    let result = verify_evidence(&bundle, anchor.as_ref());
     show(json, &result, |result| {
         println!(
             "valid: {}, complete receipt coverage: {}; {} records, {} receipts",

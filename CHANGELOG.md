@@ -61,6 +61,14 @@ and the entry will say so under **Changed** or **Removed**.
   bundle: 519 MB and 477 MB for a 100 MB journal. The file is now compact JSON with
   `checkpoint` first, and `verify-file` reads both old and new exports. A failed export
   leaves no file.
+- `openmhs audit verify-file` streams the file: memory grows with the number of commands
+  (about 0.7 KB each), not with the length of the audit log. A 101 MB export went from
+  155 s and 130 MB to 1.6 s and 19 MB; a 940 MB export takes 15 s and 86 MB. Most of the
+  old time was an unbuffered file read. The report is unchanged, with one exception: after
+  1,000 invalid records the rest are counted in one line. A file that is not exactly one
+  bundle (an unknown, duplicate or missing member, trailing data, a cut-off file) is
+  refused as malformed. `openmhs-types` gains `EvidenceVerifier` and
+  `verify_evidence_reader`; `verify_evidence` is unchanged for callers.
 
 ### Added
 
