@@ -399,6 +399,12 @@ pub struct ServeArgs {
     /// MiB. A starting point to test, not a sizing recommendation.
     #[arg(long, default_value_t = openmhs_gateway::DEFAULT_JOURNAL_RESERVE_BYTES / (1024 * 1024))]
     journal_reserve_mib: u64,
+    /// Keep the journal's audit head in this file, written after every dispatch and before
+    /// the device is called, and refuse to start on a journal that is behind it (a restored
+    /// backup, a lost write-ahead log). Put it on storage that fails separately from the
+    /// home directory. Default: not kept.
+    #[arg(long)]
+    checkpoint_file: Option<PathBuf>,
 }
 
 #[derive(Subcommand)]
@@ -959,6 +965,7 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
         readback_skew_ms: args.readback_skew_ms,
         journal_max_bytes: args.journal_max_mib.map(|m| m.saturating_mul(1024 * 1024)),
         journal_reserve_bytes: args.journal_reserve_mib.saturating_mul(1024 * 1024),
+        checkpoint_file: args.checkpoint_file.clone(),
     };
     let gateway = match openmhs_gateway::start(config).await {
         Ok(g) => g,

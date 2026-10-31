@@ -6,7 +6,7 @@ use openmhs_types::Receipt;
 use openmhs_types::plan::Plan;
 use rusqlite::{OptionalExtension, params};
 
-use super::{Journal, JournalError};
+use super::{FaultPhase, Journal, JournalError};
 
 fn decode(rows: impl Iterator<Item = rusqlite::Result<String>>) -> Result<Vec<Plan>, JournalError> {
     let mut out = Vec::new();
@@ -44,7 +44,9 @@ impl Journal {
                 "steps": plan.order, "lease_id": plan.lease_id,
             }),
         )?;
+        self.fault(&tx, "plan:plan.submitted", FaultPhase::BeforeCommit)?;
         tx.commit()?;
+        self.fault(&conn, "plan:plan.submitted", FaultPhase::AfterCommit)?;
         Ok(())
     }
 
@@ -55,6 +57,7 @@ impl Journal {
         kind: &str,
         detail: &serde_json::Value,
     ) -> Result<(), JournalError> {
+        let site = format!("plan:{kind}");
         let mut conn = self.lock();
         let tx = conn.transaction()?;
         tx.execute(
@@ -67,7 +70,9 @@ impl Journal {
             ],
         )?;
         Self::append_audit_tx(&tx, plan.updated_at, kind, &plan.id, detail)?;
+        self.fault(&tx, &site, FaultPhase::BeforeCommit)?;
         tx.commit()?;
+        self.fault(&conn, &site, FaultPhase::AfterCommit)?;
         Ok(())
     }
 
@@ -118,10 +123,13 @@ impl Journal {
         plan_id: &str,
         step_id: &str,
     ) -> Result<(), JournalError> {
-        self.lock().execute(
+        let conn = self.lock();
+        self.fault(&conn, "plan.link", FaultPhase::BeforeCommit)?;
+        conn.execute(
             "INSERT OR IGNORE INTO plan_commands (command_id, plan_id, step_id) VALUES (?1, ?2, ?3)",
             params![command_id, plan_id, step_id],
         )?;
+        self.fault(&conn, "plan.link", FaultPhase::AfterCommit)?;
         Ok(())
     }
 
@@ -147,17 +155,21 @@ impl Journal {
         device: &str,
         key: &str,
     ) -> Result<Option<Receipt>, JournalError> {
-        let json: Option<String> = self
-            .lock()
+        let conn = self.lock();
+        let json: Option<String> = conn
             .query_row(
                 "SELECT receipt FROM commands WHERE principal = ?1 AND device = ?2 AND idempotency_key = ?3",
                 params![principal, device, key],
                 |r| r.get(0),
             )
             .optional()?;
-        Ok(match json {
-            Some(j) => Some(serde_json::from_str(&j)?),
-            None => None,
-        })
+        // Recovery (the SDK's, and a plan's) acts on what this returns: checked like every
+        // other read of a receipt.
+        let Some(json) = json else {
+            return Ok(None);
+        };
+        let receipt: Receipt = serde_json::from_str(&json)?;
+        Self::check_receipt(&conn, &receipt)?;
+        Ok(Some(receipt))
     }
 }

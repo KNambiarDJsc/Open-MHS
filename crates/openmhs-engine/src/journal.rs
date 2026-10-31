@@ -115,9 +115,15 @@ pub struct Fault {
     pub effect: FaultEffect,
 }
 
+/// Called at every durable boundary with its site and phase, while the journal is locked
+/// (persistence drills only).
+#[doc(hidden)]
+pub type CommitObserver = Box<dyn Fn(&str, FaultPhase) + Send + Sync>;
+
 pub struct Journal {
     conn: Mutex<Connection>,
     fault: Mutex<Option<Fault>>,
+    observer: Mutex<Option<CommitObserver>>,
 }
 
 pub fn sha256_hex(data: &str) -> String {
@@ -128,10 +134,36 @@ pub fn sha256_hex(data: &str) -> String {
 }
 
 impl Journal {
+    /// Open (or create) the journal at `path`. A journal that fails SQLite's integrity
+    /// check, or whose audit chain does not verify, is refused: the gateway does not start
+    /// on a record it cannot trust, and does not extend a broken chain.
     pub fn open(path: &Path) -> Result<Self, JournalError> {
         let conn = Connection::open(path)?;
+        check_integrity(&conn, "PRAGMA quick_check")?;
         conn.pragma_update(None, "journal_mode", "WAL")?;
-        Self::init(conn)
+        let journal = Self::init(conn)?;
+        // The unique indexes that stop a command being created twice under one idempotency
+        // key, or an approval being spent on two commands, get the full check: quick_check
+        // does not compare an index with its table, and a damaged index lets a duplicate in.
+        {
+            let conn = journal.lock();
+            for table in ["commands", "approvals"] {
+                check_integrity(&conn, &format!("PRAGMA integrity_check({table})"))?;
+            }
+        }
+        let audit = journal.verify_audit()?;
+        if let Some(seq) = audit.first_invalid {
+            return Err(refuse(
+                "journal.audit_invalid",
+                format!(
+                    "the journal's audit chain is broken at record {seq} of {}: it was edited or \
+                     damaged, so the gateway will not start on it. Keep the file for \
+                     investigation and start from a verified copy",
+                    audit.records
+                ),
+            ));
+        }
+        Ok(journal)
     }
 
     pub fn open_in_memory() -> Result<Self, JournalError> {
@@ -232,6 +264,7 @@ impl Journal {
         Ok(Self {
             conn: Mutex::new(conn),
             fault: Mutex::new(None),
+            observer: Mutex::new(None),
         })
     }
 
@@ -253,8 +286,27 @@ impl Journal {
             .unwrap_or_else(std::sync::PoisonError::into_inner) = Some(fault);
     }
 
+    /// Watch every durable boundary (persistence drills: the torn-write drill copies the
+    /// files after each commit). The observer runs with the journal locked and must not
+    /// call back into it.
+    #[doc(hidden)]
+    pub fn observe_commits(&self, observer: CommitObserver) {
+        *self
+            .observer
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner) = Some(observer);
+    }
+
     /// Fire the armed fault if it is for `site` at `phase`.
     fn fault(&self, conn: &Connection, site: &str, phase: FaultPhase) -> Result<(), JournalError> {
+        if let Some(observe) = self
+            .observer
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .as_ref()
+        {
+            observe(site, phase);
+        }
         let mut armed = self
             .fault
             .lock()
@@ -420,14 +472,21 @@ impl Journal {
             at,
             detail: detail.clone(),
         });
-        let hash = Self::append_audit_tx(
-            tx,
-            at,
-            "command.transition",
-            command_id,
-            &serde_json::json!({ "from": from, "to": to, "detail": detail,
-                "receipt_digest": { "version": 1, "sha256": receipt_digest(&r)? } }),
-        )?;
+        let mut data = serde_json::json!({ "from": from, "to": to, "detail": detail,
+            "receipt_digest": { "version": 1, "sha256": receipt_digest(&r)? } });
+        if to == CommandState::Dispatched {
+            let expectation: Option<Option<String>> = tx
+                .query_row(
+                    "SELECT expectation FROM commands WHERE command_id = ?1",
+                    [command_id],
+                    |row| row.get(0),
+                )
+                .optional()?;
+            if let Some(json) = expectation.flatten() {
+                data["expectation_sha256"] = sha256_hex(&json).into();
+            }
+        }
+        let hash = Self::append_audit_tx(tx, at, "command.transition", command_id, &data)?;
         r.audit_hash = Some(hash);
         tx.execute(
             "UPDATE commands SET state = ?1, receipt = ?2 WHERE command_id = ?3",
@@ -737,6 +796,7 @@ impl Journal {
         command_id: &str,
         expectation: &Expectation,
     ) -> Result<(), JournalError> {
+        // Bound to the audit chain by the DISPATCHED record that follows (transition_tx).
         let conn = self.lock();
         self.fault(&conn, "expectation", FaultPhase::BeforeCommit)?;
         conn.execute(
@@ -748,18 +808,39 @@ impl Journal {
     }
 
     pub fn expectation(&self, command_id: &str) -> Result<Option<Expectation>, JournalError> {
-        let json: Option<Option<String>> = self
-            .lock()
+        let conn = self.lock();
+        let json: Option<Option<String>> = conn
             .query_row(
                 "SELECT expectation FROM commands WHERE command_id = ?1",
                 [command_id],
                 |r| r.get(0),
             )
             .optional()?;
-        match json.flatten() {
-            Some(j) => Ok(Some(serde_json::from_str(&j)?)),
-            None => Ok(None),
+        let Some(json) = json.flatten() else {
+            return Ok(None);
+        };
+        // Verification and reconciliation compare the device against this, so it is bound
+        // to the chain by the DISPATCHED record: a changed value is refused, never used.
+        let bound: Option<String> = conn
+            .query_row(
+                "SELECT data FROM audit WHERE subject = ?1 AND kind = 'command.transition' \
+                 AND json_extract(data, '$.to') = 'DISPATCHED' ORDER BY seq DESC LIMIT 1",
+                [command_id],
+                |r| r.get(0),
+            )
+            .optional()?;
+        let bound: Option<serde_json::Value> =
+            bound.map(|b| serde_json::from_str(&b)).transpose()?;
+        // Journals written before the binding carry no digest to check against.
+        if let Some(digest) = bound.as_ref().and_then(|b| b.get("expectation_sha256"))
+            && digest.as_str() != Some(sha256_hex(&json).as_str())
+        {
+            return Err(refuse(
+                "journal.receipt_integrity",
+                format!("stored expectation differs from its audit record for {command_id}"),
+            ));
         }
+        Ok(Some(serde_json::from_str(&json)?))
     }
 
     /// All commands currently in one of `states`, oldest first.
@@ -970,6 +1051,42 @@ impl Journal {
         })
     }
 
+    /// The newest audit record's sequence number and hash (genesis when empty).
+    pub fn head_checkpoint(&self) -> Result<AuditCheckpoint, JournalError> {
+        let head: Option<(i64, String)> = self
+            .lock()
+            .query_row(
+                "SELECT seq, hash FROM audit ORDER BY seq DESC LIMIT 1",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .optional()?;
+        Ok(head.map_or_else(
+            || AuditCheckpoint {
+                seq: 0,
+                hash: GENESIS.into(),
+            },
+            |(seq, hash)| AuditCheckpoint { seq, hash },
+        ))
+    }
+
+    /// Whether the chain contains the record a checkpoint names: the journal has reached
+    /// it, on this same history.
+    pub fn contains_checkpoint(&self, checkpoint: &AuditCheckpoint) -> Result<bool, JournalError> {
+        if checkpoint.seq == 0 {
+            return Ok(checkpoint.hash == GENESIS);
+        }
+        let hash: Option<String> = self
+            .lock()
+            .query_row(
+                "SELECT hash FROM audit WHERE seq = ?1",
+                [checkpoint.seq],
+                |r| r.get(0),
+            )
+            .optional()?;
+        Ok(hash.as_deref() == Some(checkpoint.hash.as_str()))
+    }
+
     /// Recompute the hash chain. Detects edited, reordered, inserted or deleted records
     /// (deleting the newest records is only detectable against a separately kept head hash).
     pub fn verify_audit(&self) -> Result<AuditVerification, JournalError> {
@@ -1002,6 +1119,38 @@ impl Journal {
     #[doc(hidden)]
     pub fn execute_raw(&self, sql: &str) -> Result<usize, JournalError> {
         Ok(self.lock().execute(sql, [])?)
+    }
+}
+
+/// One of SQLite's own structural checks (`quick_check`, or `integrity_check` of a table and
+/// its indexes): pages, records, free lists and indexes, not the meaning of the data.
+/// Damage is `journal.corrupt`; other errors (a locked file) pass through as they are.
+fn check_integrity(conn: &Connection, pragma: &str) -> Result<(), JournalError> {
+    let corrupt = |why: String| {
+        refuse(
+            "journal.corrupt",
+            format!(
+                "the journal failed SQLite's integrity check ({why}), so the gateway will not \
+                 start on it. Keep the file for investigation and start from a verified copy"
+            ),
+        )
+    };
+    let rows = conn.prepare(pragma).and_then(|mut stmt| {
+        stmt.query_map([], |r| r.get::<_, String>(0))?
+            .collect::<Result<Vec<_>, _>>()
+    });
+    match rows {
+        Ok(rows) if rows == ["ok"] => Ok(()),
+        Ok(rows) => Err(corrupt(rows.join("; "))),
+        Err(rusqlite::Error::SqliteFailure(e, msg))
+            if matches!(
+                e.code,
+                rusqlite::ErrorCode::DatabaseCorrupt | rusqlite::ErrorCode::NotADatabase
+            ) =>
+        {
+            Err(corrupt(msg.unwrap_or_else(|| e.to_string())))
+        }
+        Err(e) => Err(e.into()),
     }
 }
 

@@ -135,16 +135,26 @@ Agents usually only need the coarse class:
 7. If the journal refuses a write while a command is being dispatched or after (an I/O
    error, a full disk), the gateway does not end the call early: the device stays locked
    until the adapter call ends. It then settles the command on record if it still can:
-   one that was never sent becomes `EXPIRED`; one that may have reached the device
-   becomes `UNKNOWN_OUTCOME` (detail `the outcome could not be recorded`), never resent.
-   If not even that can be written, the command stays `DISPATCHED`, `ACCEPTED` or
-   `TIMED_OUT` on record, and is held exactly like `UNKNOWN_OUTCOME` (rule 3) until a
-   restart's recovery settles it. Tested by `crates/openmhs-engine/tests/persistence_adversary.rs`
+   one that was never sent becomes `EXPIRED`, or `FAILED` with `adapter.not_sent` if its
+   dispatch was already recorded; one that may have reached the device becomes
+   `UNKNOWN_OUTCOME` (detail `the outcome could not be recorded`), never resent. If not
+   even that can be written, the command stays `DISPATCHED`, `ACCEPTED` or `TIMED_OUT` on
+   record, and is held exactly like `UNKNOWN_OUTCOME` (rule 3) until a restart's recovery
+   settles it. Tested by `crates/openmhs-engine/tests/persistence_*.rs`
    ([PERSISTENCE_ADVERSARY.md](../docs/architecture/PERSISTENCE_ADVERSARY.md)).
-8. The gateway trusts the journal it is given. A journal rolled back to an earlier copy
-   (a restored backup, a lost write-ahead log, a disk that acknowledged writes it did not
-   make) is not detected at start; recovery then believes the older record. Only an audit
-   checkpoint kept elsewhere reveals it (`openmhs audit verify-file --checkpoint`).
+8. The gateway does not start on a journal it cannot trust: one that fails SQLite's
+   integrity check (`journal.corrupt`) or whose audit chain does not verify
+   (`journal.audit_invalid`). The readback target a command is verified and reconciled
+   against is bound to the chain by its `DISPATCHED` record; a changed one is refused
+   (`journal.receipt_integrity`), never used.
+9. A journal rolled back to an earlier copy (a restored backup, a lost write-ahead log, a
+   disk that acknowledged writes it did not make) is internally consistent, so rule 8
+   cannot see it. With `serve --checkpoint-file`, the gateway writes its audit head to
+   that file after every dispatch is journaled and before the device is called, and
+   refuses to start on a journal that does not contain the head the file names
+   (`journal.behind_checkpoint`); if the file cannot be written, the command is not sent.
+   Without it, a rolled-back journal is believed, and only an audit checkpoint kept
+   elsewhere reveals it (`openmhs audit verify-file --checkpoint`).
 
 ## 5. Reconciliation
 
@@ -182,6 +192,7 @@ never contacts the device.
 | Device refused it | `REJECTED`, with the device's error | — |
 | Gateway restarted mid-command | `UNKNOWN_OUTCOME` (§4) | No |
 | Journal write failed mid-command (I/O error, disk full) | `UNKNOWN_OUTCOME`, or left in flight on record and held (§4 rule 7) | No |
+| Dispatch recorded, adapter not called (journal or checkpoint write failed) | `FAILED` with `adapter.not_sent` (§4 rules 7, 9) | No |
 
 A caller that stops waiting (a client disconnect, a cancelled request) does not cut the
 command short: it runs to one of these states, and its receipt is fetched later.

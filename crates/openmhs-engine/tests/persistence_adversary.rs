@@ -404,7 +404,7 @@ async fn a_crash_while_spending_an_approval_never_makes_it_reusable() {
 async fn a_full_journal_mid_command_holds_the_capability_until_recovery() {
     let mut stranded = 0;
     let mut violations = Vec::new();
-    for slack_pages in 1..=24u64 {
+    for slack_pages in 1..=64u64 {
         let label = format!("disk full after {slack_pages} pages");
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("journal.sqlite");
@@ -419,16 +419,26 @@ async fn a_full_journal_mid_command_holds_the_capability_until_recovery() {
             })
             .unwrap();
 
-        let mut failed = false;
-        for i in 0..400 {
+        let mut failed = None;
+        for i in 0..400u64 {
             let v = if i % 2 == 0 { 1.0 } else { 2.0 };
-            if engine.submit(&agent(), &set(v, None)).await.is_err() {
-                failed = true;
+            // Records of varying size, so that the journal runs out at a different write in
+            // each sweep.
+            let mut request = set(v, None);
+            request["correlation_id"] =
+                json!("c".repeat(1 + ((slack_pages * 37 + i * 11) % 120) as usize));
+            if let Err(e) = engine.submit(&agent(), &request).await {
+                failed = Some(e);
                 break;
             }
             tokio::time::sleep(Duration::from_secs(2)).await;
         }
-        assert!(failed, "{label}: never ran out");
+        let failed = failed.unwrap_or_else(|| panic!("{label}: never ran out"));
+        let last = engine.commands(None, &[], 1).unwrap();
+        println!(
+            "{label}: {failed}; last command {:?}",
+            last.first().map(|r| (r.state, r.transitions.len()))
+        );
         tokio::time::sleep(Duration::from_secs(10)).await;
 
         // Every call that reached the device has its dispatch on record.
@@ -629,11 +639,11 @@ async fn a_process_aborted_at_a_boundary_recovers_without_resending() {
 
 // ---------------------------------------------------------------- the journal's own limits
 
-/// Known limit, pinned so that it is not forgotten: the gateway trusts the journal it is
-/// given. A journal rolled back to an earlier copy (a restored backup, a lost write-ahead
-/// log, a disk that acknowledged writes it never made) is opened without complaint, and
-/// recovery then believes the older record. Only a checkpoint kept somewhere else shows
-/// that records are missing.
+/// Without a checkpoint file the gateway trusts the journal it is given: a journal rolled
+/// back to an earlier copy (a restored backup, a lost write-ahead log, a disk that
+/// acknowledged writes it never made) is consistent, opened without complaint, and
+/// believed. Only a checkpoint kept somewhere else shows that records are missing. With
+/// `--checkpoint-file` it is refused at start: `persistence_storage.rs`.
 #[tokio::test(start_paused = true)]
 async fn a_rolled_back_journal_is_only_detected_against_an_external_checkpoint() {
     let dir = tempfile::tempdir().unwrap();

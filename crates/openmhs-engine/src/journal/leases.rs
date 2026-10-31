@@ -99,7 +99,9 @@ impl Journal {
                 "plan_id": lease.plan_id, "reason": lease.reason, "expires_at": lease.expires_at,
             }),
         )?;
+        self.fault(&tx, "lease:acquired", super::FaultPhase::BeforeCommit)?;
         tx.commit()?;
+        self.fault(&conn, "lease:acquired", super::FaultPhase::AfterCommit)?;
         Ok(())
     }
 
@@ -171,7 +173,9 @@ impl Journal {
             id,
             &serde_json::json!({ "holder": l.holder, "by": by, "reason": reason }),
         )?;
+        self.fault(&tx, "lease:released", super::FaultPhase::BeforeCommit)?;
         tx.commit()?;
+        self.fault(&conn, "lease:released", super::FaultPhase::AfterCommit)?;
         Ok(l)
     }
 
@@ -207,7 +211,9 @@ impl Journal {
             id,
             &serde_json::json!({ "holder": holder, "expires_at": expires_at }),
         )?;
+        self.fault(&tx, "lease:renewed", super::FaultPhase::BeforeCommit)?;
         tx.commit()?;
+        self.fault(&conn, "lease:renewed", super::FaultPhase::AfterCommit)?;
         Ok(l)
     }
 
@@ -239,7 +245,9 @@ impl Journal {
             )?;
             out.push(l);
         }
+        self.fault(&tx, "lease:expired", super::FaultPhase::BeforeCommit)?;
         tx.commit()?;
+        self.fault(&conn, "lease:expired", super::FaultPhase::AfterCommit)?;
         Ok(out)
     }
 }

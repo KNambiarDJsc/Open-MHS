@@ -135,6 +135,8 @@ struct Inner {
     topology: RwLock<Vec<TopologyRelationship>>,
     state: Mutex<HashMap<(String, String), StateValue>>,
     storage: Mutex<Option<StorageLimits>>,
+    /// Where the audit head is kept outside the journal; held while writing it.
+    checkpoint_file: Mutex<Option<std::path::PathBuf>>,
     options: EngineOptions,
     plans: plans::PlanRuntime,
     /// The state fabric's event stream and watches (ADR-0023). In memory only.
@@ -222,6 +224,7 @@ impl Engine {
                 topology: RwLock::new(Vec::new()),
                 state: Mutex::new(HashMap::new()),
                 storage: Mutex::new(None),
+                checkpoint_file: Mutex::new(None),
                 bus: events::Bus::new(options.event_capacity),
                 watches: events::Watches::default(),
                 options,
@@ -294,6 +297,99 @@ impl Engine {
         self.inner.journal.set_max_bytes(limits.max_bytes)?;
         *lock(&self.inner.storage) = Some(limits);
         Ok(())
+    }
+
+    /// Keep the journal's audit head in `path`, outside the journal and ideally on storage
+    /// that fails separately from it, and refuse a journal that is behind it. The head is
+    /// written now and after every dispatch is journaled, before the device is called, so a
+    /// journal that later comes back without a dispatch (a restored backup, a lost
+    /// write-ahead log, a disk that acknowledged a write it did not make) is caught here,
+    /// at the next start, instead of being believed (spec/lifecycle.md §4 rule 8).
+    ///
+    /// `journal.behind_checkpoint` if the journal does not contain the saved head. An
+    /// operator who means to start from an older journal moves the file aside.
+    pub fn set_checkpoint_file(&self, path: &Path) -> Result<(), EngineError> {
+        let refuse = |code: &str, message: String| {
+            EngineError::Denied(
+                ErrorObject::new(code, message)
+                    .detail("checkpoint_file", path.display().to_string()),
+            )
+        };
+        match std::fs::read(path) {
+            Ok(bytes) => {
+                let saved: openmhs_types::evidence::AuditCheckpoint =
+                    serde_json::from_slice(&bytes).map_err(|e| {
+                        refuse(
+                            "journal.checkpoint_unreadable",
+                            format!(
+                                "the audit checkpoint at {} cannot be read: {e}",
+                                path.display()
+                            ),
+                        )
+                    })?;
+                if !self.inner.journal.contains_checkpoint(&saved)? {
+                    let head = self.inner.journal.head_checkpoint()?;
+                    return Err(refuse(
+                        "journal.behind_checkpoint",
+                        format!(
+                            "the journal does not contain audit record {} named by the checkpoint \
+                             at {} (its newest is {}): it is an older or different copy, and \
+                             commands it does not show may have reached devices. The gateway \
+                             will not start on it. Find the current journal, or move the \
+                             checkpoint aside to accept this one knowingly",
+                            saved.seq,
+                            path.display(),
+                            head.seq
+                        ),
+                    ));
+                }
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+            Err(e) => {
+                return Err(refuse(
+                    "journal.checkpoint_unreadable",
+                    format!(
+                        "the audit checkpoint at {} cannot be read: {e}",
+                        path.display()
+                    ),
+                ));
+            }
+        }
+        *lock(&self.inner.checkpoint_file) = Some(path.to_owned());
+        self.write_checkpoint()
+    }
+
+    /// Save the audit head to the checkpoint file, if one is set: written whole to a
+    /// temporary file, synced, then renamed over the old one.
+    fn write_checkpoint(&self) -> Result<(), EngineError> {
+        let file = lock(&self.inner.checkpoint_file);
+        let Some(path) = file.as_ref() else {
+            return Ok(());
+        };
+        let head = self.inner.journal.head_checkpoint()?;
+        let write = || -> std::io::Result<()> {
+            use std::io::Write as _;
+            let tmp = path.with_extension("tmp");
+            let mut f = std::fs::File::create(&tmp)?;
+            f.write_all(&serde_json::to_vec_pretty(&head)?)?;
+            f.sync_all()?;
+            drop(f);
+            std::fs::rename(&tmp, path)?;
+            #[cfg(unix)]
+            if let Some(dir) = path.parent().filter(|d| !d.as_os_str().is_empty()) {
+                std::fs::File::open(dir)?.sync_all()?;
+            }
+            Ok(())
+        };
+        write().map_err(|e| {
+            EngineError::Denied(ErrorObject::new(
+                "gateway.checkpoint",
+                format!(
+                    "could not write the audit checkpoint to {}: {e}",
+                    path.display()
+                ),
+            ))
+        })
     }
 
     /// `Some` once the journal is within its reserve of its limit: the refusal for work
@@ -1251,6 +1347,10 @@ impl Engine {
         if let Err(e) = self.transition(id, Dispatched, Some("intent journaled".into()), |_| {}) {
             return self.settle_unrecorded(id, e, false);
         }
+        // And known outside the journal, if a checkpoint file is kept.
+        if let Err(e) = self.write_checkpoint() {
+            return self.settle_unrecorded(id, e, false);
+        }
 
         let command = AdapterCommand {
             command_id: id.to_owned(),
@@ -1336,9 +1436,10 @@ impl Engine {
         }
     }
 
-    /// A journal write failed while a command was being dispatched or after. Settle it on
-    /// record if the journal still takes writes: a command that was never sent expires,
-    /// and one that may have reached the device becomes `UNKNOWN_OUTCOME`, never resent.
+    /// A journal (or checkpoint) write failed while a command was being dispatched or
+    /// after. Settle it on record if the journal still takes writes: a command that was
+    /// never sent expires, or fails `adapter.not_sent` if its dispatch was already recorded;
+    /// one that may have reached the device becomes `UNKNOWN_OUTCOME`, never resent.
     /// If not even that can be written, it stays in flight on record, where the unresolved
     /// hold keeps related writes back and recovery settles it at the next start.
     fn settle_unrecorded(
@@ -1351,8 +1452,8 @@ impl Engine {
         let Ok(Some(receipt)) = self.receipt(id) else {
             return Err(cause);
         };
-        let settled = match receipt.state {
-            Approved => self.transition(
+        let settled = match (receipt.state, sent) {
+            (Approved, _) => self.transition(
                 id,
                 Expired,
                 Some(format!(
@@ -1360,20 +1461,25 @@ impl Engine {
                 )),
                 |_| {},
             ),
-            Dispatched | Accepted | TimedOut => self.transition(
+            // Recorded as dispatched, but the adapter was never called.
+            (Dispatched, false) => {
+                let e = ErrorObject::new(
+                    "adapter.not_sent",
+                    format!("the adapter was not called: {cause}"),
+                );
+                self.transition(id, Failed, Some(format!("not sent: {cause}")), |r| {
+                    r.adapter_result
+                        .get_or_insert_with(AdapterResult::default)
+                        .error = Some(e);
+                })
+            }
+            (Dispatched | Accepted | TimedOut, true) => self.transition(
                 id,
                 UnknownOutcome,
-                Some(if sent {
-                    format!(
-                        "the outcome could not be recorded ({cause}); may or may not have \
-                         taken effect; not retried"
-                    )
-                } else {
-                    format!(
-                        "recording the dispatch reported a failure ({cause}); the adapter was \
-                         not called; not retried"
-                    )
-                }),
+                Some(format!(
+                    "the outcome could not be recorded ({cause}); may or may not have taken \
+                     effect; not retried"
+                )),
                 |_| {},
             ),
             _ => return Err(cause),

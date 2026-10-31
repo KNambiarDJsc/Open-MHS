@@ -166,12 +166,22 @@ gateway process mid-command.
 
 A journal write that fails mid-command (an I/O error, a full disk) does not end the call early: the
 device stays locked until the adapter call ends, and the command is settled as `UNKNOWN_OUTCOME`
-(or `EXPIRED` if never sent). One that cannot even be settled stays in flight on record and is held
-like an unknown outcome until recovery. The persistence drills (`persistence_adversary.rs`, report
-in [PERSISTENCE_ADVERSARY.md](PERSISTENCE_ADVERSARY.md)) fault every durable boundary before and
-after its commit, crash recovery itself, sweep the journal's size limit, and abort a real process
-at each dispatch boundary. They found and fixed one defect: before this, such a failure let the
-next write on the same capability through.
+(or `EXPIRED` / `FAILED adapter.not_sent` if never sent). One that cannot even be settled stays in
+flight on record and is held like an unknown outcome until recovery.
+
+The gateway does not start on a journal it cannot trust: one that fails SQLite's integrity check
+(including the unique indexes behind idempotency and approvals) or whose audit chain does not
+verify. The readback target of each command is bound to the chain by its `DISPATCHED` record.
+With `serve --checkpoint-file`, the audit head is also written outside the journal after every
+dispatch, before the device is called, so a journal rolled back to an older copy is refused at
+start instead of believed.
+
+The persistence drills (48 tests; report in [PERSISTENCE_ADVERSARY.md](PERSISTENCE_ADVERSARY.md))
+fault every durable write of commands, plans and leases before and after its commit, crash
+recovery itself, sweep the journal's size limit, abort a real process, tear the write-ahead log
+mid-write, flip bits across the database file, and roll the journal back. They found and fixed
+four defects, among them a journal failure that let the next write on the same capability through
+and a by-key receipt lookup that returned damaged receipts unchecked.
 
 **Storage limits** (ADR-0021): `--journal-max-mib` and a reserve. Inside the reserve, new commands
 and audited reads are refused with `storage.exhausted` *before* anything is sent, so no action runs
@@ -263,13 +273,13 @@ continued; the simulator's own records show the move ran exactly once.
 | No automatic resend after an ambiguous dispatch; unresolved outcomes hold related writes | Exactly-once execution on devices that cannot deduplicate |
 | No `VERIFIED` without a post-dispatch matching readback | Physical truth: a device that reports wrongly is believed |
 | One writer per device and declared resource **within one gateway process** | Fencing across processes, gateways, or a direct controller (no ownership epochs yet) |
-| Admitted work survives a gateway restart or a journal write failure as evidence; nothing is resent | A journal rolled back to an earlier copy (detected only against an outside checkpoint); disk loss, filesystem corruption, hard power loss (not drilled) |
+| Admitted work survives a gateway restart, a journal write failure, a torn write or a damaged byte; nothing is resent; a damaged journal is refused at start | A rolled-back journal without `--checkpoint-file`; storage that does not honour syncs (power loss on real hardware not drilled); disk loss |
 | Receipts bound to the audit chain; offline verification of exports | Tamper-proofing; signed or externally anchored checkpoints |
 | Readings without a device timestamp can use the HTTP `Date` header | Staleness shorter than about a second with that mitigation |
 
 ## 13. Evidence that it works (all simulator)
 
-- **Tests:** 498 Rust tests (81 binaries, including 39 persistence drills), clippy `-D warnings` clean; 59 Python SDK tests; 25 Thing
+- **Tests:** 507 Rust tests (83 binaries, including 48 persistence drills), clippy `-D warnings` clean; 59 Python SDK tests; 25 Thing
   Description importer tests; CI on Linux, Windows and macOS plus ROS 2, OPC UA and OctoPrint
   simulator jobs.
 - **Research** (`research/`): failure scenarios against LabThings asynchronous actions with ground
@@ -284,10 +294,9 @@ continued; the simulator's own records show the move ran exactly once.
 In order of the migration plan (`docs/architecture/DISTRIBUTED_MIGRATION_PLAN.md`):
 
 1. **Ownership epochs** and stale-owner refusal, enforced at the device where the controller can.
-2. The rest of the persistence drills (the command boundaries, disk full, interrupted recovery and
-   a real process abort are done): hard power loss on a VM, filesystem corruption and read-only
-   filesystems, plan and lease boundaries, and refusing to start on a journal that is behind its
-   last exported checkpoint.
+2. What the persistence drills cannot reach in software: hard power loss on real storage (a VM
+   or power-cut rig), I/O errors from a faulty disk (a Linux `dm-flakey` job in CI), and the
+   start-up cost of the integrity checks on a large journal.
 3. Signed checkpoints, automated external anchoring, per-person operator identity, software hashes
    in the audit.
 4. A distributed mode: central admission ledger and outbox (PostgreSQL), edge inbox and status

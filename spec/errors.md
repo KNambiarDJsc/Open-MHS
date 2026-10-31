@@ -258,6 +258,11 @@ The class decides the lifecycle state (spec/lifecycle.md §3).
 | `registry.duplicate_device` | A device with that id is already registered |
 | `gateway.restarted` | Command denied because the gateway restarted before validation finished |
 | `gateway.journal` | The journal could not be read or written |
+| `journal.corrupt` | At start: the journal failed SQLite's integrity check (`quick_check`, and the full check of the commands and approvals tables with their unique indexes). The gateway does not start on it |
+| `journal.audit_invalid` | At start: the journal's audit chain does not verify (edited or damaged). The gateway does not start on it or extend it |
+| `journal.behind_checkpoint` | At start, with `serve --checkpoint-file`: the journal does not contain the audit record the checkpoint names; it is an older or different copy, and commands it does not show may have reached devices. Move the checkpoint aside only to accept that copy knowingly |
+| `journal.checkpoint_unreadable` | The checkpoint file exists but cannot be read or parsed |
+| `gateway.checkpoint` | The checkpoint file could not be written after a dispatch was journaled; the command was not sent (`FAILED`, `adapter.not_sent`) |
 | `gateway.unauthorized` | Missing or unknown bearer token (HTTP 401) |
 | `gateway.forbidden` | The call needs the operator role |
 | `gateway.storage` | The policy or token file could not be written |

@@ -348,3 +348,127 @@ async fn an_external_reference_is_passed_on_when_well_formed_and_dropped_otherwi
         assert_eq!(external_ref.as_deref(), expected, "{mode}");
     }
 }
+
+/// The journal fails while recording an out-of-process adapter's acknowledgement (once, or
+/// for good, as a crashed gateway would), and the gateway is restarted on the same journal
+/// and the same running adapter process. The child is not cut off mid-exchange, the
+/// command ends `UNKNOWN_OUTCOME` with the device's own reference kept where it was
+/// recorded, nothing is delivered twice, and the capability is held until a person
+/// resolves it (persistence drills, docs/architecture/PERSISTENCE_ADVERSARY.md).
+#[tokio::test(flavor = "multi_thread")]
+async fn a_journal_failure_mid_command_on_a_process_adapter_is_held_not_resent() {
+    use openmhs_engine::EngineOptions;
+    use openmhs_engine::journal::{Fault, FaultEffect, FaultPhase, Journal};
+
+    let invoke = json!({
+        "target": {"device": "test.misbehave-01", "capability": "dose.run"},
+        "operation": "invoke",
+        "params": {},
+    });
+    let agent = Caller::in_process("test:agent");
+    let policy = Policy {
+        grants: vec![Grant {
+            id: "test".into(),
+            principal: "test:agent".into(),
+            device: "*".into(),
+            capability: "*".into(),
+            operations: vec![Operation::Read, Operation::Invoke],
+            effect: Effect::Allow,
+            max_side_effect: None,
+            reason: None,
+        }],
+        approvers: vec!["operator:local".into()],
+    };
+    for (phase, effect) in [
+        (FaultPhase::BeforeCommit, FaultEffect::IoError),
+        (FaultPhase::AfterCommit, FaultEffect::IoError),
+        (FaultPhase::BeforeCommit, FaultEffect::Crash),
+        (FaultPhase::AfterCommit, FaultEffect::Crash),
+    ] {
+        let label = format!("{phase:?} {effect:?}");
+        let (dir, marker) = marker();
+        let path = dir.path().join("journal.sqlite");
+        let adapter = Arc::new(
+            start(
+                "accept_with_ref",
+                json!({"config": {"marker": marker.display().to_string()}}),
+            )
+            .await,
+        );
+        let clock: Arc<dyn Clock> = Arc::new(SystemClock);
+        let open = || {
+            Engine::with_journal(
+                Journal::open(&path).unwrap(),
+                clock.clone(),
+                policy.clone(),
+                EngineOptions::default(),
+            )
+        };
+        let deliveries = || {
+            std::fs::read_to_string(&marker)
+                .map(|m| m.lines().count())
+                .unwrap_or(0)
+        };
+
+        let engine = open();
+        engine.register(adapter.clone()).await.unwrap();
+        engine.journal().inject(Fault {
+            site: "transition:ACCEPTED".into(),
+            phase,
+            effect,
+        });
+        let first = engine.submit(&agent, &invoke).await;
+        assert_eq!(deliveries(), 1, "{label}");
+        if effect == FaultEffect::IoError {
+            let r = first.unwrap();
+            assert_eq!(r.state, CommandState::UnknownOutcome, "{label}: {r:?}");
+            let again = engine.submit(&agent, &invoke).await.unwrap();
+            assert_eq!(again.state, CommandState::Denied, "{label}: {again:?}");
+            assert_eq!(deliveries(), 1, "{label}: sent again");
+        }
+        drop(engine);
+
+        let engine = open();
+        engine.register(adapter.clone()).await.unwrap();
+        engine.recover().await.unwrap();
+        let id = engine
+            .commands(None, &[], 10)
+            .unwrap()
+            .into_iter()
+            .find(|r| {
+                r.transitions
+                    .iter()
+                    .any(|t| t.state == CommandState::Dispatched)
+            })
+            .unwrap()
+            .command_id;
+        let r = engine.receipt(&id).unwrap().unwrap();
+        assert_eq!(r.state, CommandState::UnknownOutcome, "{label}: {r:?}");
+        // The reference survives exactly when its record was committed.
+        let reference = r
+            .adapter_result
+            .as_ref()
+            .and_then(|a| a.external_ref.as_deref());
+        assert_eq!(
+            reference,
+            (phase == FaultPhase::AfterCommit).then_some("labthings:7f3a"),
+            "{label}"
+        );
+        let held = engine.submit(&agent, &invoke).await.unwrap();
+        assert_eq!(held.state, CommandState::Denied, "{label}: {held:?}");
+        assert_eq!(deliveries(), 1, "{label}: sent again after restart");
+
+        engine
+            .resolve(
+                &Caller::in_process("operator:local"),
+                &id,
+                true,
+                "checked the dose log",
+            )
+            .unwrap();
+        let next = engine.submit(&agent, &invoke).await.unwrap();
+        assert_eq!(next.state, CommandState::Unverifiable, "{label}: {next:?}");
+        assert_eq!(deliveries(), 2, "{label}");
+        adapter.shutdown().await.unwrap();
+    }
+}

@@ -17,15 +17,39 @@ and the entry will say so under **Changed** or **Removed**.
   `SQLITE_FULL`. The gateway now keeps the device locked until the adapter call ends,
   settles the command as `UNKNOWN_OUTCOME` (or `EXPIRED` if it was never sent), and holds a
   command it could not settle like an unknown outcome until recovery
-  ([lifecycle.md](spec/lifecycle.md) §4 rule 7).
+  ([lifecycle.md](spec/lifecycle.md) §4 rule 7). A command whose dispatch was recorded but
+  whose adapter was never called ends `FAILED` with `adapter.not_sent`.
+- The receipt lookup by idempotency key (`commands.get_by_key`, the Python SDK's recovery of
+  a lost response, and plan recovery) returned a stored receipt without checking it against
+  the audit chain; a damaged receipt was returned as if intact. It is now checked like every
+  other read (`journal.receipt_integrity`).
+- The readback target a command is verified and reconciled against was not covered by any
+  digest; an edited one would have been used. Its SHA-256 is now in the command's
+  `DISPATCHED` audit record, and a mismatch is refused.
+
+### Changed
+
+- The gateway refuses to start on a journal that fails SQLite's integrity check
+  (`journal.corrupt`: `quick_check`, plus the full check of the commands and approvals
+  tables, whose unique indexes stop duplicate commands and double-spent approvals) or whose
+  audit chain does not verify (`journal.audit_invalid`). Start-up time grows with the
+  journal's size.
 
 ### Added
 
-- Persistence drills (`crates/openmhs-engine/tests/persistence_adversary.rs`): a fault at
-  every durable boundary of a command (before and after commit; one I/O error or a crash
-  followed by a restart), crash during recovery, crash while spending an approval, a
-  journal-size sweep, a real process `abort()` at each dispatch boundary, and journal
-  rollback. Report: [docs/architecture/PERSISTENCE_ADVERSARY.md](docs/architecture/PERSISTENCE_ADVERSARY.md).
+- `openmhs serve --checkpoint-file FILE`: the journal's audit head is written to a file,
+  ideally on storage that fails separately, after every dispatch is journaled and before the
+  device is called. A journal behind it (a restored backup, a lost write-ahead log, a disk
+  that acknowledged writes it did not make) is refused at start
+  (`journal.behind_checkpoint`); if the file cannot be written, the command is not sent
+  ([lifecycle.md](spec/lifecycle.md) §4 rule 9).
+- Persistence drills (`crates/openmhs-engine/tests/persistence_{adversary,storage,plans}.rs`,
+  48 tests, plus an out-of-process adapter case in `openmhs-host`): a fault at every
+  durable write of a command, plan and lease (before and after commit; an I/O error or a
+  crash followed by a restart), crash during recovery and while spending an approval, real
+  `SQLITE_FULL`, a real process `abort()`, power lost mid-write (torn log), a bit flipped at
+  706 places in the database, a read-only journal, edited records, and journal rollback.
+  Report: [docs/architecture/PERSISTENCE_ADVERSARY.md](docs/architecture/PERSISTENCE_ADVERSARY.md).
 
 - State-changing commands now serialize on declared shared resources as well as individual
   devices, with a stable lock order for multi-resource commands. This is a single-gateway

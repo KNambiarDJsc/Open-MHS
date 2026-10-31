@@ -91,6 +91,9 @@ pub struct GatewayConfig {
     pub journal_max_bytes: Option<u64>,
     /// With a limit set, the reserve below it kept for critical writes.
     pub journal_reserve_bytes: u64,
+    /// Keep the journal's audit head here, ideally on other storage, and refuse to start
+    /// on a journal that is behind it (spec/lifecycle.md §4 rule 8). None: not kept.
+    pub checkpoint_file: Option<PathBuf>,
 }
 
 impl std::fmt::Debug for GatewayConfig {
@@ -106,6 +109,7 @@ impl std::fmt::Debug for GatewayConfig {
             .field("health_interval_ms", &self.health_interval_ms)
             .field("readback_skew_ms", &self.readback_skew_ms)
             .field("journal_max_bytes", &self.journal_max_bytes)
+            .field("checkpoint_file", &self.checkpoint_file)
             .field(
                 "adapters",
                 &self
@@ -134,6 +138,7 @@ impl GatewayConfig {
             readback_skew_ms: 0,
             journal_max_bytes: None,
             journal_reserve_bytes: DEFAULT_JOURNAL_RESERVE_BYTES,
+            checkpoint_file: None,
         }
     }
 }
@@ -227,6 +232,11 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
                 reserve_bytes: config.journal_reserve_bytes,
             })
             .map_err(|e| GatewayError::Config(format!("journal limits: {e}")))?;
+    }
+    if let Some(path) = &config.checkpoint_file {
+        engine
+            .set_checkpoint_file(path)
+            .map_err(|e| GatewayError::Config(format!("audit checkpoint: {e}")))?;
     }
     engine
         .journal()
