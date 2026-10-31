@@ -761,16 +761,47 @@ pub fn created_token(t: &openmhs_api::CreatedToken) {
 }
 
 pub fn audit_verify(v: &AuditVerifyResult) {
+    let segments = v
+        .segments
+        .map_or_else(String::new, |n| format!(" and {n} segments"));
     if v.valid {
         println!(
-            "audit log intact: {} records, hash chain verified",
+            "audit log intact: {} records{segments}, hash chain verified",
             v.records
         );
     } else {
+        match v.first_invalid {
+            Some(seq) => println!(
+                "AUDIT LOG TAMPERED: record {seq} fails verification ({} records{segments})",
+                v.records
+            ),
+            None => println!(
+                "AUDIT ARCHIVE DOES NOT VERIFY ({} records{segments})",
+                v.records
+            ),
+        }
+        for problem in &v.problems {
+            println!("  {problem}");
+        }
+    }
+}
+
+pub fn segments(rows: &[openmhs_api::SegmentInfo]) {
+    if rows.is_empty() {
+        println!("no segments");
+        return;
+    }
+    for r in rows {
         println!(
-            "AUDIT LOG TAMPERED: record {} fails verification ({} records)",
-            v.first_invalid.unwrap_or_default(),
-            v.records
+            "segment {:>4}  {:<9}  records {}..{}  {} commands  {} bytes{}",
+            r.number,
+            r.state,
+            r.first_seq,
+            r.last_seq,
+            r.commands.unwrap_or(0),
+            r.bytes.unwrap_or(0),
+            r.seal_seq
+                .map_or_else(String::new, |s| format!("  sealed at record {s}")),
         );
     }
 }

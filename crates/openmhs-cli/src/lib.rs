@@ -405,6 +405,11 @@ pub struct ServeArgs {
     /// home directory. Default: not kept.
     #[arg(long)]
     checkpoint_file: Option<PathBuf>,
+    /// Allow `audit compact`, which moves finished history from the journal into its sealed
+    /// segment files and deletes the journal rows (RFC 0002). A segment is read in full and
+    /// compared with the rows first. Off by default.
+    #[arg(long)]
+    archive: bool,
 }
 
 #[derive(Subcommand)]
@@ -780,8 +785,43 @@ enum TokensCmd {
 
 #[derive(Subcommand)]
 enum AuditCmd {
-    /// Verify the audit log's hash chain.
-    Verify,
+    /// Verify the audit log's hash chain. With `--all`, also read every closed segment.
+    Verify {
+        #[arg(long)]
+        all: bool,
+    },
+    /// Close the next range of the audit chain as a segment file (nothing is deleted).
+    Segment {
+        /// Close it once its records reach about this many MiB (default 64).
+        #[arg(long)]
+        max_mib: Option<u64>,
+        /// Close it at this sequence number (or the newest record), however small.
+        #[arg(long)]
+        through_seq: Option<i64>,
+        /// Also seal it: append the record that commits the chain to the file.
+        #[arg(long)]
+        seal: bool,
+    },
+    /// List the segments and where each is in its life.
+    Segments,
+    /// Seal a verified segment: the chain commits to its file and to the live state.
+    Seal { number: i64 },
+    /// Move a sealed segment's finished history out of the journal. Needs the gateway to
+    /// have been started with --archive.
+    Compact {
+        number: i64,
+        /// Rewrite the journal file afterwards so it shrinks.
+        #[arg(long)]
+        vacuum: bool,
+    },
+    /// Verify a directory of segment files offline: each file, and that they follow on from
+    /// one another. Reads no journal.
+    VerifySegments {
+        dir: PathBuf,
+        /// A separately retained checkpoint the segments should contain.
+        #[arg(long)]
+        checkpoint: Option<PathBuf>,
+    },
     /// Export the complete audit chain and current receipts from one database snapshot.
     Export {
         #[arg(long)]
@@ -966,6 +1006,7 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
         journal_max_bytes: args.journal_max_mib.map(|m| m.saturating_mul(1024 * 1024)),
         journal_reserve_bytes: args.journal_reserve_mib.saturating_mul(1024 * 1024),
         checkpoint_file: args.checkpoint_file.clone(),
+        archive: args.archive,
     };
     let gateway = match openmhs_gateway::start(config).await {
         Ok(g) => g,
@@ -1741,6 +1782,11 @@ async fn run(cli: Cli) -> u8 {
         } => {
             return evidence::verify_file(cli.json, &file, checkpoint.as_deref());
         }
+        Cmd::Audit {
+            command: AuditCmd::VerifySegments { dir, checkpoint },
+        } => {
+            return evidence::verify_segments(cli.json, &dir, checkpoint.as_deref());
+        }
         Cmd::Serve(args) => return serve(home, args).await,
         Cmd::Demo(args) => return demo::run(args.keep).await,
         Cmd::Discover {
@@ -2331,13 +2377,55 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
                     );
                 });
             }
-            AuditCmd::VerifyFile { .. } => unreachable!("handled before connecting"),
-            AuditCmd::Verify => {
-                let v = client.verify_audit().await?;
+            AuditCmd::VerifyFile { .. } | AuditCmd::VerifySegments { .. } => {
+                unreachable!("handled before connecting")
+            }
+            AuditCmd::Verify { all } => {
+                let v = if all {
+                    client.verify_audit_all().await?
+                } else {
+                    client.verify_audit().await?
+                };
                 show(json, &v, output::audit_verify);
                 if !v.valid {
                     return Ok(exit::FAILED);
                 }
+            }
+            AuditCmd::Segment {
+                max_mib,
+                through_seq,
+                seal,
+            } => {
+                let row = client
+                    .audit_segment(openmhs_api::AuditSegmentParams {
+                        max_bytes: max_mib.map(|m| m.saturating_mul(1024 * 1024)),
+                        through_seq,
+                        seal,
+                    })
+                    .await?;
+                show(json, &row, |r| output::segments(std::slice::from_ref(r)));
+            }
+            AuditCmd::Segments => {
+                show(json, &client.audit_segments().await?, |rows| {
+                    output::segments(rows);
+                });
+            }
+            AuditCmd::Seal { number } => {
+                let row = client.audit_seal(number).await?;
+                show(json, &row, |r| output::segments(std::slice::from_ref(r)));
+            }
+            AuditCmd::Compact { number, vacuum } => {
+                let done = client.audit_compact(number, vacuum).await?;
+                show(json, &done, |d| {
+                    println!(
+                        "segment {} compacted: {} audit rows deleted, {} kept for live work, \
+                         {} finished commands archived",
+                        d.segment.number,
+                        d.audit_rows_deleted,
+                        d.audit_rows_kept,
+                        d.commands_archived
+                    );
+                });
             }
             AuditCmd::Tail { limit } => {
                 show(json, &client.audit_tail(limit).await?, |e| {

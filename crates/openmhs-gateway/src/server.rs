@@ -74,6 +74,8 @@ pub(crate) struct Shared {
     pub engine: Engine,
     pub clock: Arc<dyn Clock>,
     pub simulation: bool,
+    /// `audit.compact` is allowed (`openmhs serve --archive`).
+    pub archive: bool,
     pub operator: Session,
     pub operator_token_sha256: String,
     pub tokens: Mutex<TokenStore>,
@@ -150,6 +152,34 @@ pub(crate) fn router(shared: Arc<Shared>) -> Router {
 }
 
 // ------------------------------------------------------------------ errors
+
+/// Closed segments of this size or larger (RFC 0002 proposes bytes, so that a segment's
+/// verification time is bounded).
+const DEFAULT_SEGMENT_BYTES: u64 = 64 << 20;
+
+fn segment_info(row: &openmhs_engine::journal::SegmentRow) -> openmhs_api::SegmentInfo {
+    openmhs_api::SegmentInfo {
+        number: row.number,
+        first_seq: row.first_seq,
+        last_seq: row.last_seq,
+        state: row.state.name().into(),
+        records: row.records,
+        commands: row.commands,
+        bytes: row.bytes,
+        file: row.file.clone(),
+        sha256: row.sha256.clone(),
+        last_hash: row.last_hash.clone(),
+        seal_seq: row.seal_seq,
+    }
+}
+
+/// A journal refusal keeps its code; anything else is a storage error.
+fn journal_error(e: openmhs_engine::JournalError) -> RpcError {
+    match e {
+        openmhs_engine::JournalError::Refused(error) => procedure_error(error),
+        other => gateway_error("gateway.journal", other.to_string(), vec![]),
+    }
+}
 
 fn gateway_error(code: &str, message: impl Into<String>, errors: Vec<ErrorObject>) -> RpcError {
     RpcError {
@@ -1151,12 +1181,33 @@ async fn dispatch(
 
         method::AUDIT_VERIFY => {
             require_operator("verifying the audit log")?;
-            let v = engine.verify_audit().map_err(engine_error)?;
-            ok(AuditVerifyResult {
-                records: v.records,
-                valid: v.is_valid(),
-                first_invalid: v.first_invalid,
+            let p: openmhs_api::AuditVerifyParams = params(raw)?;
+            let engine = engine.clone();
+            let result = tokio::task::spawn_blocking(move || {
+                if p.all {
+                    let r = engine.journal().verify_archive()?;
+                    Ok::<_, openmhs_engine::JournalError>(AuditVerifyResult {
+                        records: r.records,
+                        valid: r.problems.is_empty(),
+                        first_invalid: r.first_invalid,
+                        segments: Some(r.segments),
+                        problems: r.problems,
+                    })
+                } else {
+                    let v = engine.journal().verify_audit()?;
+                    Ok(AuditVerifyResult {
+                        records: v.records,
+                        valid: v.is_valid(),
+                        first_invalid: v.first_invalid,
+                        segments: None,
+                        problems: Vec::new(),
+                    })
+                }
             })
+            .await
+            .map_err(|e| gateway_error("gateway.journal", e.to_string(), vec![]))?
+            .map_err(journal_error)?;
+            ok(result)
         }
 
         method::AUDIT_TAIL => {
@@ -1178,6 +1229,74 @@ async fn dispatch(
                     hash: r.hash.clone(),
                 })
                 .collect::<Vec<_>>())
+        }
+
+        method::AUDIT_SEGMENT => {
+            require_operator("closing an audit segment")?;
+            let p: openmhs_api::AuditSegmentParams = params(raw)?;
+            let limits = openmhs_engine::journal::SegmentLimits {
+                max_bytes: p.max_bytes.unwrap_or(DEFAULT_SEGMENT_BYTES),
+                through_seq: p.through_seq,
+            };
+            let engine = engine.clone();
+            let now = shared.clock.now();
+            let row = tokio::task::spawn_blocking(move || {
+                let mut row = engine.journal().create_segment(&limits)?;
+                if p.seal {
+                    row = engine.journal().seal_segment(row.number, now)?;
+                }
+                Ok::<_, openmhs_engine::JournalError>(row)
+            })
+            .await
+            .map_err(|e| gateway_error("gateway.journal", e.to_string(), vec![]))?
+            .map_err(journal_error)?;
+            ok(segment_info(&row))
+        }
+
+        method::AUDIT_SEGMENTS => {
+            require_operator("listing audit segments")?;
+            let rows = engine.journal().segments().map_err(journal_error)?;
+            ok(rows.iter().map(segment_info).collect::<Vec<_>>())
+        }
+
+        method::AUDIT_SEAL => {
+            require_operator("sealing an audit segment")?;
+            let p: openmhs_api::AuditSegmentNumber = params(raw)?;
+            let engine = engine.clone();
+            let now = shared.clock.now();
+            let row =
+                tokio::task::spawn_blocking(move || engine.journal().seal_segment(p.number, now))
+                    .await
+                    .map_err(|e| gateway_error("gateway.journal", e.to_string(), vec![]))?
+                    .map_err(journal_error)?;
+            ok(segment_info(&row))
+        }
+
+        method::AUDIT_COMPACT => {
+            require_operator("compacting the audit log")?;
+            if !shared.archive {
+                return Err(gateway_error(
+                    "gateway.archive_disabled",
+                    "compaction deletes journal rows and is off: start the gateway with \
+                     --archive to allow it",
+                    vec![],
+                ));
+            }
+            let p: openmhs_api::AuditCompactParams = params(raw)?;
+            let engine = engine.clone();
+            let now = shared.clock.now();
+            let done = tokio::task::spawn_blocking(move || {
+                engine.journal().compact_segment(p.number, now, p.vacuum)
+            })
+            .await
+            .map_err(|e| gateway_error("gateway.journal", e.to_string(), vec![]))?
+            .map_err(journal_error)?;
+            ok(openmhs_api::CompactResult {
+                segment: segment_info(&done.segment),
+                audit_rows_deleted: done.audit_rows_deleted,
+                audit_rows_kept: done.audit_rows_kept,
+                commands_archived: done.commands_archived,
+            })
         }
 
         method::SIM_FAULT => {

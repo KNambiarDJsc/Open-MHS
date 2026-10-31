@@ -680,6 +680,12 @@ impl Client {
         self.call(method::AUDIT_VERIFY, serde_json::json!({})).await
     }
 
+    /// Verify the whole history: the journal's rows and every closed segment.
+    pub async fn verify_audit_all(&self) -> Result<AuditVerifyResult, ClientError> {
+        self.call(method::AUDIT_VERIFY, AuditVerifyParams { all: true })
+            .await
+    }
+
     /// Consistent snapshot of the complete audit chain and current command receipts.
     /// Operator only. Verify offline with `openmhs_types::evidence::verify_evidence`.
     pub async fn export_evidence(
@@ -761,6 +767,32 @@ impl Client {
         }
         out.write_all(&held).map_err(io)?;
         out.flush().map_err(io)
+    }
+
+    pub async fn audit_segment(
+        &self,
+        params: AuditSegmentParams,
+    ) -> Result<SegmentInfo, ClientError> {
+        self.call(method::AUDIT_SEGMENT, params).await
+    }
+
+    pub async fn audit_segments(&self) -> Result<Vec<SegmentInfo>, ClientError> {
+        self.call(method::AUDIT_SEGMENTS, serde_json::json!({}))
+            .await
+    }
+
+    pub async fn audit_seal(&self, number: i64) -> Result<SegmentInfo, ClientError> {
+        self.call(method::AUDIT_SEAL, AuditSegmentNumber { number })
+            .await
+    }
+
+    pub async fn audit_compact(
+        &self,
+        number: i64,
+        vacuum: bool,
+    ) -> Result<CompactResult, ClientError> {
+        self.call(method::AUDIT_COMPACT, AuditCompactParams { number, vacuum })
+            .await
     }
 
     pub async fn audit_tail(&self, limit: Option<usize>) -> Result<Vec<AuditEntry>, ClientError> {

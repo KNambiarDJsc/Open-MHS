@@ -171,7 +171,11 @@ impl Journal {
         // Recovery (the SDK's, and a plan's) acts on what this returns: checked like every
         // other read of a receipt.
         let Some(json) = json else {
-            return Ok(None);
+            // A command whose rows were archived is answered from its segment.
+            drop(conn);
+            return Ok(self
+                .archived_by_key(principal, device, key)?
+                .map(|(receipt, _)| receipt));
         };
         let receipt: Receipt = serde_json::from_str(&json)?;
         Self::check_receipt(&conn, &receipt)?;

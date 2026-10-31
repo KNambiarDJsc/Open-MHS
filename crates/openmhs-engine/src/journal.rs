@@ -20,8 +20,16 @@ use openmhs_types::{Approval, ApprovalStatus, CommandState, ErrorObject, Receipt
 use rusqlite::{Connection, OptionalExtension, ToSql, Transaction, params};
 use sha2::{Digest, Sha256};
 
+mod archive;
+mod compact;
 mod leases;
 mod plans;
+mod segments;
+
+pub use archive::{ArchiveReport, COMPACTED_KIND, CompactionData};
+pub use compact::Compaction;
+
+pub use segments::{SEAL_KIND, SealData, SegmentLimits, SegmentRow, SegmentState, Snapshot};
 
 #[derive(Debug, thiserror::Error)]
 pub enum JournalError {
@@ -130,6 +138,10 @@ pub struct Journal {
     path: Option<PathBuf>,
     fault: Mutex<Option<Fault>>,
     observer: Mutex<Option<CommitObserver>>,
+    /// Drills only: bytes a segment file may take before its writes fail.
+    segment_fault: Mutex<Option<u64>>,
+    /// Archived segments already checked in this process.
+    archive: Mutex<compact::ArchiveCache>,
 }
 
 pub fn sha256_hex(data: &str) -> String {
@@ -144,6 +156,18 @@ impl Journal {
     /// check, or whose audit chain does not verify, is refused: the gateway does not start
     /// on a record it cannot trust, and does not extend a broken chain.
     pub fn open(path: &Path) -> Result<Self, JournalError> {
+        Self::open_anchored(path, None)
+    }
+
+    /// [`open`](Self::open), told the audit head kept outside the journal (the gateway's
+    /// `--checkpoint-file`). When the journal holds that record and a seal at or behind it,
+    /// history before the seal is not read again at start-up: the chain is verified from
+    /// the seal on (RFC 0002, "Trust"). Without an anchor the whole history is verified,
+    /// as it always was.
+    pub fn open_anchored(
+        path: &Path,
+        anchor: Option<&AuditCheckpoint>,
+    ) -> Result<Self, JournalError> {
         let conn = Connection::open(path)?;
         check_integrity(&conn, "PRAGMA quick_check")?;
         conn.pragma_update(None, "journal_mode", "WAL")?;
@@ -159,7 +183,17 @@ impl Journal {
             }
         }
         let mut unfinished = HashSet::new();
-        let audit = journal.scan_audit(Some(&mut unfinished))?;
+        let fast = match anchor {
+            Some(anchor) => journal.fast_start(anchor, &mut unfinished)?,
+            None => None,
+        };
+        let audit = match fast {
+            Some(audit) => audit,
+            None => {
+                unfinished.clear();
+                journal.scan_audit(Some(&mut unfinished))?
+            }
+        };
         if let Some(seq) = audit.first_invalid {
             return Err(refuse(
                 "journal.audit_invalid",
@@ -310,13 +344,62 @@ impl Journal {
                 prev_hash TEXT NOT NULL,
                 hash      TEXT NOT NULL
             );
-            CREATE INDEX IF NOT EXISTS audit_subject ON audit(subject, seq);",
+            CREATE INDEX IF NOT EXISTS audit_subject ON audit(subject, seq);
+            CREATE INDEX IF NOT EXISTS audit_sealed ON audit(seq)
+                WHERE kind = 'audit.segment_sealed';
+            CREATE INDEX IF NOT EXISTS audit_compacted ON audit(seq)
+                WHERE kind = 'audit.segment_compacted';
+            CREATE TABLE IF NOT EXISTS command_keys (
+                command_id      TEXT PRIMARY KEY,
+                principal       TEXT NOT NULL,
+                device          TEXT NOT NULL,
+                idempotency_key TEXT,
+                request_hash    TEXT NOT NULL,
+                segment         INTEGER
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS command_keys_idempotency
+                ON command_keys(principal, device, idempotency_key)
+                WHERE idempotency_key IS NOT NULL;
+            CREATE TABLE IF NOT EXISTS segments (
+                number     INTEGER PRIMARY KEY,
+                first_seq  INTEGER NOT NULL UNIQUE,
+                last_seq   INTEGER NOT NULL,
+                prev_hash  TEXT NOT NULL,
+                chain_root TEXT NOT NULL,
+                last_hash  TEXT,
+                records    INTEGER,
+                commands   INTEGER,
+                file       TEXT,
+                sha256     TEXT,
+                bytes      INTEGER,
+                state      TEXT NOT NULL,
+                seal_seq   INTEGER
+            );",
         )?;
+        // The identity of every command is kept for good, apart from the command's row
+        // (RFC 0002, M5). Journals from before the table, or written by an older version
+        // since, are filled in here, in one transaction, deleting nothing.
+        let unindexed: i64 = conn.query_row(
+            "SELECT (SELECT COUNT(*) FROM commands) \
+                  - (SELECT COUNT(*) FROM command_keys WHERE segment IS NULL)",
+            [],
+            |r| r.get(0),
+        )?;
+        if unindexed != 0 {
+            conn.execute(
+                "INSERT OR IGNORE INTO command_keys \
+                     (command_id, principal, device, idempotency_key, request_hash) \
+                 SELECT command_id, principal, device, idempotency_key, request_hash FROM commands",
+                [],
+            )?;
+        }
         Ok(Self {
             conn: Mutex::new(conn),
             path: None,
             fault: Mutex::new(None),
             observer: Mutex::new(None),
+            segment_fault: Mutex::new(None),
+            archive: Mutex::default(),
         })
     }
 
@@ -450,6 +533,30 @@ impl Journal {
                     request_hash,
                 });
             }
+            // The same key on a command whose rows were archived: its receipt is in a
+            // segment. Checked in this transaction, so a compaction cannot slip between.
+            let archived: Option<(String, String)> = tx
+                .query_row(
+                    "SELECT command_id, request_hash FROM command_keys WHERE principal = ?1 \
+                     AND device = ?2 AND idempotency_key = ?3 AND segment IS NOT NULL",
+                    params![receipt.principal, target.device, key],
+                    |r| Ok((r.get(0)?, r.get(1)?)),
+                )
+                .optional()?;
+            if let Some((id, request_hash)) = archived {
+                drop(tx);
+                drop(conn);
+                let (receipt, _) = self.archived_receipt(&id)?.ok_or_else(|| {
+                    refuse(
+                        "journal.archive_unavailable",
+                        format!("command {id} is archived but its receipt cannot be found"),
+                    )
+                })?;
+                return Ok(Inserted::Existing {
+                    receipt,
+                    request_hash,
+                });
+            }
         }
         let mut r = receipt.clone();
         let hash = Self::append_audit_tx(
@@ -474,6 +581,17 @@ impl Journal {
                 state_name(r.state),
                 r.created_at.millis(),
                 serde_json::to_string(&r)?
+            ],
+        )?;
+        tx.execute(
+            "INSERT INTO command_keys (command_id, principal, device, idempotency_key, request_hash)
+             VALUES (?1, ?2, ?3, ?4, ?5)",
+            params![
+                r.command_id,
+                r.principal,
+                target.device,
+                r.idempotency_key,
+                request_hash
             ],
         )?;
         self.fault(&tx, "command.created", FaultPhase::BeforeCommit)?;
@@ -830,7 +948,13 @@ impl Journal {
                 Self::check_receipt(&conn, &r)?;
                 Ok(Some(r))
             }
-            Err(JournalError::NotFound(_)) => Ok(None),
+            Err(JournalError::NotFound(_)) => {
+                // A command whose rows were archived is answered from its segment.
+                drop(conn);
+                Ok(self
+                    .archived_receipt(command_id)?
+                    .map(|(receipt, _)| receipt))
+            }
             Err(e) => Err(e),
         }
     }
@@ -1090,7 +1214,11 @@ impl Journal {
                         | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
                 )?;
                 conn.busy_timeout(std::time::Duration::from_secs(5))?;
-                write_evidence_from(&mut conn, out)
+                if self.is_compacted()? {
+                    self.write_evidence_archived(&mut conn, out)
+                } else {
+                    write_evidence_from(&mut conn, out)
+                }
             }
             None => write_evidence_from(&mut self.lock(), out),
         }
@@ -1129,7 +1257,12 @@ impl Journal {
                 |r| r.get(0),
             )
             .optional()?;
-        Ok(hash.as_deref() == Some(checkpoint.hash.as_str()))
+        match hash {
+            Some(hash) => Ok(hash == checkpoint.hash),
+            // The record may have moved into a segment.
+            None if self.is_compacted()? => self.archived_checkpoint_matches(checkpoint),
+            None => Ok(false),
+        }
     }
 
     /// Recompute the hash chain. Detects edited, reordered, inserted or deleted records
@@ -1142,70 +1275,33 @@ impl Journal {
     }
 
     /// `verify_audit`, optionally also collecting the commands the lifecycle records leave
-    /// unfinished (in the same pass: `open` reads the chain once).
+    /// unfinished (in the same pass: `open` reads the chain once). A journal whose old rows
+    /// were compacted into segments is read across them.
     fn scan_audit(
         &self,
-        mut unfinished: Option<&mut HashSet<String>>,
+        unfinished: Option<&mut HashSet<String>>,
     ) -> Result<AuditVerification, JournalError> {
-        #[derive(serde::Deserialize)]
-        struct Lifecycle {
-            to: CommandState,
+        if self.is_compacted()? {
+            let report = self.archive_scan(unfinished)?;
+            if report.first_invalid.is_none() && !report.problems.is_empty() {
+                return Err(refuse(
+                    "journal.audit_invalid",
+                    format!(
+                        "the journal's history across its segments does not verify ({}); the \
+                         gateway will not start on it. Keep the files for investigation",
+                        report.problems.join("; ")
+                    ),
+                ));
+            }
+            return Ok(AuditVerification {
+                records: report.records,
+                first_invalid: report.first_invalid,
+            });
         }
-        let conn = self.lock();
-        let mut stmt = conn.prepare(&format!("{AUDIT_COLUMNS} ORDER BY seq"))?;
-        let mut rows = stmt.query([])?;
-        let mut prev = GENESIS.to_owned();
-        let mut records = 0u64;
-        let mut first_invalid = None;
-        while let Some(row) = rows.next()? {
-            records += 1;
-            if first_invalid.is_some() {
-                continue;
-            }
-            let seq: i64 = row.get(0)?;
-            let field = |i: usize| {
-                row.get_ref(i)?.as_str().map_err(|e| {
-                    rusqlite::Error::FromSqlConversionFailure(
-                        i,
-                        rusqlite::types::Type::Text,
-                        Box::new(e),
-                    )
-                })
-            };
-            let (kind, subject, data) = (field(2)?, field(3)?, field(4)?);
-            let recomputed = hash_record(&prev, seq, row.get(1)?, kind, subject, data);
-            let (prev_hash, hash) = (field(5)?, field(6)?);
-            if seq != i64::try_from(records).unwrap_or(i64::MAX)
-                || prev_hash != prev
-                || hash != recomputed
-            {
-                first_invalid = Some(seq);
-                continue;
-            }
-            if let Some(unfinished) = unfinished.as_deref_mut() {
-                let open = match kind {
-                    "command.created" => Some(true),
-                    "command.transition" => {
-                        Some(!serde_json::from_str::<Lifecycle>(data)?.to.is_terminal())
-                    }
-                    _ => None,
-                };
-                match open {
-                    Some(false) => {
-                        unfinished.remove(subject);
-                    }
-                    Some(true) if !unfinished.contains(subject) => {
-                        unfinished.insert(subject.to_owned());
-                    }
-                    _ => {}
-                }
-            }
-            prev.clear();
-            prev.push_str(hash);
-        }
+        let scan = self.scan_range(1, Some(GENESIS.to_owned()), unfinished)?;
         Ok(AuditVerification {
-            records,
-            first_invalid,
+            records: scan.rows,
+            first_invalid: scan.first_invalid,
         })
     }
 

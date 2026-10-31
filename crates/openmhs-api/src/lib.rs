@@ -68,6 +68,10 @@ pub mod method {
     pub const AUDIT_VERIFY: &str = "audit.verify";
     pub const AUDIT_EXPORT: &str = "audit.export";
     pub const AUDIT_TAIL: &str = "audit.tail";
+    pub const AUDIT_SEGMENT: &str = "audit.segment";
+    pub const AUDIT_SEGMENTS: &str = "audit.segments";
+    pub const AUDIT_SEAL: &str = "audit.seal";
+    pub const AUDIT_COMPACT: &str = "audit.compact";
     pub const SIM_FAULT: &str = "sim.fault";
     pub const PLANS_SUBMIT: &str = "plans.submit";
     pub const PLANS_PREFLIGHT: &str = "plans.preflight";
@@ -500,12 +504,89 @@ impl std::fmt::Debug for CreatedToken {
     }
 }
 
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct AuditVerifyParams {
+    /// Also read every closed segment (RFC 0002): the whole history, not only what the
+    /// journal still holds.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub all: bool,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AuditVerifyResult {
     pub records: u64,
     pub valid: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub first_invalid: Option<i64>,
+    /// With `all`: how many segments were read.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub segments: Option<u64>,
+    /// With `all`: everything that did not check out, one line each.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub problems: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct AuditSegmentParams {
+    /// Close the segment once its records reach about this many bytes (default 64 MiB).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_bytes: Option<u64>,
+    /// Close it at this sequence number (or the newest record), however small it is.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub through_seq: Option<i64>,
+    /// Also seal it: append the seal record that commits to the file.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub seal: bool,
+}
+
+/// One closed segment of the audit chain (RFC 0002).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SegmentInfo {
+    pub number: i64,
+    pub first_seq: i64,
+    pub last_seq: i64,
+    /// `PLANNED`, `WRITTEN`, `VERIFIED`, `SEALED` or `COMPACTED`.
+    pub state: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub records: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub commands: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bytes: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub file: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sha256: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_hash: Option<String>,
+    /// Sequence number of the seal record, once sealed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub seal_seq: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AuditSegmentNumber {
+    pub number: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AuditCompactParams {
+    pub number: i64,
+    /// Rewrite the journal file afterwards so it shrinks (needs room for a second copy of
+    /// what stays, and blocks the journal while it runs).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub vacuum: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CompactResult {
+    pub segment: SegmentInfo,
+    /// Audit rows deleted from the journal: they are in the segment.
+    pub audit_rows_deleted: u64,
+    /// Rows of live work (unfinished commands, open approvals, leases and plans) that stay.
+    pub audit_rows_kept: u64,
+    /// Finished commands whose rows moved to the segment.
+    pub commands_archived: u64,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

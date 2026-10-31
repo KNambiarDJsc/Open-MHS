@@ -118,7 +118,7 @@ pub fn receipt_digest(receipt: &Receipt) -> Result<String, serde_json::Error> {
 }
 
 /// What a command's latest audit record says about its receipt.
-enum Binding {
+pub(crate) enum Binding {
     /// The record's data is not JSON.
     Invalid,
     /// A legacy record: no `receipt_digest`.
@@ -134,15 +134,36 @@ impl Binding {
     fn of(data: &str) -> Self {
         match serde_json::from_str::<serde_json::Value>(data) {
             Err(_) => Self::Invalid,
-            Ok(data) => match data.get("receipt_digest") {
-                None => Self::Unbound,
-                Some(digest) => Self::Digest {
-                    version_is_1: digest["version"] == 1,
-                    sha256: digest["sha256"].as_str().map(str::to_owned),
-                },
+            Ok(data) => Self::of_value(&data),
+        }
+    }
+
+    pub(crate) fn of_value(data: &serde_json::Value) -> Self {
+        match data.get("receipt_digest") {
+            None => Self::Unbound,
+            Some(digest) => Self::Digest {
+                version_is_1: digest["version"] == 1,
+                sha256: digest["sha256"].as_str().map(str::to_owned),
             },
         }
     }
+
+    /// Whether `receipt` is the one this record commits to. `None` for a legacy record
+    /// that commits to nothing.
+    pub(crate) fn matches(&self, receipt: &Receipt) -> Option<bool> {
+        match self {
+            Self::Invalid => Some(false),
+            Self::Unbound => None,
+            Self::Digest {
+                version_is_1,
+                sha256,
+            } => Some(*version_is_1 && receipt_digest(receipt).ok() == *sha256),
+        }
+    }
+}
+
+pub(crate) fn sha256_hex(data: &str) -> String {
+    sha256(data)
 }
 
 struct Latest {

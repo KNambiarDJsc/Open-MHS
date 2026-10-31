@@ -20,6 +20,7 @@ pub mod principal;
 pub mod procedure;
 pub mod receipt;
 pub mod schema;
+pub mod segment;
 pub mod state;
 pub mod time;
 pub mod topology;

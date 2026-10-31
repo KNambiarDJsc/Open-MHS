@@ -25,6 +25,8 @@ const PENDING: i32 = 5;
 struct Gateway {
     home: tempfile::TempDir,
     child: Child,
+    /// Extra `serve` flags, kept for restarts.
+    extra: Vec<&'static str>,
 }
 
 fn runtime(home: &Path) -> Option<Value> {
@@ -32,10 +34,11 @@ fn runtime(home: &Path) -> Option<Value> {
     serde_json::from_str(&text).ok()
 }
 
-fn spawn_serve(home: &Path) -> Child {
+fn spawn_serve(home: &Path, extra: &[&str]) -> Child {
     Command::new(BIN)
         .args(["serve", "--sim", "--port", "0", "--home"])
         .arg(home)
+        .args(extra)
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()
@@ -56,10 +59,27 @@ fn wait_ready(home: &Path, pid: u32) {
 
 impl Gateway {
     fn start() -> Self {
+        Self::start_with(&[])
+    }
+
+    fn start_with(extra: &[&'static str]) -> Self {
         let home = tempfile::tempdir().unwrap();
-        let child = spawn_serve(home.path());
+        let child = spawn_serve(home.path(), extra);
         wait_ready(home.path(), child.id());
-        Self { home, child }
+        Self {
+            home,
+            child,
+            extra: extra.to_vec(),
+        }
+    }
+
+    /// Stop the process and start it again on the same home with different flags.
+    fn restart_with(&mut self, extra: &[&'static str]) {
+        self.child.kill().unwrap();
+        self.child.wait().unwrap();
+        self.extra = extra.to_vec();
+        self.child = spawn_serve(self.home.path(), extra);
+        wait_ready(self.home.path(), self.child.id());
     }
 
     fn home(&self) -> PathBuf {
@@ -70,7 +90,7 @@ impl Gateway {
     fn crash_and_restart(&mut self) {
         self.child.kill().unwrap();
         self.child.wait().unwrap();
-        self.child = spawn_serve(self.home.path());
+        self.child = spawn_serve(self.home.path(), &self.extra);
         wait_ready(self.home.path(), self.child.id());
     }
 
@@ -295,6 +315,162 @@ fn evidence_export_is_operator_only_and_verifies_offline_with_a_checkpoint() {
     let (code, result) = verify();
     assert_eq!(code, FAILED, "{result}");
     assert_eq!(result["valid"], false);
+}
+
+/// RFC 0002: segments, seals and compaction through the gateway, and the offline verifier.
+#[test]
+fn segments_are_sealed_compacted_and_verified_offline() {
+    let files = tempfile::tempdir().unwrap();
+    let checkpoint_path = files.path().join("checkpoint.json");
+    let checkpoint = checkpoint_path.to_str().unwrap();
+    let mut gw = Gateway::start();
+    let agent = gw.agent_token();
+    gw.grant_psu("allow");
+    let (code, first) = set_volts(&gw, &agent, "1V", &["--idempotency-key", "k1"]);
+    assert_eq!(code, OK, "{first}");
+    let id = first["command_id"].as_str().unwrap().to_owned();
+    assert_eq!(set_volts(&gw, &agent, "2V", &[]).0, OK);
+
+    // An agent may not close segments; the operator closes and seals one.
+    assert_eq!(
+        gw.cli(
+            Some(&agent),
+            &["audit", "segment", "--through-seq", "100000"]
+        )
+        .0,
+        DENIED
+    );
+    let (code, seg) = gw.op(&["audit", "segment", "--through-seq", "100000", "--seal"]);
+    assert_eq!(code, OK, "{seg}");
+    assert_eq!(seg["state"], "SEALED");
+    let last = seg["last_seq"].as_i64().unwrap();
+    let (code, listed) = gw.op(&["audit", "segments"]);
+    assert_eq!(code, OK);
+    assert_eq!(listed[0]["number"], 1);
+    let (code, v) = gw.op(&["audit", "verify", "--all"]);
+    assert_eq!(code, OK, "{v}");
+    assert_eq!(v["segments"], 1);
+
+    // Compaction deletes journal rows and is off unless the gateway was started with it.
+    let (code, refused) = gw.op(&["audit", "compact", "1"]);
+    assert_ne!(code, OK, "{refused}");
+    let (code, _) = gw.op(&[
+        "audit",
+        "export",
+        "--out",
+        files.path().join("e.json").to_str().unwrap(),
+        "--checkpoint-out",
+        checkpoint,
+    ]);
+    assert_eq!(code, OK);
+
+    // Offline: the segment directory verifies by itself, contains the checkpoint taken
+    // when it was closed, and a damaged file does not.
+    let segments_dir = gw.home().join("audit").join("segments");
+    let offline = |args: &[&str]| {
+        let output = Command::new(BIN)
+            .arg("--json")
+            .arg("--home")
+            .arg(files.path().join("no-gateway"))
+            .args(["audit"])
+            .args(args)
+            .output()
+            .unwrap();
+        (
+            output.status.code().unwrap(),
+            serde_json::from_slice::<Value>(&output.stdout).unwrap_or(Value::Null),
+        )
+    };
+    let dir = segments_dir.to_str().unwrap();
+    let (code, r) = offline(&["verify-segments", dir]);
+    assert_eq!(code, OK, "{r}");
+    assert_eq!(
+        (r["segments"].clone(), r["records"].clone()),
+        (1.into(), last.into())
+    );
+    let file = segments_dir.join("seg-00000001.jsonl");
+    let (code, r) = offline(&["verify-file", file.to_str().unwrap()]);
+    assert_eq!(code, OK, "{r}");
+
+    // With --archive the finished history moves out, and the command is still answered.
+    gw.restart_with(&["--archive"]);
+    let (code, done) = gw.op(&["audit", "compact", "1"]);
+    assert_eq!(code, OK, "{done}");
+    assert!(done["commands_archived"].as_u64().unwrap() >= 2, "{done}");
+    let (code, receipt) = gw.op(&["commands", "show", &id]);
+    assert_eq!(code, OK, "{receipt}");
+    assert_eq!(receipt["command_id"], id.as_str());
+    let (code, v) = gw.op(&["audit", "verify", "--all"]);
+    assert_eq!(code, OK, "{v}");
+    let (code, r) = offline(&["verify-segments", dir]);
+    assert_eq!(code, OK, "{r}");
+    let (code, r) = offline(&["verify-segments", dir, "--checkpoint", checkpoint]);
+    assert_eq!(code, OK, "{r}");
+    // The head kept when the segment was closed is just past it (the seal followed).
+    assert!(
+        r["checkpoint"].as_str().unwrap().starts_with("beyond"),
+        "{r}"
+    );
+    // The exported evidence of the compacted journal verifies as a whole, and its third
+    // record, which now lives only in the segment, is found there.
+    let bundle = files.path().join("after.json");
+    assert_eq!(
+        gw.op(&["audit", "export", "--out", bundle.to_str().unwrap()])
+            .0,
+        OK
+    );
+    let (code, r) = offline(&["verify-file", bundle.to_str().unwrap()]);
+    assert_eq!(code, OK, "{r}");
+    assert_eq!(r["complete"], true);
+    let exported: Value = serde_json::from_slice(&std::fs::read(&bundle).unwrap()).unwrap();
+    let record = &exported["audit"][2];
+    let third = files.path().join("third.json");
+    std::fs::write(
+        &third,
+        serde_json::json!({ "seq": record["seq"], "hash": record["hash"] }).to_string(),
+    )
+    .unwrap();
+    let (code, r) = offline(&[
+        "verify-segments",
+        dir,
+        "--checkpoint",
+        third.to_str().unwrap(),
+    ]);
+    assert_eq!(code, OK, "{r}");
+    assert_eq!(r["checkpoint"], "contained");
+    let lie = files.path().join("lie.json");
+    std::fs::write(
+        &lie,
+        serde_json::json!({ "seq": record["seq"], "hash": "0".repeat(64) }).to_string(),
+    )
+    .unwrap();
+    assert_eq!(
+        offline(&[
+            "verify-segments",
+            dir,
+            "--checkpoint",
+            lie.to_str().unwrap()
+        ])
+        .0,
+        FAILED
+    );
+    // A damaged copy of the segment is not accepted, by either command.
+    let damaged_dir = files.path().join("damaged");
+    std::fs::create_dir_all(&damaged_dir).unwrap();
+    let damaged = damaged_dir.join("seg-00000001.jsonl");
+    let mut bytes = std::fs::read(&file).unwrap();
+    let at = bytes.len() / 2;
+    bytes[at] ^= 1;
+    std::fs::write(&damaged, bytes).unwrap();
+    drop(gw);
+    assert_eq!(
+        offline(&["verify-segments", damaged_dir.to_str().unwrap()]).0,
+        FAILED
+    );
+    assert_eq!(
+        offline(&["verify-file", damaged.to_str().unwrap()]).0,
+        FAILED
+    );
 }
 
 #[test]

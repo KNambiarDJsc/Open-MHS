@@ -94,6 +94,9 @@ pub struct GatewayConfig {
     /// Keep the journal's audit head here, ideally on other storage, and refuse to start
     /// on a journal that is behind it (spec/lifecycle.md §4 rule 8). None: not kept.
     pub checkpoint_file: Option<PathBuf>,
+    /// Allow `audit.compact`: moving finished history from the journal into its sealed
+    /// segments, which deletes journal rows (RFC 0002, milestone 5). Off by default.
+    pub archive: bool,
 }
 
 impl std::fmt::Debug for GatewayConfig {
@@ -110,6 +113,7 @@ impl std::fmt::Debug for GatewayConfig {
             .field("readback_skew_ms", &self.readback_skew_ms)
             .field("journal_max_bytes", &self.journal_max_bytes)
             .field("checkpoint_file", &self.checkpoint_file)
+            .field("archive", &self.archive)
             .field(
                 "adapters",
                 &self
@@ -139,6 +143,7 @@ impl GatewayConfig {
             journal_max_bytes: None,
             journal_reserve_bytes: DEFAULT_JOURNAL_RESERVE_BYTES,
             checkpoint_file: None,
+            archive: false,
         }
     }
 }
@@ -215,8 +220,17 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let (policy_store, policy) = PolicyStore::open(&config.home, &config.operator)?;
     let tokens = TokenStore::open(&config.home, &config.operator)?;
+    // The audit head kept outside the journal lets a journal with a seal skip the history
+    // before it (RFC 0002). An unreadable file is reported below, by `set_checkpoint_file`.
+    let anchor = config
+        .checkpoint_file
+        .as_ref()
+        .and_then(|path| std::fs::read(path).ok())
+        .and_then(|bytes| {
+            serde_json::from_slice::<openmhs_types::evidence::AuditCheckpoint>(&bytes).ok()
+        });
     let engine = Engine::with_journal(
-        openmhs_engine::Journal::open(&config.home.join(JOURNAL_FILE))
+        openmhs_engine::Journal::open_anchored(&config.home.join(JOURNAL_FILE), anchor.as_ref())
             .map_err(EngineError::from)?,
         clock.clone(),
         policy,
@@ -319,6 +333,7 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
         engine: engine.clone(),
         clock: clock.clone(),
         simulation: config.simulation,
+        archive: config.archive,
         operator: Session::operator(&config.operator),
         operator_token_sha256: sha256_hex(&operator_token),
         tokens: Mutex::new(tokens),
