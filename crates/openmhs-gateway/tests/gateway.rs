@@ -163,3 +163,51 @@ async fn embedded_adapters_are_registered() {
     assert_eq!(err.code(), Some("gateway.not_simulation"));
     gw.shutdown().await.unwrap();
 }
+
+/// `audit.export` streams the bundle in chunks as the journal reads it. Clients that read the
+/// whole response, and the CLI's client that writes it straight to a file, get the same
+/// bundle; an agent gets an ordinary error response, not a stream.
+#[tokio::test(flavor = "multi_thread")]
+async fn evidence_export_streams_the_same_bundle_to_every_client() {
+    let home = tempfile::tempdir().unwrap();
+    let gw = start(home.path()).await;
+    let operator = Client::new(&gw.url, &gw.operator_token).unwrap();
+    // Well past one 64 KiB chunk.
+    for i in 0..2_000 {
+        gw.engine()
+            .journal()
+            .append_audit(
+                openmhs_types::Timestamp::from_millis(i),
+                "test.padding",
+                "subject",
+                &json!({ "i": i, "pad": "x".repeat(64) }),
+            )
+            .unwrap();
+    }
+    let whole = operator.export_evidence().await.unwrap();
+    assert!(whole.audit.len() > 2_000);
+    let result = openmhs_types::evidence::verify_evidence(&whole, Some(&whole.checkpoint));
+    assert!(result.valid && result.complete, "{result:?}");
+
+    let mut streamed = Vec::new();
+    operator.export_evidence_to(&mut streamed).await.unwrap();
+    assert!(streamed.len() > 4 * 64 * 1024);
+    let streamed: openmhs_types::evidence::EvidenceBundle =
+        serde_json::from_slice(&streamed).unwrap();
+    assert_eq!(streamed, whole);
+
+    let token = operator
+        .create_token(CreateTokenParams::unrestricted("agent:t", Role::Agent))
+        .await
+        .unwrap();
+    let agent = Client::new(&gw.url, &token.token).unwrap();
+    let mut out = Vec::new();
+    let error = agent.export_evidence_to(&mut out).await.unwrap_err();
+    assert_eq!(error.code(), Some("gateway.forbidden"));
+    assert!(out.is_empty());
+    assert_eq!(
+        agent.export_evidence().await.unwrap_err().code(),
+        Some("gateway.forbidden")
+    );
+    gw.shutdown().await.unwrap();
+}

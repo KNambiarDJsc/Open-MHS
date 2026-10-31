@@ -106,6 +106,18 @@ measured old against new in one session, five opens each): on the 100k journal i
 (48 ms for 1,000, 0.52 s for 10,000) whatever the history. The open itself did not change
 (6.6 s before, 6.8 s after, within run-to-run spread). Full table in the RFC.
 
+**API reads no longer grow with the history** ([RFC 0002](rfcs/0002-storage-engine.md),
+milestone 2). These were measured end to end through the gateway and CLI, old against new.
+On the 1 GB journal:
+
+- `audit tail` fell from 2.33 s and a 973 MB gateway peak to 31 ms and 16 MB;
+- a state-filtered `commands list` fell from 1.44 s to 46 ms;
+- `audit export` now streams: 940 MB in 8.5 s, with peaks of 21 MB in the gateway and 15 MB
+  in the CLI.
+
+The old export was only run on the 100 MB journal, where it peaked at 519 MB in the gateway
+and 477 MB in the CLI. The full table and method are in the RFC.
+
 **The first measurement changed the code.** The audit chain was first verified by loading
 the whole log into memory: peak memory equalled the journal's size (969 MB for the 1 GB
 journal, 724 MB for the read-heavy one), enough to stop a gateway starting on a Raspberry Pi.
@@ -132,6 +144,6 @@ this machine per core and was not measured.
 - A real device over a real network.
 - Startup and sweep time with N offline devices, in wall-clock time (the tests measure
   them in virtual time).
-- Memory, except at journal start-up.
+- Memory, except at journal start-up and for the audit and list API reads.
 - More than one gateway.
 - Journal start-up on a Raspberry Pi, and from a genuinely cold cache.

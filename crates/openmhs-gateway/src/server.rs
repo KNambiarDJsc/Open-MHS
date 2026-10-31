@@ -284,6 +284,9 @@ async fn handle(State(shared): State<Arc<Shared>>, headers: HeaderMap, body: Byt
             return axum::Json(body).into_response();
         }
     };
+    if request.jsonrpc == "2.0" && request.method == method::AUDIT_EXPORT {
+        return export_evidence(shared, &session, request.id).await;
+    }
     let result = if request.jsonrpc == "2.0" {
         dispatch(&shared, &session, &request.method, request.params).await
     } else {
@@ -312,6 +315,130 @@ async fn detached<T: Send + 'static>(
     match tokio::spawn(work).await {
         Ok(r) => r.map_err(engine_error),
         Err(e) => Err(gateway_error("gateway.internal", e.to_string(), vec![])),
+    }
+}
+
+/// Bytes a streamed response body sends at a time.
+const EXPORT_CHUNK: usize = 64 * 1024;
+
+/// `audit.export`: the same JSON-RPC response as any other method, but the evidence bundle
+/// is written into the body as the journal reads it, so the gateway's memory stays flat
+/// however long the chain is. A failure before the first chunk is an ordinary error
+/// response; a failure after it ends the body early, which no client can parse as a result.
+async fn export_evidence(shared: Arc<Shared>, session: &Session, id: Value) -> Response {
+    if session.role != Role::Operator {
+        return axum::Json(reply(id, Err(forbidden("exporting audit evidence")))).into_response();
+    }
+    let (tx, mut rx) = tokio::sync::mpsc::channel(4);
+    let envelope = serde_json::to_vec(&id).map(|id| {
+        let mut prefix = br#"{"jsonrpc":"2.0","id":"#.to_vec();
+        prefix.extend(id);
+        prefix.extend(br#","result":"#);
+        prefix
+    });
+    let Ok(prefix) = envelope else {
+        let e = gateway_error("gateway.internal", "unserializable request id", vec![]);
+        return axum::Json(reply(Value::Null, Err(e))).into_response();
+    };
+    tokio::task::spawn_blocking(move || {
+        let mut out = ChunkWriter { tx, buf: prefix };
+        let written = shared
+            .engine
+            .journal()
+            .write_evidence(&mut out)
+            .map_err(|e| e.to_string())
+            .and_then(|_| {
+                out.buf.push(b'}');
+                out.send().map_err(|e| e.to_string())
+            });
+        if let Err(e) = written {
+            // Unsent bytes are dropped: before the first chunk the handler turns this into
+            // an error response, after it the body breaks off.
+            let _ = out.tx.blocking_send(Err(e));
+        }
+    });
+    match rx.recv().await {
+        Some(Ok(first)) => {
+            let body = ChunkBody {
+                first: Some(first),
+                rest: rx,
+            };
+            (
+                [(header::CONTENT_TYPE, "application/json")],
+                axum::body::Body::new(body),
+            )
+                .into_response()
+        }
+        Some(Err(e)) => {
+            axum::Json(reply(id, Err(gateway_error("gateway.journal", e, vec![])))).into_response()
+        }
+        None => {
+            let e = gateway_error(
+                "gateway.internal",
+                "the export stopped unexpectedly",
+                vec![],
+            );
+            axum::Json(reply(id, Err(e))).into_response()
+        }
+    }
+}
+
+type Chunk = Result<Bytes, String>;
+
+/// A blocking `Write` that hands its output to an async body in chunks, waiting while the
+/// client is slow to read. A client that goes away makes the next write fail.
+struct ChunkWriter {
+    tx: tokio::sync::mpsc::Sender<Chunk>,
+    buf: Vec<u8>,
+}
+
+impl ChunkWriter {
+    fn send(&mut self) -> std::io::Result<()> {
+        if self.buf.is_empty() {
+            return Ok(());
+        }
+        let chunk = Bytes::from(std::mem::take(&mut self.buf));
+        self.tx
+            .blocking_send(Ok(chunk))
+            .map_err(|_| std::io::Error::new(std::io::ErrorKind::BrokenPipe, "client went away"))
+    }
+}
+
+impl std::io::Write for ChunkWriter {
+    fn write(&mut self, data: &[u8]) -> std::io::Result<usize> {
+        self.buf.extend_from_slice(data);
+        if self.buf.len() >= EXPORT_CHUNK {
+            self.send()?;
+        }
+        Ok(data.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        // The final chunk goes when the envelope is closed; flushing early would only make
+        // a failure in the last rows unreportable as an error response.
+        Ok(())
+    }
+}
+
+struct ChunkBody {
+    first: Option<Bytes>,
+    rest: tokio::sync::mpsc::Receiver<Chunk>,
+}
+
+impl http_body::Body for ChunkBody {
+    type Data = Bytes;
+    type Error = std::io::Error;
+
+    fn poll_frame(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<Option<Result<http_body::Frame<Bytes>, std::io::Error>>> {
+        if let Some(first) = self.first.take() {
+            return std::task::Poll::Ready(Some(Ok(http_body::Frame::data(first))));
+        }
+        self.rest.poll_recv(cx).map(|chunk| {
+            chunk.map(|c| c.map(http_body::Frame::data).map_err(std::io::Error::other))
+        })
     }
 }
 
@@ -1022,14 +1149,6 @@ async fn dispatch(
             ok(CreatedToken { info, token })
         }
 
-        method::AUDIT_EXPORT => {
-            require_operator("exporting audit evidence")?;
-            ok(engine
-                .journal()
-                .export_evidence()
-                .map_err(|e| gateway_error("gateway.journal", e.to_string(), vec![]))?)
-        }
-
         method::AUDIT_VERIFY => {
             require_operator("verifying the audit log")?;
             let v = engine.verify_audit().map_err(engine_error)?;
@@ -1046,10 +1165,9 @@ async fn dispatch(
             let limit = p.limit.unwrap_or(20).min(MAX_LIST_LIMIT);
             let records = engine
                 .journal()
-                .audit_records()
+                .audit_tail(limit)
                 .map_err(|e| gateway_error("gateway.journal", e.to_string(), vec![]))?;
-            let start = records.len().saturating_sub(limit);
-            ok(records[start..]
+            ok(records
                 .iter()
                 .map(|r| AuditEntry {
                     seq: r.seq,

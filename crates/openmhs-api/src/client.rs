@@ -38,6 +38,22 @@ impl ClientError {
     }
 }
 
+/// An expired or revoked credential says so; anything else is just rejected.
+async fn unauthorized(response: reqwest::Response) -> ClientError {
+    let specific = response
+        .json::<RpcResponse>()
+        .await
+        .ok()
+        .and_then(|b| b.error)
+        .filter(|e| {
+            matches!(
+                e.data.as_ref().map(|d| d.code.as_str()),
+                Some("credential.expired" | "credential.revoked")
+            )
+        });
+    specific.map_or(ClientError::Unauthorized, ClientError::Rpc)
+}
+
 pub struct Client {
     http: reqwest::Client,
     url: String,
@@ -96,19 +112,7 @@ impl Client {
                 message: e.to_string(),
             })?;
         if response.status() == reqwest::StatusCode::UNAUTHORIZED {
-            // An expired or revoked credential says so; anything else is just rejected.
-            let specific = response
-                .json::<RpcResponse>()
-                .await
-                .ok()
-                .and_then(|b| b.error)
-                .filter(|e| {
-                    matches!(
-                        e.data.as_ref().map(|d| d.code.as_str()),
-                        Some("credential.expired" | "credential.revoked")
-                    )
-                });
-            return Err(specific.map_or(ClientError::Unauthorized, ClientError::Rpc));
+            return Err(unauthorized(response).await);
         }
         let body: RpcResponse = response
             .json()
@@ -682,6 +686,81 @@ impl Client {
         &self,
     ) -> Result<openmhs_types::evidence::EvidenceBundle, ClientError> {
         self.call(method::AUDIT_EXPORT, serde_json::json!({})).await
+    }
+
+    /// `export_evidence`, written to `out` as the gateway sends it instead of held in memory:
+    /// the bundle's JSON, unchanged. The gateway puts the result last in its response, so
+    /// everything after `"result":` but the closing brace is the bundle; any other response
+    /// shape is read whole and handled like `call`. Check the written bundle before use.
+    pub async fn export_evidence_to(
+        &self,
+        out: &mut (dyn std::io::Write + Send),
+    ) -> Result<(), ClientError> {
+        let id = self.next_id.fetch_add(1, Ordering::Relaxed);
+        let request = RpcRequest {
+            jsonrpc: "2.0".into(),
+            id: id.into(),
+            method: method::AUDIT_EXPORT.into(),
+            params: serde_json::json!({}),
+        };
+        let mut response = self
+            .http
+            .post(&self.url)
+            .bearer_auth(&self.token)
+            .json(&request)
+            .send()
+            .await
+            .map_err(|e| ClientError::Connect {
+                url: self.url.clone(),
+                message: e.to_string(),
+            })?;
+        if response.status() == reqwest::StatusCode::UNAUTHORIZED {
+            return Err(unauthorized(response).await);
+        }
+        let io = |e: std::io::Error| ClientError::Protocol(e.to_string());
+        let body = |e: reqwest::Error| ClientError::Protocol(e.to_string());
+        let prefix = format!(r#"{{"jsonrpc":"2.0","id":{id},"result":"#);
+        let mut head = Vec::new();
+        while head.len() < prefix.len() {
+            match response.chunk().await.map_err(body)? {
+                Some(chunk) => head.extend_from_slice(&chunk),
+                None => break,
+            }
+        }
+        if !head.starts_with(prefix.as_bytes()) {
+            while let Some(chunk) = response.chunk().await.map_err(body)? {
+                head.extend_from_slice(&chunk);
+            }
+            let reply: RpcResponse =
+                serde_json::from_slice(&head).map_err(|e| ClientError::Protocol(e.to_string()))?;
+            if let Some(error) = reply.error {
+                return Err(ClientError::Rpc(error));
+            }
+            let result = reply.result.ok_or_else(|| {
+                ClientError::Protocol("response has neither result nor error".into())
+            })?;
+            return serde_json::to_writer(&mut *out, &result)
+                .map_err(|e| ClientError::Protocol(e.to_string()));
+        }
+        // Hold the last chunk back: its final byte is the envelope's closing brace.
+        let mut held = head.split_off(prefix.len());
+        while let Some(chunk) = response.chunk().await.map_err(body)? {
+            if chunk.iter().all(u8::is_ascii_whitespace) {
+                continue;
+            }
+            out.write_all(&held).map_err(io)?;
+            held = chunk.to_vec();
+        }
+        while held.last().is_some_and(u8::is_ascii_whitespace) {
+            held.pop();
+        }
+        if held.pop() != Some(b'}') {
+            return Err(ClientError::Protocol(
+                "the export ended before the gateway finished it".into(),
+            ));
+        }
+        out.write_all(&held).map_err(io)?;
+        out.flush().map_err(io)
     }
 
     pub async fn audit_tail(&self, limit: Option<usize>) -> Result<Vec<AuditEntry>, ClientError> {

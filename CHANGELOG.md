@@ -49,6 +49,18 @@ and the entry will say so under **Changed** or **Removed**.
 - Audit-chain verification streams the records instead of loading the whole log: memory
   stays at about 15 MB whatever the journal's size (it was the journal's size: 969 MB for
   1 GB), and hashing is 2.4 times faster with byte-for-byte the same hashes.
+- `audit.tail`, `commands.list` and `approvals.list` no longer read the whole journal. The
+  tail reads only the newest records. The lists filter in SQL, through new indexes on
+  creation time; this version builds them once, at its first start, and older versions
+  ignore them. On a 1 GB journal `audit tail` went from 2.3 s and 973 MB of gateway memory
+  to 31 ms and 16 MB ([RFC 0002](docs/rfcs/0002-storage-engine.md), milestone 2).
+- `audit.export` (and `openmhs audit export`) streams the evidence bundle. The gateway reads
+  it on a connection of its own, without holding the journal. The CLI writes it to the file
+  as it arrives, then checks that the file is one whole bundle. Memory stays flat: for a
+  1 GB journal, 21 MB in the gateway and 15 MB in the CLI. Before, both held the whole
+  bundle: 519 MB and 477 MB for a 100 MB journal. The file is now compact JSON with
+  `checkpoint` first, and `verify-file` reads both old and new exports. A failed export
+  leaves no file.
 
 ### Added
 

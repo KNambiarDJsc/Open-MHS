@@ -101,6 +101,18 @@ pub enum PlanState {
 }
 
 impl PlanState {
+    pub const ALL: [PlanState; 9] = [
+        Self::Running,
+        Self::WaitingApproval,
+        Self::AwaitingDecision,
+        Self::Compensating,
+        Self::Succeeded,
+        Self::Halted,
+        Self::Compensated,
+        Self::Aborted,
+        Self::Cancelled,
+    ];
+
     pub fn is_terminal(self) -> bool {
         matches!(
             self,

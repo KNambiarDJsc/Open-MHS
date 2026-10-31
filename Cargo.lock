@@ -1646,6 +1646,7 @@ dependencies = [
  "async-trait",
  "axum",
  "getrandom 0.4.3",
+ "http-body",
  "openmhs-adapter",
  "openmhs-api",
  "openmhs-engine",

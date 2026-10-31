@@ -58,6 +58,8 @@ dirs = "7"
 # and signing only; no key derivation or encryption.
 ed25519-dalek = { version = "3", default-features = false, features = ["zeroize"] }
 getrandom = "0.4"
+# Streamed response bodies (`audit.export`); already in the tree through axum.
+http-body = "1"
 jsonschema = { version = "0.60", default-features = false }
 proptest = "1"
 # TLS through rustls with the ring provider (no C toolchain beyond cc, unlike aws-lc-rs);

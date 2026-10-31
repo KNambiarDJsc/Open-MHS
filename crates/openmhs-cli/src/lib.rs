@@ -2319,12 +2319,11 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
                 out,
                 checkpoint_out,
             } => {
-                let bundle = client.export_evidence().await?;
-                evidence::save(&out, &bundle).map_err(ClientError::Protocol)?;
+                let checkpoint = evidence::export(client, &out).await?;
                 if let Some(path) = checkpoint_out {
-                    evidence::save(&path, &bundle.checkpoint).map_err(ClientError::Protocol)?;
+                    evidence::save(&path, &checkpoint).map_err(ClientError::Protocol)?;
                 }
-                show(json, &bundle.checkpoint, |checkpoint| {
+                show(json, &checkpoint, |checkpoint| {
                     println!(
                         "exported through sequence {} to {}",
                         checkpoint.seq,

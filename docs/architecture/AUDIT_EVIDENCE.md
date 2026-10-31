@@ -42,8 +42,15 @@ openmhs --json audit verify-file evidence.json --checkpoint checkpoint.json
 Export creates new files and refuses to overwrite existing ones. Exported evidence
 contains command payloads and identities and should receive the same access controls as
 the journal. The verifier is a pure function in `openmhs-types::evidence` and the CLI
-`verify-file` path needs neither a running gateway nor database access. A full export
-costs memory and disk proportional to journal contents; it is an explicit operator action.
+`verify-file` path needs neither a running gateway nor database access.
+
+A full export costs disk proportional to journal contents; it is an explicit operator
+action. Memory stays flat on both sides (RFC 0002, M2): the gateway streams the bundle
+from its own read-only connection as SQLite reads it, and the CLI writes the stream to the
+file and then re-reads it to check it is one whole bundle. Commands keep running during an
+export; SQLite cannot checkpoint its write-ahead log past the export's snapshot until it
+ends, so a very slow export lets the log grow. `verify-file` still loads the whole bundle
+into memory; a streaming verifier comes with the segment verifier (M3).
 
 Verification checks sequence continuity, previous hashes, each record hash, the bundle
 head, receipt presence/uniqueness, creation records, latest audit pointers and current

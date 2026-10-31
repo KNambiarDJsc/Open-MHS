@@ -11,6 +11,7 @@ publish = false
 [dependencies]
 axum.workspace = true
 getrandom.workspace = true
+http-body.workspace = true
 openmhs-adapter.workspace = true
 openmhs-api.workspace = true
 openmhs-engine.workspace = true

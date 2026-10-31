@@ -1,6 +1,6 @@
 # RFC 0002: Storage engine: restart cost bounded by live state
 
-- **Status:** draft (milestone 1 implemented; everything after it is a proposal for review)
+- **Status:** draft (milestones 1 and 2 implemented; everything after them is a proposal for review)
 - **Author:** OpenMHS maintainers (drafted with Claude Code)
 - **Date:** 2026-10-31
 - **Touches:** journal format / stored journals / API / tooling / security model
@@ -66,9 +66,9 @@ audit record ([`transition_tx`](../../crates/openmhs-engine/src/journal.rs)).
 |---|---|---|---|
 | F1 | Recovery parsed every receipt to find unfinished ones although `commands_state` exists | [`commands_in_states`](../../crates/openmhs-engine/src/journal.rs) | **Fixed in M1** |
 | F2 | **A command's state edited in both the row and the receipt to a final state was believed**: the old scan only compared the two, so an `UNKNOWN_OUTCOME` stopped holding its capability and the next write was sent. Reproduced against 6b780de | `commands` row vs chain | **Fixed in M1**: refused at open |
-| F3 | `audit.tail` loads the whole audit log into memory to return the last N records | [server.rs `AUDIT_TAIL`](../../crates/openmhs-gateway/src/server.rs) via `audit_records` | Open (M2): a 1 GB journal needs ~1 GB per call |
-| F4 | `audit.export` builds the whole log and all receipts in memory | [`export_evidence`](../../crates/openmhs-engine/src/journal.rs) | Open (M2): stream to a file |
-| F5 | `commands.list` and `approvals.list` filter in Rust after an ordered full scan; `open_plans` uses `NOT IN` (no index) | [`list_commands`](../../crates/openmhs-engine/src/journal.rs), `approvals`, [`open_plans`](../../crates/openmhs-engine/src/journal/plans.rs) | Open (M2) |
+| F3 | `audit.tail` loaded the whole audit log into memory to return the last N records | [server.rs `AUDIT_TAIL`](../../crates/openmhs-gateway/src/server.rs) via `audit_records` | **Fixed in M2**: 973 MB per call on a 1 GB journal, now 16 MB |
+| F4 | `audit.export` built the whole log and all receipts in memory: twice in the gateway (the bundle, then a JSON value) and again in the CLI | [`export_evidence`](../../crates/openmhs-engine/src/journal.rs) | **Fixed in M2**: streamed on both sides |
+| F5 | `commands.list` and `approvals.list` filtered in Rust after an ordered full scan; `open_plans` used `NOT IN` (no index) | [`list_commands`](../../crates/openmhs-engine/src/journal.rs), `approvals`, [`open_plans`](../../crates/openmhs-engine/src/journal/plans.rs) | **Fixed in M2** |
 | F6 | Each allowed read is a synced audit write; 59% of records in the benchmark journal | [`Engine::read`](../../crates/openmhs-engine/src/engine.rs) | Strategy RFC §3 (classes); M6 |
 | F7 | The journal file and the gateway home get default permissions (the token and policy stores use 0600) | [gateway `start`](../../crates/openmhs-gateway/src/lib.rs) `create_dir_all`; SQLite creates the file | Open: on a 022 umask other local users can read the journal. Proposed: home 0700 |
 
@@ -216,7 +216,7 @@ Each milestone ships alone, with its own tests, and leaves every journal readabl
 | # | Milestone | Deletes anything? | Exit test |
 |---|---|---|---|
 | **M1** | **Index-driven recovery; unfinished set checked against the chain at open** | No | **Done**: below |
-| M2 | Bounded API reads: `audit.tail` by `ORDER BY seq DESC LIMIT`, list filters in SQL, `audit.export` streamed to a file (F3–F5) | No | Peak memory flat across journal sizes for each call |
+| **M2** | **Bounded API reads: `audit.tail` by `ORDER BY seq DESC LIMIT`, list filters in SQL, `audit.export` streamed to a file (F3–F5)** | No | **Done**: below |
 | M3 | Segment writer and offline verifier: `openmhs audit segment` writes and verifies segments for a seq range; nothing is deleted | No | Round trip: every record and receipt byte for byte; `verify-file` accepts it; bit flips in the file are detected |
 | M4 | Seal records with snapshots; start-up verifies the tail when an external checkpoint covers the last seal | No | Same refusals as today for every adversary case; start-up flat in history |
 | M5 | `command_keys`; compaction behind `--archive` | **Yes**, behind a flag | The archival drills below all pass, and the bit-flip and torn-write drills are rerun on compacted journals |
@@ -275,6 +275,79 @@ each in fresh processes, medians, warm cache. `L` is the number of unfinished co
   working set does not show.
 - Peak memory at L = 10,000 (35 MB) is the recovered receipts, held at once; bounded by live
   state, as intended.
+
+## Milestone 2, implemented
+
+- **`audit.tail`** reads `ORDER BY seq DESC LIMIT n`
+  ([`Journal::audit_tail`](../../crates/openmhs-engine/src/journal.rs)).
+- **`commands.list` and `approvals.list`** filter by owner and state in SQL and stop at the
+  limit. Four indexes, `commands(created_ms, command_id)`,
+  `commands(principal, created_ms, command_id)` and the same two on `approvals`, give the
+  newest rows without sorting the table; a unit test pins each query plan to its index and
+  rejects a temporary sort. Every returned receipt is still checked against its stored state
+  and its audit record. Rows a filter skips are no longer checked on the way past: a state
+  edited to hide a command from a filter is caught at open by the M1 check instead.
+- **`open_plans`** selects `state IN (open states)` through `plans_state`.
+- **`audit.export`** keeps its method and response, but the gateway writes the bundle into
+  the response body as SQLite reads it
+  ([`Journal::write_evidence`](../../crates/openmhs-engine/src/journal.rs)), in 64 KiB
+  chunks, on a read-only connection of its own: the journal lock is not held, so commands
+  keep running while a slow client reads. The bundle's `checkpoint` now comes first; JSON
+  member order is not significant, and `verify-file` reads old and new files. An error
+  before the first chunk is an ordinary error response; after it, the body breaks off. The
+  CLI writes everything after `"result":` except the closing brace straight to the file
+  (any other response shape, such as an error, is parsed whole), then re-reads the file
+  with a streaming parser to check it is one whole bundle and to take its checkpoint; a
+  failed export leaves no file. Clients that read the whole response, like the Python SDK
+  or an older CLI, get the same bundle (gateway test
+  `evidence_export_streams_the_same_bundle_to_every_client`).
+- **Compatibility:** the new version builds the new indexes at its first open
+  (`CREATE INDEX IF NOT EXISTS`), and older versions ignore them. Nothing is deleted or
+  rewritten. The 1 GB journal grew by 11 MB.
+- **Tests:** [journal_reads.rs](../../crates/openmhs-engine/tests/journal_reads.rs) checks
+  that:
+  - the filters return what a full read would, for every combination of owner, state set
+    and limit;
+  - an export is the whole journal;
+  - an export neither holds the journal nor sees writes made while it runs;
+  - a failed export leaves the journal usable.
+
+  The query-plan unit test, the gateway test above, and the existing CLI export and
+  `verify-file` test also cover this milestone.
+
+### Measured
+
+Each call was measured end to end through a real gateway and its own CLI, with the old
+(21983b0) and new versions both built in release mode. For each journal, call and version,
+the benchmark started a fresh gateway on a copy of the journal and ran the call three
+times in fresh CLI processes. It then recorded the gateway's peak working set. Old and new
+runs alternated. The machine is the same desktop as above, with a warm cache. Times include
+starting the CLI process (about 30 ms).
+
+| Journal | Call | Time before | Time after | Gateway peak before | Gateway peak after | CLI peak before | CLI peak after |
+|---|---|---|---|---|---|---|---|
+| 10k writes, 1,000 open (100 MB, 174 k records) | `audit tail` | 317 ms | 31 ms | 114 MB | 16 MB | 14 MB | 14 MB |
+| | `commands list` | 112 ms | 52 ms | 19 MB | 17 MB | 15 MB | 15 MB |
+| | `commands list --state AWAITING_APPROVAL` | 193 ms | 47 ms | 18 MB | 16 MB | 14 MB | 15 MB |
+| | `audit export` | 2.5 s | 1.0 s | 519 MB | 19 MB | 477 MB | 14 MB |
+| 100k writes, 1,000 open (1 GB, 1.70 M records) | `audit tail` | 2.33 s | 31 ms | 973 MB | 16 MB | 14 MB | 14 MB |
+| | `commands list` | 513 ms | 47 ms | 18 MB | 17 MB | 15 MB | 15 MB |
+| | `commands list --state AWAITING_APPROVAL` | 1.44 s | 46 ms | 18 MB | 17 MB | 15 MB | 15 MB |
+| | `audit export` | not run | 8.5 s | not run | 21 MB | not run | 15 MB |
+
+- **Memory:** every call's memory is now flat across journal sizes.
+- **Time:** tail and list times are flat too. Export time stays linear, because it writes
+  the whole history: 940 MB in 8.5 s.
+- **The old export on the 1 GB journal was not run.** At 100 MB it peaked at 519 MB in the
+  gateway and 477 MB in the CLI at the same time. The machine had 3.6 GB free, and its page
+  file is on a full drive. How far the old export's memory would have grown at 1 GB was not
+  measured.
+- **Open time:** the new indexes leave it unchanged. On the 1 GB journal it was 6.35 s
+  before and 6.34 s after (medians of five alternating opens, each version on its own copy).
+  The first open, which builds the indexes, fell within the same spread.
+- **First start:** the first gateway start on each fresh copy took 15–16 s for both
+  versions. The copy had just been written, so this time mixes in cache effects and is not
+  a cold-cache measurement.
 
 ## Alternatives considered
 

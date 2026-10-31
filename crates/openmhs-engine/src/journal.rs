@@ -6,7 +6,8 @@
 //! record's hash covers the previous record's hash.
 
 use std::collections::HashSet;
-use std::path::Path;
+use std::io::Write;
+use std::path::{Path, PathBuf};
 use std::sync::{Mutex, MutexGuard};
 
 use openmhs_policy::Expectation;
@@ -28,6 +29,8 @@ pub enum JournalError {
     Sqlite(#[from] rusqlite::Error),
     #[error("json: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("io: {0}")]
+    Io(#[from] std::io::Error),
     #[error("illegal transition {from:?} -> {to:?}")]
     IllegalTransition {
         from: CommandState,
@@ -123,6 +126,8 @@ pub type CommitObserver = Box<dyn Fn(&str, FaultPhase) + Send + Sync>;
 
 pub struct Journal {
     conn: Mutex<Connection>,
+    /// The database file; `None` in memory. Long reads open their own connection to it.
+    path: Option<PathBuf>,
     fault: Mutex<Option<Fault>>,
     observer: Mutex<Option<CommitObserver>>,
 }
@@ -142,7 +147,8 @@ impl Journal {
         let conn = Connection::open(path)?;
         check_integrity(&conn, "PRAGMA quick_check")?;
         conn.pragma_update(None, "journal_mode", "WAL")?;
-        let journal = Self::init(conn)?;
+        let mut journal = Self::init(conn)?;
+        journal.path = Some(path.to_owned());
         // The unique indexes that stop a command being created twice under one idempotency
         // key, or an approval being spent on two commands, get the full check: quick_check
         // does not compare an index with its table, and a damaged index lets a duplicate in.
@@ -250,6 +256,9 @@ impl Journal {
                 ON commands(principal, device, idempotency_key)
                 WHERE idempotency_key IS NOT NULL;
             CREATE INDEX IF NOT EXISTS commands_state ON commands(state);
+            CREATE INDEX IF NOT EXISTS commands_created ON commands(created_ms, command_id);
+            CREATE INDEX IF NOT EXISTS commands_principal
+                ON commands(principal, created_ms, command_id);
             CREATE TABLE IF NOT EXISTS approvals (
                 id                   TEXT PRIMARY KEY,
                 status               TEXT NOT NULL,
@@ -263,6 +272,9 @@ impl Journal {
             CREATE UNIQUE INDEX IF NOT EXISTS approvals_command
                 ON approvals(command_id) WHERE command_id IS NOT NULL;
             CREATE INDEX IF NOT EXISTS approvals_status ON approvals(status);
+            CREATE INDEX IF NOT EXISTS approvals_created ON approvals(created_ms, id);
+            CREATE INDEX IF NOT EXISTS approvals_requester
+                ON approvals(requester, created_ms, id);
             CREATE TABLE IF NOT EXISTS leases (
                 id                TEXT PRIMARY KEY,
                 holder            TEXT NOT NULL,
@@ -302,6 +314,7 @@ impl Journal {
         )?;
         Ok(Self {
             conn: Mutex::new(conn),
+            path: None,
             fault: Mutex::new(None),
             observer: Mutex::new(None),
         })
@@ -664,30 +677,22 @@ impl Journal {
         statuses: &[ApprovalStatus],
         limit: usize,
     ) -> Result<Vec<Approval>, JournalError> {
+        let names: Vec<&str> = statuses.iter().map(|s| s.name()).collect();
         let conn = self.lock();
-        let mut stmt = conn.prepare(
-            "SELECT record, status, requester FROM approvals ORDER BY created_ms DESC, id DESC",
+        let mut stmt = conn.prepare(&newest_first_sql(
+            "SELECT record FROM approvals",
+            ("requester", requester.is_some()),
+            ("status", names.len()),
+            "id",
+        ))?;
+        let limit = i64::try_from(limit).unwrap_or(i64::MAX);
+        let rows = stmt.query_map(
+            filter_params(requester.as_ref(), &names, &limit).as_slice(),
+            |r| r.get::<_, String>(0),
         )?;
-        let rows = stmt.query_map([], |r| {
-            Ok((
-                r.get::<_, String>(0)?,
-                r.get::<_, String>(1)?,
-                r.get::<_, String>(2)?,
-            ))
-        })?;
-        let wanted: Vec<&str> = statuses.iter().map(|s| s.name()).collect();
         let mut out = Vec::new();
-        for row in rows {
-            let (json, status, who) = row?;
-            if requester.is_some_and(|p| p != who)
-                || (!wanted.is_empty() && !wanted.contains(&status.as_str()))
-            {
-                continue;
-            }
-            out.push(serde_json::from_str(&json)?);
-            if out.len() >= limit {
-                break;
-            }
+        for json in rows {
+            out.push(serde_json::from_str(&json?)?);
         }
         Ok(out)
     }
@@ -981,52 +986,46 @@ impl Journal {
         states: &[CommandState],
         limit: usize,
     ) -> Result<Vec<Receipt>, JournalError> {
-        let conn = self.lock();
-        let mut stmt = conn.prepare(
-            "SELECT receipt, state FROM commands
-             WHERE (?1 IS NULL OR principal = ?1)
-             ORDER BY created_ms DESC, command_id DESC",
-        )?;
         let names: Vec<&str> = states.iter().map(|s| state_name(*s)).collect();
+        let conn = self.lock();
+        let mut stmt = conn.prepare(&newest_first_sql(
+            "SELECT receipt, state FROM commands",
+            ("principal", principal.is_some()),
+            ("state", names.len()),
+            "command_id",
+        ))?;
+        let limit = i64::try_from(limit).unwrap_or(i64::MAX);
         let mut out = Vec::new();
-        for row in stmt.query_map(params![principal], |r| {
-            Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
-        })? {
+        for row in stmt.query_map(
+            filter_params(principal.as_ref(), &names, &limit).as_slice(),
+            |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)),
+        )? {
             let (json, state) = row?;
             let receipt: Receipt = serde_json::from_str(&json)?;
             Self::check_state(&receipt, &state)?;
-            if names.is_empty() || names.contains(&state.as_str()) {
-                Self::check_receipt(&conn, &receipt)?;
-                out.push(receipt);
-                if out.len() >= limit {
-                    break;
-                }
-            }
+            Self::check_receipt(&conn, &receipt)?;
+            out.push(receipt);
         }
         Ok(out)
     }
 
+    /// The whole audit log in memory: for tests and small journals. The gateway reads it
+    /// with `audit_tail`, `write_evidence` or `verify_audit`, which stay bounded.
     pub fn audit_records(&self) -> Result<Vec<AuditRecord>, JournalError> {
         let conn = self.lock();
-        Self::read_audit(&conn)
+        let mut stmt = conn.prepare(&format!("{AUDIT_COLUMNS} ORDER BY seq"))?;
+        let rows = stmt.query_map([], audit_record)?;
+        Ok(rows.collect::<Result<_, _>>()?)
     }
 
-    fn read_audit(conn: &Connection) -> Result<Vec<AuditRecord>, JournalError> {
-        let mut stmt = conn.prepare(
-            "SELECT seq, at_ms, kind, subject, data, prev_hash, hash FROM audit ORDER BY seq",
-        )?;
-        let rows = stmt.query_map([], |r| {
-            Ok(AuditRecord {
-                seq: r.get(0)?,
-                at_ms: r.get(1)?,
-                kind: r.get(2)?,
-                subject: r.get(3)?,
-                data: r.get(4)?,
-                prev_hash: r.get(5)?,
-                hash: r.get(6)?,
-            })
-        })?;
-        Ok(rows.collect::<Result<_, _>>()?)
+    /// The newest `limit` audit records, oldest first.
+    pub fn audit_tail(&self, limit: usize) -> Result<Vec<AuditRecord>, JournalError> {
+        let conn = self.lock();
+        let mut stmt = conn.prepare(&format!("{AUDIT_COLUMNS} ORDER BY seq DESC LIMIT ?1"))?;
+        let rows = stmt.query_map([i64::try_from(limit).unwrap_or(i64::MAX)], audit_record)?;
+        let mut records = rows.collect::<Result<Vec<_>, _>>()?;
+        records.reverse();
+        Ok(records)
     }
 
     fn check_state(receipt: &Receipt, state: &str) -> Result<(), JournalError> {
@@ -1068,28 +1067,33 @@ impl Journal {
         Ok(())
     }
 
-    /// Export audit and receipt rows from one SQLite read transaction. No truncation or
-    /// filtering: omitted receipts or chain records must be visible to the offline verifier.
+    /// `write_evidence`, parsed back into memory: for tests and small journals.
     pub fn export_evidence(&self) -> Result<EvidenceBundle, JournalError> {
-        let mut conn = self.lock();
-        let tx = conn.transaction()?;
-        let audit = Self::read_audit(&tx)?;
-        let receipts = {
-            let mut stmt = tx.prepare("SELECT receipt FROM commands ORDER BY command_id")?;
-            let mut receipts = Vec::new();
-            for row in stmt.query_map([], |row| row.get::<_, String>(0))? {
-                receipts.push(serde_json::from_str(&row?)?);
+        let mut bundle = Vec::new();
+        self.write_evidence(&mut bundle)?;
+        Ok(serde_json::from_slice(&bundle)?)
+    }
+
+    /// Write the evidence bundle (an `EvidenceBundle` as JSON) to `out`: the audit chain and
+    /// every receipt from one SQLite read snapshot. No truncation or filtering: omitted
+    /// receipts or chain records must be visible to the offline verifier.
+    ///
+    /// Streams the rows, so memory stays flat however long the chain is. A file journal is
+    /// read on a connection of its own: commands keep running while a slow reader drains
+    /// `out`, though SQLite cannot checkpoint the write-ahead log past an open snapshot.
+    pub fn write_evidence(&self, out: &mut dyn Write) -> Result<AuditCheckpoint, JournalError> {
+        match &self.path {
+            Some(path) => {
+                let mut conn = Connection::open_with_flags(
+                    path,
+                    rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY
+                        | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
+                )?;
+                conn.busy_timeout(std::time::Duration::from_secs(5))?;
+                write_evidence_from(&mut conn, out)
             }
-            receipts
-        };
-        let checkpoint = AuditCheckpoint::at_head(&audit);
-        tx.commit()?;
-        Ok(EvidenceBundle {
-            version: 1,
-            audit,
-            receipts,
-            checkpoint,
-        })
+            None => write_evidence_from(&mut self.lock(), out),
+        }
     }
 
     /// The newest audit record's sequence number and hash (genesis when empty).
@@ -1148,9 +1152,7 @@ impl Journal {
             to: CommandState,
         }
         let conn = self.lock();
-        let mut stmt = conn.prepare(
-            "SELECT seq, at_ms, kind, subject, data, prev_hash, hash FROM audit ORDER BY seq",
-        )?;
+        let mut stmt = conn.prepare(&format!("{AUDIT_COLUMNS} ORDER BY seq"))?;
         let mut rows = stmt.query([])?;
         let mut prev = GENESIS.to_owned();
         let mut records = 0u64;
@@ -1246,6 +1248,105 @@ fn check_integrity(conn: &Connection, pragma: &str) -> Result<(), JournalError> 
     }
 }
 
+const AUDIT_COLUMNS: &str = "SELECT seq, at_ms, kind, subject, data, prev_hash, hash FROM audit";
+
+fn audit_record(r: &rusqlite::Row<'_>) -> rusqlite::Result<AuditRecord> {
+    Ok(AuditRecord {
+        seq: r.get(0)?,
+        at_ms: r.get(1)?,
+        kind: r.get(2)?,
+        subject: r.get(3)?,
+        data: r.get(4)?,
+        prev_hash: r.get(5)?,
+        hash: r.get(6)?,
+    })
+}
+
+fn write_evidence_from(
+    conn: &mut Connection,
+    out: &mut dyn Write,
+) -> Result<AuditCheckpoint, JournalError> {
+    let tx = conn.transaction()?;
+    let head: Option<(i64, String)> = tx
+        .query_row(
+            "SELECT seq, hash FROM audit ORDER BY seq DESC LIMIT 1",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .optional()?;
+    let checkpoint = head.map_or_else(
+        || AuditCheckpoint {
+            seq: 0,
+            hash: GENESIS.into(),
+        },
+        |(seq, hash)| AuditCheckpoint { seq, hash },
+    );
+    // The checkpoint comes first: it is known before the rows, and the order of a JSON
+    // object's members does not matter to a reader.
+    out.write_all(b"{\"version\":1,\"checkpoint\":")?;
+    serde_json::to_writer(&mut *out, &checkpoint)?;
+    out.write_all(b",\"audit\":[")?;
+    {
+        let mut stmt = tx.prepare(&format!("{AUDIT_COLUMNS} ORDER BY seq"))?;
+        let mut rows = stmt.query([])?;
+        let mut first = true;
+        while let Some(row) = rows.next()? {
+            if !std::mem::take(&mut first) {
+                out.write_all(b",")?;
+            }
+            serde_json::to_writer(&mut *out, &audit_record(row)?)?;
+        }
+    }
+    out.write_all(b"],\"receipts\":[")?;
+    {
+        let mut stmt = tx.prepare("SELECT receipt FROM commands ORDER BY command_id")?;
+        let mut rows = stmt.query([])?;
+        let mut first = true;
+        while let Some(row) = rows.next()? {
+            if !std::mem::take(&mut first) {
+                out.write_all(b",")?;
+            }
+            let receipt: Receipt = serde_json::from_str(&row.get::<_, String>(0)?)?;
+            serde_json::to_writer(&mut *out, &receipt)?;
+        }
+    }
+    out.write_all(b"]}")?;
+    out.flush()?;
+    Ok(checkpoint)
+}
+
+/// `{select} WHERE .. ORDER BY created_ms DESC, {tie} DESC LIMIT ?`, optionally filtered by
+/// an owner column and a set of statuses; bind with `filter_params`. The newest rows come
+/// off the `(owner, created_ms, id)` or `(created_ms, id)` index without sorting the table.
+fn newest_first_sql(
+    select: &str,
+    (owner, by_owner): (&str, bool),
+    (status, statuses): (&str, usize),
+    tie: &str,
+) -> String {
+    let mut sql = format!("{select} WHERE 1");
+    if by_owner {
+        sql.push_str(&format!(" AND {owner} = ?"));
+    }
+    if statuses > 0 {
+        sql.push_str(&format!(" AND {status} IN ({})", placeholders(statuses)));
+    }
+    sql.push_str(&format!(" ORDER BY created_ms DESC, {tie} DESC LIMIT ?"));
+    sql
+}
+
+fn filter_params<'a>(
+    owner: Option<&'a &str>,
+    statuses: &'a [&str],
+    limit: &'a i64,
+) -> Vec<&'a dyn ToSql> {
+    let mut params: Vec<&dyn ToSql> = Vec::new();
+    params.extend(owner.map(|o| o as &dyn ToSql));
+    params.extend(statuses.iter().map(|s| s as &dyn ToSql));
+    params.push(limit);
+    params
+}
+
 fn placeholders(n: usize) -> String {
     std::iter::repeat_n("?", n).collect::<Vec<_>>().join(",")
 }
@@ -1327,6 +1428,108 @@ mod tests {
                 .any(|step| step.contains("USING INDEX commands_state")),
             "{plan:?}"
         );
+    }
+
+    fn query_plan(j: &Journal, sql: &str, params: &[&dyn ToSql]) -> Vec<String> {
+        j.lock()
+            .prepare(&format!("EXPLAIN QUERY PLAN {sql}"))
+            .unwrap()
+            .query_map(params, |r| r.get(3))
+            .unwrap()
+            .collect::<Result<_, _>>()
+            .unwrap()
+    }
+
+    /// The API's list and tail reads take the newest rows off an index: their cost must not
+    /// grow with the history (RFC 0002, M2). A temporary B-tree would mean sorting the table.
+    #[test]
+    fn api_reads_take_the_newest_rows_off_an_index() {
+        let j = Journal::open_in_memory().unwrap();
+        let limit = 50i64;
+        let cases = [
+            (
+                newest_first_sql(
+                    "SELECT receipt FROM commands",
+                    ("principal", false),
+                    ("state", 0),
+                    "command_id",
+                ),
+                filter_params(None, &[], &limit),
+                "commands_created",
+            ),
+            (
+                newest_first_sql(
+                    "SELECT receipt FROM commands",
+                    ("principal", true),
+                    ("state", 0),
+                    "command_id",
+                ),
+                filter_params(Some(&"agent"), &[], &limit),
+                "commands_principal",
+            ),
+            (
+                newest_first_sql(
+                    "SELECT record FROM approvals",
+                    ("requester", false),
+                    ("status", 0),
+                    "id",
+                ),
+                filter_params(None, &[], &limit),
+                "approvals_created",
+            ),
+            (
+                newest_first_sql(
+                    "SELECT record FROM approvals",
+                    ("requester", true),
+                    ("status", 0),
+                    "id",
+                ),
+                filter_params(Some(&"agent"), &[], &limit),
+                "approvals_requester",
+            ),
+        ];
+        for (sql, params, index) in cases {
+            let plan = query_plan(&j, &sql, &params);
+            assert!(
+                plan.iter()
+                    .any(|s| s.contains(&format!("USING INDEX {index}")))
+                    && !plan.iter().any(|s| s.contains("TEMP B-TREE")),
+                "{sql}: {plan:?}"
+            );
+        }
+        let tail = query_plan(
+            &j,
+            &format!("{AUDIT_COLUMNS} ORDER BY seq DESC LIMIT 20"),
+            &[],
+        );
+        assert!(!tail.iter().any(|s| s.contains("TEMP B-TREE")), "{tail:?}");
+        let plans = query_plan(
+            &j,
+            "SELECT record FROM plans WHERE state IN ('RUNNING') ORDER BY created_ms",
+            &[],
+        );
+        assert!(
+            plans.iter().any(|s| s.contains("USING INDEX plans_state")),
+            "{plans:?}"
+        );
+    }
+
+    #[test]
+    fn audit_tail_is_the_end_of_the_log() {
+        let j = Journal::open_in_memory().unwrap();
+        for i in 0..30 {
+            j.append_audit(
+                Timestamp::from_millis(i),
+                "test",
+                "subject",
+                &serde_json::json!({ "i": i }),
+            )
+            .unwrap();
+        }
+        let all = j.audit_records().unwrap();
+        assert_eq!(j.audit_tail(7).unwrap(), all[all.len() - 7..]);
+        assert_eq!(j.audit_tail(100).unwrap(), all);
+        assert!(j.audit_tail(0).unwrap().is_empty());
     }
 
     #[test]

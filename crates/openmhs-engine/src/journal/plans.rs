@@ -3,7 +3,7 @@
 //! the engine can find the plan a held or reconciled command belongs to.
 
 use openmhs_types::Receipt;
-use openmhs_types::plan::Plan;
+use openmhs_types::plan::{Plan, PlanState};
 use rusqlite::{OptionalExtension, params};
 
 use super::{FaultPhase, Journal, JournalError};
@@ -104,15 +104,20 @@ impl Journal {
         decode(rows)
     }
 
-    /// Plans that have not ended, oldest first.
+    /// Plans that have not ended, oldest first. Found through the `state` index: the cost
+    /// grows with the open plans, not with every plan ever run.
     pub fn open_plans(&self) -> Result<Vec<Plan>, JournalError> {
+        let open: Vec<&str> = PlanState::ALL
+            .into_iter()
+            .filter(|s| !s.is_terminal())
+            .map(PlanState::name)
+            .collect();
         let conn = self.lock();
-        let mut stmt = conn.prepare(
-            "SELECT record FROM plans
-             WHERE state NOT IN ('SUCCEEDED', 'HALTED', 'COMPENSATED', 'ABORTED', 'CANCELLED')
-             ORDER BY created_ms",
-        )?;
-        let rows = stmt.query_map([], |r| r.get(0))?;
+        let mut stmt = conn.prepare(&format!(
+            "SELECT record FROM plans WHERE state IN ({}) ORDER BY created_ms",
+            super::placeholders(open.len())
+        ))?;
+        let rows = stmt.query_map(rusqlite::params_from_iter(open), |r| r.get(0))?;
         decode(rows)
     }
 
