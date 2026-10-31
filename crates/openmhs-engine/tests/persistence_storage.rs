@@ -474,6 +474,76 @@ async fn a_broken_audit_chain_is_refused_at_start() {
     );
 }
 
+/// Recovery and the capability holds find unfinished commands through the `state` index.
+/// A command whose stored state was edited to look finished (or finished, to look open)
+/// is refused at start: the index must agree with the hash-chained lifecycle records.
+/// Otherwise an unknown outcome would stop holding its capability, and the next write
+/// would be sent.
+#[tokio::test(start_paused = true)]
+async fn a_state_edited_to_look_finished_is_refused_at_start() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("journal.sqlite");
+    let clock = clock();
+    let (device, psu) = device(&clock);
+    let (done, open) = {
+        let engine = gateway(&path, &clock, device.clone()).await;
+        let done = engine.submit(&agent(), &set(1.0, "first")).await.unwrap();
+        assert_eq!(done.state, Verified);
+        tokio::time::sleep(Duration::from_secs(2)).await;
+        psu.update_faults(|f| f.execute = Some(ExecFault::Hang));
+        let mut uncertain = set(2.0, "second");
+        uncertain["deadline_ms"] = json!(2_000);
+        let open = engine.submit(&agent(), &uncertain).await.unwrap();
+        assert_eq!(open.state, UnknownOutcome);
+        psu.clear_faults();
+        (done.command_id, open.command_id)
+    };
+    let edits = [
+        (
+            "state column only",
+            format!("UPDATE commands SET state = 'RECONCILED_APPLIED' WHERE command_id = '{open}'"),
+        ),
+        (
+            "state column and receipt",
+            format!(
+                "UPDATE commands SET state = 'RECONCILED_APPLIED', \
+                 receipt = json_set(receipt, '$.state', 'RECONCILED_APPLIED') \
+                 WHERE command_id = '{open}'"
+            ),
+        ),
+        (
+            "a finished command made to look in flight",
+            format!(
+                "UPDATE commands SET state = 'DISPATCHED', \
+                 receipt = json_set(receipt, '$.state', 'DISPATCHED') WHERE command_id = '{done}'"
+            ),
+        ),
+    ];
+    for (what, sql) in edits {
+        let case = dir.path().join("case.sqlite");
+        std::fs::copy(&path, &case).unwrap();
+        Journal::open(&case).unwrap().execute_raw(&sql).unwrap();
+        let opened = Journal::open(&case);
+        assert!(
+            matches!(&opened, Err(openmhs_engine::JournalError::Refused(e)) if e.code == "journal.receipt_integrity"),
+            "{what}: {:?}",
+            opened.err()
+        );
+        std::fs::remove_file(&case).unwrap();
+    }
+
+    // Unedited, it opens, and the unknown outcome still holds its capability.
+    let engine = gateway(&path, &clock, device).await;
+    engine.recover().await.unwrap();
+    let calls = psu.execute_calls();
+    let r = engine.submit(&agent(), &set(3.0, "third")).await;
+    assert_eq!(
+        psu.execute_calls(),
+        calls,
+        "sent past an unknown outcome: {r:?}"
+    );
+}
+
 // ---------------------------------------------------------------- a rolled-back journal
 
 /// With a checkpoint file kept outside the journal, a journal rolled back to before a

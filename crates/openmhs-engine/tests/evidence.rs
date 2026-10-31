@@ -165,15 +165,21 @@ fn corrupt_receipt_cannot_be_laundered_by_a_later_transition() {
 
 #[test]
 fn a_changed_state_index_cannot_hide_admitted_work_from_recovery() {
-    let journal = Journal::open_in_memory().unwrap();
+    // Recovery finds unfinished commands through the state index; opening the journal checks
+    // that index against the commands the audit chain leaves unfinished.
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("journal.sqlite");
+    let journal = Journal::open(&path).unwrap();
     created(&journal);
     journal
         .execute_raw("UPDATE commands SET state = 'VERIFIED'")
         .unwrap();
+    drop(journal);
+    let opened = Journal::open(&path);
     assert!(
-        journal
-            .commands_in_states(&[CommandState::Created])
-            .is_err()
+        matches!(&opened, Err(openmhs_engine::JournalError::Refused(e)) if e.code == "journal.receipt_integrity"),
+        "{:?}",
+        opened.err()
     );
 }
 

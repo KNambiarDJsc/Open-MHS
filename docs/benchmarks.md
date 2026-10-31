@@ -66,12 +66,15 @@ samples in 3 s.
 
 Before it serves anything, a gateway checks its journal: SQLite's `quick_check`, the full
 `integrity_check` of the commands and approvals tables (their unique indexes stop duplicate
-commands and double-spent approvals), and every link of the audit chain. Then recovery scans
-the commands. All of it grows with the journal ([PERSISTENCE_ADVERSARY.md](architecture/PERSISTENCE_ADVERSARY.md)
+commands and double-spent approvals), and every link of the audit chain. Then recovery
+settles the unfinished commands. The checks grow with the journal; since RFC 0002
+milestone 1, recovery grows only with the unfinished commands ([PERSISTENCE_ADVERSARY.md](architecture/PERSISTENCE_ADVERSARY.md)
 explains why each check is there).
 
 ```sh
 cargo run --release -p openmhs-engine --example journal_startup -- generate J.sqlite 10000 10
+# Append 1,000 writes left waiting for approval: unfinished commands for recovery to visit.
+cargo run --release -p openmhs-engine --example journal_startup -- generate J.sqlite 0 0 1000
 cargo run --release -p openmhs-engine --example journal_startup -- open J.sqlite
 ```
 
@@ -94,7 +97,14 @@ file already in the operating system's cache.
 | 10,000 × 100 | 472 MB | 1.07 M | 3.4 s | 0.83 s | 0.05 s | 2.6 s | 0.14 s | 15 MB |
 | 100,000 × 10 | 964 MB | 1.70 M | 6.3 s | 1.6 s | 0.54 s | 4.1 s | 1.4 s | 16 MB |
 
-A gateway's start-up cost is the open plus recovery: about 7.7 s for the 1 GB journal, warm.
+A gateway's start-up cost is the open plus recovery: about 7.7 s for the 1 GB journal, warm,
+at the time of this table. Recovery then parsed every receipt ever stored.
+
+**Recovery now follows live state** ([RFC 0002](rfcs/0002-storage-engine.md), milestone 1,
+measured old against new in one session, five opens each): on the 100k journal it fell from
+1.21 s to 1.1 ms with nothing unfinished, and costs about 50 µs per unfinished command
+(48 ms for 1,000, 0.52 s for 10,000) whatever the history. The open itself did not change
+(6.6 s before, 6.8 s after, within run-to-run spread). Full table in the RFC.
 
 **The first measurement changed the code.** The audit chain was first verified by loading
 the whole log into memory: peak memory equalled the journal's size (969 MB for the 1 GB
@@ -113,7 +123,7 @@ way to empty its cache), but a first start after a reboot will look more like it
 per GB, on this machine. A gateway that writes 1,000 audit records an hour reaches 1.7
 million in about ten weeks. Two things bound the start-up: the journal limit (ADR-0021;
 `--journal-max-mib 256` keeps the warm open near 2 s here), and archiving old records, which
-the storage RFC covers and which is not built. A Raspberry Pi is several times slower than
+[RFC 0002](rfcs/0002-storage-engine.md) stages and which is not built. A Raspberry Pi is several times slower than
 this machine per core and was not measured.
 
 ## Not measured yet

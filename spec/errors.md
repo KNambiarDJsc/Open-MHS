@@ -3,6 +3,8 @@
 `journal.receipt_integrity` means a stored receipt no longer matches its last recorded
 digest, audit pointer or indexed lifecycle state. Status/replay/recovery operations fail
 closed for the affected data; they do not construct a fresh receipt that appears verified.
+At start, it also refuses a journal whose stored unfinished commands differ from the ones
+its audit chain leaves unfinished: recovery and capability holds find them by stored state.
 Export the journal evidence for inspection. See [receipt integrity](../docs/architecture/AUDIT_EVIDENCE.md).
 
 ## Error object

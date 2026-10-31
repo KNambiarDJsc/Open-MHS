@@ -9,7 +9,7 @@ adapter process), Windows 11 / NTFS locally and Linux, Windows and macOS in CI; 
 | Tests | What they break |
 |---|---|
 | [`persistence_adversary.rs`](../../crates/openmhs-engine/tests/persistence_adversary.rs) (39) | Every command write, before and after its commit, as an I/O error or a crash; recovery itself; approval spending; real `SQLITE_FULL`; a real process `abort()`; journal rollback without protection |
-| [`persistence_storage.rs`](../../crates/openmhs-engine/tests/persistence_storage.rs) (6) | Power lost mid-write (torn log), a bit flipped at 706 places in the file, a read-only journal, an edited readback target, an edited audit record, rollback caught by a checkpoint file |
+| [`persistence_storage.rs`](../../crates/openmhs-engine/tests/persistence_storage.rs) (7) | Power lost mid-write (torn log), a bit flipped at 706 places in the file, a read-only journal, an edited readback target, an edited audit record, an edited command state, rollback caught by a checkpoint file |
 | [`persistence_plans.rs`](../../crates/openmhs-engine/tests/persistence_plans.rs) (2) | Every plan and lease write (48 cases); crashes while taking or releasing a lease |
 | [`openmhs-host/tests/process.rs`](../../crates/openmhs-host/tests/process.rs) (1 new) | A journal fault while recording a real child process's acknowledgement, then a restart |
 
@@ -17,8 +17,8 @@ Run: `cargo test -p openmhs-engine --test persistence_adversary --test persisten
 
 ## Result
 
-**Four defects found and fixed; one limit closed.** All 48 drills pass, and so does the whole
-workspace (507 tests in 83 binaries; clippy `-D warnings` clean).
+**Five defects found and fixed; one limit closed.** All 48 drills pass, and so does the whole
+workspace (510 tests in 83 binaries; clippy `-D warnings` clean).
 
 | # | Found by | Defect | Fix |
 |---|---|---|---|
@@ -26,6 +26,7 @@ workspace (507 tests in 83 binaries; clippy `-D warnings` clean).
 | 2 | Bit flips (9 cases) | The receipt lookup by idempotency key (the Python SDK's lost-response recovery, `commands.get_by_key`, and plan recovery) **returned a damaged receipt without the integrity check** every other read runs: one flip changed the capability name, unnoticed | Checked like every other read (`journal.receipt_integrity`) |
 | 3 | Bit flips (1 case) | A flip in the idempotency index made the lookup **find no command where one exists**. SQLite's `quick_check` does not compare indexes with tables, so the gateway started; a resubmission under the same key would have created and sent a second command | At start, the full `integrity_check` of the `commands` and `approvals` tables and their unique indexes (`journal.corrupt`) |
 | 4 | Reading the code for the bit-flip drill | The readback target a command is verified and reconciled against was stored outside any digest: **an edited target would be used**, and could turn "applied" into "not applied", which invites a resend | Its SHA-256 is written into the command's `DISPATCHED` audit record and checked on every read; a mismatch is refused |
+| 5 | Making recovery use the state index ([RFC 0002](../rfcs/0002-storage-engine.md), milestone 1), 2026-10-31 | A command's state **edited in both its row and its receipt** from `UNKNOWN_OUTCOME` to a final state was believed: the old recovery scan only compared the two, so the command stopped holding its capability and **the next write was sent** (reproduced against 6b780de) | At start, the unfinished commands the audit chain describes must be exactly those the state index finds (`journal.receipt_integrity`) |
 | — | (limit, not a defect) | A journal rolled back to an older copy is believed at start | `serve --checkpoint-file`: the audit head is written outside the journal after every dispatch, before the device is called; a journal behind it is refused (`journal.behind_checkpoint`) |
 
 Also new: the gateway refuses to start on a journal whose audit chain does not verify
@@ -85,6 +86,7 @@ and after a restart:
 | Journal file made read-only | Refused at start, or every command refused; nothing sent |
 | Readback target edited in the database | Reconciliation refused (`journal.receipt_integrity`); the command stays `UNKNOWN_OUTCOME` |
 | Audit record edited | Refused at the next start (`journal.audit_invalid`) |
+| A command's state edited: in its row only, in row and receipt to look finished, or a finished one made to look in flight | Refused at start (`journal.receipt_integrity`); before fix 5 the second case started and sent the next write |
 | **Journal rolled back** (a consistent backup from before a command, or the main file without its log) | Without protection: opened and believed, the command is gone though the device ran it; only an outside checkpoint shows it. With `--checkpoint-file`: refused at start (`journal.behind_checkpoint`); if the checkpoint cannot be written, the command is not sent (`FAILED`, `adapter.not_sent`) |
 
 ## Plans and leases

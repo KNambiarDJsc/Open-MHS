@@ -4,10 +4,11 @@
 //! each step on journals made by the real engine.
 //!
 //! ```sh
-//! # A journal of N verified writes, each followed by R audited reads, through the engine
-//! # and a simulated supply. Generation turns off fsync to finish in minutes; the file is the
-//! # same as one written with it on.
-//! cargo run --release -p openmhs-engine --example journal_startup -- generate J.sqlite N R
+//! # A journal of N verified writes, each followed by R audited reads, then L writes left
+//! # waiting for approval (unfinished: recovery visits them, and they stay unfinished), through
+//! # the engine and a simulated supply. Appends to J if it exists. Generation turns off fsync
+//! # to finish in minutes; the file is the same as one written with it on.
+//! cargo run --release -p openmhs-engine --example journal_startup -- generate J.sqlite N R [L]
 //! # Open it as a gateway would, in a fresh process, and print the timings as JSON.
 //! cargo run --release -p openmhs-engine --example journal_startup -- open J.sqlite
 //! ```
@@ -31,33 +32,48 @@ use serde_json::json;
 
 const PSU: &str = "sim.psu-01";
 const AGENT: &str = "agent:bench";
+/// Its writes wait for an approval that never comes.
+const HELD: &str = "agent:held";
+/// Generated time starts here; opening uses it too, so no approval expires on the wall clock.
+const EPOCH_MS: i64 = 1_800_000_000_000;
 
 fn policy() -> Policy {
     Policy {
-        grants: vec![Grant {
-            id: "bench".into(),
-            principal: AGENT.into(),
-            device: "*".into(),
-            capability: "*".into(),
-            operations: vec![Operation::Read, Operation::Write, Operation::Invoke],
-            effect: Effect::Allow,
-            max_side_effect: None,
-            reason: None,
-        }],
+        grants: vec![
+            Grant {
+                id: "bench".into(),
+                principal: AGENT.into(),
+                device: "*".into(),
+                capability: "*".into(),
+                operations: vec![Operation::Read, Operation::Write, Operation::Invoke],
+                effect: Effect::Allow,
+                max_side_effect: None,
+                reason: None,
+            },
+            Grant {
+                id: "held".into(),
+                principal: HELD.into(),
+                device: "*".into(),
+                capability: "*".into(),
+                operations: vec![Operation::Write],
+                effect: Effect::RequireApproval,
+                max_side_effect: None,
+                reason: None,
+            },
+        ],
         approvers: vec![],
     }
 }
 
-fn generate(path: &Path, commands: u64, reads: u64) {
+fn generate(path: &Path, commands: u64, reads: u64, live: u64) {
     let rt = tokio::runtime::Builder::new_current_thread()
         .enable_time()
         .start_paused(true)
         .build()
         .unwrap();
     rt.block_on(async {
-        let clock: Arc<dyn Clock> = Arc::new(TokioClock::starting_at(Timestamp::from_millis(
-            1_800_000_000_000,
-        )));
+        let clock: Arc<dyn Clock> =
+            Arc::new(TokioClock::starting_at(Timestamp::from_millis(EPOCH_MS)));
         let journal = Journal::open(path).unwrap();
         // Generation only: the bytes written are the same, they are just not synced.
         journal.execute_raw("PRAGMA synchronous = OFF").unwrap();
@@ -66,6 +82,11 @@ fn generate(path: &Path, commands: u64, reads: u64) {
         let (psu, _) = VirtualPsu::new(clock, 42);
         engine.register(Arc::new(psu)).await.unwrap();
         let agent = Caller::in_process(AGENT);
+        // Keys unique to this run: generating into an existing journal appends.
+        let run = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_millis();
         let started = Instant::now();
         for i in 0..commands {
             let volts = if i % 2 == 0 { 1.0 } else { 1.5 };
@@ -76,7 +97,7 @@ fn generate(path: &Path, commands: u64, reads: u64) {
                         "target": { "device": PSU, "capability": "power.output.voltage.setpoint" },
                         "operation": "write",
                         "value": { "value": volts, "unit": "V" },
-                        "idempotency_key": format!("bench-{i}"),
+                        "idempotency_key": format!("bench-{run}-{i}"),
                     }),
                 )
                 .await
@@ -97,6 +118,26 @@ fn generate(path: &Path, commands: u64, reads: u64) {
                     started.elapsed().as_secs_f64()
                 );
             }
+        }
+        let held = Caller::in_process(HELD);
+        for i in 0..live {
+            let r = engine
+                .submit(
+                    &held,
+                    &json!({
+                        "target": { "device": PSU, "capability": "power.output.voltage.setpoint" },
+                        "operation": "write",
+                        "value": { "value": 1.0, "unit": "V" },
+                        "idempotency_key": format!("live-{run}-{i}"),
+                    }),
+                )
+                .await
+                .unwrap();
+            assert_eq!(
+                r.state,
+                openmhs_types::CommandState::AwaitingApproval,
+                "{r:?}"
+            );
         }
     });
 }
@@ -127,15 +168,17 @@ fn open(path: &Path, linger_ms: u64) {
         .build()
         .unwrap();
     let (recover_ms, audit) = rt.block_on(async {
-        let clock: Arc<dyn Clock> = Arc::new(openmhs_types::SystemClock);
+        let clock: Arc<dyn Clock> =
+            Arc::new(TokioClock::starting_at(Timestamp::from_millis(EPOCH_MS)));
         let records = journal.head_checkpoint().unwrap().seq;
         let engine =
             Engine::with_journal(journal, clock.clone(), policy(), EngineOptions::default());
         let (psu, _) = VirtualPsu::new(clock, 42);
         engine.register(Arc::new(psu)).await.unwrap();
         let t = Instant::now();
-        engine.recover().await.unwrap();
+        let report = engine.recover().await.unwrap();
         let recover_ms = ms(t);
+        assert!(report.not_executed.is_empty(), "{report:?}");
         (recover_ms, records)
     });
 
@@ -143,6 +186,13 @@ fn open(path: &Path, linger_ms: u64) {
     let conn = Connection::open(path).unwrap();
     let commands: i64 = conn
         .query_row("SELECT COUNT(*) FROM commands", [], |r| r.get(0))
+        .unwrap();
+    let unfinished: i64 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM commands WHERE state = 'AWAITING_APPROVAL'",
+            [],
+            |r| r.get(0),
+        )
         .unwrap();
     let t = Instant::now();
     check(&conn, "PRAGMA quick_check");
@@ -162,7 +212,8 @@ fn open(path: &Path, linger_ms: u64) {
     println!(
         "{}",
         json!({
-            "file_bytes": size, "commands": commands, "audit_records": audit,
+            "file_bytes": size, "commands": commands, "unfinished": unfinished,
+            "audit_records": audit,
             "open_ms": open_ms, "recover_ms": recover_ms,
             "reopen_ms": reopen_ms, "quick_check_ms": quick_ms,
             "integrity_check_ms": integrity_ms, "audit_chain_ms": chain_ms,
@@ -181,13 +232,19 @@ fn main() {
         .as_slice()
     {
         ["generate", path, n, r] => {
-            generate(Path::new(path), n.parse().unwrap(), r.parse().unwrap())
+            generate(Path::new(path), n.parse().unwrap(), r.parse().unwrap(), 0)
         }
+        ["generate", path, n, r, l] => generate(
+            Path::new(path),
+            n.parse().unwrap(),
+            r.parse().unwrap(),
+            l.parse().unwrap(),
+        ),
         ["open", path] => open(Path::new(path), 0),
         ["open", path, linger] => open(Path::new(path), linger.parse().unwrap()),
         _ => {
             eprintln!(
-                "usage: journal_startup generate PATH COMMANDS READS | open PATH [LINGER_MS]"
+                "usage: journal_startup generate PATH COMMANDS READS [LIVE] | open PATH [LINGER_MS]"
             );
             std::process::exit(2);
         }

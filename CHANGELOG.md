@@ -26,6 +26,16 @@ and the entry will say so under **Changed** or **Removed**.
 - The readback target a command is verified and reconciled against was not covered by any
   digest; an edited one would have been used. Its SHA-256 is now in the command's
   `DISPATCHED` audit record, and a mismatch is refused.
+- A command whose stored state had been changed, in both its row and its receipt, from an
+  unfinished state (such as `UNKNOWN_OUTCOME`) to a final one was believed at start: it
+  stopped holding its capability, and the next write to it was sent. The gateway now
+  rebuilds the set of unfinished commands from the audit chain while verifying it at start,
+  and refuses a journal whose stored states disagree (`journal.receipt_integrity`).
+- Recovery read and parsed every command receipt the journal had ever stored to find the
+  unfinished ones (1.4 s for 100,000 commands on a desktop). It now finds them through the
+  state index, so its cost follows the number of unfinished commands, not the history.
+  Design and staged plan for the rest of the storage work:
+  [RFC 0002](docs/rfcs/0002-storage-engine.md).
 
 ### Changed
 

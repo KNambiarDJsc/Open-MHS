@@ -5,6 +5,7 @@
 //! The audit log is append-only by convention and tamper-evident by construction: each
 //! record's hash covers the previous record's hash.
 
+use std::collections::HashSet;
 use std::path::Path;
 use std::sync::{Mutex, MutexGuard};
 
@@ -151,7 +152,8 @@ impl Journal {
                 check_integrity(&conn, &format!("PRAGMA integrity_check({table})"))?;
             }
         }
-        let audit = journal.verify_audit()?;
+        let mut unfinished = HashSet::new();
+        let audit = journal.scan_audit(Some(&mut unfinished))?;
         if let Some(seq) = audit.first_invalid {
             return Err(refuse(
                 "journal.audit_invalid",
@@ -163,7 +165,44 @@ impl Journal {
                 ),
             ));
         }
+        journal.check_unfinished(&unfinished)?;
         Ok(journal)
+    }
+
+    /// Recovery and the capability holds find unfinished commands through the `state`
+    /// index, so a command whose stored state was changed to a final one would be skipped:
+    /// not recovered, and no longer holding its capability. At open, the indexed set must
+    /// therefore equal the set the hash-chained lifecycle records leave unfinished.
+    fn check_unfinished(&self, from_chain: &HashSet<String>) -> Result<(), JournalError> {
+        let conn = self.lock();
+        let unfinished = unfinished_states();
+        let mut stmt = conn.prepare(&format!(
+            "SELECT command_id, state FROM commands WHERE state IN ({})",
+            placeholders(unfinished.len())
+        ))?;
+        let mut indexed = HashSet::new();
+        let mut rows = stmt.query(rusqlite::params_from_iter(unfinished))?;
+        while let Some(row) = rows.next()? {
+            let id: String = row.get(0)?;
+            if !from_chain.contains(&id) {
+                let state: String = row.get(1)?;
+                return Err(refuse(
+                    "journal.receipt_integrity",
+                    format!("command {id} is stored as {state}, but its audit records end it"),
+                ));
+            }
+            indexed.insert(id);
+        }
+        if let Some(id) = from_chain.iter().find(|id| !indexed.contains(*id)) {
+            return Err(refuse(
+                "journal.receipt_integrity",
+                format!(
+                    "command {id} is unfinished in its audit records, but its stored state \
+                     says it is finished"
+                ),
+            ));
+        }
+        Ok(())
     }
 
     pub fn open_in_memory() -> Result<Self, JournalError> {
@@ -843,24 +882,28 @@ impl Journal {
         Ok(Some(serde_json::from_str(&json)?))
     }
 
-    /// All commands currently in one of `states`, oldest first.
+    /// All commands currently in one of `states`, oldest first. Found through the `state`
+    /// index: the cost grows with the commands returned, not with the journal's history
+    /// (recovery asks for the unfinished ones; `open` checks that index against the chain).
     pub fn commands_in_states(
         &self,
         states: &[CommandState],
     ) -> Result<Vec<Receipt>, JournalError> {
+        if states.is_empty() {
+            return Ok(Vec::new());
+        }
         let conn = self.lock();
-        let mut stmt =
-            conn.prepare("SELECT receipt, state FROM commands ORDER BY created_ms, command_id")?;
-        let names: Vec<&str> = states.iter().map(|s| state_name(*s)).collect();
+        let mut stmt = conn.prepare(&commands_in_states_sql(states.len()))?;
+        let names = states.iter().map(|s| state_name(*s));
         let mut out = Vec::new();
-        for row in stmt.query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))? {
+        for row in stmt.query_map(rusqlite::params_from_iter(names), |r| {
+            Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
+        })? {
             let (json, state) = row?;
             let receipt: Receipt = serde_json::from_str(&json)?;
             Self::check_state(&receipt, &state)?;
-            if names.contains(&state.as_str()) {
-                Self::check_receipt(&conn, &receipt)?;
-                out.push(receipt);
-            }
+            Self::check_receipt(&conn, &receipt)?;
+            out.push(receipt);
         }
         Ok(out)
     }
@@ -900,12 +943,10 @@ impl Journal {
             return Ok(Vec::new());
         }
         let conn = self.lock();
-        let placeholders = std::iter::repeat_n("?", devices.len())
-            .collect::<Vec<_>>()
-            .join(",");
         let sql = format!(
             "SELECT receipt, state FROM commands WHERE state IN (?, ?, ?, ?) \
-             AND device IN ({placeholders}) ORDER BY created_ms, command_id"
+             AND device IN ({}) ORDER BY created_ms, command_id",
+            placeholders(devices.len())
         );
         let states = [
             CommandState::UnknownOutcome,
@@ -1093,6 +1134,19 @@ impl Journal {
     /// Streams the records: memory stays constant however long the chain is (the gateway
     /// runs this on every start; docs/benchmarks.md, "Journal start-up").
     pub fn verify_audit(&self) -> Result<AuditVerification, JournalError> {
+        self.scan_audit(None)
+    }
+
+    /// `verify_audit`, optionally also collecting the commands the lifecycle records leave
+    /// unfinished (in the same pass: `open` reads the chain once).
+    fn scan_audit(
+        &self,
+        mut unfinished: Option<&mut HashSet<String>>,
+    ) -> Result<AuditVerification, JournalError> {
+        #[derive(serde::Deserialize)]
+        struct Lifecycle {
+            to: CommandState,
+        }
         let conn = self.lock();
         let mut stmt = conn.prepare(
             "SELECT seq, at_ms, kind, subject, data, prev_hash, hash FROM audit ORDER BY seq",
@@ -1125,6 +1179,24 @@ impl Journal {
             {
                 first_invalid = Some(seq);
                 continue;
+            }
+            if let Some(unfinished) = unfinished.as_deref_mut() {
+                let open = match kind {
+                    "command.created" => Some(true),
+                    "command.transition" => {
+                        Some(!serde_json::from_str::<Lifecycle>(data)?.to.is_terminal())
+                    }
+                    _ => None,
+                };
+                match open {
+                    Some(false) => {
+                        unfinished.remove(subject);
+                    }
+                    Some(true) if !unfinished.contains(subject) => {
+                        unfinished.insert(subject.to_owned());
+                    }
+                    _ => {}
+                }
             }
             prev.clear();
             prev.push_str(hash);
@@ -1174,6 +1246,26 @@ fn check_integrity(conn: &Connection, pragma: &str) -> Result<(), JournalError> 
     }
 }
 
+fn placeholders(n: usize) -> String {
+    std::iter::repeat_n("?", n).collect::<Vec<_>>().join(",")
+}
+
+/// The names of the states a command can still leave.
+fn unfinished_states() -> Vec<&'static str> {
+    CommandState::ALL
+        .into_iter()
+        .filter(|s| !s.is_terminal())
+        .map(state_name)
+        .collect()
+}
+
+fn commands_in_states_sql(states: usize) -> String {
+    format!(
+        "SELECT receipt, state FROM commands WHERE state IN ({}) ORDER BY created_ms, command_id",
+        placeholders(states)
+    )
+}
+
 fn state_name(s: CommandState) -> &'static str {
     use CommandState::*;
     match s {
@@ -1211,6 +1303,30 @@ mod tests {
                 serde_json::json!(state_name(s))
             );
         }
+    }
+
+    /// Recovery's query must stay on the `state` index: a full scan makes every restart
+    /// read the whole command history (docs/benchmarks.md, "Journal start-up").
+    #[test]
+    fn unfinished_commands_are_found_through_the_state_index() {
+        let j = Journal::open_in_memory().unwrap();
+        let states = unfinished_states();
+        let plan: Vec<String> = j
+            .lock()
+            .prepare(&format!(
+                "EXPLAIN QUERY PLAN {}",
+                commands_in_states_sql(states.len())
+            ))
+            .unwrap()
+            .query_map(rusqlite::params_from_iter(&states), |r| r.get(3))
+            .unwrap()
+            .collect::<Result<_, _>>()
+            .unwrap();
+        assert!(
+            plan.iter()
+                .any(|step| step.contains("USING INDEX commands_state")),
+            "{plan:?}"
+        );
     }
 
     #[test]
