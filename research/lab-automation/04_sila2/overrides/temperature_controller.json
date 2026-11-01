@@ -1,0 +1,32 @@
+{
+  "_comment": "Reviewed overrides for the TemperatureController feature: everything OpenMHS needs that a SiLA Feature Definition does not say. Commands not listed here are not exposed.",
+  "device_id": "sila.heater-01",
+  "manufacturer": "OpenMHS research (simulated SiLA 2 server)",
+  "features": {
+    "TemperatureController": {
+      "freshness_ms": 2000,
+      "commands": {
+        "SetTargetTemperature": {
+          "side_effect": "reversible",
+          "idempotent": true,
+          "timing": { "expected_ms": 50, "timeout_ms": 3000 },
+          "params": { "TargetTemperature": { "range": { "min": 10, "max": 60 } } },
+          "preconditions": [
+            { "id": "not-faulted", "capability": "temperature_controller.heater_faulted", "op": "eq", "value": false, "max_age_ms": 2000 }
+          ],
+          "verification": {
+            "mode": "readback", "capability": "temperature_controller.target_temperature",
+            "expect_param": "target_temperature", "tolerance": { "abs": 0.01 }, "timeout_ms": 3000
+          },
+          "defined_errors_before_effect": ["HeaterFault"]
+        },
+        "ResetHeater": {
+          "side_effect": "reversible",
+          "idempotent": true,
+          "timing": { "expected_ms": 50, "timeout_ms": 3000 },
+          "verification": { "mode": "readback", "capability": "temperature_controller.heater_faulted", "expect": false, "timeout_ms": 3000 }
+        }
+      }
+    }
+  }
+}

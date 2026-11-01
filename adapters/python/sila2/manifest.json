@@ -1,0 +1,17 @@
+{
+  "openmhs_manifest": "0.1",
+  "adapter": { "id": "openmhs.py.sila2", "version": "0.1.0" },
+  "runtime": {
+    "command": ["python", "{manifest_dir}/sila_adapter.py"],
+    "env": { "PYTHONPATH": "{manifest_dir}/../../../python" },
+    "protocol": ["0.1"]
+  },
+  "capabilities": { "allow": [{ "name": "*", "operations": ["read", "invoke"] }] },
+  "endpoints": { "network": ["sila://127.0.0.1:50052"] },
+  "filesystem": { "read": ["overrides"] },
+  "limits": { "start_timeout_ms": 60000 },
+  "config": {
+    "server": "sila://127.0.0.1:50052",
+    "overrides": "overrides/temperature_controller.json"
+  }
+}

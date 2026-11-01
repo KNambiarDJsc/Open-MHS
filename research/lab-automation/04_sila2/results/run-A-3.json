@@ -1,0 +1,805 @@
+{
+  "openmhs_commit": "8340f74052dd60c65836ed8d7712ec754af02d43",
+  "openmhs_bin": "D:\\openmhs-release-target\\release\\openmhs.exe",
+  "python": "3.12.11",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "started": "2026-11-01T19:21:06+0530",
+  "sila2": "0.14.0",
+  "sila_server": "heater_a",
+  "scenarios": {
+    "SILA-01": {
+      "title": "discover the server and describe it from its Feature Definition",
+      "passed": true,
+      "seconds": 2.3,
+      "checks": [
+        {
+          "check": "properties mapped from the Feature Definition",
+          "ok": true,
+          "observed": [
+            "temperature_controller.current_temperature",
+            "temperature_controller.heater_faulted",
+            "temperature_controller.reset_heater",
+            "temperature_controller.set_target_temperature",
+            "temperature_controller.target_temperature"
+          ]
+        },
+        {
+          "check": "reviewed commands exposed",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "ShutDown, not reviewed, is not exposed",
+          "ok": true,
+          "observed": [
+            {
+              "element": "org.silastandard/core/SiLAService/v1",
+              "reason": "feature not named in the override file"
+            },
+            {
+              "element": "TemperatureController.ShutDown",
+              "reason": "command not reviewed in the override file: not exposed"
+            }
+          ]
+        },
+        {
+          "check": "SiLA's degC (Kelvin, offset 273.15) became OpenMHS Cel, by structure",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "the override narrowed the server's 4..100 degC to 10..60",
+          "ok": true,
+          "observed": {
+            "quantity": "temperature",
+            "range": {
+              "max": 60.0,
+              "min": 10.0
+            },
+            "type": "number",
+            "unit": "Cel"
+          }
+        },
+        {
+          "check": "side effect, idempotency, verification, preconditions came from the override",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 3
+        }
+      ],
+      "detail": {
+        "descriptor": {
+          "openmhs": "0.1",
+          "device": {
+            "firmware": "0.1",
+            "id": "sila.heater-01",
+            "manufacturer": "OpenMHS research (simulated SiLA 2 server)",
+            "model": "TemperatureController",
+            "name": "Heater A",
+            "serial": "923d971b-6ed5-4222-af95-7b089daac0b6"
+          },
+          "adapter": {
+            "id": "openmhs.py.sila2",
+            "version": "0.1.0"
+          },
+          "capabilities": [
+            {
+              "description": "The block's measured temperature.",
+              "freshness": {
+                "max_age_ms": 2000
+              },
+              "kind": "property",
+              "name": "temperature_controller.current_temperature",
+              "operations": [
+                "read"
+              ],
+              "side_effect": "none",
+              "value": {
+                "quantity": "temperature",
+                "type": "number",
+                "unit": "Cel"
+              }
+            },
+            {
+              "description": "The temperature the block drives towards.",
+              "freshness": {
+                "max_age_ms": 2000
+              },
+              "kind": "property",
+              "name": "temperature_controller.target_temperature",
+              "operations": [
+                "read"
+              ],
+              "side_effect": "none",
+              "value": {
+                "quantity": "temperature",
+                "type": "number",
+                "unit": "Cel"
+              }
+            },
+            {
+              "description": "The heater is in a fault state and refuses new targets until reset.",
+              "freshness": {
+                "max_age_ms": 2000
+              },
+              "kind": "property",
+              "name": "temperature_controller.heater_faulted",
+              "operations": [
+                "read"
+              ],
+              "side_effect": "none",
+              "value": {
+                "type": "boolean"
+              }
+            },
+            {
+              "description": "Set the temperature the block drives towards.",
+              "idempotent": true,
+              "kind": "action",
+              "name": "temperature_controller.set_target_temperature",
+              "operations": [
+                "invoke"
+              ],
+              "params": {
+                "target_temperature": {
+                  "quantity": "temperature",
+                  "range": {
+                    "max": 60.0,
+                    "min": 10.0
+                  },
+                  "type": "number",
+                  "unit": "Cel"
+                }
+              },
+              "preconditions": [
+                {
+                  "capability": "temperature_controller.heater_faulted",
+                  "id": "not-faulted",
+                  "max_age_ms": 2000,
+                  "op": "eq",
+                  "value": false
+                }
+              ],
+              "side_effect": "reversible",
+              "timing": {
+                "expected_ms": 50,
+                "timeout_ms": 3000
+              },
+              "verification": {
+                "capability": "temperature_controller.target_temperature",
+                "expect_param": "target_temperature",
+                "mode": "readback",
+                "timeout_ms": 3000,
+                "tolerance": {
+                  "abs": 0.01
+                }
+              }
+            },
+            {
+              "description": "Clear a heater fault.",
+              "idempotent": true,
+              "kind": "action",
+              "name": "temperature_controller.reset_heater",
+              "operations": [
+                "invoke"
+              ],
+              "params": {},
+              "side_effect": "reversible",
+              "timing": {
+                "expected_ms": 50,
+                "timeout_ms": 3000
+              },
+              "verification": {
+                "capability": "temperature_controller.heater_faulted",
+                "expect": false,
+                "mode": "readback",
+                "timeout_ms": 3000
+              }
+            }
+          ]
+        },
+        "mapping_report": {
+          "server": {
+            "name": "Heater A",
+            "type": "TemperatureController",
+            "uuid": "923d971b-6ed5-4222-af95-7b089daac0b6",
+            "version": "0.1"
+          },
+          "mapped": [
+            {
+              "element": "TemperatureController.CurrentTemperature",
+              "as": "temperature_controller.current_temperature",
+              "observable": true,
+              "note": "observable: exposed as read only (no subscription)"
+            },
+            {
+              "element": "TemperatureController.TargetTemperature",
+              "as": "temperature_controller.target_temperature",
+              "observable": false,
+              "note": null
+            },
+            {
+              "element": "TemperatureController.HeaterFaulted",
+              "as": "temperature_controller.heater_faulted",
+              "observable": false,
+              "note": null
+            },
+            {
+              "element": "TemperatureController.SetTargetTemperature",
+              "as": "temperature_controller.set_target_temperature"
+            },
+            {
+              "element": "TemperatureController.ResetHeater",
+              "as": "temperature_controller.reset_heater"
+            }
+          ],
+          "excluded": [
+            {
+              "element": "org.silastandard/core/SiLAService/v1",
+              "reason": "feature not named in the override file"
+            },
+            {
+              "element": "TemperatureController.ShutDown",
+              "reason": "command not reviewed in the override file: not exposed"
+            }
+          ],
+          "from_override": [
+            {
+              "element": "TemperatureController.SetTargetTemperature",
+              "fields": [
+                "defined_errors_before_effect",
+                "idempotent",
+                "preconditions",
+                "side_effect",
+                "timing",
+                "verification"
+              ],
+              "narrowed_params": [
+                "TargetTemperature"
+              ]
+            },
+            {
+              "element": "TemperatureController.ResetHeater",
+              "fields": [
+                "idempotent",
+                "side_effect",
+                "timing",
+                "verification"
+              ],
+              "narrowed_params": []
+            }
+          ]
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\sila-runs\\SILA-01-2d0d3d"
+    },
+    "SILA-02": {
+      "title": "read typed properties",
+      "passed": true,
+      "seconds": 2.1,
+      "checks": [
+        {
+          "check": "typed reading with its unit, equal to the server's own value",
+          "ok": true,
+          "observed": {
+            "value": {
+              "value": 22.0,
+              "unit": "Cel"
+            },
+            "timestamp": "2026-11-01T13:51:11.257Z",
+            "source": "device",
+            "quality": "GOOD"
+          }
+        },
+        {
+          "check": "current temperature is a quantity in Cel",
+          "ok": true,
+          "observed": {
+            "value": 22.0,
+            "unit": "Cel"
+          }
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 10
+        }
+      ],
+      "detail": {
+        "target": {
+          "value": {
+            "value": 22.0,
+            "unit": "Cel"
+          },
+          "timestamp": "2026-11-01T13:51:11.257Z",
+          "source": "device",
+          "quality": "GOOD"
+        },
+        "current": {
+          "value": 22.0,
+          "unit": "Cel"
+        },
+        "native_target": 22.0
+      },
+      "run_dir": "D:\\openmhs-research\\sila-runs\\SILA-02-bf8fd4"
+    },
+    "SILA-03": {
+      "title": "govern a command: verified, narrowed, denied",
+      "passed": true,
+      "seconds": 2.2,
+      "checks": [
+        {
+          "check": "37 degC: VERIFIED by reading the target back",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "temperature_controller.target_temperature",
+              "expected": {
+                "unit": "Cel",
+                "value": 37.0
+              },
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "device",
+                "timestamp": "2026-11-01T13:51:13.425Z",
+                "value": {
+                  "unit": "Cel",
+                  "value": 37.0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "check": "the server holds 37 degC",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "70.0 degC (allowed by SiLA (4..100) but not by the reviewed override): DENIED before dispatch",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.out_of_range"
+            ]
+          ]
+        },
+        {
+          "check": "150.0 degC (outside both): DENIED before dispatch",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.out_of_range"
+            ]
+          ]
+        },
+        {
+          "check": "the server still holds 37 degC",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "natively, 70 degC is accepted: the narrowing is OpenMHS's",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 21
+        }
+      ],
+      "detail": {
+        "verified": {
+          "command_id": "01a19760-e9f5-7462-9e51-732f2d475d7b",
+          "state": "VERIFIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "APPLIED",
+            "VERIFIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "temperature_controller.target_temperature",
+            "expected": {
+              "unit": "Cel",
+              "value": 37.0
+            },
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "device",
+              "timestamp": "2026-11-01T13:51:13.425Z",
+              "value": {
+                "unit": "Cel",
+                "value": 37.0
+              }
+            }
+          },
+          "adapter_result": {
+            "acknowledged": true,
+            "reported_applied": true
+          }
+        },
+        "denied": {
+          "70.0": {
+            "command_id": "01a19760-ea1e-732a-8b79-812c17a0c156",
+            "state": "DENIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "DENIED"
+            ],
+            "errors": [
+              "command.value.out_of_range"
+            ],
+            "verification": null,
+            "adapter_result": null
+          },
+          "150.0": {
+            "command_id": "01a19760-ea22-76ad-89a8-4656533524c3",
+            "state": "DENIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "DENIED"
+            ],
+            "errors": [
+              "command.value.out_of_range"
+            ],
+            "verification": null,
+            "adapter_result": null
+          }
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\sila-runs\\SILA-03-0d1416"
+    },
+    "SILA-04": {
+      "title": "a native SiLA execution error, translated",
+      "passed": true,
+      "seconds": 2.2,
+      "checks": [
+        {
+          "check": "the server's HeaterFault becomes REJECTED, with its SiLA identifier and message",
+          "ok": true,
+          "observed": [
+            "REJECTED",
+            "{\"error\": {\"code\": \"adapter.rejected\", \"message\": \"SiLA DefinedExecutionError org.openmhs/research/TemperatureController/v1/DefinedExecutionError/HeaterFault: heater A is faulted; reset it first\"}}"
+          ]
+        },
+        {
+          "check": "while faulted, the next target is DENIED by the not-faulted precondition, not sent",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.precondition.failed"
+            ]
+          ]
+        },
+        {
+          "check": "ResetHeater: VERIFIED by reading HeaterFaulted back",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "after the reset a target is VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 30
+        }
+      ],
+      "detail": {
+        "rejected": {
+          "command_id": "01a19760-f277-7481-960c-961c4f2c78c6",
+          "state": "REJECTED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "REJECTED"
+          ],
+          "errors": [],
+          "verification": null,
+          "adapter_result": {
+            "error": {
+              "code": "adapter.rejected",
+              "message": "SiLA DefinedExecutionError org.openmhs/research/TemperatureController/v1/DefinedExecutionError/HeaterFault: heater A is faulted; reset it first"
+            }
+          }
+        },
+        "denied": {
+          "command_id": "01a19760-f296-75cc-8aac-d1467a5a4729",
+          "state": "DENIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ],
+          "errors": [
+            "command.precondition.failed"
+          ],
+          "verification": null,
+          "adapter_result": null
+        },
+        "reset": {
+          "command_id": "01a19760-f2b5-74a0-9754-32ef7887e0e3",
+          "state": "VERIFIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "APPLIED",
+            "VERIFIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "temperature_controller.heater_faulted",
+            "expected": false,
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "device",
+              "timestamp": "2026-11-01T13:51:15.654Z",
+              "value": false
+            }
+          },
+          "adapter_result": {
+            "acknowledged": true,
+            "reported_applied": true
+          }
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\sila-runs\\SILA-04-4835e1"
+    },
+    "SILA-05": {
+      "title": "applied, response lost",
+      "passed": true,
+      "seconds": 5.1,
+      "checks": [
+        {
+          "check": "the server applied 45 degC",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "no answer within the 3 s timeout: UNKNOWN_OUTCOME",
+          "ok": true,
+          "observed": [
+            "UNKNOWN_OUTCOME",
+            [
+              "CREATED",
+              "VALIDATING",
+              "APPROVED",
+              "DISPATCHED",
+              "TIMED_OUT",
+              "UNKNOWN_OUTCOME"
+            ]
+          ]
+        },
+        {
+          "check": "reconciled by reading the target back: RECONCILED_APPLIED",
+          "ok": true,
+          "observed": "RECONCILED_APPLIED"
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 15
+        }
+      ],
+      "detail": {
+        "lost": {
+          "command_id": "01a19760-fae3-75b8-ba24-eb4df43112a2",
+          "state": "UNKNOWN_OUTCOME",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "TIMED_OUT",
+            "UNKNOWN_OUTCOME"
+          ],
+          "errors": [],
+          "verification": null,
+          "adapter_result": {
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 3000 ms"
+            }
+          }
+        },
+        "reconciled": {
+          "command_id": "01a19760-fae3-75b8-ba24-eb4df43112a2",
+          "state": "RECONCILED_APPLIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "TIMED_OUT",
+            "UNKNOWN_OUTCOME",
+            "RECONCILED_APPLIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "temperature_controller.target_temperature",
+            "expected": {
+              "unit": "Cel",
+              "value": 45.0
+            },
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "device",
+              "timestamp": "2026-11-01T13:51:20.748Z",
+              "value": {
+                "unit": "Cel",
+                "value": 45.0
+              }
+            }
+          },
+          "adapter_result": {
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 3000 ms"
+            }
+          }
+        },
+        "waited_ms": 3018
+      },
+      "run_dir": "D:\\openmhs-research\\sila-runs\\SILA-05-8bf3bd"
+    },
+    "PERF": {
+      "title": "latency, governed vs the SiLA client alone",
+      "passed": true,
+      "seconds": 2.7,
+      "checks": [
+        {
+          "check": "set 0 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 1 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 2 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 3 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 4 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 5 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 6 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 7 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 8 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 9 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 10 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 11 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 12 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 13 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 14 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 15 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 16 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 17 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 18 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "set 19 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 148
+        }
+      ],
+      "detail": {
+        "n": 20,
+        "openmhs_ms": {
+          "median": 29.9,
+          "p95": 39.3,
+          "max": 40.5
+        },
+        "native_ms": {
+          "median": 1.1,
+          "p95": 2.3,
+          "max": 2.3
+        },
+        "gateway_start_ms": 944,
+        "note": "native: set + read back with the SiLA SDK client"
+      },
+      "run_dir": "D:\\openmhs-research\\sila-runs\\PERF-19b331"
+    }
+  }
+}
