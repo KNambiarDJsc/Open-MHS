@@ -84,7 +84,8 @@ class Lab:
     def agent(self, name: str, grants: list[dict]) -> Client:
         for grant in grants:
             with contextlib.suppress(Exception):  # already granted after a restart
-                self.operator.add_grant({"principal": name, **grant})
+                # Grant ids are global: prefix them, or a second agent's grants collide.
+                self.operator.add_grant({**grant, "principal": name, "id": f"{name}.{grant['id']}"})
         return Client(self.url, self.operator.create_token(name, any_scope=True).token)
 
     def export_evidence(self, out: Path) -> dict:

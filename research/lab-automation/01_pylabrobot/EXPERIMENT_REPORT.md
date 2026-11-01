@@ -193,9 +193,10 @@ most of the way with less machinery.
    crash scenarios need an opt-in hook in the simulator adapter itself.
 6. **The adapter is unsigned**, so the gateway must run with `--allow-unsigned-adapters`.
 7. **The conformance suite and a "new id per request" parameter do not fit together.** The
-   adapter reaches **L1** (58 checks pass, 6 fail; [conformance.json](results/conformance.json)).
-   All six failures (`L2.malformed`, `L2.timeout`, `L2.lost_ack`, `L2.recovery`,
-   `L3.leases`, `L3.plan`) have one cause. The suite sends every test command with the same
+   adapter reaches **L1** (59 checks pass, 5 fail; [conformance.json](results/conformance.json)).
+   All five failures (`L2.malformed`, `L2.lost_ack`, `L2.recovery`, `L3.leases`, `L3.plan`)
+   have one cause. (A sixth, `L2.timeout`, was the adapter's simulated hang holding a lock;
+   found in experiment 03, fixed, and every scenario re-run: [final](results/final.json).) The suite sends every test command with the same
    generated `transfer_id` (`"openmhs-conformance"`), and the adapter refuses a reused id
    before the injected fault can act. The adapter's rule is needed (finding 3: a reused id
    would verify an earlier transfer), and the descriptor cannot declare that a parameter must

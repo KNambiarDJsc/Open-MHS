@@ -1,15 +1,15 @@
 {
-  "openmhs_commit": "b64532a03d411b566a4723952eba6b2dddaa55c2",
+  "openmhs_commit": "3630cf90f76a21e6beb931c1545dd0d0f25c4603",
   "openmhs_bin": "D:\\openmhs-release-target\\release\\openmhs.exe",
   "pylabrobot": "0.2.2",
   "python": "3.13.4",
   "platform": "Windows-11-10.0.26300-SP0",
-  "started": "2026-11-01T18:16:29+0530",
+  "started": "2026-11-01T19:04:57+0530",
   "scenarios": {
     "PLR-01": {
       "title": "normal transfer A1 -> B1, 50 uL",
       "passed": true,
-      "seconds": 1.1,
+      "seconds": 1.2,
       "checks": [
         {
           "check": "receipt VERIFIED",
@@ -57,7 +57,7 @@
       ],
       "detail": {
         "receipt": {
-          "command_id": "01a19725-a7f1-7223-b664-5027cc547153",
+          "command_id": "01a19752-090c-765e-8dd7-5e6fe58f4515",
           "state": "VERIFIED",
           "transitions": [
             "CREATED",
@@ -77,7 +77,7 @@
             "observed": {
               "quality": "GOOD",
               "source": "simulator",
-              "timestamp": "2026-11-01T12:46:29.905Z",
+              "timestamp": "2026-11-01T13:34:58.345Z",
               "value": "t-plr01"
             }
           }
@@ -113,7 +113,7 @@
           "tips": 95
         }
       },
-      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-01-73457f"
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-01-4e6f27"
     },
     "PLR-02": {
       "title": "invalid volume and wells are denied before dispatch",
@@ -211,7 +211,7 @@
       "detail": {
         "receipts": {
           "volume 500 uL (above 200)": {
-            "command_id": "01a19725-ac4f-7133-861a-99dcc86f23a7",
+            "command_id": "01a19752-0d5e-72bb-b29d-68c72060d78e",
             "state": "DENIED",
             "transitions": [
               "CREATED",
@@ -224,7 +224,7 @@
             "verification": null
           },
           "volume 0.5 uL (below 1)": {
-            "command_id": "01a19725-ac6e-71c5-afb4-e89e639c49b7",
+            "command_id": "01a19752-0d65-76ff-9277-0b91d1e8d528",
             "state": "DENIED",
             "transitions": [
               "CREATED",
@@ -237,7 +237,7 @@
             "verification": null
           },
           "unknown source well C7": {
-            "command_id": "01a19725-ac7f-7559-b1d4-d9ccdf054a6c",
+            "command_id": "01a19752-0d69-7171-9810-98367cde5668",
             "state": "DENIED",
             "transitions": [
               "CREATED",
@@ -250,7 +250,7 @@
             "verification": null
           },
           "destination used as source": {
-            "command_id": "01a19725-ac8f-7468-9548-fd7493429060",
+            "command_id": "01a19752-0d75-7491-b7e8-bfd96ca3c678",
             "state": "DENIED",
             "transitions": [
               "CREATED",
@@ -265,12 +265,12 @@
           }
         }
       },
-      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-02-8950f6"
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-02-2a8163"
     },
     "PLR-03": {
       "title": "missing tip",
       "passed": true,
-      "seconds": 1.3,
+      "seconds": 1.2,
       "checks": [
         {
           "check": "the rack's only tip is used",
@@ -320,7 +320,7 @@
       ],
       "detail": {
         "with_tip": {
-          "command_id": "01a19725-b067-70ef-99a5-9d2982433fca",
+          "command_id": "01a19752-10f7-76ae-9ec9-a8d3a620de91",
           "state": "VERIFIED",
           "transitions": [
             "CREATED",
@@ -340,13 +340,13 @@
             "observed": {
               "quality": "GOOD",
               "source": "simulator",
-              "timestamp": "2026-11-01T12:46:32.073Z",
+              "timestamp": "2026-11-01T13:35:00.365Z",
               "value": "t-last-tip"
             }
           }
         },
         "without_tip": {
-          "command_id": "01a19725-b0a9-7155-ad7a-d852d9975750",
+          "command_id": "01a19752-1127-7607-944d-4768a3e01127",
           "state": "DENIED",
           "transitions": [
             "CREATED",
@@ -363,12 +363,12 @@
           "error": "pylabrobot.resources.errors.NoTipError: Tip spot does not have a tip."
         }
       },
-      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-03-830f09"
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-03-0b8473"
     },
     "PLR-04": {
       "title": "applied, acknowledgment lost",
       "passed": true,
-      "seconds": 4.1,
+      "seconds": 4.0,
       "checks": [
         {
           "check": "the simulator applied the transfer",
@@ -443,7 +443,7 @@
       ],
       "detail": {
         "lost": {
-          "command_id": "01a19725-b59f-770f-a60c-285c8017fa21",
+          "command_id": "01a19752-15d8-75e0-877a-54e2abe25490",
           "state": "UNKNOWN_OUTCOME",
           "transitions": [
             "CREATED",
@@ -458,7 +458,7 @@
           "verification": null
         },
         "held": {
-          "command_id": "01a19725-c17a-76f7-a4cf-fd2188580790",
+          "command_id": "01a19752-21ca-7484-b9a2-cf205b35acad",
           "state": "DENIED",
           "transitions": [
             "CREATED",
@@ -471,7 +471,7 @@
           "verification": null
         },
         "reconciled": {
-          "command_id": "01a19725-b59f-770f-a60c-285c8017fa21",
+          "command_id": "01a19752-15d8-75e0-877a-54e2abe25490",
           "state": "RECONCILED_APPLIED",
           "transitions": [
             "CREATED",
@@ -492,13 +492,13 @@
             "observed": {
               "quality": "GOOD",
               "source": "simulator",
-              "timestamp": "2026-11-01T12:46:36.416Z",
+              "timestamp": "2026-11-01T13:35:04.657Z",
               "value": "t-lost"
             }
           }
         },
         "after": {
-          "command_id": "01a19725-c19a-763c-9913-faa091841e31",
+          "command_id": "01a19752-21d2-7513-8ac7-b8bbb32c80e8",
           "state": "VERIFIED",
           "transitions": [
             "CREATED",
@@ -518,20 +518,20 @@
             "observed": {
               "quality": "GOOD",
               "source": "simulator",
-              "timestamp": "2026-11-01T12:46:36.472Z",
+              "timestamp": "2026-11-01T13:35:04.678Z",
               "value": "t-after"
             }
           }
         },
-        "waited_ms": 3023,
-        "reconcile_ms": 3
+        "waited_ms": 3047,
+        "reconcile_ms": 2
       },
-      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-04-1e066f"
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-04-2f4b7c"
     },
     "PLR-05": {
       "title": "duplicate request",
       "passed": true,
-      "seconds": 1.2,
+      "seconds": 1.3,
       "checks": [
         {
           "check": "first VERIFIED",
@@ -542,8 +542,8 @@
           "check": "same key returns the same command",
           "ok": true,
           "observed": [
-            "01a19725-c5c5-7158-8cfc-de98fc628d92",
-            "01a19725-c5c5-7158-8cfc-de98fc628d92"
+            "01a19752-262d-774b-9db0-1fc82950fa83",
+            "01a19752-262d-774b-9db0-1fc82950fa83"
           ]
         },
         {
@@ -572,7 +572,7 @@
       ],
       "detail": {
         "first": {
-          "command_id": "01a19725-c5c5-7158-8cfc-de98fc628d92",
+          "command_id": "01a19752-262d-774b-9db0-1fc82950fa83",
           "state": "VERIFIED",
           "transitions": [
             "CREATED",
@@ -592,13 +592,13 @@
             "observed": {
               "quality": "GOOD",
               "source": "simulator",
-              "timestamp": "2026-11-01T12:46:37.54Z",
+              "timestamp": "2026-11-01T13:35:05.811Z",
               "value": "t-dup"
             }
           }
         },
         "again": {
-          "command_id": "01a19725-c5c5-7158-8cfc-de98fc628d92",
+          "command_id": "01a19752-262d-774b-9db0-1fc82950fa83",
           "state": "VERIFIED",
           "transitions": [
             "CREATED",
@@ -618,13 +618,13 @@
             "observed": {
               "quality": "GOOD",
               "source": "simulator",
-              "timestamp": "2026-11-01T12:46:37.54Z",
+              "timestamp": "2026-11-01T13:35:05.811Z",
               "value": "t-dup"
             }
           }
         },
         "reused_id": {
-          "command_id": "01a19725-c601-7153-84c6-23d7e7bf20d4",
+          "command_id": "01a19752-267c-7149-b334-afbca87a1cd0",
           "state": "REJECTED",
           "transitions": [
             "CREATED",
@@ -638,7 +638,7 @@
         },
         "no_key": [
           {
-            "command_id": "01a19725-c60b-7242-ab1b-c77a483f5908",
+            "command_id": "01a19752-26a7-725e-aa97-04737659a937",
             "state": "VERIFIED",
             "transitions": [
               "CREATED",
@@ -658,13 +658,13 @@
               "observed": {
                 "quality": "GOOD",
                 "source": "simulator",
-                "timestamp": "2026-11-01T12:46:37.609Z",
+                "timestamp": "2026-11-01T13:35:05.929Z",
                 "value": "t-nokey-0"
               }
             }
           },
           {
-            "command_id": "01a19725-c639-744a-bf4f-4a2a18bf9742",
+            "command_id": "01a19752-26cb-772c-814e-fa55f63f5fa5",
             "state": "VERIFIED",
             "transitions": [
               "CREATED",
@@ -684,19 +684,19 @@
               "observed": {
                 "quality": "GOOD",
                 "source": "simulator",
-                "timestamp": "2026-11-01T12:46:37.643Z",
+                "timestamp": "2026-11-01T13:35:05.959Z",
                 "value": "t-nokey-1"
               }
             }
           }
         ]
       },
-      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-05-eca86a"
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-05-15d4f8"
     },
     "PLR-06": {
       "title": "two agents compete for one source well",
       "passed": true,
-      "seconds": 1.1,
+      "seconds": 1.0,
       "checks": [
         {
           "check": "one VERIFIED, one REJECTED (only 100 uL for two 80 uL transfers)",
@@ -727,7 +727,7 @@
       ],
       "detail": {
         "a": {
-          "command_id": "01a19725-ca41-7552-befb-cd86f9677f65",
+          "command_id": "01a19752-2aca-72c2-ae49-3a18d59493bc",
           "state": "VERIFIED",
           "transitions": [
             "CREATED",
@@ -747,13 +747,13 @@
             "observed": {
               "quality": "GOOD",
               "source": "simulator",
-              "timestamp": "2026-11-01T12:46:38.689Z",
+              "timestamp": "2026-11-01T13:35:06.977Z",
               "value": "t-a"
             }
           }
         },
         "b": {
-          "command_id": "01a19725-ca41-7552-befb-cd87f457ef59",
+          "command_id": "01a19752-2ae1-77ad-86ca-eac2d57726d6",
           "state": "REJECTED",
           "transitions": [
             "CREATED",
@@ -766,17 +766,17 @@
           "verification": null
         },
         "dispatch_times": [
-          "2026-11-01T12:46:38.664Z",
-          "2026-11-01T12:46:38.692Z"
+          "2026-11-01T13:35:06.959Z",
+          "2026-11-01T13:35:06.984Z"
         ],
         "rejected_reason": "{\"error\": {\"code\": \"adapter.rejected\", \"message\": \"PyLabRobot refused: TooLittleLiquidError: Not enough liquid in container: 80.0uL > 20.0uL.\"}}"
       },
-      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-06-faaf05"
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-06-141071"
     },
     "PLR-07": {
       "title": "gateway killed mid-transfer, restarted, reconciled",
       "passed": true,
-      "seconds": 3.1,
+      "seconds": 3.3,
       "checks": [
         {
           "check": "applied: after restart the command is UNKNOWN_OUTCOME, not resent",
@@ -831,7 +831,7 @@
       "detail": {
         "applied": {
           "recovered": {
-            "command_id": "01a19725-ce22-770b-b9bf-b5584f5e45c4",
+            "command_id": "01a19752-2e81-73cb-b2dd-7ad264dd5ac3",
             "state": "UNKNOWN_OUTCOME",
             "transitions": [
               "CREATED",
@@ -845,7 +845,7 @@
             "verification": null
           },
           "reconciled": {
-            "command_id": "01a19725-ce22-770b-b9bf-b5584f5e45c4",
+            "command_id": "01a19752-2e81-73cb-b2dd-7ad264dd5ac3",
             "state": "RECONCILED_APPLIED",
             "transitions": [
               "CREATED",
@@ -865,17 +865,17 @@
               "observed": {
                 "quality": "GOOD",
                 "source": "simulator",
-                "timestamp": "2026-11-01T12:46:40.552Z",
+                "timestamp": "2026-11-01T13:35:09.026Z",
                 "value": "t-crash-applied"
               }
             }
           },
           "client": "GatewayUnreachableError",
-          "restart_ms": 682
+          "restart_ms": 781
         },
         "not_applied": {
           "recovered": {
-            "command_id": "01a19725-d1ca-738e-855a-b523eabe4de2",
+            "command_id": "01a19752-330a-7484-9f97-6f4f2e1e7de1",
             "state": "UNKNOWN_OUTCOME",
             "transitions": [
               "CREATED",
@@ -888,7 +888,7 @@
             "verification": null
           },
           "reconciled": {
-            "command_id": "01a19725-d1ca-738e-855a-b523eabe4de2",
+            "command_id": "01a19752-330a-7484-9f97-6f4f2e1e7de1",
             "state": "RECONCILED_NOT_APPLIED",
             "transitions": [
               "CREATED",
@@ -907,16 +907,16 @@
               "observed": {
                 "quality": "GOOD",
                 "source": "simulator",
-                "timestamp": "2026-11-01T12:46:41.783Z",
+                "timestamp": "2026-11-01T13:35:10.256Z",
                 "value": "t-crash-applied"
               }
             }
           },
           "client": "GatewayUnreachableError",
-          "restart_ms": 686
+          "restart_ms": 680
         }
       },
-      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-07-612266"
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-07-08b05f"
     },
     "PERF": {
       "title": "latency, governed vs native",
@@ -927,9 +927,9 @@
           "check": "30 governed transfers all VERIFIED",
           "ok": true,
           "observed": {
-            "median": 37.9,
-            "p95": 49.0,
-            "max": 50.4
+            "median": 42.9,
+            "p95": 49.5,
+            "max": 57.8
           }
         },
         {
@@ -941,20 +941,20 @@
       "detail": {
         "n": 30,
         "openmhs_ms": {
-          "median": 37.9,
-          "p95": 49.0,
-          "max": 50.4
+          "median": 42.9,
+          "p95": 49.5,
+          "max": 57.8
         },
         "native_ms": {
-          "median": 1.2,
-          "p95": 1.56,
-          "max": 1.64
+          "median": 1.23,
+          "p95": 1.51,
+          "max": 1.89
         },
-        "gateway_start_ms": 735,
+        "gateway_start_ms": 682,
         "journal_bytes": 278528,
         "audit_records": 218
       },
-      "run_dir": "D:\\openmhs-research\\plr-runs\\PERF-83e80d"
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PERF-921001"
     }
   }
 }

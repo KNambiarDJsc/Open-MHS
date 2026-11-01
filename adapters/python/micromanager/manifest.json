@@ -1,0 +1,18 @@
+{
+  "openmhs_manifest": "0.1",
+  "adapter": { "id": "openmhs.py.micromanager", "version": "0.1.0" },
+  "runtime": {
+    "command": ["python", "{manifest_dir}/mm_adapter.py"],
+    "env": { "PYTHONPATH": "{manifest_dir}/../../../python" },
+    "protocol": ["0.1"]
+  },
+  "capabilities": {
+    "allow": [
+      { "name": "*", "operations": ["read", "write"] },
+      { "name": "camera.snap", "operations": ["invoke"] }
+    ]
+  },
+  "filesystem": { "read": ["mm"] },
+  "limits": { "start_timeout_ms": 60000, "call_timeout_ms": 10000 },
+  "config": { "adapter_dir": "mm/Micro-Manager-75.20261014.post1" }
+}

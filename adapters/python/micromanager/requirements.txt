@@ -1,0 +1,3 @@
+# Pinned: the adapter and the experiment were checked against these. Device adapters are
+# installed separately: `mmcore install --test-adapters --dest DIR` (DemoCamera, Utilities).
+pymmcore-plus==0.18.1

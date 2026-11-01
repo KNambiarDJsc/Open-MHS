@@ -244,14 +244,16 @@ class OpentronsAdapter(Adapter):
             "diluent_ul": float(p["diluent_ul"]["value"]),
             "mix_reps": int(p["mix_reps"]),
         }
+        fault = self.fixture or self._take_fault()
+        # A device that never answers does not freeze reads or other commands: the hang
+        # happens outside the lock.
+        if fault == "hang_before_apply":
+            await asyncio.Event().wait()
         async with self.lock:
             if run_id in self.used_ids:
                 return Rejected(f"run_id {run_id!r} was already used")
-            fault = self.fixture or self._take_fault()
             if fault == "reject":
                 return Rejected("simulated refusal (conformance fixture)")
-            if fault == "hang_before_apply":
-                await asyncio.Event().wait()
             try:
                 commands, digest = await asyncio.to_thread(self._simulate, name, params)
             except Exception as e:  # the simulator's refusal; a simulation changes nothing

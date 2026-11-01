@@ -28,11 +28,11 @@
     },
     "achieved": "L1",
     "passed": true,
-    "started_at": "2026-11-01T13:18:41.773Z",
-    "duration_ms": 560,
+    "started_at": "2026-11-01T13:41:13.487Z",
+    "duration_ms": 30475,
     "summary": {
-      "pass": 38,
-      "fail": 6,
+      "pass": 39,
+      "fail": 5,
       "untested": 0,
       "not_applicable": 2
     },
@@ -70,7 +70,7 @@
         "level": "L0",
         "status": "pass",
         "message": "connected and registered",
-        "duration_ms": 4
+        "duration_ms": 2
       },
       {
         "id": "L0.health",
@@ -84,7 +84,7 @@
         "level": "L0",
         "status": "pass",
         "message": "shut down cleanly",
-        "duration_ms": 346
+        "duration_ms": 282
       },
       {
         "id": "L1.read",
@@ -96,11 +96,11 @@
           "reading": {
             "quality": "GOOD",
             "source": "simulator",
-            "timestamp": "2026-11-01T13:18:41.778Z",
+            "timestamp": "2026-11-01T13:41:13.489Z",
             "value": ""
           }
         },
-        "duration_ms": 1
+        "duration_ms": 0
       },
       {
         "id": "L1.read.value",
@@ -115,12 +115,12 @@
         "level": "L1",
         "capability": "run.last_id",
         "status": "pass",
-        "message": "2 ms old",
+        "message": "1 ms old",
         "evidence": {
           "reading": {
             "quality": "GOOD",
             "source": "simulator",
-            "timestamp": "2026-11-01T13:18:41.778Z",
+            "timestamp": "2026-11-01T13:41:13.489Z",
             "value": ""
           }
         },
@@ -144,7 +144,7 @@
           "reading": {
             "quality": "GOOD",
             "source": "simulator",
-            "timestamp": "2026-11-01T13:18:41.78Z",
+            "timestamp": "2026-11-01T13:41:13.49Z",
             "value": 0
           }
         },
@@ -163,12 +163,12 @@
         "level": "L1",
         "capability": "run.count",
         "status": "pass",
-        "message": "0 ms old",
+        "message": "1 ms old",
         "evidence": {
           "reading": {
             "quality": "GOOD",
             "source": "simulator",
-            "timestamp": "2026-11-01T13:18:41.78Z",
+            "timestamp": "2026-11-01T13:41:13.49Z",
             "value": 0
           }
         },
@@ -192,7 +192,7 @@
           "reading": {
             "quality": "GOOD",
             "source": "simulator",
-            "timestamp": "2026-11-01T13:18:41.78Z",
+            "timestamp": "2026-11-01T13:41:13.49Z",
             "value": 0
           }
         },
@@ -216,7 +216,7 @@
           "reading": {
             "quality": "GOOD",
             "source": "simulator",
-            "timestamp": "2026-11-01T13:18:41.78Z",
+            "timestamp": "2026-11-01T13:41:13.49Z",
             "value": 0
           }
         },
@@ -240,7 +240,7 @@
           "reading": {
             "quality": "GOOD",
             "source": "simulator",
-            "timestamp": "2026-11-01T13:18:41.78Z",
+            "timestamp": "2026-11-01T13:41:13.491Z",
             "value": true
           }
         },
@@ -259,12 +259,12 @@
         "level": "L1",
         "capability": "protocol.serial_dilution.reviewed",
         "status": "pass",
-        "message": "1 ms old",
+        "message": "0 ms old",
         "evidence": {
           "reading": {
             "quality": "GOOD",
             "source": "simulator",
-            "timestamp": "2026-11-01T13:18:41.78Z",
+            "timestamp": "2026-11-01T13:41:13.491Z",
             "value": true
           }
         },
@@ -288,7 +288,7 @@
           "reading": {
             "quality": "GOOD",
             "source": "simulator",
-            "timestamp": "2026-11-01T13:18:41.781Z",
+            "timestamp": "2026-11-01T13:41:13.491Z",
             "value": "512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671"
           }
         },
@@ -307,12 +307,12 @@
         "level": "L1",
         "capability": "protocol.serial_dilution.sha256",
         "status": "pass",
-        "message": "0 ms old",
+        "message": "1 ms old",
         "evidence": {
           "reading": {
             "quality": "GOOD",
             "source": "simulator",
-            "timestamp": "2026-11-01T13:18:41.781Z",
+            "timestamp": "2026-11-01T13:41:13.491Z",
             "value": "512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671"
           }
         },
@@ -392,7 +392,7 @@
         "level": "L2",
         "capability": "protocol.run",
         "status": "pass",
-        "message": "carried out in 150 ms (expected about 1000 ms, limit 30000 ms)",
+        "message": "carried out in 141 ms (expected about 1000 ms, limit 30000 ms)",
         "evidence": {
           "adapter_result": {
             "acknowledged": true,
@@ -403,7 +403,7 @@
               "runlog_sha256": "c05b1c20ea94132728409b941cbd9bb6f8a50c9e58572f3919d0e7105ea7eb44"
             }
           },
-          "command_id": "01a19743-227f-74d8-a49f-81ee62acb16e",
+          "command_id": "01a19757-c298-7285-b419-31f1c097d440",
           "outcome": "succeeded",
           "policy_errors": [],
           "request": {
@@ -437,12 +437,12 @@
             "observed": {
               "quality": "GOOD",
               "source": "simulator",
-              "timestamp": "2026-11-01T13:18:41.958Z",
+              "timestamp": "2026-11-01T13:41:13.65Z",
               "value": "openmhs-conformance"
             }
           }
         },
-        "duration_ms": 173
+        "duration_ms": 156
       },
       {
         "id": "L2.verification",
@@ -465,7 +465,7 @@
               "message": "run_id 'openmhs-conformance' was already used"
             }
           },
-          "command_id": "01a19743-2329-77c5-9951-0f8c4600b1be",
+          "command_id": "01a19757-c335-767b-a8c6-8307802fc291",
           "outcome": "failed",
           "policy_errors": [],
           "request": {
@@ -493,7 +493,7 @@
           "state": "REJECTED",
           "verification": null
         },
-        "duration_ms": 4
+        "duration_ms": 3
       },
       {
         "id": "L2.malformed",
@@ -508,7 +508,7 @@
               "message": "run_id 'openmhs-conformance' was already used"
             }
           },
-          "command_id": "01a19743-232d-72d5-a202-081872fdf080",
+          "command_id": "01a19757-c338-7234-8f7f-3746da2ad72e",
           "outcome": "failed",
           "policy_errors": [],
           "request": {
@@ -536,23 +536,23 @@
           "state": "REJECTED",
           "verification": null
         },
-        "duration_ms": 2
+        "duration_ms": 3
       },
       {
         "id": "L2.timeout",
         "level": "L2",
         "capability": "protocol.run",
-        "status": "fail",
-        "message": "ended REJECTED with adapter.rejected; without an answer nothing is known, so return AdapterErrorKind::Timeout (or let the deadline pass), never NotSent or a failure",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME (adapter.timeout)",
         "evidence": {
           "adapter_result": {
             "error": {
-              "code": "adapter.rejected",
-              "message": "run_id 'openmhs-conformance' was already used"
+              "code": "adapter.timeout",
+              "message": "no result within 29999 ms"
             }
           },
-          "command_id": "01a19743-2330-7025-8ab8-619a910b4fe1",
-          "outcome": "failed",
+          "command_id": "01a19757-c33b-7672-a3ba-257dba342b36",
+          "outcome": "uncertain",
           "policy_errors": [],
           "request": {
             "deadline_ms": 30000,
@@ -576,10 +576,10 @@
               "device": "ot.flex-01"
             }
           },
-          "state": "REJECTED",
+          "state": "UNKNOWN_OUTCOME",
           "verification": null
         },
-        "duration_ms": 2
+        "duration_ms": 30008
       },
       {
         "id": "L2.lost_ack",
@@ -594,7 +594,7 @@
               "message": "run_id 'openmhs-conformance' was already used"
             }
           },
-          "command_id": "01a19743-2332-72cc-a856-9e477208f4ff",
+          "command_id": "01a19758-3874-74bb-88f9-c9da63668005",
           "outcome": "failed",
           "policy_errors": [],
           "request": {
@@ -622,7 +622,7 @@
           "state": "REJECTED",
           "verification": null
         },
-        "duration_ms": 2
+        "duration_ms": 3
       },
       {
         "id": "L2.no_retry",
@@ -644,7 +644,7 @@
               "message": "run_id 'openmhs-conformance' was already used"
             }
           },
-          "command_id": "01a19743-2335-748a-bc85-c9ecb018dd13",
+          "command_id": "01a19758-3877-75fc-8d13-c881fdc06f7b",
           "outcome": "failed",
           "policy_errors": [],
           "request": {
@@ -687,7 +687,7 @@
               "message": "run_id 'openmhs-conformance' was already used"
             }
           },
-          "command_id": "01a19743-233b-7794-91cc-87e483ae04f7",
+          "command_id": "01a19758-387a-7776-9047-dd796dbe3ad9",
           "outcome": "failed",
           "policy_errors": [],
           "request": {
@@ -715,7 +715,7 @@
           "state": "REJECTED",
           "verification": null
         },
-        "duration_ms": 5
+        "duration_ms": 3
       },
       {
         "id": "L3.plan",
@@ -724,10 +724,10 @@
         "status": "fail",
         "message": "a plan of one valid command ended HALTED: step 'step' failed: run_id 'openmhs-conformance' was already used (adapter.rejected)",
         "evidence": {
-          "created_at": "2026-11-01T13:18:41.984Z",
+          "created_at": "2026-11-01T13:41:43.677Z",
           "current": "step",
-          "id": "01a19743-2340-77c1-94f3-da7092de4c72",
-          "lease_id": "lse_01a19743234077c194f3da71158da99b",
+          "id": "01a19758-387d-7624-ba9f-b688960d060e",
+          "lease_id": "lse_01a19758387d7624ba9fb6891a5420d7",
           "order": [
             "step"
           ],
@@ -768,12 +768,12 @@
           "steps": [
             {
               "commands": [
-                "01a19743-2342-7667-8478-b9b590e75c0d"
+                "01a19758-387d-7624-ba9f-b68ac30835fa"
               ],
               "error": {
                 "code": "adapter.rejected",
                 "details": {
-                  "command_id": "01a19743-2342-7667-8478-b9b590e75c0d"
+                  "command_id": "01a19758-387d-7624-ba9f-b68ac30835fa"
                 },
                 "message": "run_id 'openmhs-conformance' was already used"
               },
@@ -781,9 +781,9 @@
               "status": "FAILED"
             }
           ],
-          "updated_at": "2026-11-01T13:18:41.988Z"
+          "updated_at": "2026-11-01T13:41:43.679Z"
         },
-        "duration_ms": 7
+        "duration_ms": 3
       },
       {
         "id": "L3.stop",

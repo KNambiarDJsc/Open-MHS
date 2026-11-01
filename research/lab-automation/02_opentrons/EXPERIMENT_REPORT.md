@@ -141,9 +141,10 @@ Three runs on the release gateway, **all checks passed in all three**:
 | OT-06 | `audit export` + `audit verify-file` offline: valid and complete. The receipt in the export holds the requested parameters, the protocol's SHA-256 (`512e3443…`), 92 commands and the log's SHA-256 (`e4318448…`). **Replay**: simulating the same protocol and parameters again without OpenMHS gives a log with the same SHA-256 |
 | OT-07 | The gateway was killed after the run. On restart: `UNKNOWN_OUTCOME`, not re-run. Reconciled: `RECONCILED_APPLIED` |
 
-Conformance: **L1** (38 pass, 6 fail; [conformance.json](results/conformance.json)), with
-the same six failures and the same cause as experiment 01: the suite reuses one `run_id`
-(§15).
+Conformance: **L1** (39 pass, 5 fail; [conformance.json](results/conformance.json)), with
+the same five failures and the same cause as experiment 01: the suite reuses one `run_id`
+(§15). After the lock fix found in experiment 03, every scenario was re-run and passed
+([final](results/final.json)).
 
 ## 13. Performance
 
@@ -183,7 +184,7 @@ Column B was not built (as in experiment 01).
    clients, most of scientific Python.
 2. **The simulator is not a safety check** (§7): it ran overfills and negative volumes. In
    this stack, the parameter bounds exist only in OpenMHS's contract.
-3. **The conformance gap of experiment 01 recurs, identically** (L1, the same six checks). Two
+3. **The conformance gap of experiment 01 recurs, identically** (L1, the same five checks). Two
    independent adapters needed a new id per request to make readback meaningful, and the
    suite cannot generate one. This is now a property of OpenMHS, not of one adapter.
 4. **No cross-parameter bounds.** transfer + diluent ≤ capacity is not expressible, so the

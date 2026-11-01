@@ -326,15 +326,17 @@ class PyLabRobotAdapter(Adapter):
         volume = microlitres(p.get("volume"))
         if not transfer_id or src not in SOURCE_WELLS or dst not in DEST_WELLS:
             raise AdapterError("not_sent", f"bad transfer parameters {p!r}")
+        fault = self.fixture or self._take_fault()
+        # A device that never answers does not freeze reads or other commands: the hang
+        # happens outside the lock.
+        if fault == "hang_before_apply":
+            await asyncio.Event().wait()
         async with self.lock:
             if transfer_id in self.used_ids:
                 # A reused id could otherwise "verify" against an earlier transfer.
                 return Rejected(f"transfer_id {transfer_id!r} was already used")
-            fault = self.fixture or self._take_fault()
             if fault == "reject":
                 return Rejected("simulated refusal (conformance fixture)")
-            if fault == "hang_before_apply":
-                await asyncio.Event().wait()
             # The whole handler, head included: a refusal after the tip pickup must not
             # leave a tip on the channel. Kept in memory only, between two awaits.
             snapshot = self.lh.serialize_all_state()
