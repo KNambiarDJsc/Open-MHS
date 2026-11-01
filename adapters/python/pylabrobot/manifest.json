@@ -1,0 +1,23 @@
+{
+  "openmhs_manifest": "0.1",
+  "adapter": { "id": "openmhs.py.pylabrobot", "version": "0.1.0" },
+  "runtime": {
+    "command": ["python", "{manifest_dir}/plr_adapter.py"],
+    "env": { "PYTHONPATH": "{manifest_dir}/../../../python" },
+    "protocol": ["0.1"]
+  },
+  "capabilities": {
+    "allow": [
+      { "name": "tips.available", "operations": ["read"] },
+      { "name": "transfer.*", "operations": ["read"] },
+      { "name": "source.*", "operations": ["read"] },
+      { "name": "dest.*", "operations": ["read"] },
+      { "name": "liquid.transfer", "operations": ["invoke"] }
+    ]
+  },
+  "config": {
+    "backend": "chatterbox",
+    "tips": 96,
+    "source_ul": { "A1": 200, "A2": 200, "A3": 200 }
+  }
+}
