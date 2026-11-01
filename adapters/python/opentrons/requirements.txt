@@ -1,0 +1,4 @@
+# Pinned: the adapter, its protocol and the experiment were checked against this release.
+# Needs Python 3.12: on 3.13 a pinned numpy<2 has no wheel, and on 3.11 opentrons 10.1.0
+# fails at import (a pydantic model uses typing.TypedDict, which pydantic refuses below 3.12).
+opentrons==10.1.0
