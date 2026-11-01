@@ -345,6 +345,8 @@ impl Journal {
                 hash      TEXT NOT NULL
             );
             CREATE INDEX IF NOT EXISTS audit_subject ON audit(subject, seq);
+            CREATE INDEX IF NOT EXISTS audit_summaries ON audit(seq)
+                WHERE kind = 'read.summary';
             CREATE INDEX IF NOT EXISTS audit_sealed ON audit(seq)
                 WHERE kind = 'audit.segment_sealed';
             CREATE INDEX IF NOT EXISTS audit_compacted ON audit(seq)
@@ -503,6 +505,38 @@ impl Journal {
         tx.commit()?;
         self.fault(&conn, &site, FaultPhase::AfterCommit)?;
         Ok(hash)
+    }
+
+    /// Append several records in one transaction: all of them or none. Used for the
+    /// summaries of one telemetry flush.
+    pub fn append_audit_many(
+        &self,
+        records: &[(Timestamp, String, String, serde_json::Value)],
+    ) -> Result<(), JournalError> {
+        let mut conn = self.lock();
+        let tx = conn.transaction()?;
+        for (at, kind, subject, data) in records {
+            Self::append_audit_tx(&tx, *at, kind, subject, data)?;
+        }
+        self.fault(&tx, "audit:read.summary", FaultPhase::BeforeCommit)?;
+        tx.commit()?;
+        self.fault(&conn, "audit:read.summary", FaultPhase::AfterCommit)?;
+        Ok(())
+    }
+
+    /// How far into a telemetry store the chain's newest summary of it reaches.
+    pub fn last_summary_through(&self, store_id: &str) -> Result<Option<i64>, JournalError> {
+        Ok(self
+            .lock()
+            .query_row(
+                "SELECT json_extract(data, '$.store.through_id') FROM audit \
+                 WHERE kind = 'read.summary' AND json_extract(data, '$.store.id') = ?1 \
+                 ORDER BY seq DESC LIMIT 1",
+                [store_id],
+                |r| r.get::<_, Option<i64>>(0),
+            )
+            .optional()?
+            .flatten())
     }
 
     /// Insert a new command in `CREATED`, or return the existing one for the same

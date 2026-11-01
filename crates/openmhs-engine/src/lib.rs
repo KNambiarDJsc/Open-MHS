@@ -12,7 +12,7 @@ mod error;
 pub mod journal;
 
 pub use engine::{
-    DEFAULT_APPROVAL_TTL_MS, Engine, EngineOptions, LeaseRequest, MAX_APPROVAL_TTL_MS,
+    DEFAULT_APPROVAL_TTL_MS, Engine, EngineOptions, FlushReport, LeaseRequest, MAX_APPROVAL_TTL_MS,
     MAX_CONCURRENT_PROBES, MAX_PROBE_BACKOFF_MS, RecoveryReport, StorageLimits, fingerprint,
     probe_backoff_ms,
 };
@@ -21,6 +21,8 @@ pub use engine::{
     MAX_POLL_WAIT_MS, MAX_WATCH_TTL_MS, MAX_WATCHES, MAX_WATCHES_PER_PRINCIPAL,
     MIN_WATCH_INTERVAL_MS,
 };
+pub mod telemetry;
+
 pub use error::EngineError;
 pub use journal::{AuditRecord, AuditVerification, Journal, JournalError};
 pub use openmhs_types::graph::{Claim, Graph};

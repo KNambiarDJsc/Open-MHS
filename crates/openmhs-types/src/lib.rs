@@ -5,6 +5,7 @@
 //! It contains no hardware-specific logic.
 
 pub mod approval;
+pub mod audit_class;
 pub mod availability;
 pub mod command;
 pub mod descriptor;

@@ -90,9 +90,13 @@ apply to everyone. A role never bypasses authorization for device access.
 | `grants.list` / `grants.add` / `grants.revoke` | op | — / `grant` / `id` | grants / grant / removed grant |
 | `tokens.create` | op | `principal`, `role`, `scopes`, `ttl_ms?` | credential (secret shown once). No scopes: it authorizes nothing ([authorization.md](authorization.md) §7) |
 | `tokens.list` / `tokens.revoke` / `tokens.rotate` | op | — / `id` / `id`, `ttl_ms?` | credential infos / revoked (its open approvals withdrawn) / replacement (secret shown once; old one revoked) |
-| `audit.verify` | op | — | `records`, `valid`, `first_invalid?` |
+| `audit.verify` | op | `all?` | `records`, `valid`, `first_invalid?`; with `all`, also `segments` and `problems` (every closed segment is read) |
 | `audit.export` | op | — | versioned complete audit/receipt snapshot and head checkpoint from one read transaction; verify offline as described in [audit evidence](../docs/architecture/AUDIT_EVIDENCE.md). The response body is streamed as the journal is read; `result` is its last member. An error found before the first bytes is an ordinary error response; one found later ends the body early, so the response does not parse |
 | `audit.tail` | op | `limit?` | the newest `limit` audit records (default 20, at most 500), oldest first |
+| `audit.segment` | op | `max_bytes?`, `through_seq?`, `seal?` | segment info: closes the next range of the chain as a verified file; nothing is deleted |
+| `audit.segments` | op | — | segment infos (number, range, state `PLANNED` to `COMPACTED`, size, SHA-256, seal record) |
+| `audit.seal` | op | `number` | segment info, sealed: the chain commits to its file and to a snapshot of live state |
+| `audit.compact` | op | `number`, `vacuum?` | rows deleted and kept, commands archived. Deletes journal rows; `gateway.archive_disabled` unless the gateway was started with `--archive` |
 | `sim.fault` | op | `device`, `fault` | message; only with `serve --sim` |
 
 ¹ An agent sees only its own commands. Other commands answer `command.unknown`, so

@@ -60,3 +60,13 @@ than the limit, a limit below the journal's size) are refused.
 
 Not tested here: restart after exhaustion (the journal and recovery are unchanged by this
 ADR; recovery's own tests cover it) and exhaustion of a volume the journal does not control.
+
+## Telemetry (RFC 0002, milestone 6)
+
+Reads an operator has opted in as routine telemetry (`serve --telemetry`) go to a store of
+their own and do not write to the journal, so they are **not** refused within the reserve:
+they cannot eat it. The summaries that stand in for them are not written there either: a
+flush within the reserve waits (`FlushReport::deferred`), and the readings wait in the
+telemetry store, whose own quota counts what it has to drop. Everything else above is
+unchanged: an audited read of anything not opted in is refused, and stops and recovery keep
+the reserve.

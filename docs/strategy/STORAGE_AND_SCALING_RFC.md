@@ -163,8 +163,8 @@ restart with N in-flight commands. Quotas, intervals and limits are set from tho
 | Fail-closed dispatch when the journal cannot write | Existing behaviour, confirmed by reading `dispatch` |
 | Availability changes recorded only on transition | Implemented (ADR-0019) |
 | Bounded probe concurrency, no overlapping sweeps | Implemented (ADR-0019), tested at 1,000 devices (`crates/openmhs-engine/tests/availability.rs`) |
-| Event classes, telemetry store, read summaries | Not implemented |
-| Segments, checkpoints, manifest, archive, retention | Not implemented; **no destructive rotation before review** |
+| Event classes, telemetry store, read summaries | Implemented (2026-11-01, [RFC 0002](../rfcs/0002-storage-engine.md) milestone 6): a class for every audit kind, checked by a test; opt-in `--telemetry` routing; `telemetry.sqlite` with soft and hard quotas that count what they drop; `read.summary` per window. Not done: class-based retention of chain records, an API over the raw store, measurements |
+| Segments, checkpoints, manifest, archive, retention | Segments, a manifest, seals with snapshots, and guarded compaction behind `--archive` are implemented ([RFC 0002](../rfcs/0002-storage-engine.md) milestones 3 to 5). Not done: signed or externally anchored seals, offsite archive and acknowledgement, retention by class or age |
 | Reserve for critical writes | Not implemented |
 | Per-device scheduler, backoff, budgets, hysteresis | Not implemented |
 | Benchmarks | Not implemented |

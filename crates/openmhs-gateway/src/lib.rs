@@ -37,6 +37,13 @@ use crate::store::{PolicyStore, TokenStore, new_token, write_private};
 pub const DEFAULT_PORT: u16 = 7400;
 pub const DEFAULT_OPERATOR: &str = "operator:local";
 pub const JOURNAL_FILE: &str = "journal.sqlite";
+/// Raw telemetry, apart from the journal (RFC 0002, milestone 6).
+pub const TELEMETRY_FILE: &str = "telemetry.sqlite";
+
+/// The telemetry configuration types, for the CLI.
+pub mod telemetry {
+    pub use openmhs_engine::telemetry::*;
+}
 pub const LOCK_FILE: &str = "gateway.lock";
 /// The reserve below a journal size limit, a starting hypothesis for controlled testing
 /// (ADR-0021), not a sizing recommendation.
@@ -94,6 +101,10 @@ pub struct GatewayConfig {
     /// Keep the journal's audit head here, ideally on other storage, and refuse to start
     /// on a journal that is behind it (spec/lifecycle.md §4 rule 8). None: not kept.
     pub checkpoint_file: Option<PathBuf>,
+    /// Route allowed, successful reads of the opted-in devices and capabilities to
+    /// `telemetry.sqlite` and summarize them in the audit chain (RFC 0002, milestone 6).
+    /// None: every read is an individual audit record, as before.
+    pub telemetry: Option<openmhs_engine::telemetry::TelemetryConfig>,
     /// Allow `audit.compact`: moving finished history from the journal into its sealed
     /// segments, which deletes journal rows (RFC 0002, milestone 5). Off by default.
     pub archive: bool,
@@ -114,6 +125,7 @@ impl std::fmt::Debug for GatewayConfig {
             .field("journal_max_bytes", &self.journal_max_bytes)
             .field("checkpoint_file", &self.checkpoint_file)
             .field("archive", &self.archive)
+            .field("telemetry", &self.telemetry.as_ref().map(|t| t.rules.len()))
             .field(
                 "adapters",
                 &self
@@ -144,6 +156,7 @@ impl GatewayConfig {
             journal_reserve_bytes: DEFAULT_JOURNAL_RESERVE_BYTES,
             checkpoint_file: None,
             archive: false,
+            telemetry: None,
         }
     }
 }
@@ -159,6 +172,8 @@ pub struct RunningGateway {
     server: JoinHandle<std::io::Result<()>>,
     /// The availability probes, if on.
     monitor: Option<JoinHandle<()>>,
+    /// Writes the telemetry summaries, if telemetry is on.
+    telemetry: Option<JoinHandle<()>>,
     _lock: File,
 }
 
@@ -179,11 +194,18 @@ impl RunningGateway {
         if let Some(monitor) = self.monitor.take() {
             monitor.abort();
         }
+        if let Some(telemetry) = self.telemetry.take() {
+            telemetry.abort();
+        }
         match (&mut self.server).await {
             Ok(r) => r?,
             Err(e) => warn!(error = %e, "server task ended abnormally"),
         }
         self.engine.shutdown_adapters().await;
+        // The window still open is summarized too, so a stop loses no count.
+        if let Err(e) = self.engine.flush_telemetry(true) {
+            warn!(error = %e, "could not write the last telemetry summaries");
+        }
         let _ = self.engine.journal().append_audit(
             SystemClock.now(),
             "gateway.stopped",
@@ -251,6 +273,11 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
         engine
             .set_checkpoint_file(path)
             .map_err(|e| GatewayError::Config(format!("audit checkpoint: {e}")))?;
+    }
+    if let Some(telemetry) = &config.telemetry {
+        engine
+            .enable_telemetry(&config.home.join(TELEMETRY_FILE), telemetry.clone())
+            .map_err(|e| GatewayError::Config(format!("telemetry: {e}")))?;
     }
     engine
         .journal()
@@ -342,6 +369,24 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
         procedures: tokio::sync::Mutex::new(store::ProcedureStore::open(&config.home)?),
         sims,
     });
+    let telemetry = config.telemetry.as_ref().map(|t| {
+        let engine = engine.clone();
+        let every = std::time::Duration::from_millis((t.interval_ms / 2).clamp(250, 30_000));
+        tokio::spawn(async move {
+            loop {
+                tokio::time::sleep(every).await;
+                let engine = engine.clone();
+                match tokio::task::spawn_blocking(move || engine.flush_telemetry(false)).await {
+                    Ok(Ok(report)) if report.deferred => {
+                        warn!("telemetry summaries wait: the journal is within its reserve");
+                    }
+                    Ok(Ok(_)) => {}
+                    Ok(Err(e)) => warn!(error = %e, "telemetry summaries failed"),
+                    Err(e) => warn!(error = %e, "telemetry summaries task ended abnormally"),
+                }
+            }
+        })
+    });
     let monitor = (config.health_interval_ms > 0).then(|| {
         let engine = engine.clone();
         let every = std::time::Duration::from_millis(config.health_interval_ms);
@@ -387,6 +432,7 @@ pub async fn start(config: GatewayConfig) -> Result<RunningGateway, GatewayError
         shutdown_tx: Some(shutdown_tx),
         server,
         monitor,
+        telemetry,
         _lock: lock,
     })
 }

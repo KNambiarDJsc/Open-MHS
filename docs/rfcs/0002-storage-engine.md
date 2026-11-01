@@ -1,6 +1,6 @@
 # RFC 0002: Storage engine: restart cost bounded by live state
 
-- **Status:** draft (milestones 1 and 2 and the streaming verifier implemented; everything after them is a proposal for review)
+- **Status:** draft (milestones 1 to 6 implemented and measured below, except where a section says what was not measured; M7, the evaluation on a Raspberry Pi and 10 M-record journals, is not done)
 - **Author:** OpenMHS maintainers (drafted with Claude Code)
 - **Date:** 2026-10-31
 - **Touches:** journal format / stored journals / API / tooling / security model
@@ -21,7 +21,8 @@ indexed live tables, a permanent identity index, the hash-chained log split into
 segments, and a separate telemetry store. Milestone 1 (index-driven recovery, with the
 unfinished set checked against the chain at open) is implemented and measured below; the
 rest is staged so that **nothing is deleted from a journal until the crash drills for
-archival pass**.
+archival pass**. Milestones 1 to 6 are now implemented; milestone 5 is the only one that
+deletes journal rows, and only behind `openmhs serve --archive`.
 
 ## Motivation
 
@@ -208,6 +209,12 @@ A missing or damaged segment file never deletes anything and is reported by
   verify with the existing algorithm, so old verifiers still check new chains.
 - Schema additions (`segments`, `command_keys`) are additive. The first start on the new
   version fills `command_keys` from `commands` in one transaction, with nothing deleted.
+- **A compacted journal is not readable by older versions.** Tried with the M2 gateway
+  binary on a compacted copy: it refuses to start with `journal.audit_invalid: the
+  journal's audit chain is broken at record 170023`, because the rows before the first
+  retained one are gone. It fails safe, but its message says "edited or damaged", which
+  is wrong here. Until compaction is run, every journal stays readable by older versions
+  (they ignore the new tables and indexes).
 
 ## Migration plan
 
@@ -217,10 +224,10 @@ Each milestone ships alone, with its own tests, and leaves every journal readabl
 |---|---|---|---|
 | **M1** | **Index-driven recovery; unfinished set checked against the chain at open** | No | **Done**: below |
 | **M2** | **Bounded API reads: `audit.tail` by `ORDER BY seq DESC LIMIT`, list filters in SQL, `audit.export` streamed to a file (F3–F5)** | No | **Done**: below |
-| M3 | Segment writer and offline verifier: `openmhs audit segment` writes and verifies segments for a seq range; nothing is deleted. The streaming `verify-file` it needs is done (below) | No | Round trip: every record and receipt byte for byte; `verify-file` accepts it; bit flips in the file are detected |
-| M4 | Seal records with snapshots; start-up verifies the tail when an external checkpoint covers the last seal | No | Same refusals as today for every adversary case; start-up flat in history |
-| M5 | `command_keys`; compaction behind `--archive` | **Yes**, behind a flag | The archival drills below all pass, and the bit-flip and torn-write drills are rerun on compacted journals |
-| M6 | Event classes and telemetry store (strategy RFC §3–5) | Raw telemetry, by policy | No loss of `CRITICAL` or `SECURITY` records under quota pressure |
+| **M3** | **Segment writer and offline verifier: `openmhs audit segment` writes and verifies segments for a seq range; nothing is deleted** | No | **Done**: [below](#milestone-3-implemented) |
+| **M4** | **Seal records with snapshots; start-up verifies the tail when an external checkpoint covers the last seal** | No | **Done**: [below](#milestone-4-implemented). Start-up is flat in history only once M5 has shrunk the file |
+| **M5** | **`command_keys`; compaction behind `--archive`** | **Yes**, behind a flag | **Done**: [below](#milestone-5-implemented). Drills pass; bit flips were sampled, and the torn-write drill was not rerun on compacted journals (a torn segment file was) |
+| **M6** | **Event classes and telemetry store (strategy RFC §3–5)** | Raw telemetry, by policy | **Done**: [below](#milestone-6-implemented). No `CRITICAL` or `SECURITY` record is lost under quota pressure |
 | M7 | Evaluation: 10 M-record journals, cold cache, Raspberry Pi | No | Published with method and raw data |
 
 Archival drills for M5: a crash before and after every state transition; full disk at each;
@@ -400,6 +407,228 @@ starting the CLI process (about 30 ms).
   space after compaction (M5) and nothing more.
 - **Merkle trees per segment from the start.** Deferred (see Sealed segments).
 
+## Milestone 3, implemented
+
+- **Format** ([segment.rs](../../crates/openmhs-types/src/segment.rs)): UTF-8, one JSON
+  object per line, in this order: `header` (format, number, first and last sequence, the
+  hash the range chains from, and the hash of the chain's first record, which names the
+  chain), one `audit` line per record exactly as stored, one `command` line per command
+  (its receipt, its readback target, the sequence number of its last lifecycle record), an
+  `index` (every 256th sequence number and every command id, each with the byte offset of
+  its line), and a `footer` (record and command counts, the last hash, and the SHA-256 of
+  every byte above it). It is a decision of this milestone that the receipt section is
+  keyed by command id and sorted, so a lookup reads the index and one line.
+- **Writer:** reads the range from one snapshot on a connection of its own, so commands
+  keep running. It refuses a record that does not chain from the one before, so a segment
+  is never written from a damaged range. The file is written under a temporary name,
+  synced, renamed, and the directory synced (on Unix; Windows cannot sync a directory).
+  A file already under the final name that the manifest does not know is **never
+  overwritten**: it is taken up if it is exactly the planned segment (a crash between the
+  rename and the manifest update), and otherwise the write is refused
+  (`journal.segment_exists`), which is what happens when a journal restored from an older
+  copy meets the newer segments.
+- **A command's place:** a command is in the segment that holds its last lifecycle record
+  in the range, with the receipt as of that record, if the journal's current receipt is
+  still that one. A command that has moved on since is in a later segment, not this one.
+- **Segment size** (open question 2): bytes. `audit segment` closes a range once its
+  records reach `--max-mib` (default 64; estimated from the stored field lengths plus 48
+  bytes a record) and refuses to close a smaller range unless `--through-seq` says to.
+- **Verifier:** `verify_segment` streams a file and needs nothing else: every record's
+  hash and link, the receipts against the records that bind them (and the readback target
+  against its `DISPATCHED` record), the index against the lines it points at, the footer,
+  and the file's SHA-256. Its memory grows with the commands in the segment, not its
+  records. `openmhs audit verify-segments DIR [--checkpoint FILE]` runs it over a
+  directory with no gateway and no journal, also checks that the segments follow on from
+  one another and agree with the manifest copy in `audit/manifest.json`, and says whether
+  a retained checkpoint lies in them. `verify-file` accepts a segment too.
+- **Manifest:** a `segments` table in the journal (number, range, hashes, file, SHA-256,
+  bytes, state, seal record). `create_segment` plans a range, writes the file, and checks
+  it against the journal's rows byte for byte, then marks it `VERIFIED`. Repeating it
+  after a crash at any step finishes the job.
+- **Tests:** [segments.rs](../../crates/openmhs-engine/tests/segments.rs): every record
+  and final receipt round-trips byte for byte; every bit of a segment flipped (three bit
+  positions at every byte), every truncation and trailing data are detected; consecutive
+  segments chain; a crash at each of the six commit boundaries and a full disk (writes
+  failing after 300 bytes) leave a journal that writes the segment again and no stray
+  file; a file that differs from the journal is not verified.
+
+Measured on the 100 MB and the 1 GB journals of "Journal start-up" (same desktop, release
+build): writing and verifying one segment of the whole chain took 4.4 s (101 MB file,
+174 k records) and 39.6 s (984 MB, 1.70 M records). Memory was not measured.
+
+## Milestone 4, implemented
+
+- **Seal:** `openmhs audit seal N` (or `audit segment --seal`) appends one
+  `audit.segment_sealed` record: the segment's range and hashes, its file's SHA-256 and
+  size, and a **snapshot of live state** at that point (the ids of unfinished commands,
+  open approvals, leases and plans, with their SHA-256). The record and the manifest update
+  are one transaction. A segment is read again just before the chain commits to it, and
+  segments are sealed in order.
+- **Start-up from a seal:** `Journal::open_anchored(path, anchor)`; the gateway passes the
+  head from the file of `--checkpoint-file`, which it already keeps. If the journal holds
+  that record, a seal lies at or behind it, the manifest row, the seal and the segment
+  file's own header and footer (the first and last lines only) agree, and the snapshot
+  matches its digest, then the chain is verified from the seal to the head (bound to the
+  anchor by the anchor's hash), the unfinished set is the snapshot plus what the later
+  records change, and it must equal the indexed set, as in milestone 1. **Anything in
+  doubt means the whole chain is read**, exactly as before. Without an anchor nothing
+  changes.
+- **What it does not do:** it does not read the history before the seal at start-up. That
+  rests on the anchor (the checkpoint file on separately failing storage), as the "Trust"
+  section says. `openmhs audit verify --all` reads every segment and every remaining row
+  and says everything that does not check out. Seals are not signed (open question 4).
+- **Tests:** [seals.rs](../../crates/openmhs-engine/tests/seals.rs): the seal commits to the
+  file and the live state; sealing is ordered and repeatable; start-up from a seal gives the
+  answer full verification gives; with an anchor the edit of a record before the seal is not
+  read at start (and `verify --all` finds it), while an anchor from another history, one
+  past the head or one before the seal changes nothing; six tamperings of the tail, the seal
+  and the live state (an edited and a deleted tail record, an edited seal, a held command
+  shown as finished, a finished one shown as held, a held command's row removed) are
+  refused with an anchor exactly as without; a damaged segment file means everything is
+  read and the damage is reported.
+
+### Measured
+
+Same desktop and method as above; one copy of each journal in a directory of its own
+(100k writes with 1,000 left waiting, 1,000 unfinished commands), sealed as one segment,
+then three opens in fresh processes, medians, warm cache, against the same journal.
+
+| Journal | Open, no anchor | Open, anchored at the seal | Recovery |
+|---|---|---|---|
+| 10k writes (105 MB, 174 k records) | 759 ms | 281 ms | 51 ms / 48 ms |
+| 100k writes (1.0 GB, 1.70 M records) | 7.30 s | 2.39 s | 50 ms / 47 ms |
+
+The seal removes the chain pass (about two thirds of the open here) and nothing else. **It
+does not make start-up flat in history**: 2.4 s remain on the 1 GB journal, and they fall
+to 80 ms once milestone 5 has shrunk the file (below), so they scale with the file's size
+(SQLite's own `quick_check` and `integrity_check` read all of it). The exit test "start-up
+flat in history" therefore holds for a sealed **and compacted** journal, not a sealed one.
+
+## Milestone 5, implemented
+
+- **`command_keys`:** `(command_id, principal, device, idempotency_key, request_hash,
+  segment)`, unique on `(principal, device, key)`, written with every new command and
+  filled from `commands` at the first start of the new version (one transaction, nothing
+  deleted). It is never compacted: about 150 bytes a command, as predicted.
+- **`openmhs audit compact N [--vacuum]`**, and only on a gateway started with
+  `--archive` (otherwise `gateway.archive_disabled`). It takes a `SEALED` segment, in
+  order, once. The segment's file is first read in full and compared with the rows it
+  replaces. Then, **in one transaction**: it keeps every audit row of an unfinished
+  command, an open approval, an open lease or plan, and of a finished command a live plan
+  still links to, and the seal and compaction records; it deletes the other rows at or
+  before the segment's end; it deletes the `commands` row of every finished command whose
+  records all lie in the range, after pointing its `command_keys` row at the segment; and it
+  appends `audit.segment_compacted` with the counts. `--vacuum` then rewrites the file so it
+  actually shrinks.
+- **Archived commands are still answered**, from the segment through its index:
+  `commands.get`, `commands.get_by_key`, a repeated idempotency key (the archived receipt
+  and request hash come back, **nothing is sent**), and a checkpoint naming an archived
+  record. A segment is verified against the seal in the chain, once per process. If it
+  cannot be read, the answer is `journal.archive_unavailable` and a repeated key is
+  refused, never treated as new.
+- **Verification across segments:** a journal with compactions is read as segments then
+  rows (`archive_scan`): every segment against its seal and manifest row and the one
+  before it; rows still in the journal at or before the boundary against the segments; the
+  rows after it chaining from the last compacted segment's last hash. Start-up of a
+  compacted journal without an anchor reads all of that and refuses a missing or damaged
+  segment (`journal.audit_invalid`); with an anchor it checks the newest seal's segment
+  ends only, and `verify --all` reads the rest. The evidence export of a compacted journal
+  is the same bundle an uncompacted one gives (the history prefix is equal record for
+  record, tested) and verifies with `verify-file`; it reads every segment, so an export,
+  unlike start-up, still grows with history.
+- **Limits, stated:** compaction holds the journal's connection for the whole transaction
+  and the `VACUUM`, so commands wait: 3.9 s on the 100 MB journal and 37 s on the 1 GB one
+  (including reading and comparing the segment). Run it when the gateway is quiet. It is
+  not chunked. Segments are local files: no offsite copy, no acknowledgement of an archive,
+  no retention by class or age for the chain, and seals are not signed.
+- **Drills** ([compaction.rs](../../crates/openmhs-engine/tests/compaction.rs) and
+  segments.rs), against the list above: a crash before and after every state transition,
+  including inside compaction (before its commit nothing changed; after it, it is whole);
+  a full disk (writing a segment, and a journal at its size limit during compaction: either
+  whole or `SEALED` again); a lost segment file; a damaged manifest row; duplicate
+  archiving; partial compaction (it is one transaction); a journal restored from before its
+  segments (never overwrites them); receipt lookup and key reuse after archiving; live work
+  spanning a segment boundary. Bit flips: 200 sampled positions of a compacted journal's file
+  and 150 of its segment (opened three ways), and a truncation of the segment at the same
+  150 positions, are refused or detected, never used; the segment's own test flips every
+  byte. Nothing in the drill sends a stored command again. **Not done:** the power-cut and disk-error rigs
+  (PERSISTENCE_ADVERSARY.md), and the full torn-write drill on a compacted journal.
+
+### Measured
+
+Compacting the sealed copies above, with `--vacuum`:
+
+| Journal | Rows deleted (kept) | Commands archived | File | Anchored open | Recovery |
+|---|---|---|---|---|---|
+| 10k writes | 170,044 (4,000) | 10,000 | 105 MB to 7 MB | 23 ms | 45 ms |
+| 100k writes | 1,700,077 (4,000) | 100,000 | 1,004 MB to 28 MB | 80 ms | 50 ms |
+
+The 4,000 kept rows are the 1,000 unfinished commands' four records each. The 100k file's
+28 MB is mostly the identity index (100,000 `command_keys` rows). The open is 3.5 times
+longer for ten times the commands, so it follows the identity index and the live state,
+not the audit history: that is the claim milestone 4's exit test makes, and it holds here
+only for a compacted journal.
+
+## Milestone 6, implemented
+
+- **Event classes** ([audit_class.rs](../../crates/openmhs-types/src/audit_class.rs)):
+  every audit kind is `CRITICAL`, `SECURITY`, `OPERATIONAL` or `TELEMETRY`, from one table
+  (a deviation from "declared next to where it is written"; one table is one place to
+  review) plus families for generated kinds (`approval.*`, `plan.*`, `lease.*`, `grant.*`,
+  `token.*`). An unclassified kind is `CRITICAL`. `tests/event_classes.rs` scans the
+  workspace's source for the kinds passed to every audit call and **fails on an unclassified
+  one**; it found a false positive of its own while being written, so it stops at the
+  closing parenthesis of the call. Only `TELEMETRY` (`read`) may ever be aggregated.
+  New kinds: `read.summary` is `OPERATIONAL`; `audit.segment_sealed` and
+  `audit.segment_compacted` are `CRITICAL`; `procedure.added/approved/proposed/removed` are
+  `SECURITY`, `procedure.run` `CRITICAL`, `watch.*` `OPERATIONAL`.
+- **Opt-in, per device and capability** (strategy RFC §10 item 1): nothing is aggregated by
+  default. `openmhs serve --telemetry DEVICE:CAPABILITY` (repeatable, `*` matches any
+  run) names reads that are routine telemetry. Only an **allowed, successful** read of such
+  a device is routed; a denied read, a failed read, and every read nobody opted in stay
+  individual records in the chain.
+- **Store:** `telemetry.sqlite` in the gateway home, its own file and its own write lock,
+  so its write rate cannot slow command journaling, and `synchronous=NORMAL` (raw telemetry
+  may lose its last moments to a power cut; the journal does not). Quota: over the **soft**
+  limit (default 64 MiB) the oldest raw readings **that a summary already covers** are
+  removed, never one that is not yet summarized; over the **hard** limit (default 128 MiB)
+  no raw reading is kept, and the read is **counted** for its summary. A reserve of 1 MiB
+  above it holds the counters. Raw readings are removed once summarized and older than 7
+  days (`--telemetry-soft-mib`, `--telemetry-hard-mib`, `--telemetry-retention-days`,
+  `--telemetry-interval-secs`).
+- **Summaries:** one `read.summary` record per (principal, device, capability) per window
+  (default 60 s), with the number of reads, how many were kept and how many dropped, the
+  first and last reading, the minimum and maximum of a quantity (with its unit; omitted if
+  the units differed), the counts of `GOOD`, `UNCERTAIN` and `BAD` quality, and the range
+  of store ids it covers. The gateway writes every ended window about twice an interval, and
+  the open one at shutdown, in one transaction. A crash between the chain's commit and the
+  store's mark of it does not summarize twice: the store has an id of its own, the chain's
+  newest summary of it says how far it got, and start reconciles the two (tested).
+- **Under pressure:** a flush within the journal's critical reserve (ADR-0021) writes
+  nothing and waits, so a summary never spends the reserve. A telemetry read costs the
+  journal nothing, so it is still served there, unlike an audited read of something not
+  opted in, which is refused as before. If the store itself fails, the read is recorded
+  individually in the chain, so nothing is lost; if the journal is also within its reserve,
+  the read is refused (`storage.exhausted`).
+- **Exit test:**
+  `no_critical_or_security_record_is_lost_under_quota_pressure`
+  ([telemetry.rs](../../crates/openmhs-engine/tests/telemetry.rs)): the telemetry store is
+  filled to its hard limit, then the journal is put within its reserve. Reads keep working
+  and cost the journal nothing; the flush is deferred; a stop is accepted and its lifecycle
+  recorded; a request refused to an outsider is recorded as `read.denied`; nothing
+  written in the reserve is a routine record; and when space returns the summaries account
+  for every one of the 500 reads, with the dropped ones stated. Other tests: windows are
+  summarized only once ended; denied, failed and bad-quality reads are not hidden; the
+  hard limit counts, the soft limit evicts only what is summarized; retention; bad
+  configuration is refused; the crash case above. An end-to-end test runs it through a real
+  gateway and CLI.
+- **Not done, and not measured:** no API reads the raw store (it is a SQLite file); no
+  retention by class for chain records (milestone 5's compaction is the only thing that
+  removes them); and **no throughput or growth was measured**. That a read costs one
+  summary record a minute instead of one record is arithmetic from the design, and that
+  telemetry cannot slow commands rests on the two files having separate write locks, not
+  on a benchmark.
+
 ## How it will be tested
 
 The persistence drills ([PERSISTENCE_ADVERSARY.md](../architecture/PERSISTENCE_ADVERSARY.md))
@@ -419,9 +648,12 @@ the same session.
    honoured after its command is archived. A retention window would be a separate spec
    change, with its own RFC and a migration for callers that rely on a key never being
    reused.
-2. Segment size: by record count, bytes or time? Proposed: bytes, so that a segment's
-   verification time is bounded.
+2. Segment size: by record count, bytes or time? **Decided in M3: bytes**, so that a
+   segment's verification time is bounded.
 3. Must archived receipts be served by the live API (`commands.get`), or only by offline
-   tools?
+   tools? **Decided in M5: by the live API**, from the segment, and refused rather than
+   treated as new when the segment is unreadable.
 4. Signing keys for seals: reuse the M8 identity key or a dedicated one, and its rotation.
+   **Open**: seals are not signed.
 5. Which reads become `TELEMETRY` (strategy RFC §10, item 1, says none by default).
+   **Decided in M6: none by default; the operator opts devices and capabilities in.**

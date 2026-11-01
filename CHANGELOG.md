@@ -37,6 +37,32 @@ and the entry will say so under **Changed** or **Removed**.
   Design and staged plan for the rest of the storage work:
   [RFC 0002](docs/rfcs/0002-storage-engine.md).
 
+### Added
+
+- **Sealed audit segments** ([RFC 0002](docs/rfcs/0002-storage-engine.md), milestones 3
+  to 5). `openmhs audit segment` closes a range of the audit chain as a file (header,
+  records, final receipts, index, SHA-256 footer) that `audit verify-segments DIR` verifies
+  offline with no gateway and no journal; any changed bit or truncation is detected.
+  `audit seal` appends a record that commits the chain to the file and to a snapshot of live
+  state; with `--checkpoint-file` a journal that holds the anchor starts from the newest
+  seal instead of verifying the whole chain (1.7 M records: 7.3 s to 2.4 s open, anything in
+  doubt reads everything). `audit verify --all` reads every segment.
+- **Compaction, off by default.** `openmhs serve --archive` allows `audit compact N`, which
+  moves finished history from a sealed segment out of the journal, in one transaction,
+  keeping everything live and every command's identity. Archived commands are still
+  answered from their segment, and a repeated idempotency key still returns the stored
+  receipt and sends nothing. On a 1 GB journal of 100,000 commands the file went from
+  1,004 MB to 28 MB and start-up from 7.3 s to 80 ms. Compaction holds the journal while
+  it runs (37 s there). **A compacted journal cannot be opened by older versions**, which
+  refuse it as `journal.audit_invalid`.
+- **Event classes and an opt-in telemetry store.** Every audit kind is `CRITICAL`,
+  `SECURITY`, `OPERATIONAL` or `TELEMETRY` (a test fails on an unclassified kind). With
+  `openmhs serve --telemetry DEVICE:CAPABILITY`, allowed successful reads of those devices go
+  to `telemetry.sqlite`, with its own quota, and the audit log gets a `read.summary` per
+  window (count, first and last, min and max, quality, and how many raw readings were
+  dropped) instead of one record per read. Denied and failed reads, and every read nobody
+  opted in, are still individual records. Nothing is aggregated by default.
+
 ### Changed
 
 - The gateway refuses to start on a journal that fails SQLite's integrity check

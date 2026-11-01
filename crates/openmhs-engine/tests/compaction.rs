@@ -469,7 +469,7 @@ fn a_lost_segment_file_is_never_treated_as_an_empty_history() {
             .any(|p| p.contains("segment 1"))
     );
     drop(running);
-    // And a restart refuses to start on it, with or without an anchor.
+    // And a restart without an anchor refuses to start on it.
     let error = Journal::open(&journal_path(dir.path()))
         .err()
         .unwrap()

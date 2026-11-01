@@ -66,6 +66,44 @@ receipt digests. It reports `valid` and `complete` separately. `verify-file` exi
 when both are true, 3 for detected damage or incomplete coverage, and 1 for an unreadable
 or malformed input. Existing `audit verify` retains its chain-only meaning for compatibility.
 
+## Segments and compaction
+
+A long journal can be cut into **sealed segments** ([RFC 0002](../rfcs/0002-storage-engine.md),
+milestones 3 to 5). A segment is a file holding a closed range of the chain exactly as stored,
+the final receipts of the commands whose last record lies in it, an index and a footer with
+the file's SHA-256. `openmhs audit verify-segments DIR` checks a directory of them with no
+gateway and no journal: every record's hash and link, the receipts against the records that
+bind them, the index, the footer, and that the files follow on from one another. Any changed
+bit, a truncation or trailing data is detected. `--checkpoint FILE` also says whether a
+separately retained checkpoint lies in them. `audit verify-file` accepts a single segment.
+
+`audit seal` appends an `audit.segment_sealed` record that commits the chain to a segment's
+file and to a snapshot of live state, so a seal in the chain proves the segment followed from
+that point of this chain. It does not prove more than that against someone who controls the
+journal and can rewrite the chain; only a checkpoint kept elsewhere does, as above.
+
+`audit compact`, only on a gateway started with `--archive`, then deletes from the journal the
+rows a sealed segment replaces, keeping everything live. After that **the journal alone no
+longer proves the deleted history: the segment does**, so the segment files are evidence and
+must be kept and backed up with the journal. A lost or damaged segment is reported
+(`audit verify --all`, `journal.archive_unavailable`), never treated as an empty history.
+The evidence export of a compacted journal is the same bundle an uncompacted one gives: it
+is read from the segments, then the journal, and verifies with `verify-file`. A compacted
+journal cannot be opened by older versions of the gateway.
+
+## Routine reads
+
+With `openmhs serve --telemetry DEVICE:CAPABILITY`, an allowed, successful read of a matching
+device is not one audit record: the audit log gets a `read.summary` record per window with the
+number of reads, the first and last reading, the minimum and maximum of a quantity, the
+quality counts, and how many raw readings the telemetry store could not keep. The raw
+readings are in `telemetry.sqlite` for a short time. **A summary is not evidence of any one
+reading.** Denied reads, failed reads and every read of a device nobody opted in are still
+individual records, and so is everything about commands, approvals, plans, leases and
+credentials: only a routine successful read can be aggregated, and nothing is aggregated by
+default. See the event classes in
+[audit_class.rs](../../crates/openmhs-types/src/audit_class.rs).
+
 ## Legacy journals
 
 Older audit events contain no receipt digest. Their command ids appear in

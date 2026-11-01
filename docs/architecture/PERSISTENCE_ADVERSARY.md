@@ -18,7 +18,7 @@ Run: `cargo test -p openmhs-engine --test persistence_adversary --test persisten
 ## Result
 
 **Five defects found and fixed; one limit closed.** All 48 drills pass, and so does the whole
-workspace (520 tests in 84 binaries after the RFC 0002 streaming verifier; clippy `-D warnings` clean).
+workspace (565 tests in 89 binaries after RFC 0002 milestone 6; clippy `-D warnings` clean).
 
 | # | Found by | Defect | Fix |
 |---|---|---|---|

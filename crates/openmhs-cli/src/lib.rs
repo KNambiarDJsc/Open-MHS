@@ -405,6 +405,26 @@ pub struct ServeArgs {
     /// home directory. Default: not kept.
     #[arg(long)]
     checkpoint_file: Option<PathBuf>,
+    /// Treat allowed, successful reads of DEVICE:CAPABILITY (`*` matches any run of
+    /// characters) as routine telemetry: they go to telemetry.sqlite and the audit log gets
+    /// one `read.summary` per window instead of one record per read. Repeatable. Reads
+    /// nobody opted in, denied reads and failed reads stay individual records. Default:
+    /// none, every read is recorded.
+    #[arg(long = "telemetry", value_name = "DEVICE:CAPABILITY")]
+    telemetry: Vec<String>,
+    /// With --telemetry, the length of a summary window in seconds.
+    #[arg(long, default_value_t = openmhs_gateway::telemetry::DEFAULT_INTERVAL_MS / 1000)]
+    telemetry_interval_secs: u64,
+    /// With --telemetry, over this many MiB the oldest summarized raw readings are removed.
+    #[arg(long, default_value_t = openmhs_gateway::telemetry::DEFAULT_SOFT_BYTES >> 20)]
+    telemetry_soft_mib: u64,
+    /// With --telemetry, over this many MiB no raw reading is kept; the summaries go on and
+    /// count what was dropped.
+    #[arg(long, default_value_t = openmhs_gateway::telemetry::DEFAULT_HARD_BYTES >> 20)]
+    telemetry_hard_mib: u64,
+    /// With --telemetry, summarized raw readings older than this many days are removed.
+    #[arg(long, default_value_t = openmhs_gateway::telemetry::DEFAULT_RETENTION_MS / 86_400_000)]
+    telemetry_retention_days: u64,
     /// Allow `audit compact`, which moves finished history from the journal into its sealed
     /// segment files and deletes the journal rows (RFC 0002). A segment is read in full and
     /// compared with the rows first. Off by default.
@@ -929,6 +949,36 @@ fn runtime() -> Option<tokio::runtime::Runtime> {
     }
 }
 
+/// `--telemetry DEVICE:CAPABILITY` and its limits, or `None` when nothing is opted in.
+fn telemetry_config(
+    args: &ServeArgs,
+) -> Result<Option<openmhs_gateway::telemetry::TelemetryConfig>, String> {
+    use openmhs_gateway::telemetry::{TelemetryConfig, TelemetryRule};
+    if args.telemetry.is_empty() {
+        return Ok(None);
+    }
+    let rules = args
+        .telemetry
+        .iter()
+        .map(|rule| {
+            rule.split_once(':')
+                .filter(|(device, capability)| !device.is_empty() && !capability.is_empty())
+                .map(|(device, capability)| TelemetryRule {
+                    device: device.to_owned(),
+                    capability: capability.to_owned(),
+                })
+                .ok_or_else(|| format!("--telemetry {rule}: expected DEVICE:CAPABILITY"))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(Some(TelemetryConfig {
+        rules,
+        interval_ms: args.telemetry_interval_secs.saturating_mul(1000),
+        soft_bytes: args.telemetry_soft_mib.saturating_mul(1 << 20),
+        hard_bytes: args.telemetry_hard_mib.saturating_mul(1 << 20),
+        retention_ms: args.telemetry_retention_days.saturating_mul(86_400_000),
+    }))
+}
+
 async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
     let _ = tracing_subscriber::fmt()
         .with_writer(std::io::stderr)
@@ -991,6 +1041,13 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
             return exit::ERROR;
         }
     };
+    let telemetry = match telemetry_config(&args) {
+        Ok(t) => t,
+        Err(e) => {
+            eprintln!("error: {e}");
+            return exit::ERROR;
+        }
+    };
     let config = GatewayConfig {
         home,
         listen: SocketAddr::new(args.listen, args.port),
@@ -1007,6 +1064,7 @@ async fn serve(home: PathBuf, args: ServeArgs) -> u8 {
         journal_reserve_bytes: args.journal_reserve_mib.saturating_mul(1024 * 1024),
         checkpoint_file: args.checkpoint_file.clone(),
         archive: args.archive,
+        telemetry,
     };
     let gateway = match openmhs_gateway::start(config).await {
         Ok(g) => g,

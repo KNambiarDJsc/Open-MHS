@@ -122,6 +122,20 @@ and 477 MB in the CLI. The full table and method are in the RFC.
 1.6 s and 19 MB (most of the old time was an unbuffered read), and the 940 MB export takes
 15 s and 86 MB. The old one was not run on the 940 MB file.
 
+**Start-up after a seal, and after compaction** ([RFC 0002](rfcs/0002-storage-engine.md),
+milestones 4 and 5; one copy of each journal with 1,000 unfinished commands, three opens in
+fresh processes, medians, warm cache):
+
+| Journal | Open as before | Open from a seal | Open after compaction | File after compaction |
+|---|---|---|---|---|
+| 10k writes (105 MB, 174 k records) | 759 ms | 281 ms | 23 ms | 7 MB |
+| 100k writes (1.0 GB, 1.70 M records) | 7.30 s | 2.39 s | 80 ms | 28 MB |
+
+A seal removes the chain pass only; the rest follows the file's size until compaction
+shrinks it. Compacting held the journal for 3.9 s and 37 s (with `VACUUM`, and reading the
+segment back). Writing and verifying the segment took 4.4 s and 39.6 s. Raspberry Pi and
+cold-cache numbers were not taken.
+
 **The first measurement changed the code.** The audit chain was first verified by loading
 the whole log into memory: peak memory equalled the journal's size (969 MB for the 1 GB
 journal, 724 MB for the read-heavy one), enough to stop a gateway starting on a Raspberry Pi.

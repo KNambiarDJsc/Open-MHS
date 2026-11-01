@@ -473,6 +473,75 @@ fn segments_are_sealed_compacted_and_verified_offline() {
     );
 }
 
+/// RFC 0002 M6: reads of an opted-in device become summaries in the audit log, the rest stay
+/// individual records, and a bad `--telemetry` is refused at start.
+#[test]
+fn opted_in_reads_become_summaries_through_the_gateway() {
+    let bad = Command::new(BIN)
+        .args([
+            "serve",
+            "--sim",
+            "--port",
+            "0",
+            "--telemetry",
+            "no-colon",
+            "--home",
+        ])
+        .arg(tempfile::tempdir().unwrap().path())
+        .output()
+        .unwrap();
+    assert_eq!(bad.status.code(), Some(ERROR));
+    assert!(String::from_utf8_lossy(&bad.stderr).contains("DEVICE:CAPABILITY"));
+
+    let gw = Gateway::start_with(&[
+        "--telemetry",
+        "sim.psu-01:power.output.voltage.*",
+        "--telemetry-interval-secs",
+        "1",
+    ]);
+    let agent = gw.agent_token();
+    gw.grant_psu("allow");
+    for _ in 0..4 {
+        let (code, r) = gw.cli(
+            Some(&agent),
+            &["read", PSU, "power.output.voltage.measured"],
+        );
+        assert_eq!(code, OK, "{r}");
+    }
+    let (code, r) = gw.cli(Some(&agent), &["read", PSU, "power.output.enabled"]);
+    assert_eq!(code, OK, "{r}");
+    // The summary is written once the window has ended, by the gateway on its own.
+    let deadline = Instant::now() + Duration::from_secs(20);
+    let summary = loop {
+        let (code, tail) = gw.op(&["audit", "tail", "--limit", "100"]);
+        assert_eq!(code, OK);
+        let entries = tail.as_array().unwrap();
+        if let Some(s) = entries.iter().find(|e| e["kind"] == "read.summary") {
+            let kinds: Vec<&str> = entries
+                .iter()
+                .map(|e| e["kind"].as_str().unwrap())
+                .collect();
+            assert_eq!(
+                kinds.iter().filter(|k| **k == "read").count(),
+                1,
+                "{kinds:?}"
+            );
+            break s.clone();
+        }
+        assert!(Instant::now() < deadline, "no summary: {tail}");
+        std::thread::sleep(Duration::from_millis(250));
+    };
+    assert_eq!(summary["subject"], PSU);
+    assert_eq!(summary["data"]["reads"], 4);
+    assert_eq!(
+        summary["data"]["capability"],
+        "power.output.voltage.measured"
+    );
+    assert!(gw.home().join("telemetry.sqlite").exists());
+    let (code, v) = gw.op(&["audit", "verify"]);
+    assert_eq!(code, OK, "{v}");
+}
+
 #[test]
 fn timeout_becomes_unknown_outcome_and_reconciles() {
     let gw = Gateway::start();

@@ -42,6 +42,7 @@ pub use leases::LeaseRequest;
 
 use crate::error::EngineError;
 use crate::journal::{AuditVerification, Inserted, Journal, JournalError, sha256_hex};
+use crate::telemetry::{TelemetryConfig, TelemetryStatus, TelemetryStore};
 
 use CommandState::*;
 
@@ -137,11 +138,34 @@ struct Inner {
     storage: Mutex<Option<StorageLimits>>,
     /// Where the audit head is kept outside the journal; held while writing it.
     checkpoint_file: Mutex<Option<std::path::PathBuf>>,
+    /// Routine reads of opted-in devices go to this store instead of the audit chain.
+    telemetry: Mutex<Option<Arc<ActiveTelemetry>>>,
     options: EngineOptions,
     plans: plans::PlanRuntime,
     /// The state fabric's event stream and watches (ADR-0023). In memory only.
     bus: events::Bus,
     watches: events::Watches,
+}
+
+/// The telemetry store and the rules that route reads to it.
+struct ActiveTelemetry {
+    store: TelemetryStore,
+    config: TelemetryConfig,
+}
+
+/// What one [`Engine::flush_telemetry`] did.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct FlushReport {
+    /// `read.summary` records written to the audit chain.
+    pub summaries: u64,
+    /// Reads those summaries stand for, including `dropped`.
+    pub reads: u64,
+    /// Reads the store could not keep raw (it was at its hard limit).
+    pub dropped: u64,
+    /// Summarized raw readings removed for age.
+    pub pruned: u64,
+    /// The journal is within its reserve: nothing was written, the readings wait.
+    pub deferred: bool,
 }
 
 /// Cheap to clone; all clones share one engine.
@@ -225,6 +249,7 @@ impl Engine {
                 state: Mutex::new(HashMap::new()),
                 storage: Mutex::new(None),
                 checkpoint_file: Mutex::new(None),
+                telemetry: Mutex::new(None),
                 bus: events::Bus::new(options.event_capacity),
                 watches: events::Watches::default(),
                 options,
@@ -297,6 +322,85 @@ impl Engine {
         self.inner.journal.set_max_bytes(limits.max_bytes)?;
         *lock(&self.inner.storage) = Some(limits);
         Ok(())
+    }
+
+    /// Route allowed, successful reads of the devices and capabilities in `config` to a
+    /// telemetry store at `path` instead of one audit record each (RFC 0002, milestone 6).
+    /// The chain gets a `read.summary` per window from [`flush_telemetry`](Self::flush_telemetry).
+    /// Reads nobody opted in, denied reads and failed reads stay individual records.
+    pub fn enable_telemetry(
+        &self,
+        path: &Path,
+        config: TelemetryConfig,
+    ) -> Result<(), EngineError> {
+        config
+            .validate()
+            .map_err(|e| EngineError::InvalidRequest(vec![e]))?;
+        let store = TelemetryStore::open(path, &config)?;
+        // A crash between the chain's commit of a summary and the store's own mark of it
+        // would summarize the same readings twice: the chain says how far it got.
+        if let Some(through) = self.inner.journal.last_summary_through(store.store_id())? {
+            store.reconcile(through)?;
+        }
+        *lock(&self.inner.telemetry) = Some(Arc::new(ActiveTelemetry { store, config }));
+        Ok(())
+    }
+
+    fn telemetry_for(&self, device: &str, capability: &str) -> Option<Arc<ActiveTelemetry>> {
+        lock(&self.inner.telemetry)
+            .as_ref()
+            .filter(|t| t.config.matches(device, capability))
+            .cloned()
+    }
+
+    pub fn telemetry_status(&self) -> Result<Option<TelemetryStatus>, EngineError> {
+        let active = lock(&self.inner.telemetry).clone();
+        Ok(active.map(|t| t.store.status()).transpose()?)
+    }
+
+    /// Write the `read.summary` records of every complete window to the audit chain, in one
+    /// transaction, then mark those readings summarized. With `force` (shutdown) the window
+    /// still open is included. Within the journal's reserve nothing is written: summaries
+    /// must not eat the room kept for stops and recovery (ADR-0021), and the readings wait.
+    pub fn flush_telemetry(&self, force: bool) -> Result<FlushReport, EngineError> {
+        let Some(t) = lock(&self.inner.telemetry).clone() else {
+            return Ok(FlushReport::default());
+        };
+        if self.storage_refusal().is_some() {
+            return Ok(FlushReport {
+                deferred: true,
+                ..FlushReport::default()
+            });
+        }
+        let now = self.now();
+        let interval = i64::try_from(t.config.interval_ms)
+            .unwrap_or(i64::MAX)
+            .max(1);
+        let plan = t.store.plan(now.millis(), interval, force)?;
+        if !plan.is_empty() {
+            let records: Vec<_> = plan
+                .summaries
+                .iter()
+                .map(|s| {
+                    (
+                        now,
+                        "read.summary".to_owned(),
+                        s.device.clone(),
+                        s.data.clone(),
+                    )
+                })
+                .collect();
+            self.inner.journal.append_audit_many(&records)?;
+        }
+        let retention = i64::try_from(t.config.retention_ms).unwrap_or(i64::MAX);
+        let pruned = t.store.commit(&plan, now.millis(), retention)?;
+        Ok(FlushReport {
+            summaries: plan.summaries.len() as u64,
+            reads: plan.summaries.iter().map(|s| s.reads).sum(),
+            dropped: plan.summaries.iter().map(|s| s.dropped).sum(),
+            pruned,
+            deferred: false,
+        })
     }
 
     /// Keep the journal's audit head in `path`, outside the journal and ideally on storage
@@ -738,13 +842,43 @@ impl Engine {
             audit_denied(&e)?;
             return Err(EngineError::Denied(e));
         }
-        // An audited read writes a record; once only the reserve is left, it must not.
-        if let Some(e) = self.storage_refusal() {
+        // An audited read writes a record; once only the reserve is left, it must not. A
+        // read that goes to the telemetry store does not touch the journal.
+        let telemetry = self.telemetry_for(device_id, capability);
+        if telemetry.is_none()
+            && let Some(e) = self.storage_refusal()
+        {
             return Err(EngineError::Denied(e));
         }
         let result = self
             .read_device(&device, capability, ObservationCause::Read, None)
             .await;
+        if let (Ok(state), Some(t)) = (&result, &telemetry) {
+            let interval = i64::try_from(t.config.interval_ms)
+                .unwrap_or(i64::MAX)
+                .max(1);
+            match t.store.record(
+                self.now().millis(),
+                interval,
+                principal,
+                device_id,
+                capability,
+                state,
+            ) {
+                // Stored, or counted for its summary because the store is full.
+                Ok(_) => return Ok(state.clone()),
+                // The store failed: fall back to the individual record, so nothing is lost.
+                Err(e) => {
+                    warn!(device = %device_id, error = %e, "telemetry store failed; recording the read in the audit log")
+                }
+            }
+        }
+        if telemetry.is_some()
+            && let Some(e) = self.storage_refusal()
+        {
+            // A failed read, or a failed store, that would need the reserve to be recorded.
+            return Err(EngineError::Denied(e));
+        }
         self.inner.journal.append_audit(
             self.now(),
             "read",

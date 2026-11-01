@@ -11,6 +11,15 @@
 //! cargo run --release -p openmhs-engine --example journal_startup -- generate J.sqlite N R [L]
 //! # Open it as a gateway would, in a fresh process, and print the timings as JSON.
 //! cargo run --release -p openmhs-engine --example journal_startup -- open J.sqlite
+//! # Close the whole chain as one segment and seal it (RFC 0002, M3 and M4), and keep the
+//! # head as the anchor a gateway would keep with --checkpoint-file. The segment goes in
+//! # `audit/segments` next to J, so give each journal a directory of its own.
+//! cargo run --release -p openmhs-engine --example journal_startup -- seal J.sqlite
+//! # Open a sealed journal told that anchor: start-up reads from the seal, not from genesis.
+//! cargo run --release -p openmhs-engine --example journal_startup -- open-anchored J.sqlite
+//! # Move the sealed segment's finished history out of the journal (M5) and rewrite the file
+//! # so it shrinks; then `open-anchored` again.
+//! cargo run --release -p openmhs-engine --example journal_startup -- compact J.sqlite
 //! ```
 //!
 //! Results and method: docs/benchmarks.md, "Journal start-up".
@@ -22,10 +31,12 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use openmhs_adapter::TokioClock;
+use openmhs_engine::journal::SegmentLimits;
 use openmhs_engine::{Engine, EngineOptions, Journal};
 use openmhs_policy::{Caller, Effect, Grant, Policy};
 use openmhs_sim::VirtualPsu;
 use openmhs_types::descriptor::Operation;
+use openmhs_types::evidence::AuditCheckpoint;
 use openmhs_types::{Clock, Timestamp};
 use rusqlite::Connection;
 use serde_json::json;
@@ -157,11 +168,64 @@ fn check(conn: &Connection, pragma: &str) {
     assert_eq!(rows, ["ok"], "{pragma}");
 }
 
-fn open(path: &Path, linger_ms: u64) {
+fn anchor_path(path: &Path) -> std::path::PathBuf {
+    path.with_extension("anchor.json")
+}
+
+fn seal(path: &Path) {
+    let journal = Journal::open(path).unwrap();
+    let t = Instant::now();
+    let row = journal
+        .create_segment(&SegmentLimits {
+            max_bytes: u64::MAX,
+            through_seq: Some(i64::MAX),
+        })
+        .unwrap();
+    let write_ms = ms(t);
+    let t = Instant::now();
+    journal
+        .seal_segment(row.number, Timestamp::from_millis(EPOCH_MS))
+        .unwrap();
+    let seal_ms = ms(t);
+    let anchor = journal.head_checkpoint().unwrap();
+    std::fs::write(anchor_path(path), serde_json::to_vec(&anchor).unwrap()).unwrap();
+    println!(
+        "{}",
+        json!({
+            "segment": row.number, "records": row.records, "commands": row.commands,
+            "segment_bytes": row.bytes, "write_and_verify_ms": write_ms, "seal_ms": seal_ms,
+            "anchor_seq": anchor.seq,
+        })
+    );
+}
+
+fn compact(path: &Path) {
+    let journal = Journal::open(path).unwrap();
+    let before = std::fs::metadata(path).unwrap().len();
+    let t = Instant::now();
+    let done = journal
+        .compact_segment(1, Timestamp::from_millis(EPOCH_MS), true)
+        .unwrap();
+    let compact_ms = ms(t);
+    drop(journal);
+    println!(
+        "{}",
+        json!({
+            "audit_rows_deleted": done.audit_rows_deleted, "audit_rows_kept": done.audit_rows_kept,
+            "commands_archived": done.commands_archived, "compact_and_vacuum_ms": compact_ms,
+            "file_bytes_before": before,
+            "file_bytes_after": std::fs::metadata(path).unwrap().len(),
+        })
+    );
+}
+
+fn open(path: &Path, linger_ms: u64, anchored: bool) {
     let size = std::fs::metadata(path).unwrap().len();
+    let anchor: Option<AuditCheckpoint> = anchored
+        .then(|| serde_json::from_slice(&std::fs::read(anchor_path(path)).unwrap()).unwrap());
     // What a gateway does: open the journal (every check), then recover.
     let t = Instant::now();
-    let journal = Journal::open(path).unwrap();
+    let journal = Journal::open_anchored(path, anchor.as_ref()).unwrap();
     let open_ms = ms(t);
     let rt = tokio::runtime::Builder::new_current_thread()
         .enable_time()
@@ -203,7 +267,7 @@ fn open(path: &Path, linger_ms: u64) {
     let integrity_ms = ms(t);
     drop(conn);
     let t = Instant::now();
-    let journal = Journal::open(path).unwrap();
+    let journal = Journal::open_anchored(path, anchor.as_ref()).unwrap();
     let reopen_ms = ms(t);
     let t = Instant::now();
     assert!(journal.verify_audit().unwrap().is_valid());
@@ -212,7 +276,8 @@ fn open(path: &Path, linger_ms: u64) {
     println!(
         "{}",
         json!({
-            "file_bytes": size, "commands": commands, "unfinished": unfinished,
+            "anchored": anchored, "file_bytes": size, "commands": commands,
+            "unfinished": unfinished,
             "audit_records": audit,
             "open_ms": open_ms, "recover_ms": recover_ms,
             "reopen_ms": reopen_ms, "quick_check_ms": quick_ms,
@@ -240,11 +305,16 @@ fn main() {
             r.parse().unwrap(),
             l.parse().unwrap(),
         ),
-        ["open", path] => open(Path::new(path), 0),
-        ["open", path, linger] => open(Path::new(path), linger.parse().unwrap()),
+        ["open", path] => open(Path::new(path), 0, false),
+        ["open", path, linger] => open(Path::new(path), linger.parse().unwrap(), false),
+        ["open-anchored", path] => open(Path::new(path), 0, true),
+        ["open-anchored", path, linger] => open(Path::new(path), linger.parse().unwrap(), true),
+        ["seal", path] => seal(Path::new(path)),
+        ["compact", path] => compact(Path::new(path)),
         _ => {
             eprintln!(
-                "usage: journal_startup generate PATH COMMANDS READS [LIVE] | open PATH [LINGER_MS]"
+                "usage: journal_startup generate PATH COMMANDS READS [LIVE] | open PATH [LINGER_MS] \
+                 | seal PATH | open-anchored PATH [LINGER_MS]"
             );
             std::process::exit(2);
         }
