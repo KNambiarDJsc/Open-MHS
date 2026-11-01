@@ -92,6 +92,8 @@
 - [Contributing](CONTRIBUTING.md)
   - [Good first issues](docs/good-first-issues.md)
   - [RFC template](docs/rfcs/0000-template.md)
+- [Storage engine RFC (0002)](docs/rfcs/0002-storage-engine.md) and [benchmarks](docs/benchmarks.md)
+- [Lab-automation experiments](research/lab-automation/README.md): PyLabRobot, Opentrons, Micro-Manager, SiLA 2, MADSci (simulator only)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Support](SUPPORT.md)
 - [Changelog](CHANGELOG.md)

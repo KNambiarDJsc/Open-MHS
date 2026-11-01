@@ -44,8 +44,14 @@ the README links here.
   value the device already had looks the same as one that did nothing. Devices whose clocks
   run behind the gateway's need `--readback-skew-ms` or their commands stay `UNVERIFIABLE`
   ([ADR-0020](adr/0020-readback-must-follow-dispatch.md)).
-- **Journal limits are a floor, not a lifecycle.** The journal still grows until the limit;
-  nothing is archived or deleted ([ADR-0021](adr/0021-journal-quota-and-reserve.md)).
+- **The journal grows until you compact it, and compaction is your decision.** By default
+  nothing is archived or deleted ([ADR-0021](adr/0021-journal-quota-and-reserve.md)). Sealed
+  segments and compaction exist ([RFC 0002](rfcs/0002-storage-engine.md)), but compaction
+  deletes journal rows, so it is off unless the gateway is started with `--archive`. While it
+  runs it holds the journal (37 s on a 1 GB journal), segments are local files with no offsite
+  copy, seals are not signed, and **a compacted journal cannot be opened by older versions**.
+  Retention by event class or age for the audit chain is not built. Only the opt-in telemetry
+  store (`serve --telemetry`) deletes raw data by age.
 - **Availability is an observation.** It can be stale by one probe interval (5 s by
   default). Probes are the adapter's side-effect-free `connect` and `health`. Periodic
   sweeps back off for long-offline devices, but there is no damping for flapping ones and

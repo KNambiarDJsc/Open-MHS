@@ -41,7 +41,7 @@ MAX_TRANSFER_UL = 200.0
 FAULTS = ("apply_then_hang", "hang_before_apply")  # what the harness's fault_file may name
 
 
-def descriptor(adapter_id: str, version: str) -> dict:
+def descriptor(adapter_id: str, version: str, source_wells=SOURCE_WELLS, dest_wells=DEST_WELLS) -> dict:
     volume = lambda: {"type": "number", "quantity": "volume", "unit": "uL", "range": {"min": 0, "max": 360}}
     fresh = {"max_age_ms": 2000}
     caps = [
@@ -73,7 +73,7 @@ def descriptor(adapter_id: str, version: str) -> dict:
             "freshness": fresh,
         },
     ]
-    for plate, wells in (("source", SOURCE_WELLS), ("dest", DEST_WELLS)):
+    for plate, wells in (("source", source_wells), ("dest", dest_wells)):
         for well in wells:
             caps.append(
                 {
@@ -98,8 +98,8 @@ def descriptor(adapter_id: str, version: str) -> dict:
             "operations": ["invoke"],
             "params": {
                 "transfer_id": {"type": "string", "max_length": 64},
-                "source": {"type": "enum", "values": list(SOURCE_WELLS)},
-                "dest": {"type": "enum", "values": list(DEST_WELLS)},
+                "source": {"type": "enum", "values": list(source_wells)},
+                "dest": {"type": "enum", "values": list(dest_wells)},
                 "volume": {
                     "type": "number",
                     "quantity": "volume",
@@ -194,6 +194,9 @@ class PyLabRobotAdapter(Adapter):
                 raise AdapterError("not_sent", f"config.{key} {path} is not under the manifest's filesystem.write")
             return Path(target)
 
+        # Which wells an agent may name (descriptor enums); defaults A1..A3 and B1..B3.
+        self.source_wells = tuple(config.get("source_wells") or SOURCE_WELLS)
+        self.dest_wells = tuple(config.get("dest_wells") or DEST_WELLS)
         self.state_file = allowed("state_file")
         self.fault_file = allowed("fault_file")
         await self._build(config)
@@ -270,7 +273,7 @@ class PyLabRobotAdapter(Adapter):
         return fault
 
     async def describe(self):
-        return descriptor(self.adapter_id, self.version)
+        return descriptor(self.adapter_id, self.version, self.source_wells, self.dest_wells)
 
     def _link(self) -> None:
         if self.link_down:
@@ -305,7 +308,7 @@ class PyLabRobotAdapter(Adapter):
             value = self.count
         else:
             parts = capability.split(".")
-            plates = {"source": (self.source, SOURCE_WELLS), "dest": (self.dest, DEST_WELLS)}
+            plates = {"source": (self.source, self.source_wells), "dest": (self.dest, self.dest_wells)}
             if len(parts) != 3 or parts[2] != "volume" or parts[0] not in plates:
                 raise AdapterError("unsupported", f"no readable capability {capability!r}")
             plate, wells = plates[parts[0]]
@@ -324,7 +327,7 @@ class PyLabRobotAdapter(Adapter):
         p = command.params
         transfer_id, src, dst = p.get("transfer_id"), p.get("source"), p.get("dest")
         volume = microlitres(p.get("volume"))
-        if not transfer_id or src not in SOURCE_WELLS or dst not in DEST_WELLS:
+        if not transfer_id or src not in self.source_wells or dst not in self.dest_wells:
             raise AdapterError("not_sent", f"bad transfer parameters {p!r}")
         fault = self.fixture or self._take_fault()
         # A device that never answers does not freeze reads or other commands: the hang

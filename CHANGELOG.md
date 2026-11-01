@@ -62,6 +62,16 @@ and the entry will say so under **Changed** or **Removed**.
   window (count, first and last, min and max, quality, and how many raw readings were
   dropped) instead of one record per read. Denied and failed reads, and every read nobody
   opted in, are still individual records. Nothing is aggregated by default.
+- **Lab-automation experiments, simulator only** ([research/lab-automation](research/lab-automation/README.md)).
+  Four out-of-process Python adapters (`adapters/python/{pylabrobot,opentrons,micromanager,sila2}`)
+  and five experiments (PyLabRobot, Opentrons, Micro-Manager, SiLA 2, and a MADSci closed loop),
+  each with a native baseline, injected faults, raw results and a report that says what was not
+  shown. The generic SiLA 2 adapter builds the descriptor from a server's Feature Definitions plus
+  a reviewed override file. No change to the OpenMHS core was needed. Findings that may change it
+  are listed, each needing a design note and a failing test first: preconditions over a request's
+  own parameters, verification by amount or command id, a per-request-unique parameter (the
+  conformance suite reuses one id, so three adapters reach L1, not L2), and reconciliation of an
+  idempotent write that a newer write superseded. Nothing here ran on physical hardware.
 
 ### Changed
 

@@ -1,4 +1,4 @@
-# OpenMHS system design (as implemented, 2026-10-30)
+# OpenMHS system design (as implemented, 2026-11-01)
 
 This document describes what is **built and running on `main`** (commit `0219a19` and later),
 how a request flows through it, what each part guarantees, and what is not built. It is grounded
@@ -43,7 +43,9 @@ resends on its own.
                           http · modbus · mqtt · scpi ·         openmhs-host supervises a child process
                           profile-driven · built-in sims        over a JSON protocol + permission manifest
                                 │                               (Python SDK: WoT/LabThings, ROS 2,
-                                ▼                                OPC UA, OctoPrint, PSU sim)
+                                ▼                                OPC UA, OctoPrint, PSU sim, and the
+                                                                 simulated PyLabRobot, Opentrons,
+                                                                 Micro-Manager and SiLA 2 adapters)
                           the device / controller                        │
                                                                          ▼
                                                                   the device / controller
@@ -51,22 +53,22 @@ resends on its own.
 
 | Crate / package | Lines* | Responsibility |
 |---|---:|---|
-| `openmhs-types` | 4,472 | The data model: descriptors, commands, receipts, the lifecycle state enum and its transition table, units, values, topology, plans, procedures, evidence bundles and their offline verifier, JSON Schemas, canonical JSON |
+| `openmhs-types` | 5,633 | The data model: descriptors, commands, receipts, the lifecycle state enum and its transition table, units, values, topology, plans, procedures, evidence bundles and their offline (streaming) verifier, sealed audit segments and their verifier, audit event classes, JSON Schemas, canonical JSON |
 | `openmhs-policy` | 1,485 | Authentication material, credential scopes, grants with glob matching, constraint checks; decides allow / deny / require-approval |
-| `openmhs-engine` | 6,979 | The execution kernel: lifecycle, locks, dispatch, verification, reconciliation, recovery at start, approvals, leases, plans, availability, events, insights, twin preflight, and the SQLite journal |
+| `openmhs-engine` | 10,400 | The execution kernel: lifecycle, locks, dispatch, verification, reconciliation, recovery at start, approvals, leases, plans, availability, events, insights, twin preflight, and the SQLite journal with its segments, seals and compaction, plus the opt-in telemetry store |
 | `openmhs-adapter` | 218 | The device-boundary trait (`HardwareAdapter`: describe, connect, health, read, execute, shutdown) and the progress channel (`accepted`, with an optional device reference) |
 | `openmhs-host` | 2,672 | Runs adapters as separate processes: launch, supervise, restart, a line-delimited JSON protocol, permission manifests (network endpoints, files, credentials by name), adapter signing trust |
-| `openmhs-gateway` | 2,229 | HTTP JSON-RPC server: token authentication, role (agent/operator), 53 RPC methods mapped onto the engine |
-| `openmhs-api` | 1,991 | Shared RPC types and the Rust client |
+| `openmhs-gateway` | 2,537 | HTTP JSON-RPC server: token authentication, role (agent/operator), 60 RPC method names mapped onto the engine |
+| `openmhs-api` | 2,183 | Shared RPC types and the Rust client |
 | `openmhs-mcp` | 2,356 | The Model Context Protocol server: 23 tools for agents, with guidance text and untrusted-text marking |
-| `openmhs-cli` | 5,301 | The `openmhs` binary: 28 commands (serve, demo, bench, discover, exec, approvals, grants, tokens, audit export/verify-file, plans, procedures, mcp, conformance, …) |
+| `openmhs-cli` | 5,722 | The `openmhs` binary: 28 commands (serve, demo, bench, discover, exec, approvals, grants, tokens, audit export/verify-file/segment/seal/compact/verify-segments, plans, procedures, mcp, conformance, …) |
 | `openmhs-sim` | 1,453 | Built-in simulated devices (power supply, axis, …) with fault injection |
 | `openmhs-conformance` | 2,850 | The conformance suite adapters are measured against |
 | `adapters/openmhs-{http,modbus,mqtt,scpi,profile}` | 5,959 | Rust protocol adapters, mostly driven by declarative device profiles |
-| `adapters/python/*` | 4,224 | Python adapter SDK users: `wot` (Thing Description importer + LabThings/HTTP adapter), `ros2` (observation-only), `opcua`, `octoprint`, `psu-sim` |
+| `adapters/python/*` | 5,563 | Python adapter SDK users: `wot` (Thing Description importer + LabThings/HTTP adapter), `ros2` (observation-only), `opcua`, `octoprint`, `psu-sim`, and the simulator-only lab-automation adapters `pylabrobot`, `opentrons`, `micromanager` and `sila2` (a generic SiLA 2 client) |
 | `python/openmhs` | 2,961 | Python client SDK (`Client`, `execute()` with recovery by idempotency key) and the agent harness (`openmhs.agent`: MCP client, OpenAI-compatible and Anthropic providers) |
 
-\*Non-test source lines.
+\*Lines of Rust under each crate's `src/` (Python under the directory shown), including inline unit tests but not the `tests/` directories; counted at the revision of this document. Earlier versions of this footnote said "non-test", which was not what was counted.
 
 ## 3. Contracts: what a device is allowed to be
 
@@ -187,6 +189,37 @@ and a by-key receipt lookup that returned damaged receipts unchecked.
 and audited reads are refused with `storage.exhausted` *before* anything is sent, so no action runs
 without a record (measured: 448 commands, 448 device jobs, then refusal).
 
+**Bounding start-up** ([RFC 0002](../rfcs/0002-storage-engine.md), milestones 1 to 6). Start-up used to
+re-hash the whole audit chain, so it grew with history (7.3 s for a 1 GB journal of 1.7 million
+records). In stages, each shipped alone:
+
+- *Indexed recovery.* Recovery finds unfinished commands through the `state` index (1.21 s to
+  1.1 ms at 100,000 commands), and at open the indexed set must equal the set the chain leaves
+  unfinished, which also closes a real gap: a state edited in both row and receipt used to be
+  believed.
+- *Bounded reads.* `audit.tail`, the list calls and the evidence export read only what they
+  return, and the export and its offline verification stream.
+- *Sealed segments.* A closed range of the chain is written once as a file (records, final
+  receipts, an index, a SHA-256 footer) and checked against the journal's rows; `openmhs audit
+  verify-segments` verifies the files with no gateway and no journal. A *seal* record in the
+  chain commits to the file and to the live state at that point. With `--checkpoint-file`, a
+  journal that holds the anchor and a seal at or behind it verifies the chain **from the seal**;
+  anything in doubt reads everything, as before.
+- *Compaction, off unless `serve --archive`.* In one transaction, finished history of a sealed
+  segment leaves the journal; every unfinished command, open approval, lease and plan stays; and
+  a `command_keys` table keeps every command's identity for good, so a repeated idempotency key
+  still returns the stored receipt and sends nothing. Archived commands are answered from their
+  segment, and a lost or damaged segment is refused, never read as an empty history. Measured on
+  the 1 GB journal: file 1,004 MB to 28 MB, start-up 7.3 s to 2.4 s with a seal alone and to
+  80 ms after compaction (a seal alone does not make start-up flat; compaction does).
+- *Event classes and telemetry.* Every audit kind is critical, security, operational or telemetry
+  (a test fails on an unclassified kind). With `serve --telemetry`, allowed successful reads of
+  opted-in devices go to `telemetry.sqlite`, with its own quota, and the chain gets one
+  `read.summary` per window; nothing else is ever aggregated.
+
+What this does not do: compaction holds the journal while it runs, segments are local files,
+seals are unsigned, and a compacted journal cannot be opened by older versions (they refuse it).
+
 ## 7. Audit and evidence
 
 - Every security-relevant event (registrations, commands and transitions, reads, grants, tokens,
@@ -196,7 +229,11 @@ without a record (measured: 448 commands, 448 device jobs, then refusal).
   on the next read or transition (`journal.receipt_integrity`).
 - `openmhs audit export` writes a portable evidence bundle (whole chain + all receipts + head), and
   `openmhs audit verify-file` checks it **offline**, with no gateway or database, optionally against a
-  checkpoint kept elsewhere. It reports `valid` and `complete` separately.
+  checkpoint kept elsewhere. It reports `valid` and `complete` separately, and streams the file
+  (a 101 MB export in 1.6 s and 19 MB). On a compacted journal the export reads the segments and
+  is the same bundle an uncompacted one gives.
+- A summarized read (`read.summary`) is not evidence of any one reading; denied and failed reads
+  and everything about commands, approvals, plans, leases and credentials are never aggregated.
 - Limits, stated plainly: the chain detects edits and deletions in the middle; it does **not** stop
   someone who can rewrite the file from recomputing every hash, and it does not reveal removal of the
   newest records unless an independently retained checkpoint is compared. Checkpoints are unsigned.
@@ -275,11 +312,12 @@ continued; the simulator's own records show the move ran exactly once.
 | One writer per device and declared resource **within one gateway process** | Fencing across processes, gateways, or a direct controller (no ownership epochs yet) |
 | Admitted work survives a gateway restart, a journal write failure, a torn write or a damaged byte; nothing is resent; a damaged journal is refused at start | A rolled-back journal without `--checkpoint-file`; storage that does not honour syncs (power loss on real hardware not drilled); disk loss |
 | Receipts bound to the audit chain; offline verification of exports | Tamper-proofing; signed or externally anchored checkpoints |
+| A compacted journal answers every archived command from a segment its seal and manifest agree with, never treats a missing segment as an empty history, and never re-sends an archived command's key | Segments are local files: a lost segment with no backup is lost evidence; seals are unsigned; skipping history at start-up rests on `--checkpoint-file` storage failing separately from the journal |
 | Readings without a device timestamp can use the HTTP `Date` header | Staleness shorter than about a second with that mitigation |
 
 ## 13. Evidence that it works (all simulator)
 
-- **Tests:** 507 Rust tests (83 binaries, including 48 persistence drills), clippy `-D warnings` clean; 59 Python SDK tests; 25 Thing
+- **Tests:** 565 Rust tests (89 binaries, including 48 persistence drills and the archival drills of RFC 0002), clippy `-D warnings` clean; 59 Python SDK tests; 25 Thing
   Description importer tests; CI on Linux, Windows and macOS plus ROS 2, OPC UA and OctoPrint
   simulator jobs.
 - **Research** (`research/`): failure scenarios against LabThings asynchronous actions with ground
@@ -288,6 +326,13 @@ continued; the simulator's own records show the move ran exactly once.
   duplicates); audit tamper experiments; a two-device plan with a fault; a second, independently
   described device; model runs on the OpenFlexure simulator; the imaging workflow and the
   technician session above.
+- **Lab-automation experiments** (`research/lab-automation/`, simulator only): the same
+  contracts, permissions, lifecycle, recovery and evidence in front of PyLabRobot, Opentrons,
+  Micro-Manager and a generic SiLA 2 adapter, and a MADSci closed loop. Each has a native
+  baseline, injected faults (lost answer, killed gateway, concurrent clients), raw results and a
+  report of what was not shown. Findings that changed OpenMHS's design questions (unique ids per
+  effectful request, reconciliation of superseded writes, parameter-bound preconditions) are
+  listed in `research/lab-automation/FINAL_RESEARCH_REPORT.md`.
 
 ## 14. Not built
 
@@ -296,9 +341,11 @@ In order of the migration plan (`docs/architecture/DISTRIBUTED_MIGRATION_PLAN.md
 1. **Ownership epochs** and stale-owner refusal, enforced at the device where the controller can.
 2. What the persistence drills cannot reach in software: hard power loss on real storage (a VM
    or power-cut rig), I/O errors from a faulty disk (a Linux `dm-flakey` job in CI), and
-   journal start-up on a Raspberry Pi (on a desktop: 6.3 s and 16 MB for a 1 GB journal,
-   [benchmarks.md](../benchmarks.md)). Archiving old audit records (storage RFC) is what
-   bounds start-up beyond the journal limit.
+   journal start-up on a Raspberry Pi and with a cold cache (on a desktop, warm: 7.3 s, or 80 ms
+   after compaction, for a 1 GB journal; [benchmarks.md](../benchmarks.md)). Archival is built
+   ([RFC 0002](../rfcs/0002-storage-engine.md)); signed seals, an offsite copy and acknowledgement
+   of an archive, retention by class or age, and a compaction that does not hold the journal are
+   not, and neither is the RFC's evaluation milestone (M7).
 3. Signed checkpoints, automated external anchoring, per-person operator identity, software hashes
    in the audit.
 4. A distributed mode: central admission ledger and outbox (PostgreSQL), edge inbox and status

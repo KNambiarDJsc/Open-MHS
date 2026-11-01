@@ -16,6 +16,8 @@ the milestone is marked **Done**.
 | M8 | Identity and trust: scoped credentials, single-use approval records, signed adapter manifests, shared authenticated execution context, threat model. Signed descriptors and signed audit export were not built | Done on branch `m8` (pending review; [status](IMPLEMENTATION_STATUS.md)) |
 | M9 | Capability graph and multi-device orchestration: relationships, resource leases, plans with twin preflight, partial-failure handling, priority stop lane (ADR-0010 amendment), L3 conformance | Done on `main` (pending review; [status](IMPLEMENTATION_STATUS.md)) |
 | M10 | Release readiness: binaries, PyPI, docs site, adapter registry index, generated compatibility matrix, governance | Built on branch `m10`; **nothing published**. Release blockers are listed in [docs/release/M10_TEST_REPORT.md](release/M10_TEST_REPORT.md) |
+| Storage | Storage engine ([RFC 0002](rfcs/0002-storage-engine.md)): start-up that does not grow with history. M1 to M6 built (indexed recovery, bounded reads, sealed segments, seals, opt-in compaction, event classes and an opt-in telemetry store). M7, the evaluation on a Raspberry Pi and 10 M-record journals, is not done | Built; [status](IMPLEMENTATION_STATUS.md) |
+| Research | [Lab-automation experiments](../research/lab-automation/README.md): PyLabRobot, Opentrons, Micro-Manager, SiLA 2 and MADSci in front of OpenMHS, simulator only | Built on branch `research/lab-automation` |
 | M11+ | Advanced track (design docs first): WASM-sandboxed adapters, OpenTelemetry, remote/federated gateways, fleet, assisted adapter generation, HIL rigs, OPC UA / ros2_control / SiLA 2 bridges, device attestation | Planned |
 
 Conformance levels (defined in M1, tested from M5):

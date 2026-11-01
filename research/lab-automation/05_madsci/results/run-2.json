@@ -1,0 +1,1982 @@
+{
+ "openmhs_commit": "a43bc8f334a4203080487823ae1511ad7aa85a7a",
+ "openmhs_bin": "D:\\openmhs-release-target\\release\\openmhs.exe",
+ "python": "3.12.11",
+ "platform": "Windows-11-10.0.26300-SP0",
+ "pylabrobot": "0.2.2",
+ "madsci_client": "0.8.1",
+ "started": "2026-11-01T22:30:01+0530",
+ "scenarios": {
+  "MAD-01": {
+   "title": "a six-iteration closed loop, governed",
+   "passed": true,
+   "seconds": 62.3,
+   "checks": [
+    {
+     "check": "6 iterations, every workflow completed",
+     "ok": true,
+     "observed": [
+      "completed",
+      "completed",
+      "completed",
+      "completed",
+      "completed",
+      "completed"
+     ]
+    },
+    {
+     "check": "the simulator ran exactly one transfer per iteration",
+     "ok": true,
+     "observed": 6
+    },
+    {
+     "check": "iteration 0: planned, OpenMHS, MADSci and measured dose agree",
+     "ok": true,
+     "observed": [
+      77.5,
+      77.5,
+      "VERIFIED"
+     ]
+    },
+    {
+     "check": "iteration 1: planned, OpenMHS, MADSci and measured dose agree",
+     "ok": true,
+     "observed": [
+      41.2,
+      41.2,
+      "VERIFIED"
+     ]
+    },
+    {
+     "check": "iteration 2: planned, OpenMHS, MADSci and measured dose agree",
+     "ok": true,
+     "observed": [
+      59.4,
+      59.4,
+      "VERIFIED"
+     ]
+    },
+    {
+     "check": "iteration 3: planned, OpenMHS, MADSci and measured dose agree",
+     "ok": true,
+     "observed": [
+      50.3,
+      50.3,
+      "VERIFIED"
+     ]
+    },
+    {
+     "check": "iteration 4: planned, OpenMHS, MADSci and measured dose agree",
+     "ok": true,
+     "observed": [
+      45.8,
+      45.8,
+      "VERIFIED"
+     ]
+    },
+    {
+     "check": "iteration 5: planned, OpenMHS, MADSci and measured dose agree",
+     "ok": true,
+     "observed": [
+      43.5,
+      43.5,
+      "VERIFIED"
+     ]
+    },
+    {
+     "check": "the estimate brackets the true EC50 (42 uL)",
+     "ok": true,
+     "observed": [
+      41.2,
+      43.5
+     ]
+    },
+    {
+     "check": "OpenMHS audit chain verifies",
+     "ok": true,
+     "observed": 56
+    }
+   ],
+   "detail": {
+    "tag": "mad01",
+    "records": [
+     {
+      "iteration": 0,
+      "well": "B1",
+      "planned_dose_ul": 77.5,
+      "key": "mad01-iter0-dispense",
+      "workflow_id": "01M6C0WBJKS0GM7GYEZFQZV3BN",
+      "workflow_status": "completed",
+      "seconds": 4.54,
+      "dispense": {
+       "status": "succeeded",
+       "result": {
+        "command_id": "01a1980e-343e-711a-9e38-9ebb608cd474",
+        "openmhs_state": "VERIFIED",
+        "transfer_id": "mad01-iter0-dispense",
+        "source": "A1",
+        "well": "B1",
+        "dose_ul": 77.5,
+        "transitions": [
+         "CREATED",
+         "VALIDATING",
+         "APPROVED",
+         "DISPATCHED",
+         "ACCEPTED",
+         "APPLIED",
+         "VERIFIED"
+        ]
+       },
+       "errors": [],
+       "results_recorded": 1
+      },
+      "measure": {
+       "status": "succeeded",
+       "result": {
+        "well": "B1",
+        "dose_ul": 77.5,
+        "response": 0.73453
+       },
+       "errors": [],
+       "results_recorded": 1
+      }
+     },
+     {
+      "iteration": 1,
+      "well": "B2",
+      "planned_dose_ul": 41.2,
+      "key": "mad01-iter1-dispense",
+      "workflow_id": "01M6C0WH3CXS6DBZC681J0J3XA",
+      "workflow_status": "completed",
+      "seconds": 4.54,
+      "dispense": {
+       "status": "succeeded",
+       "result": {
+        "command_id": "01a1980e-4a78-76ed-af97-26c5796c9f85",
+        "openmhs_state": "VERIFIED",
+        "transfer_id": "mad01-iter1-dispense",
+        "source": "A1",
+        "well": "B2",
+        "dose_ul": 41.2,
+        "transitions": [
+         "CREATED",
+         "VALIDATING",
+         "APPROVED",
+         "DISPATCHED",
+         "ACCEPTED",
+         "APPLIED",
+         "VERIFIED"
+        ]
+       },
+       "errors": [],
+       "results_recorded": 1
+      },
+      "measure": {
+       "status": "succeeded",
+       "result": {
+        "well": "B2",
+        "dose_ul": 41.2,
+        "response": 0.48412
+       },
+       "errors": [],
+       "results_recorded": 1
+      }
+     },
+     {
+      "iteration": 2,
+      "well": "B3",
+      "planned_dose_ul": 59.4,
+      "key": "mad01-iter2-dispense",
+      "workflow_id": "01M6C0WPFTSEZZ35FS8HZARQG9",
+      "workflow_status": "completed",
+      "seconds": 4.59,
+      "dispense": {
+       "status": "succeeded",
+       "result": {
+        "command_id": "01a1980e-5fd1-7202-83d0-b58750764746",
+        "openmhs_state": "VERIFIED",
+        "transfer_id": "mad01-iter2-dispense",
+        "source": "A1",
+        "well": "B3",
+        "dose_ul": 59.4,
+        "transitions": [
+         "CREATED",
+         "VALIDATING",
+         "APPROVED",
+         "DISPATCHED",
+         "ACCEPTED",
+         "APPLIED",
+         "VERIFIED"
+        ]
+       },
+       "errors": [],
+       "results_recorded": 1
+      },
+      "measure": {
+       "status": "succeeded",
+       "result": {
+        "well": "B3",
+        "dose_ul": 59.4,
+        "response": 0.63383
+       },
+       "errors": [],
+       "results_recorded": 1
+      }
+     },
+     {
+      "iteration": 3,
+      "well": "B4",
+      "planned_dose_ul": 50.3,
+      "key": "mad01-iter3-dispense",
+      "workflow_id": "01M6C0WVWZY73QVHJ1X4QPQCGX",
+      "workflow_status": "completed",
+      "seconds": 4.57,
+      "dispense": {
+       "status": "succeeded",
+       "result": {
+        "command_id": "01a1980e-75e4-77c0-b200-7fadee851b15",
+        "openmhs_state": "VERIFIED",
+        "transfer_id": "mad01-iter3-dispense",
+        "source": "A1",
+        "well": "B4",
+        "dose_ul": 50.3,
+        "transitions": [
+         "CREATED",
+         "VALIDATING",
+         "APPROVED",
+         "DISPATCHED",
+         "ACCEPTED",
+         "APPLIED",
+         "VERIFIED"
+        ]
+       },
+       "errors": [],
+       "results_recorded": 1
+      },
+      "measure": {
+       "status": "succeeded",
+       "result": {
+        "well": "B4",
+        "dose_ul": 50.3,
+        "response": 0.56575
+       },
+       "errors": [],
+       "results_recorded": 1
+      }
+     },
+     {
+      "iteration": 4,
+      "well": "B5",
+      "planned_dose_ul": 45.8,
+      "key": "mad01-iter4-dispense",
+      "workflow_id": "01M6C0X19KBKAW91AZ5472NZEH",
+      "workflow_status": "completed",
+      "seconds": 4.55,
+      "dispense": {
+       "status": "succeeded",
+       "result": {
+        "command_id": "01a1980e-8aba-7470-b10c-d9fcad81cc52",
+        "openmhs_state": "VERIFIED",
+        "transfer_id": "mad01-iter4-dispense",
+        "source": "A1",
+        "well": "B5",
+        "dose_ul": 45.8,
+        "transitions": [
+         "CREATED",
+         "VALIDATING",
+         "APPROVED",
+         "DISPATCHED",
+         "ACCEPTED",
+         "APPLIED",
+         "VERIFIED"
+        ]
+       },
+       "errors": [],
+       "results_recorded": 1
+      },
+      "measure": {
+       "status": "succeeded",
+       "result": {
+        "well": "B5",
+        "dose_ul": 45.8,
+        "response": 0.52589
+       },
+       "errors": [],
+       "results_recorded": 1
+      }
+     },
+     {
+      "iteration": 5,
+      "well": "B6",
+      "planned_dose_ul": 43.5,
+      "key": "mad01-iter5-dispense",
+      "workflow_id": "01M6C0X6PPCM8HWSWYD0ZTP9K1",
+      "workflow_status": "completed",
+      "seconds": 4.56,
+      "dispense": {
+       "status": "succeeded",
+       "result": {
+        "command_id": "01a1980e-a0d1-70f7-a8f4-10ba3be0ea26",
+        "openmhs_state": "VERIFIED",
+        "transfer_id": "mad01-iter5-dispense",
+        "source": "A1",
+        "well": "B6",
+        "dose_ul": 43.5,
+        "transitions": [
+         "CREATED",
+         "VALIDATING",
+         "APPROVED",
+         "DISPATCHED",
+         "ACCEPTED",
+         "APPLIED",
+         "VERIFIED"
+        ]
+       },
+       "errors": [],
+       "results_recorded": 1
+      },
+      "measure": {
+       "status": "succeeded",
+       "result": {
+        "well": "B6",
+        "dose_ul": 43.5,
+        "response": 0.50658
+       },
+       "errors": [],
+       "results_recorded": 1
+      }
+     }
+    ],
+    "ec50_estimate_ul": 42.35,
+    "bracket": [
+     41.2,
+     43.5
+    ]
+   },
+   "run_dir": "D:\\openmhs-research\\mad-runs\\MAD-01-208d48"
+  },
+  "MAD-01-native": {
+   "title": "the same loop without OpenMHS (baseline A)",
+   "passed": true,
+   "seconds": 57.9,
+   "checks": [
+    {
+     "check": "native: 6 iterations completed",
+     "ok": true,
+     "observed": null
+    },
+    {
+     "check": "native: one transfer per iteration",
+     "ok": true,
+     "observed": 6
+    }
+   ],
+   "detail": {
+    "tag": "mad01n",
+    "records": [
+     {
+      "iteration": 0,
+      "well": "B1",
+      "planned_dose_ul": 77.5,
+      "key": "mad01n-iter0-dispense",
+      "workflow_id": "01M6C0Y51EB20R8KAKSZ7TZZ9Z",
+      "workflow_status": "completed",
+      "seconds": 4.6,
+      "dispense": {
+       "status": "succeeded",
+       "result": {
+        "source": "A1",
+        "well": "B1",
+        "dose_ul": 77.5,
+        "result": "Applied"
+       },
+       "errors": [],
+       "results_recorded": 1
+      },
+      "measure": {
+       "status": "succeeded",
+       "result": {
+        "well": "B1",
+        "dose_ul": 77.5,
+        "response": 0.73453
+       },
+       "errors": [],
+       "results_recorded": 1
+      }
+     },
+     {
+      "iteration": 1,
+      "well": "B2",
+      "planned_dose_ul": 41.2,
+      "key": "mad01n-iter1-dispense",
+      "workflow_id": "01M6C0YAFE56PWD2RRQ5JYS8HF",
+      "workflow_status": "completed",
+      "seconds": 4.5,
+      "dispense": {
+       "status": "succeeded",
+       "result": {
+        "source": "A1",
+        "well": "B2",
+        "dose_ul": 41.2,
+        "result": "Applied"
+       },
+       "errors": [],
+       "results_recorded": 1
+      },
+      "measure": {
+       "status": "succeeded",
+       "result": {
+        "well": "B2",
+        "dose_ul": 41.2,
+        "response": 0.48412
+       },
+       "errors": [],
+       "results_recorded": 1
+      }
+     },
+     {
+      "iteration": 2,
+      "well": "B3",
+      "planned_dose_ul": 59.4,
+      "key": "mad01n-iter2-dispense",
+      "workflow_id": "01M6C0YFSEBVYKKEF72XZ71RS8",
+      "workflow_status": "completed",
+      "seconds": 4.53,
+      "dispense": {
+       "status": "succeeded",
+       "result": {
+        "source": "A1",
+        "well": "B3",
+        "dose_ul": 59.4,
+        "result": "Applied"
+       },
+       "errors": [],
+       "results_recorded": 1
+      },
+      "measure": {
+       "status": "succeeded",
+       "result": {
+        "well": "B3",
+        "dose_ul": 59.4,
+        "response": 0.63383
+       },
+       "errors": [],
+       "results_recorded": 1
+      }
+     },
+     {
+      "iteration": 3,
+      "well": "B4",
+      "planned_dose_ul": 50.3,
+      "key": "mad01n-iter3-dispense",
+      "workflow_id": "01M6C0YN4A4S10V6TGJV50BWFN",
+      "workflow_status": "completed",
+      "seconds": 4.52,
+      "dispense": {
+       "status": "succeeded",
+       "result": {
+        "source": "A1",
+        "well": "B4",
+        "dose_ul": 50.3,
+        "result": "Applied"
+       },
+       "errors": [],
+       "results_recorded": 1
+      },
+      "measure": {
+       "status": "succeeded",
+       "result": {
+        "well": "B4",
+        "dose_ul": 50.3,
+        "response": 0.56575
+       },
+       "errors": [],
+       "results_recorded": 1
+      }
+     },
+     {
+      "iteration": 4,
+      "well": "B5",
+      "planned_dose_ul": 45.8,
+      "key": "mad01n-iter4-dispense",
+      "workflow_id": "01M6C0YTF52TYCY6M7M6SJDDZ4",
+      "workflow_status": "completed",
+      "seconds": 4.53,
+      "dispense": {
+       "status": "succeeded",
+       "result": {
+        "source": "A1",
+        "well": "B5",
+        "dose_ul": 45.8,
+        "result": "Applied"
+       },
+       "errors": [],
+       "results_recorded": 1
+      },
+      "measure": {
+       "status": "succeeded",
+       "result": {
+        "well": "B5",
+        "dose_ul": 45.8,
+        "response": 0.52589
+       },
+       "errors": [],
+       "results_recorded": 1
+      }
+     },
+     {
+      "iteration": 5,
+      "well": "B6",
+      "planned_dose_ul": 43.5,
+      "key": "mad01n-iter5-dispense",
+      "workflow_id": "01M6C0YZS2BFWKCCDJDDQ5MSAN",
+      "workflow_status": "completed",
+      "seconds": 4.51,
+      "dispense": {
+       "status": "succeeded",
+       "result": {
+        "source": "A1",
+        "well": "B6",
+        "dose_ul": 43.5,
+        "result": "Applied"
+       },
+       "errors": [],
+       "results_recorded": 1
+      },
+      "measure": {
+       "status": "succeeded",
+       "result": {
+        "well": "B6",
+        "dose_ul": 43.5,
+        "response": 0.50658
+       },
+       "errors": [],
+       "results_recorded": 1
+      }
+     }
+    ],
+    "ec50_estimate_ul": 42.35,
+    "bracket": [
+     41.2,
+     43.5
+    ]
+   },
+   "run_dir": "D:\\openmhs-research\\mad-runs\\MAD-01-native-341110"
+  },
+  "MAD-02": {
+   "title": "a device unavailable: the gateway, then the plate reader",
+   "passed": true,
+   "seconds": 47.6,
+   "checks": [
+    {
+     "check": "gateway down: MADSci's workflow failed at the dispense step",
+     "ok": true,
+     "observed": [
+      "failed",
+      {
+       "status": "failed",
+       "result": {
+        "transfer_id": "mad02a-iter0-dispense",
+        "well": "B1",
+        "dose_ul": 50.0
+       },
+       "errors": [
+        "OpenMHS gateway unreachable, nothing sent: cannot reach the gateway at http://127.0.0.1:51019/rpc: <urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>"
+       ],
+       "results_recorded": 2
+      }
+     ]
+    },
+    {
+     "check": "gateway down: nothing was transferred",
+     "ok": true,
+     "observed": null
+    },
+    {
+     "check": "reader down: the dispense still happened, once",
+     "ok": true,
+     "observed": 1
+    },
+    {
+     "check": "reader down: MADSci does not report the workflow complete",
+     "ok": true,
+     "observed": "running"
+    },
+    {
+     "check": "OpenMHS audit chain verifies",
+     "ok": true,
+     "observed": 19
+    }
+   ],
+   "detail": {
+    "gateway_down": {
+     "iteration": 0,
+     "well": "B1",
+     "planned_dose_ul": 50.0,
+     "key": "mad02a-iter0-dispense",
+     "workflow_id": "01M6C0ZVYHQ8ZFHM1XQMBD8SHA",
+     "workflow_status": "failed",
+     "seconds": 6.54,
+     "dispense": {
+      "status": "failed",
+      "result": {
+       "transfer_id": "mad02a-iter0-dispense",
+       "well": "B1",
+       "dose_ul": 50.0
+      },
+      "errors": [
+       "OpenMHS gateway unreachable, nothing sent: cannot reach the gateway at http://127.0.0.1:51019/rpc: <urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>"
+      ],
+      "results_recorded": 2
+     },
+     "measure": {
+      "status": "not_started",
+      "result": null,
+      "errors": [],
+      "results_recorded": 0
+     }
+    },
+    "reader_down_after_15s": {
+     "status": "running",
+     "dispense": {
+      "status": "succeeded",
+      "result": {
+       "command_id": "01a19810-3a85-7588-9e36-bf039d2e532e",
+       "openmhs_state": "VERIFIED",
+       "transfer_id": "mad02b",
+       "source": "A1",
+       "well": "B2",
+       "dose_ul": 40.0,
+       "transitions": [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ]
+      },
+      "errors": [],
+      "results_recorded": 1
+     },
+     "measure": {
+      "status": "not_started",
+      "result": null,
+      "errors": [],
+      "results_recorded": 0
+     }
+    }
+   },
+   "run_dir": "D:\\openmhs-research\\mad-runs\\MAD-02-43a74c"
+  },
+  "MAD-03": {
+   "title": "two experiments at once on one liquid handler",
+   "passed": true,
+   "seconds": 45.7,
+   "checks": [
+    {
+     "check": "both experiments' workflows completed",
+     "ok": true,
+     "observed": [
+      "completed",
+      "completed",
+      "completed",
+      "completed",
+      "completed",
+      "completed"
+     ]
+    },
+    {
+     "check": "six transfers, each in its own well, doses as planned",
+     "ok": true,
+     "observed": {
+      "count": 6,
+      "doses": {
+       "B1": 77.5,
+       "B2": 41.2,
+       "B3": 59.4,
+       "B7": 77.5,
+       "B8": 41.2,
+       "B9": 59.4
+      }
+     }
+    },
+    {
+     "check": "OpenMHS never had two transfers in flight on the device",
+     "ok": true,
+     "observed": [
+      [
+       "2026-11-01T17:03:15.045Z",
+       "2026-11-01T17:03:15.073Z",
+       "mad03y-iter0-dispense"
+      ],
+      [
+       "2026-11-01T17:03:17.549Z",
+       "2026-11-01T17:03:17.576Z",
+       "mad03x-iter0-dispense"
+      ],
+      [
+       "2026-11-01T17:03:20.871Z",
+       "2026-11-01T17:03:20.894Z",
+       "mad03y-iter1-dispense"
+      ],
+      [
+       "2026-11-01T17:03:23.515Z",
+       "2026-11-01T17:03:23.543Z",
+       "mad03x-iter1-dispense"
+      ],
+      [
+       "2026-11-01T17:03:26.516Z",
+       "2026-11-01T17:03:26.543Z",
+       "mad03y-iter2-dispense"
+      ],
+      [
+       "2026-11-01T17:03:29.368Z",
+       "2026-11-01T17:03:29.38Z",
+       "mad03x-iter2-dispense"
+      ]
+     ]
+    },
+    {
+     "check": "OpenMHS audit chain verifies",
+     "ok": true,
+     "observed": 56
+    }
+   ],
+   "detail": {
+    "experiments": {
+     "mad03y": {
+      "tag": "mad03y",
+      "records": [
+       {
+        "iteration": 0,
+        "well": "B7",
+        "planned_dose_ul": 77.5,
+        "key": "mad03y-iter0-dispense",
+        "workflow_id": "01M6C11CGDDAAXSVGZ7S84373K",
+        "workflow_status": "completed",
+        "seconds": 4.6,
+        "dispense": {
+         "status": "succeeded",
+         "result": {
+          "command_id": "01a19810-b860-75f5-83a5-65c603f4b253",
+          "openmhs_state": "VERIFIED",
+          "transfer_id": "mad03y-iter0-dispense",
+          "source": "A1",
+          "well": "B7",
+          "dose_ul": 77.5,
+          "transitions": [
+           "CREATED",
+           "VALIDATING",
+           "APPROVED",
+           "DISPATCHED",
+           "ACCEPTED",
+           "APPLIED",
+           "VERIFIED"
+          ]
+         },
+         "errors": [],
+         "results_recorded": 1
+        },
+        "measure": {
+         "status": "succeeded",
+         "result": {
+          "well": "B7",
+          "dose_ul": 77.5,
+          "response": 0.71968
+         },
+         "errors": [],
+         "results_recorded": 1
+        }
+       },
+       {
+        "iteration": 1,
+        "well": "B8",
+        "planned_dose_ul": 41.2,
+        "key": "mad03y-iter1-dispense",
+        "workflow_id": "01M6C11J8EAB5KR6PTZ6772Q9Y",
+        "workflow_status": "completed",
+        "seconds": 4.55,
+        "dispense": {
+         "status": "succeeded",
+         "result": {
+          "command_id": "01a19810-cf22-705b-ba22-7536cb0731d3",
+          "openmhs_state": "VERIFIED",
+          "transfer_id": "mad03y-iter1-dispense",
+          "source": "A1",
+          "well": "B8",
+          "dose_ul": 41.2,
+          "transitions": [
+           "CREATED",
+           "VALIDATING",
+           "APPROVED",
+           "DISPATCHED",
+           "ACCEPTED",
+           "APPLIED",
+           "VERIFIED"
+          ]
+         },
+         "errors": [],
+         "results_recorded": 1
+        },
+        "measure": {
+         "status": "succeeded",
+         "result": {
+          "well": "B8",
+          "dose_ul": 41.2,
+          "response": 0.48886
+         },
+         "errors": [],
+         "results_recorded": 1
+        }
+       },
+       {
+        "iteration": 2,
+        "well": "B9",
+        "planned_dose_ul": 59.4,
+        "key": "mad03y-iter2-dispense",
+        "workflow_id": "01M6C11QS3Q9V1N19M6JB5ZXYS",
+        "workflow_status": "completed",
+        "seconds": 4.63,
+        "dispense": {
+         "status": "succeeded",
+         "result": {
+          "command_id": "01a19810-e52f-73fb-8393-b9f90c7bb71b",
+          "openmhs_state": "VERIFIED",
+          "transfer_id": "mad03y-iter2-dispense",
+          "source": "A1",
+          "well": "B9",
+          "dose_ul": 59.4,
+          "transitions": [
+           "CREATED",
+           "VALIDATING",
+           "APPROVED",
+           "DISPATCHED",
+           "ACCEPTED",
+           "APPLIED",
+           "VERIFIED"
+          ]
+         },
+         "errors": [],
+         "results_recorded": 1
+        },
+        "measure": {
+         "status": "succeeded",
+         "result": {
+          "well": "B9",
+          "dose_ul": 59.4,
+          "response": 0.63211
+         },
+         "errors": [],
+         "results_recorded": 1
+        }
+       }
+      ],
+      "ec50_estimate_ul": 50.3,
+      "bracket": [
+       41.2,
+       59.4
+      ]
+     },
+     "mad03x": {
+      "tag": "mad03x",
+      "records": [
+       {
+        "iteration": 0,
+        "well": "B1",
+        "planned_dose_ul": 77.5,
+        "key": "mad03x-iter0-dispense",
+        "workflow_id": "01M6C11D1RF4QV38D6JBYS14P7",
+        "workflow_status": "completed",
+        "seconds": 7.37,
+        "dispense": {
+         "status": "succeeded",
+         "result": {
+          "command_id": "01a19810-c229-761a-8d8e-84fa3a54e24b",
+          "openmhs_state": "VERIFIED",
+          "transfer_id": "mad03x-iter0-dispense",
+          "source": "A1",
+          "well": "B1",
+          "dose_ul": 77.5,
+          "transitions": [
+           "CREATED",
+           "VALIDATING",
+           "APPROVED",
+           "DISPATCHED",
+           "ACCEPTED",
+           "APPLIED",
+           "VERIFIED"
+          ]
+         },
+         "errors": [],
+         "results_recorded": 1
+        },
+        "measure": {
+         "status": "succeeded",
+         "result": {
+          "well": "B1",
+          "dose_ul": 77.5,
+          "response": 0.73453
+         },
+         "errors": [],
+         "results_recorded": 1
+        }
+       },
+       {
+        "iteration": 1,
+        "well": "B2",
+        "planned_dose_ul": 41.2,
+        "key": "mad03x-iter1-dispense",
+        "workflow_id": "01M6C11MWEP8VBVEYZHQQQTHV7",
+        "workflow_status": "completed",
+        "seconds": 4.61,
+        "dispense": {
+         "status": "succeeded",
+         "result": {
+          "command_id": "01a19810-d976-737b-be7b-ffed314f45ff",
+          "openmhs_state": "VERIFIED",
+          "transfer_id": "mad03x-iter1-dispense",
+          "source": "A1",
+          "well": "B2",
+          "dose_ul": 41.2,
+          "transitions": [
+           "CREATED",
+           "VALIDATING",
+           "APPROVED",
+           "DISPATCHED",
+           "ACCEPTED",
+           "APPLIED",
+           "VERIFIED"
+          ]
+         },
+         "errors": [],
+         "results_recorded": 1
+        },
+        "measure": {
+         "status": "succeeded",
+         "result": {
+          "well": "B2",
+          "dose_ul": 41.2,
+          "response": 0.48412
+         },
+         "errors": [],
+         "results_recorded": 1
+        }
+       },
+       {
+        "iteration": 2,
+        "well": "B3",
+        "planned_dose_ul": 59.4,
+        "key": "mad03x-iter2-dispense",
+        "workflow_id": "01M6C11TG8CXZT1H05FNN44P1F",
+        "workflow_status": "completed",
+        "seconds": 4.65,
+        "dispense": {
+         "status": "succeeded",
+         "result": {
+          "command_id": "01a19810-f053-72ab-b46b-1968d1e3d01d",
+          "openmhs_state": "VERIFIED",
+          "transfer_id": "mad03x-iter2-dispense",
+          "source": "A1",
+          "well": "B3",
+          "dose_ul": 59.4,
+          "transitions": [
+           "CREATED",
+           "VALIDATING",
+           "APPROVED",
+           "DISPATCHED",
+           "ACCEPTED",
+           "APPLIED",
+           "VERIFIED"
+          ]
+         },
+         "errors": [],
+         "results_recorded": 1
+        },
+        "measure": {
+         "status": "succeeded",
+         "result": {
+          "well": "B3",
+          "dose_ul": 59.4,
+          "response": 0.63383
+         },
+         "errors": [],
+         "results_recorded": 1
+        }
+       }
+      ],
+      "ec50_estimate_ul": 50.3,
+      "bracket": [
+       41.2,
+       59.4
+      ]
+     }
+    },
+    "openmhs_windows": [
+     [
+      "2026-11-01T17:03:15.045Z",
+      "2026-11-01T17:03:15.073Z",
+      "mad03y-iter0-dispense"
+     ],
+     [
+      "2026-11-01T17:03:17.549Z",
+      "2026-11-01T17:03:17.576Z",
+      "mad03x-iter0-dispense"
+     ],
+     [
+      "2026-11-01T17:03:20.871Z",
+      "2026-11-01T17:03:20.894Z",
+      "mad03y-iter1-dispense"
+     ],
+     [
+      "2026-11-01T17:03:23.515Z",
+      "2026-11-01T17:03:23.543Z",
+      "mad03x-iter1-dispense"
+     ],
+     [
+      "2026-11-01T17:03:26.516Z",
+      "2026-11-01T17:03:26.543Z",
+      "mad03y-iter2-dispense"
+     ],
+     [
+      "2026-11-01T17:03:29.368Z",
+      "2026-11-01T17:03:29.38Z",
+      "mad03x-iter2-dispense"
+     ]
+    ]
+   },
+   "run_dir": "D:\\openmhs-research\\mad-runs\\MAD-03-e0e780"
+  },
+  "MAD-04": {
+   "title": "the transfer happens, its answer is lost; retried in MADSci",
+   "passed": true,
+   "seconds": 38.0,
+   "checks": [
+    {
+     "check": "the transfer happened; its answer was lost: MADSci step UNKNOWN, workflow failed",
+     "ok": true,
+     "observed": [
+      "unknown",
+      "failed",
+      {
+       "count": 1,
+       "doses": {
+        "B1": 60.0
+       }
+      }
+     ]
+    },
+    {
+     "check": "retry before reconciling: still UNKNOWN, and no second transfer",
+     "ok": true,
+     "observed": [
+      {
+       "status": "unknown",
+       "result": {
+        "command_id": "01a19811-6178-72f9-ab46-95bfb7d43bed",
+        "openmhs_state": "UNKNOWN_OUTCOME",
+        "transfer_id": "mad04-iter0-dispense",
+        "source": "A1",
+        "well": "B1",
+        "dose_ul": 60.0,
+        "transitions": [
+         "CREATED",
+         "VALIDATING",
+         "APPROVED",
+         "DISPATCHED",
+         "ACCEPTED",
+         "TIMED_OUT",
+         "UNKNOWN_OUTCOME"
+        ]
+       },
+       "errors": [
+        "OpenMHS command 01a19811-6178-72f9-ab46-95bfb7d43bed is UNKNOWN_OUTCOME: reconcile it in OpenMHS before retrying this step",
+        "Node returned 'unknown' action status for running action."
+       ],
+       "results_recorded": 3
+      },
+      {
+       "count": 1,
+       "doses": {
+        "B1": 60.0
+       }
+      }
+     ]
+    },
+    {
+     "check": "reconciled in OpenMHS: RECONCILED_APPLIED",
+     "ok": true,
+     "observed": "RECONCILED_APPLIED"
+    },
+    {
+     "check": "retry after reconciling: the step succeeds from the existing command, the workflow completes",
+     "ok": true,
+     "observed": [
+      "completed",
+      {
+       "status": "succeeded",
+       "result": {
+        "command_id": "01a19811-6178-72f9-ab46-95bfb7d43bed",
+        "openmhs_state": "RECONCILED_APPLIED",
+        "transfer_id": "mad04-iter0-dispense",
+        "source": "A1",
+        "well": "B1",
+        "dose_ul": 60.0,
+        "transitions": [
+         "CREATED",
+         "VALIDATING",
+         "APPROVED",
+         "DISPATCHED",
+         "ACCEPTED",
+         "TIMED_OUT",
+         "UNKNOWN_OUTCOME",
+         "RECONCILED_APPLIED"
+        ]
+       },
+       "errors": [],
+       "results_recorded": 4
+      }
+     ]
+    },
+    {
+     "check": "the well holds one dose, not two, and the measurement says so",
+     "ok": true,
+     "observed": [
+      {
+       "count": 1,
+       "doses": {
+        "B1": 60.0
+       }
+      },
+      {
+       "well": "B1",
+       "dose_ul": 60.0,
+       "response": 0.64551
+      }
+     ]
+    },
+    {
+     "check": "OpenMHS audit chain verifies",
+     "ok": true,
+     "observed": 19
+    }
+   ],
+   "detail": {
+    "first": {
+     "iteration": 0,
+     "well": "B1",
+     "planned_dose_ul": 60.0,
+     "key": "mad04-iter0-dispense",
+     "workflow_id": "01M6C12PYGD7Z8GFV5W4M7WFKT",
+     "workflow_status": "failed",
+     "seconds": 6.54,
+     "dispense": {
+      "status": "unknown",
+      "result": {
+       "command_id": "01a19811-6178-72f9-ab46-95bfb7d43bed",
+       "openmhs_state": "UNKNOWN_OUTCOME",
+       "transfer_id": "mad04-iter0-dispense",
+       "source": "A1",
+       "well": "B1",
+       "dose_ul": 60.0,
+       "transitions": [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "TIMED_OUT",
+        "UNKNOWN_OUTCOME"
+       ]
+      },
+      "errors": [
+       "OpenMHS command 01a19811-6178-72f9-ab46-95bfb7d43bed is UNKNOWN_OUTCOME: reconcile it in OpenMHS before retrying this step",
+       "Node returned 'unknown' action status for running action."
+      ],
+      "results_recorded": 2
+     },
+     "measure": {
+      "status": "not_started",
+      "result": null,
+      "errors": [],
+      "results_recorded": 0
+     }
+    },
+    "final": {
+     "dispense": {
+      "status": "succeeded",
+      "result": {
+       "command_id": "01a19811-6178-72f9-ab46-95bfb7d43bed",
+       "openmhs_state": "RECONCILED_APPLIED",
+       "transfer_id": "mad04-iter0-dispense",
+       "source": "A1",
+       "well": "B1",
+       "dose_ul": 60.0,
+       "transitions": [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "TIMED_OUT",
+        "UNKNOWN_OUTCOME",
+        "RECONCILED_APPLIED"
+       ]
+      },
+      "errors": [],
+      "results_recorded": 4
+     },
+     "measure": {
+      "status": "succeeded",
+      "result": {
+       "well": "B1",
+       "dose_ul": 60.0,
+       "response": 0.64551
+      },
+      "errors": [],
+      "results_recorded": 1
+     }
+    }
+   },
+   "run_dir": "D:\\openmhs-research\\mad-runs\\MAD-04-dbe1b5"
+  },
+  "MAD-04-native": {
+   "title": "the same, without OpenMHS",
+   "passed": true,
+   "seconds": 29.7,
+   "checks": [
+    {
+     "check": "native: the transfer happened, MADSci was told it failed",
+     "ok": true,
+     "observed": [
+      "failed",
+      {
+       "count": 1,
+       "doses": {
+        "B1": 60.0
+       }
+      }
+     ]
+    },
+    {
+     "check": "native: the retry transfers again; the well holds two doses",
+     "ok": true,
+     "observed": [
+      {
+       "count": 2,
+       "doses": {
+        "B1": 120.0
+       }
+      },
+      {
+       "well": "B1",
+       "dose_ul": 120.0,
+       "response": 0.83694
+      }
+     ]
+    }
+   ],
+   "detail": {
+    "first": {
+     "iteration": 0,
+     "well": "B1",
+     "planned_dose_ul": 60.0,
+     "key": "mad04n-iter0-dispense",
+     "workflow_id": "01M6C13V8Z33YKZDQNMKJXT3A5",
+     "workflow_status": "failed",
+     "seconds": 2.54,
+     "dispense": {
+      "status": "failed",
+      "result": {
+       "source": "A1",
+       "well": "B1",
+       "dose_ul": 60.0,
+       "result": "Applied"
+      },
+      "errors": [
+       "simulated: connection lost after the transfer"
+      ],
+      "results_recorded": 1
+     },
+     "measure": {
+      "status": "not_started",
+      "result": null,
+      "errors": [],
+      "results_recorded": 0
+     }
+    },
+    "final": {
+     "dispense": {
+      "status": "succeeded",
+      "result": {
+       "source": "A1",
+       "well": "B1",
+       "dose_ul": 60.0,
+       "result": "Applied"
+      },
+      "errors": [],
+      "results_recorded": 2
+     },
+     "measure": {
+      "status": "succeeded",
+      "result": {
+       "well": "B1",
+       "dose_ul": 120.0,
+       "response": 0.83694
+      },
+      "errors": [],
+      "results_recorded": 1
+     }
+    },
+    "measured_dose_ul": 120.0
+   },
+   "run_dir": "D:\\openmhs-research\\mad-runs\\MAD-04-native-523fbd"
+  },
+  "MAD-05": {
+   "title": "a transfer that needs approval",
+   "passed": true,
+   "seconds": 30.7,
+   "checks": [
+    {
+     "check": "OpenMHS holds the transfer for approval; nothing transferred",
+     "ok": true,
+     "observed": "AWAITING_APPROVAL"
+    },
+    {
+     "check": "meanwhile MADSci shows the step running",
+     "ok": true,
+     "observed": "running"
+    },
+    {
+     "check": "approved by the operator: VERIFIED, and the MADSci workflow completes",
+     "ok": true,
+     "observed": [
+      "VERIFIED",
+      "completed"
+     ]
+    },
+    {
+     "check": "OpenMHS audit chain verifies",
+     "ok": true,
+     "observed": 20
+    }
+   ],
+   "detail": {
+    "held": {
+     "command_id": "01a19812-6a1d-7460-bead-6556a51b51d1",
+     "state": "AWAITING_APPROVAL",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "AWAITING_APPROVAL"
+     ],
+     "errors": [],
+     "verification": null,
+     "adapter_result": null
+    },
+    "approved": {
+     "command_id": "01a19812-6a1d-7460-bead-6556a51b51d1",
+     "state": "VERIFIED",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "AWAITING_APPROVAL",
+      "APPROVED",
+      "DISPATCHED",
+      "ACCEPTED",
+      "APPLIED",
+      "VERIFIED"
+     ],
+     "errors": [],
+     "verification": {
+      "capability": "transfer.last_id",
+      "expected": "mad05",
+      "matched": true,
+      "mode": "readback",
+      "observed": {
+       "quality": "GOOD",
+       "source": "simulator",
+       "timestamp": "2026-11-01T17:05:08.394Z",
+       "value": "mad05"
+      }
+     },
+     "adapter_result": {
+      "acknowledged": true,
+      "reported_applied": true
+     }
+    },
+    "workflow": {
+     "dispense": {
+      "status": "succeeded",
+      "result": {
+       "command_id": "01a19812-6a1d-7460-bead-6556a51b51d1",
+       "openmhs_state": "VERIFIED",
+       "transfer_id": "mad05",
+       "source": "A1",
+       "well": "B1",
+       "dose_ul": 50.0,
+       "transitions": [
+        "CREATED",
+        "VALIDATING",
+        "AWAITING_APPROVAL",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ]
+      },
+      "errors": [],
+      "results_recorded": 2
+     },
+     "measure": {
+      "status": "succeeded",
+      "result": {
+       "well": "B1",
+       "dose_ul": 50.0,
+       "response": 0.56552
+      },
+      "errors": [],
+      "results_recorded": 1
+     }
+    }
+   },
+   "run_dir": "D:\\openmhs-research\\mad-runs\\MAD-05-aacce9"
+  },
+  "MAD-06": {
+   "title": "the gateway killed mid-step, restarted, reconciled, retried",
+   "passed": true,
+   "seconds": 32.2,
+   "checks": [
+    {
+     "check": "gateway killed mid-step: MADSci's step UNKNOWN, not failed or succeeded",
+     "ok": true,
+     "observed": {
+      "status": "unknown",
+      "result": {
+       "transfer_id": "mad06",
+       "well": "B1",
+       "dose_ul": 55.0
+      },
+      "errors": [
+       "no answer from OpenMHS after submitting (GatewayUnreachableError): reconcile in OpenMHS before retrying this step",
+       "Node returned 'unknown' action status for running action."
+      ],
+      "results_recorded": 2
+     }
+    },
+    {
+     "check": "after the gateway restarts: UNKNOWN_OUTCOME, nothing re-sent",
+     "ok": true,
+     "observed": [
+      "UNKNOWN_OUTCOME",
+      {
+       "count": 1,
+       "doses": {
+        "B1": 55.0
+       }
+      }
+     ]
+    },
+    {
+     "check": "reconciled: RECONCILED_APPLIED",
+     "ok": true,
+     "observed": "RECONCILED_APPLIED"
+    },
+    {
+     "check": "MADSci retry completes from the existing command; one dose in the well",
+     "ok": true,
+     "observed": [
+      "completed",
+      {
+       "count": 1,
+       "doses": {
+        "B1": 55.0
+       }
+      }
+     ]
+    },
+    {
+     "check": "OpenMHS audit chain verifies",
+     "ok": true,
+     "observed": 20
+    }
+   ],
+   "detail": {
+    "final": {
+     "dispense": {
+      "status": "succeeded",
+      "result": {
+       "command_id": "01a19812-e1d5-7705-88ed-c0a727ab9f6f",
+       "openmhs_state": "RECONCILED_APPLIED",
+       "transfer_id": "mad06",
+       "source": "A1",
+       "well": "B1",
+       "dose_ul": 55.0,
+       "transitions": [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "UNKNOWN_OUTCOME",
+        "RECONCILED_APPLIED"
+       ]
+      },
+      "errors": [],
+      "results_recorded": 3
+     },
+     "measure": {
+      "status": "succeeded",
+      "result": {
+       "well": "B1",
+       "dose_ul": 55.0,
+       "response": 0.60335
+      },
+      "errors": [],
+      "results_recorded": 1
+     }
+    }
+   },
+   "run_dir": "D:\\openmhs-research\\mad-runs\\MAD-06-c230a3"
+  },
+  "MAD-07": {
+   "title": "the same experiment twice with a fixed seed",
+   "passed": true,
+   "seconds": 114.7,
+   "checks": [
+    {
+     "check": "identical across the two runs: planned",
+     "ok": true,
+     "observed": [
+      [
+       77.5,
+       41.2,
+       59.4,
+       50.3,
+       45.8,
+       43.5
+      ],
+      [
+       77.5,
+       41.2,
+       59.4,
+       50.3,
+       45.8,
+       43.5
+      ]
+     ]
+    },
+    {
+     "check": "identical across the two runs: measured",
+     "ok": true,
+     "observed": [
+      [
+       77.5,
+       41.2,
+       59.4,
+       50.3,
+       45.8,
+       43.5
+      ],
+      [
+       77.5,
+       41.2,
+       59.4,
+       50.3,
+       45.8,
+       43.5
+      ]
+     ]
+    },
+    {
+     "check": "identical across the two runs: responses",
+     "ok": true,
+     "observed": [
+      [
+       0.73453,
+       0.48412,
+       0.63383,
+       0.56575,
+       0.52589,
+       0.50658
+      ],
+      [
+       0.73453,
+       0.48412,
+       0.63383,
+       0.56575,
+       0.52589,
+       0.50658
+      ]
+     ]
+    },
+    {
+     "check": "identical across the two runs: openmhs_states",
+     "ok": true,
+     "observed": [
+      [
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ]
+      ],
+      [
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ]
+      ]
+     ]
+    },
+    {
+     "check": "identical across the two runs: simulator",
+     "ok": true,
+     "observed": [
+      {
+       "count": 6,
+       "doses": {
+        "B1": 77.5,
+        "B2": 41.2,
+        "B3": 59.4,
+        "B4": 50.3,
+        "B5": 45.8,
+        "B6": 43.5
+       }
+      },
+      {
+       "count": 6,
+       "doses": {
+        "B1": 77.5,
+        "B2": 41.2,
+        "B3": 59.4,
+        "B4": 50.3,
+        "B5": 45.8,
+        "B6": 43.5
+       }
+      }
+     ]
+    },
+    {
+     "check": "identical across the two runs: estimate",
+     "ok": true,
+     "observed": [
+      42.35,
+      42.35
+     ]
+    },
+    {
+     "check": "both audit chains verify",
+     "ok": true,
+     "observed": null
+    },
+    {
+     "check": "OpenMHS audit chain verifies",
+     "ok": true,
+     "observed": 56
+    },
+    {
+     "check": "OpenMHS audit chain verifies",
+     "ok": true,
+     "observed": 56
+    }
+   ],
+   "detail": {
+    "runs": [
+     {
+      "planned": [
+       77.5,
+       41.2,
+       59.4,
+       50.3,
+       45.8,
+       43.5
+      ],
+      "measured": [
+       77.5,
+       41.2,
+       59.4,
+       50.3,
+       45.8,
+       43.5
+      ],
+      "responses": [
+       0.73453,
+       0.48412,
+       0.63383,
+       0.56575,
+       0.52589,
+       0.50658
+      ],
+      "openmhs_states": [
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ]
+      ],
+      "simulator": {
+       "count": 6,
+       "doses": {
+        "B1": 77.5,
+        "B2": 41.2,
+        "B3": 59.4,
+        "B4": 50.3,
+        "B5": 45.8,
+        "B6": 43.5
+       }
+      },
+      "estimate": 42.35,
+      "audit_valid": true
+     },
+     {
+      "planned": [
+       77.5,
+       41.2,
+       59.4,
+       50.3,
+       45.8,
+       43.5
+      ],
+      "measured": [
+       77.5,
+       41.2,
+       59.4,
+       50.3,
+       45.8,
+       43.5
+      ],
+      "responses": [
+       0.73453,
+       0.48412,
+       0.63383,
+       0.56575,
+       0.52589,
+       0.50658
+      ],
+      "openmhs_states": [
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ],
+       [
+        "CREATED",
+        "VALIDATING",
+        "APPROVED",
+        "DISPATCHED",
+        "ACCEPTED",
+        "APPLIED",
+        "VERIFIED"
+       ]
+      ],
+      "simulator": {
+       "count": 6,
+       "doses": {
+        "B1": 77.5,
+        "B2": 41.2,
+        "B3": 59.4,
+        "B4": 50.3,
+        "B5": 45.8,
+        "B6": 43.5
+       }
+      },
+      "estimate": 42.35,
+      "audit_valid": true
+     }
+    ]
+   },
+   "run_dir": "D:\\openmhs-research\\mad-runs\\MAD-07-0-511759"
+  }
+ }
+}

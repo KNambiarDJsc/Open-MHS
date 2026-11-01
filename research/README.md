@@ -23,6 +23,10 @@ safety, endorsement or collaboration claim is made.
 | Direct versus OpenMHS comparison | [DIRECT_VS_OPENMHS.md](DIRECT_VS_OPENMHS.md) |
 | WoT units implementation investigation | [WOT_UNITS_PROPOSAL.md](WOT_UNITS_PROPOSAL.md) |
 
+**Beyond OpenFlexure.** Simulator-only experiments with four more laboratory-automation
+ecosystems (PyLabRobot, Opentrons, Micro-Manager, SiLA 2, and MADSci as the orchestrator) are in
+[lab-automation/](lab-automation/README.md).
+
 Code: `experiments/` (harness, including `openflexure_quickstart.py`), `generalization/`
 (second device), and `fixtures/`. Raw results: `results/`. Importer and adapter:
 `../adapters/python/wot/`. The OpenFlexure quickstart has been run; its receipts, traces and audit

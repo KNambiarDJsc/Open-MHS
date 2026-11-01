@@ -308,8 +308,20 @@ openmhs tokens create agent:claude --scope 'sim.*:*:read' --scope 'sim.psu-01:*:
       as the caller, so a procedure grants nothing.</li>
       <li><strong>Journal limits.</strong> An operator can cap the journal's size and keep a
       reserve below the cap. Once only the reserve is left, new commands and audited reads are
-      refused with nothing sent, while stops and recovery can still be recorded. Nothing is
-      deleted or archived.</li>
+      refused with nothing sent, while stops and recovery can still be recorded. By default
+      nothing is deleted or archived.</li>
+      <li><strong>Segments and compaction.</strong> A long audit chain can be cut into sealed
+      segment files that verify offline with no gateway and no journal. A seal record commits
+      the chain to a segment's file and to the live state at that point. Only when the gateway
+      is started with <code>--archive</code> can an operator then compact: finished history
+      moves out of the journal in one transaction, everything live stays, and every command is
+      still answered from its segment. Start-up of a compacted 1 GB journal took 80 ms
+      instead of 7.3 s.</li>
+      <li><strong>Event classes and telemetry.</strong> Every audit kind is critical,
+      security, operational or telemetry. Only an allowed, successful read of a device the
+      operator opted in can be summarized instead of recorded one by one; nothing is
+      aggregated by default, and refusals, failed reads and everything about commands stay
+      individual records.</li>
     </ul>
 
     <h2 id="code">Where things are in the code</h2>
@@ -319,14 +331,15 @@ openmhs tokens create agent:claude --scope 'sim.*:*:read' --scope 'sim.psu-01:*:
       <tr><td><code>spec/</code></td><td>The specification and JSON Schemas. The source of truth.</td></tr>
       <tr><td><code>crates/openmhs-types</code></td><td>Descriptors, values, units, lifecycle, validation with stable error codes</td></tr>
       <tr><td><code>crates/openmhs-policy</code></td><td>Grants, credentials, constraints</td></tr>
-      <tr><td><code>crates/openmhs-engine</code></td><td>Command engine, journal, approvals, leases, plans, twins</td></tr>
+      <tr><td><code>crates/openmhs-engine</code></td><td>Command engine, journal (with sealed segments, compaction and the telemetry store), approvals, leases, plans, twins</td></tr>
       <tr><td><code>crates/openmhs-gateway</code>, <code>openmhs-api</code></td><td>Gateway process and local JSON-RPC API</td></tr>
       <tr><td><code>crates/openmhs-cli</code></td><td>The <code>openmhs</code> and <code>openmhsd</code> binaries, demo, scaffolding</td></tr>
       <tr><td><code>crates/openmhs-mcp</code></td><td>MCP server</td></tr>
       <tr><td><code>crates/openmhs-host</code></td><td>Out-of-process adapter host, manifests, signatures</td></tr>
       <tr><td><code>crates/openmhs-sim</code></td><td>Virtual lab with fault injection</td></tr>
       <tr><td><code>crates/openmhs-conformance</code></td><td>Conformance suite and reports</td></tr>
-      <tr><td><code>adapters/</code></td><td>Modbus, MQTT, SCPI, HTTP, profiles, and Python adapters (OPC UA, ROS 2, OctoPrint)</td></tr>
+      <tr><td><code>adapters/</code></td><td>Modbus, MQTT, SCPI, HTTP, profiles, and Python adapters (OPC UA, ROS 2, OctoPrint, and simulator-only PyLabRobot, Opentrons, Micro-Manager and SiLA 2)</td></tr>
+      <tr><td><code>research/lab-automation/</code></td><td>Experiments with PyLabRobot, Opentrons, Micro-Manager, SiLA 2 and MADSci: native baselines, scenarios, raw results, reports</td></tr>
       <tr><td><code>registry/</code>, <code>conformance/reports/</code></td><td>Adapter registry entries and the committed conformance reports behind the matrix</td></tr>
       <tr><td><code>firmware/</code></td><td>ESP32 test firmware used in Experiment 02 (run in QEMU)</td></tr>
       <tr><td><code>python/</code></td><td>Python client SDK</td></tr>

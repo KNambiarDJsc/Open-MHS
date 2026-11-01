@@ -4,7 +4,21 @@ What exists, and how much of it has been checked. "Built" means the code compile
 workspace. "Verified" means the named tests were run and passed. This page is updated at
 the end of each milestone and says plainly when something has not been run.
 
-Last updated: 2026-10-25, on `main` (`m9` pushed to `main` and `m9`).
+Last updated: 2026-11-01. The milestone table below and everything after it describe M0 to M9 as
+of 2026-10-25 and have not been revised; the section that follows covers later work.
+
+## Storage engine and lab-automation research (2026-11-01)
+
+| Item | Status | Verified |
+|---|---|---|
+| [RFC 0002](rfcs/0002-storage-engine.md) M1: indexed recovery; unfinished set checked against the chain at open | Built, on `main` | 565 Rust tests in 89 binaries, clippy `-D warnings` clean (Windows 11) |
+| M2: bounded `audit.tail` and list reads; streamed evidence export; streaming offline verifier | Built, on `main` | Same; measured on 100 MB and 1 GB journals |
+| M3: sealed audit segments, `openmhs audit segment` / `segments` / `verify-segments` | Built, on `main` | Round trip, every bit of a segment flipped, every truncation, crash at each step, full disk |
+| M4: seal records with live-state snapshots; start-up from the newest seal with `--checkpoint-file` | Built, on `main` | Same refusals as full verification for six tamperings; 7.3 s to 2.4 s on a 1 GB journal |
+| M5: `command_keys`; compaction behind `serve --archive` (deletes journal rows) | Built, on `main` | Archival drills (crash at every step, lost file, damaged manifest, restored older journal, duplicate key after archiving, sampled bit flips); 1,004 MB to 28 MB, start-up 80 ms. Power-cut and disk-error rigs not run |
+| M6: event classes; opt-in `serve --telemetry` store and `read.summary` | Built, on `main` | A source scan fails on an unclassified audit kind; no critical or security record lost under quota pressure. Throughput and growth not measured |
+| M7: evaluation on a Raspberry Pi and 10 M-record journals | Not done | |
+| Lab-automation experiments: PyLabRobot, Opentrons, Micro-Manager, SiLA 2, MADSci ([research/lab-automation](../research/lab-automation/README.md)) | Built, simulator only, on branch `research/lab-automation` | Scenarios with injected faults pass in repeated runs; conformance reaches L1 for the three adapters that have a fixture (PyLabRobot, Opentrons, Micro-Manager) and what blocks L2 is written up; the generic SiLA 2 adapter has no fixture, so the suite refuses it. No physical hardware |
 
 ## Milestones
 

@@ -40,9 +40,11 @@
         <li><a href="#mcp">Connect an AI agent over MCP</a></li>
         <li><a href="#python">Python SDK</a></li>
         <li><a href="#check">Check what happened</a></li>
+        <li><a href="#journal">Keep a long journal manageable</a></li>
         <li><a href="#agent-loop">Watch an agent replan</a></li>
         <li><a href="#conformance">Run conformance</a></li>
         <li><a href="#adapter">Write an adapter</a></li>
+        <li><a href="#lab">Lab-automation experiments</a></li>
         <li><a href="#tests">Run the tests</a></li>
         <li><a href="#reference">Reference documents</a></li>
       </ol>
@@ -219,12 +221,36 @@ elif receipt.denied:                               # a refusal is a receipt, not
 <pre><code>openmhs commands list              # every command, its state and why
 openmhs audit tail                 # the latest audit records
 openmhs audit verify               # audit log intact: N records, hash chain verified
+openmhs audit verify --all         # also reads every closed segment (below)
 openmhs devices status             # which devices answer, are busy or leased
 openmhs insights sim.psu-01        # refusals, confirmed values, unresolved outcomes
 openmhs events --follow            # what happens, as it happens</code></pre>
     <p>When something says no, the error code says why, and
     <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/troubleshooting.md">troubleshooting</a>
     says what to do.</p>
+
+    <h2 id="journal">Keep a long journal manageable</h2>
+    <p>The audit chain is verified at every start, so start-up grows with history (7.3 s for a
+    1 GB journal of 1.7 million records on a desktop). Three tools bound it. Design, drills and
+    measurements are in <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/rfcs/0002-storage-engine.md">RFC 0002</a>.</p>
+<pre><code>openmhs audit segment --through-seq 100000 --seal  # close the chain so far as a segment file
+openmhs audit segments                             # each segment and its state
+openmhs audit verify-segments DIR                  # verify the files offline: no gateway, no journal
+openmhs serve --checkpoint-file ck.json            # start from the newest seal, not from the beginning
+openmhs serve --archive                            # allow compaction (it deletes journal rows)
+openmhs audit compact 1 --vacuum                   # move finished history out of the journal</code></pre>
+    <div class="note warn"><strong>Compaction deletes journal rows.</strong> It is off unless the
+    gateway was started with <code>--archive</code>, reads the whole segment back and compares it
+    with the rows first, and keeps everything live (unfinished commands, open approvals, leases
+    and plans) and every command's identity. After it, the segment files are part of your
+    evidence: keep and back them up with the journal. It holds the journal while it runs, and
+    <strong>an older gateway cannot open a compacted journal</strong>.</div>
+    <p>Reads can be summarized too, only if you opt in. With
+    <code>openmhs serve --telemetry sim.psu-01:power.output.voltage.*</code>, allowed successful
+    reads of those devices go to their own <code>telemetry.sqlite</code> (with its own size
+    limits, which count what they drop) and the audit log gets one <code>read.summary</code>
+    per window. Denied reads, failed reads and every read nobody opted in stay individual
+    records. A summary is not evidence of any one reading.</p>
 
     <h2 id="agent-loop">Watch an agent replan</h2>
     <p>A scripted agent, with no model and no API key, connects over MCP, hits a slew limit,
@@ -260,6 +286,15 @@ openmhs conformance --adapter-manifest adapters/python/psu-sim/manifest.json</co
     <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/adapters/python-sdk.md">Python adapter SDK</a>
     and run out of process; the <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/adapters/octoprint.md">OctoPrint adapter</a>
     is a complete example.</p>
+
+    <h2 id="lab">Lab-automation experiments</h2>
+    <p>Simulator-only experiments put OpenMHS in front of other laboratory-automation software
+    without replacing it: PyLabRobot (liquid handling), Opentrons (protocols), Micro-Manager
+    (a microscope), SiLA 2 (a standard instrument interface) and MADSci (an orchestrator). Each
+    has an adapter, a native baseline, scenarios with injected faults, raw results and a report
+    that says what was and was not shown. Nothing was run on physical hardware.</p>
+    <p>Start at <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/README.md">research/lab-automation</a>;
+    results are summarized on the <a href="reports.html#lab">reports page</a>.</p>
 
     <h2 id="tests">Run the tests</h2>
     <p>The full list CI runs is on the <a href="guidelines.html#checks">guidelines</a> page.

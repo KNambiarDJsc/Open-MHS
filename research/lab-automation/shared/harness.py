@@ -45,6 +45,9 @@ class Lab:
         self.proc: subprocess.Popen | None = None
         self.operator: Client | None = None
         self.start_ms = 0.0
+        #: Reuse the first port after a restart, as a deployed gateway has a fixed one.
+        self.sticky_port = False
+        self._port = 0
 
     def start(self, timeout_s: float = 90) -> None:
         runtime = self.home / "gateway.json"
@@ -52,7 +55,7 @@ class Lab:
         t = time.perf_counter()
         self.log = open(self.dir / "gateway.log", "ab")
         self.proc = subprocess.Popen(
-            [str(binary()), "--home", str(self.home), "serve", "--port", "0",
+            [str(binary()), "--home", str(self.home), "serve", "--port", str(self._port),
              "--adapter-manifest", str(self.manifest), "--allow-unsigned-adapters"],
             stdout=subprocess.DEVNULL, stderr=self.log)
         deadline = time.time() + timeout_s
@@ -62,6 +65,8 @@ class Lab:
                     info = json.loads(runtime.read_text())
                     if info.get("pid") == self.proc.pid:
                         self.url = info["url"]
+                        if self.sticky_port:
+                            self._port = int(info["url"].rsplit(":", 1)[1])
                         self.operator = Client(info["url"], info["token"])
                         self.start_ms = (time.perf_counter() - t) * 1000
                         return

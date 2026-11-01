@@ -1,0 +1,11 @@
+# Pinned: the stack and the experiment were checked against these. Python 3.12.
+madsci.workcell_manager==0.8.1
+madsci.location_manager==0.8.1
+madsci.data_manager==0.8.1
+madsci.node_module==0.8.1
+madsci.client==0.8.1
+pylabrobot==0.2.2
+colorama==0.4.6   # structlog's coloured output needs it on Windows
+packaging         # imported by madsci.location_manager but not declared
+# madsci 0.8.1 fails on pydantic 2.14 ("index_key is expected to be an integer or a string").
+pydantic==2.11.9
