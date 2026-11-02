@@ -43,6 +43,8 @@ const KINDS: &[(&str, EventClass)] = &[
     // Critical
     ("command.created", EventClass::Critical),
     ("command.transition", EventClass::Critical),
+    // A later write to the state an unresolved command would be read back from.
+    ("command.superseded", EventClass::Critical),
     ("gateway.recovered", EventClass::Critical),
     ("sim.fault", EventClass::Critical),
     ("procedure.run", EventClass::Critical),

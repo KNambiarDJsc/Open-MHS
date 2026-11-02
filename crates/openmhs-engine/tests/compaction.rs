@@ -94,6 +94,31 @@ fn subjects(j: &Journal) -> Vec<String> {
     s
 }
 
+/// An unresolved command keeps the record that a later write took its reading away, even
+/// after the later command itself has left the journal.
+#[test]
+fn a_supersession_outlives_the_compaction_of_the_command_that_caused_it() {
+    let dir = tempfile::tempdir().unwrap();
+    let j = open(dir.path());
+    held(&j, "cmd-unresolved", None, 10);
+    finished(&j, "cmd-later", None, 20);
+    j.append_audit(
+        ts(30),
+        "command.superseded",
+        "cmd-unresolved",
+        &json!({"by": "cmd-later", "device": "d", "state": "s"}),
+    )
+    .unwrap();
+    archive_next(&j, 100);
+
+    assert_eq!(j.superseded_by("cmd-unresolved").unwrap(), ["cmd-later"]);
+    assert_eq!(
+        j.receipt("cmd-later").unwrap().unwrap().state,
+        CommandState::Denied,
+        "and the later command is still answerable, from its segment"
+    );
+}
+
 #[test]
 fn compaction_moves_finished_history_and_keeps_what_is_live() {
     let dir = tempfile::tempdir().unwrap();

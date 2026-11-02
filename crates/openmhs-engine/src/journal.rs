@@ -1136,6 +1136,21 @@ impl Journal {
         Ok(out)
     }
 
+    /// The commands recorded as having written, after `command_id`, to the state it would
+    /// be read back from, oldest first. These records are chained, and belong to
+    /// `command_id`, so they stay in the journal for as long as it is unfinished.
+    pub fn superseded_by(&self, command_id: &str) -> Result<Vec<String>, JournalError> {
+        let conn = self.lock();
+        let mut stmt = conn.prepare(
+            "SELECT json_extract(data, '$.by') FROM audit \
+             WHERE subject = ?1 AND kind = 'command.superseded' ORDER BY seq",
+        )?;
+        let by = stmt
+            .query_map([command_id], |r| r.get(0))?
+            .collect::<Result<Vec<String>, _>>()?;
+        Ok(by)
+    }
+
     /// Most recent commands first, optionally filtered by principal and state (an empty
     /// `states` means any state).
     pub fn list_commands(

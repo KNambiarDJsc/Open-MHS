@@ -1481,6 +1481,11 @@ impl Engine {
         if let Err(e) = self.transition(id, Dispatched, Some("intent journaled".into()), |_| {}) {
             return self.settle_unrecorded(id, e, false);
         }
+        // Before the device can change: an unresolved command this one overwrites can no
+        // longer be reconciled by reading the device.
+        if let Err(e) = self.note_supersession(device, id, cap, &prepared.expectation) {
+            return self.settle_unrecorded(id, e, false);
+        }
         // And known outside the journal, if a checkpoint file is kept.
         if let Err(e) = self.write_checkpoint() {
             return self.settle_unrecorded(id, e, false);
@@ -1568,6 +1573,70 @@ impl Engine {
             Ok(receipt) => Ok(receipt),
             Err(e) => self.settle_unrecorded(id, e, true),
         }
+    }
+
+    /// Record, against each unresolved earlier command on this device, that command `id`
+    /// is about to write to the state it would be read back from.
+    ///
+    /// A record in the chain and not a query over later commands: finished commands can be
+    /// compacted out of the journal while an unresolved one stays, and this way the evidence
+    /// that a reading no longer speaks for it stays with it.
+    fn note_supersession(
+        &self,
+        device: &Arc<Device>,
+        id: &str,
+        cap: &Capability,
+        expectation: &Expectation,
+    ) -> Result<(), EngineError> {
+        let device_id = device.descriptor.device.id.clone();
+        let earlier = self
+            .inner
+            .journal
+            .open_commands_on_devices(std::slice::from_ref(&device_id))?;
+        let reads_back = match expectation {
+            Expectation::Readback { capability, .. } => Some(capability.as_str()),
+            Expectation::None { .. } => None,
+        };
+        for receipt in earlier.iter().filter(|r| r.command_id != id) {
+            let Some(Expectation::Readback { capability, .. }) =
+                self.inner.journal.expectation(&receipt.command_id)?
+            else {
+                continue; // Nothing to read back: only a person can settle it anyway.
+            };
+            if capability == cap.name || reads_back == Some(capability.as_str()) {
+                self.inner.journal.append_audit(
+                    self.now(),
+                    "command.superseded",
+                    &receipt.command_id,
+                    &serde_json::json!({
+                        "by": id,
+                        "device": device_id,
+                        "state": capability,
+                    }),
+                )?;
+            }
+        }
+        Ok(())
+    }
+
+    /// Commands that may have changed what `command_id` would be read back from. One the
+    /// device refused, or that never left the gateway, changed nothing.
+    fn superseding(&self, command_id: &str) -> Result<Vec<String>, EngineError> {
+        let mut by = Vec::new();
+        for later in self.inner.journal.superseded_by(command_id)? {
+            let no_effect = self.receipt(&later)?.is_some_and(|r| {
+                r.state == Rejected
+                    || (r.state == Failed
+                        && r.adapter_result
+                            .as_ref()
+                            .and_then(|a| a.error.as_ref())
+                            .is_some_and(|e| e.code == "adapter.not_sent"))
+            });
+            if !no_effect && !by.contains(&later) {
+                by.push(later);
+            }
+        }
+        Ok(by)
     }
 
     /// A journal (or checkpoint) write failed while a command was being dispatched or
@@ -2123,6 +2192,11 @@ impl Engine {
         let _guard = self
             .command_guards(&device, &receipt.request.target.device)
             .await;
+        // Under the lock, so no later write can start between this check and the reading.
+        let by = self.superseding(command_id)?;
+        if !by.is_empty() {
+            return Err(EngineError::Superseded { capability, by });
+        }
         let observed = self
             .read_device(
                 &device,

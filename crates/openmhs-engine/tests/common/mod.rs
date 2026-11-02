@@ -10,6 +10,7 @@ use openmhs_adapter::{
     Progress, TokioClock,
 };
 use openmhs_engine::Engine;
+use openmhs_engine::journal::Journal;
 use openmhs_policy::{Effect, Grant, Policy};
 use openmhs_sim::{PsuHandle, VirtualPsu};
 use openmhs_types::descriptor::Operation;
@@ -59,6 +60,15 @@ pub async fn setup(policy: Policy) -> (Engine, PsuHandle) {
     let clock = clock();
     let (psu, handle) = VirtualPsu::new(clock.clone(), 42);
     let engine = Engine::in_memory(clock, policy).unwrap();
+    engine.register(Arc::new(psu)).await.unwrap();
+    (engine, handle)
+}
+
+/// [`setup`], on a journal that outlives the engine (a restart).
+pub async fn setup_with_journal(policy: Policy, journal: Journal) -> (Engine, PsuHandle) {
+    let clock = clock();
+    let (psu, handle) = VirtualPsu::new(clock.clone(), 42);
+    let engine = Engine::with_journal(journal, clock, policy, Default::default());
     engine.register(Arc::new(psu)).await.unwrap();
     (engine, handle)
 }
