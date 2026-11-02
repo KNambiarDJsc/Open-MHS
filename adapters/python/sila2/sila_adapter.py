@@ -29,15 +29,12 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
 import re
 import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from urllib.parse import urlsplit
 
-# Imported before run() starts the SDK's stdin reader: grpcio is a native extension, and on
-# Windows importing one after that never returned for numpy (lab-automation experiment 02).
 from sila2.client import SilaClient
 from sila2.framework.errors.defined_execution_error import DefinedExecutionError
 from sila2.framework.errors.validation_error import ValidationError
@@ -59,6 +56,13 @@ UNITS = {
     ((("Meter", 3),), 1e-6, 0.0): ("volume", "mL"),
     ((("Meter", 3),), 1e-9, 0.0): ("volume", "uL"),
 }
+
+
+#: The SDK's conformance faults (spec/conformance.md §3). They act here, between the adapter
+#: and a real SiLA server, and only under `openmhs conformance`. A server-side fault would need
+#: every server to implement it, which a generic client cannot ask for.
+FIXTURE = {"no_response": "hang_before_apply", "lost_ack": "apply_then_hang",
+           "garbled": "apply_then_malformed", "refuse": "reject"}
 
 
 def snake(name: str) -> str:
@@ -125,10 +129,20 @@ def within(override: dict, native: dict) -> bool:
 class SilaAdapter(Adapter):
     adapter_id = "openmhs.py.sila2"
     version = "0.1.0"
+    fixture_faults = ("link_down", "no_response", "lost_ack", "garbled", "refuse")
+    fixture_counts_deliveries = True
 
     def __init__(self) -> None:
         self.client = None
-        self.pool = ThreadPoolExecutor(max_workers=4)
+        # gRPC calls block, and one that never returns keeps its thread. Reads get their own
+        # threads: reconciling a hung command needs a read, and hung commands must not be able
+        # to use them all up.
+        self.pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="sila-read")
+        self.commands_pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="sila-command")
+        self.deliveries = 0
+        self.link_down = False
+        self.fixture: str | None = None
+        self.reading_source = "device"
         self.properties: dict[str, tuple[str, str, dict]] = {}  # name -> (feature, identifier, spec)
         self.commands: dict[str, tuple[str, str, dict, dict]] = {}  # name -> (feature, id, params, override)
         self.descriptor: dict = {}
@@ -143,6 +157,10 @@ class SilaAdapter(Adapter):
         self.call_timeout_s = float(config.get("call_timeout_ms", 3000)) / 1000
         self.overrides = json.loads(Path(permissions.check_read(config["overrides"])).read_text(encoding="utf-8"))
         self.report_file = config.get("report_file")
+        # What the server on the other end is. The adapter cannot tell a simulated SiLA server
+        # from an instrument, so whoever configures it says; conformance always runs on a test
+        # server. Nothing may claim "simulator" for a device, or "device" for a simulator.
+        self.reading_source = "simulator" if self.fixture_mode else config.get("reading_source", "device")
         await self._call(self._connect)
         self._build()
         if self.report_file:
@@ -237,10 +255,36 @@ class SilaAdapter(Adapter):
     async def describe(self):
         return self.descriptor
 
+    def _link(self) -> None:
+        if self.link_down:
+            raise AdapterError("disconnected", "simulated disconnect")
+
     async def connect(self):
-        await self._call(lambda: self.client.SiLAService.ServerName.get())
+        self._link()
+        try:
+            await self._call(lambda: self.client.SiLAService.ServerName.get())
+        except asyncio.TimeoutError:
+            raise AdapterError("disconnected", f"no answer from the SiLA server within {self.call_timeout_s} s")
+        except Exception as e:
+            raise AdapterError("disconnected", f"SiLA: {type(e).__name__}: {e}")
+
+    async def fixture_inject(self, fault):
+        if fault == "link_down":
+            self.link_down = True
+        else:
+            self.fixture = FIXTURE[fault]
+
+    async def fixture_clear(self):
+        self.link_down = False
+        self.fixture = None
+
+    async def shutdown(self):
+        for pool in (self.pool, self.commands_pool):
+            pool.shutdown(wait=False, cancel_futures=True)
 
     async def health(self):
+        if self.link_down:
+            return ("disconnected", "simulated disconnect")
         try:
             await self._call(lambda: self.client.SiLAService.ServerName.get())
             return "healthy"
@@ -248,6 +292,7 @@ class SilaAdapter(Adapter):
             return ("disconnected", f"{type(e).__name__}: {e}")
 
     async def read(self, capability):
+        self._link()
         if capability not in self.properties:
             raise AdapterError("unsupported", f"no readable capability {capability!r}")
         feature, ident, spec = self.properties[capability]
@@ -259,9 +304,12 @@ class SilaAdapter(Adapter):
             raise AdapterError("disconnected", f"SiLA: {type(e).__name__}: {e}")
         if spec["type"] == "number" or (spec["type"] == "integer" and "unit" in spec):
             value = quantity(value, spec["unit"])
-        return reading(value, source="device")
+        return reading(value, source=self.reading_source)
 
     async def execute(self, command, progress):
+        self.deliveries += 1
+        self.report_deliveries(self.deliveries)
+        self._link()
         if command.capability not in self.commands:
             raise AdapterError("unsupported", f"cannot execute {command.capability!r}")
         feature, ident, sila_params, override = self.commands[command.capability]
@@ -272,8 +320,13 @@ class SilaAdapter(Adapter):
         timeout = override.get("timing", {}).get("timeout_ms", 3000) / 1000
         call = lambda: getattr(getattr(self.client, feature), ident)(**args)
         loop = asyncio.get_running_loop()
+        fault = self.fixture
+        if fault == "hang_before_apply":
+            await asyncio.Event().wait()
+        if fault == "reject":
+            return Rejected("simulated refusal (conformance fixture)")
         try:
-            await asyncio.wait_for(loop.run_in_executor(self.pool, call), timeout)
+            await asyncio.wait_for(loop.run_in_executor(self.commands_pool, call), timeout)
         except asyncio.TimeoutError:
             # The server may still be executing it: the outcome is not known.
             raise AdapterError("timeout", f"{feature}.{ident}: no answer within {timeout} s")
@@ -287,6 +340,10 @@ class SilaAdapter(Adapter):
         except Exception as e:
             raise AdapterError("disconnected", f"SiLA: {type(e).__name__}: {e}")
         progress.accepted()
+        if fault == "apply_then_malformed":
+            raise AdapterError("malformed_response", "simulated garbled response (conformance fixture)")
+        if fault == "apply_then_hang":
+            await asyncio.Event().wait()
         return Applied({})
 
 

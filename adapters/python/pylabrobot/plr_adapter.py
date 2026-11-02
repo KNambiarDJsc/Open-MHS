@@ -183,16 +183,10 @@ class PyLabRobotAdapter(Adapter):
         await super().initialize(config, permissions)
         if config.get("backend", "chatterbox") != "chatterbox":
             raise AdapterError("unsupported", "this adapter only runs PyLabRobot's chatterbox simulation")
-        writable = tuple(permissions.filesystem_write)
 
         def allowed(key: str) -> Path | None:
             path = config.get(key)
-            if not path:
-                return None
-            target = os.path.realpath(path)
-            if not any(os.path.normcase(target).startswith(os.path.normcase(os.path.realpath(w))) for w in writable):
-                raise AdapterError("not_sent", f"config.{key} {path} is not under the manifest's filesystem.write")
-            return Path(target)
+            return Path(permissions.check_write(path)) if path else None
 
         # Which wells an agent may name (descriptor enums); defaults A1..A3 and B1..B3.
         self.source_wells = tuple(config.get("source_wells") or SOURCE_WELLS)
@@ -295,6 +289,16 @@ class PyLabRobotAdapter(Adapter):
         self.link_down = False
         self.fixture = None
 
+    def _refill(self) -> None:
+        """Conformance only: the suite sends many transfers of the same volume, more than a
+        well holds. Restocking the simulated plates keeps its checks about the adapter's
+        answers, not about running out of liquid. Never reached in a running gateway."""
+        for well in self.source_wells:
+            self.source.get_well(well).tracker.set_volume(self.source.get_well(well).max_volume)
+        for well in self.dest_wells:
+            self.dest.get_well(well).tracker.set_volume(0)
+        self.tips.set_tip_state([True] * 96)
+
     def _tips_left(self) -> int:
         return sum(1 for spot in self.tips.get_all_items() if spot.tracker.has_tip)
 
@@ -340,6 +344,8 @@ class PyLabRobotAdapter(Adapter):
                 return Rejected(f"transfer_id {transfer_id!r} was already used")
             if fault == "reject":
                 return Rejected("simulated refusal (conformance fixture)")
+            if self.fixture_mode:
+                self._refill()
             # The whole handler, head included: a refusal after the tip pickup must not
             # leave a tip on the channel. Kept in memory only, between two awaits.
             snapshot = self.lh.serialize_all_state()

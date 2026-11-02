@@ -36,6 +36,23 @@ class PermissionTests(unittest.TestCase):
                     p.check_read(outside)
                 self.assertIn("filesystem.read", e.exception.message)
 
+    def test_writes_must_be_inside_a_declared_write_directory(self):
+        with tempfile.TemporaryDirectory() as root:
+            state = os.path.join(root, "state")
+            os.mkdir(state)
+            read_only = os.path.join(root, "read-only")
+            p = Permissions(filesystem_write=(state,), filesystem_read=(read_only,))
+            self.assertEqual(p.check_write(os.path.join(state, "s.json")),
+                             os.path.realpath(os.path.join(state, "s.json")))
+            for outside in (
+                os.path.join(root, "state-other", "s.json"),  # a sibling sharing the prefix
+                os.path.join(state, "..", "s.json"),
+                os.path.join(read_only, "s.json"),  # declared for reading, not writing
+            ):
+                with self.subTest(outside), self.assertRaises(AdapterError) as e:
+                    p.check_write(outside)
+                self.assertIn("filesystem.write", e.exception.message)
+
     def test_nothing_declared_means_nothing_allowed(self):
         with self.assertRaises(AdapterError):
             Permissions().check_read("anything")

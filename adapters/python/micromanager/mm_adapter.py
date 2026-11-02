@@ -25,8 +25,6 @@ exposure and channel restored at start, as a physical stage would keep its place
 
 from __future__ import annotations
 
-# Imported before run() starts the SDK's stdin reader: on Windows, importing numpy afterwards
-# never returns (research/lab-automation/02_opentrons, finding 1).
 import numpy as np
 from pymmcore_plus import CMMCorePlus
 
@@ -34,7 +32,6 @@ import asyncio
 import hashlib
 import json
 import os
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -134,16 +131,10 @@ class MicroManagerAdapter(Adapter):
 
     async def initialize(self, config, permissions):
         await super().initialize(config, permissions)
-        writable = tuple(os.path.normcase(os.path.realpath(w)) for w in permissions.filesystem_write)
 
         def under_write(key):
             path = config.get(key)
-            if not path:
-                return None
-            target = os.path.realpath(path)
-            if not any(os.path.normcase(target).startswith(w) for w in writable):
-                raise AdapterError("not_sent", f"config.{key} {path} is not under the manifest's filesystem.write")
-            return Path(target)
+            return Path(permissions.check_write(path)) if path else None
 
         self.state_file, self.fault_file = under_write("state_file"), under_write("fault_file")
         self.evidence_dir = under_write("evidence_dir")
@@ -330,6 +321,11 @@ class MicroManagerAdapter(Adapter):
         if fault == "apply_then_hang":
             await asyncio.Event().wait()
         return Applied(result)
+
+    async def shutdown(self):
+        # Blocking, and if Micro-Manager hangs here the SDK ends the process regardless.
+        if self.core is not None:
+            await asyncio.to_thread(self.core.unloadAllDevices)
 
     def _reload_camera(self) -> None:
         c = self.core

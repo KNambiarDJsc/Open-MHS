@@ -18,6 +18,6 @@
   "config": {
     "backend": "chatterbox",
     "tips": 96,
-    "source_ul": { "A1": 200, "A2": 200, "A3": 200 }
+    "source_ul": { "A1": 360, "A2": 360, "A3": 360 }
   }
 }

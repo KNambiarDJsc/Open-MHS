@@ -33,7 +33,6 @@ from pathlib import Path
 # Imported here, before run() starts the SDK's stdin reader thread. On Windows, importing
 # numpy (which opentrons does) while that thread is blocked reading the pipe never returns:
 # reproduced with a minimal adapter whose initialize() only imports opentrons.simulate.
-import opentrons.simulate  # noqa: E402
 
 from openmhs.adapter import Adapter, AdapterError, Applied, Rejected, reading, run
 
@@ -128,16 +127,10 @@ class OpentronsAdapter(Adapter):
 
     async def initialize(self, config, permissions):
         await super().initialize(config, permissions)
-        writable = tuple(os.path.normcase(os.path.realpath(w)) for w in permissions.filesystem_write)
 
         def under_write(key: str) -> Path | None:
             path = config.get(key)
-            if not path:
-                return None
-            target = os.path.realpath(path)
-            if not any(os.path.normcase(target).startswith(w) for w in writable):
-                raise AdapterError("not_sent", f"config.{key} {path} is not under the manifest's filesystem.write")
-            return Path(target)
+            return Path(permissions.check_write(path)) if path else None
 
         self.timeout_ms = int(config.get("run_timeout_ms", 30000))
         self.state_file = under_write("state_file")
