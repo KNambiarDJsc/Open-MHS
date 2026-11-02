@@ -182,9 +182,17 @@ Column B was not built (as in experiment 01).
    The mechanism in the interpreter was not established. The SDK should document this, or
    read stdin differently. This would bite any adapter built on numpy: Micro-Manager, SiLA
    clients, most of scientific Python.
+
+   **Resolved 2026-11-02.** Reproduced without the SDK: a thread blocked reading a process's
+   inherited stdin pipe makes numpy's DLL load hang forever, on numpy 1.26 and 2.5 under Python
+   3.12. The SDK now reads a duplicate of that pipe, with descriptor 0 pointed at the null device,
+   which removes the hang on both, so adapters may import when they like
+   (`python/tests/test_adapter_process.py`). Which call inside the DLL's start-up blocks is still
+   not known; one early theory, `GetFileType`, was tested and is wrong.
 2. **The simulator is not a safety check** (§7): it ran overfills and negative volumes. In
    this stack, the parameter bounds exist only in OpenMHS's contract.
-3. **The conformance gap of experiment 01 recurs, identically** (L1, the same five checks). Two
+3. **Resolved 2026-11-02: the adapter now reaches L3 ([results](../results/2026-11-02/SUMMARY.md); RFC 0003 §2).** As first
+   found: **the conformance gap of experiment 01 recurs, identically** (L1, the same five checks). Two
    independent adapters needed a new id per request to make readback meaningful, and the
    suite cannot generate one. This is now a property of OpenMHS, not of one adapter.
 4. **No cross-parameter bounds.** transfer + diluent ≤ capacity is not expressible, so the

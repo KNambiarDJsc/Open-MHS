@@ -166,6 +166,14 @@ Column B was not built.
    - resolve such a command as superseded rather than "not applied";
    - hold idempotent capabilities too.
    This needs a design note and a test before any change.
+
+   **Resolved 2026-11-02, by the first option, more strictly.** A newer write is recorded in the
+   audit chain as soon as it is dispatched, and reconciling the older command is refused
+   (`command.reconcile.superseded`). It stays `UNKNOWN_OUTCOME` until a person settles it. MM-05
+   now checks for that, and the results above for MM-05 are from before the change
+   ([RFC 0003](../../../docs/rfcs/0003-reconciliation-and-verification.md) §1). What is left is that a
+   person must still choose "applied" or "not applied" when the evidence for either was overwritten.
+   The adapter also now reaches **L3** rather than L1 ([results](../results/2026-11-02/SUMMARY.md)).
 3. **A move-then-snap is only safe as a sequence under a lease.** Command-level serialization
    is not enough. The provenance record made the interleaving visible, so nothing was
    misreported, but the agent received the wrong image.

@@ -74,17 +74,25 @@ happy path.
    might have applied. Fix: acknowledge only after commit. (`01` finding 1.)
 2. **Reconciliation answers "is the target there now?", not "did this command happen?"**
    A move that did happen was reported "not applied" because a newer move had superseded it.
-   Idempotent writes make this subtle. (`03` finding 2.)
+   Idempotent writes make this subtle. (`03` finding 2.) *Update: now refused, in both directions.
+   The reverse was also possible: a command that never applied reported "applied", because a newer
+   command had set the same value. A nice honest sub-point: the system can only record that it does
+   not know; a person still has to pick a side (RFC 0003 §1).*
 3. **The unique-id problem.** To tell this request's effect from an earlier one, an adapter needs a
    fresh id per request. The conformance suite reuses one, so three adapters could not pass L2 for
    the same reason. A test suite and a safety property pulling in opposite directions. (`01`, `02`, `03`.)
+   *Update: the planned fix was a new `unique` field. The information was already declared; the
+   suite only had to use it. Three adapters went from L1 to L3 with no contract change. Good story
+   about finding out you did not need the feature (RFC 0003 §2).*
 4. **Reconciliation is only as good as the device's saved state.** Restart the simulator empty and
    an applied transfer reconciles as "not applied": a wrong answer nothing can detect. (`01` finding 4.)
 5. **A lock held during a simulated hang froze unrelated reads.** Found by the conformance suite,
    fixed in three adapters. A good argument for fault-injection suites. (`03` finding 4.)
 6. **The import that never returned.** Importing numpy inside a running adapter hung forever on
-   Windows. Cause not fully understood; fix: import before the SDK starts reading stdin. Anyone
-   writing a scientific-Python adapter will hit it. (`02` finding 1.)
+   Windows. (`02` finding 1.) *Update: reproduced in 20 lines, and fixed in the SDK by reading a
+   duplicate of stdin with descriptor 0 on the null device. Sidebar material: my first probes "proved"
+   nothing was wrong, because `communicate()` closes stdin, so the reader was never blocked. And a
+   tidy theory (`GetFileType`) was simply wrong. Still do not know the exact call inside the DLL.*
 7. **Descriptions are not contracts.** SiLA tells you types, units, ranges. It does not tell you a
    command is irreversible, idempotent, or what an error means for the instrument. Don't infer from
    names. (`04`.)
@@ -127,8 +135,14 @@ If you want the "systems" half of the post. All from RFC 0002.
   never exercised.)
 - A test that fails on its own mistake is good news: the scanner for unclassified audit kinds
   flagged an error code at first.
-- Read your own glue code with the same suspicion as upstream's: my MADSci node returns `failed`
-  after 60 s of waiting for approval when it should return `unknown`. Found by reading, not testing.
+- Read your own glue code with the same suspicion as upstream's: my MADSci node returned `failed`
+  after 60 s of waiting for approval. Found by reading, not testing. *Update: the note said "should
+  return `unknown`", and that was also wrong, since the transfer could then still run after the
+  workflow moved on. The fix withdraws it first. Fixing it turned up four more of the same shape.*
+- A swallowed exception hid leaked processes for days: `kill = kill_all`, which called `kill`, inside
+  `contextlib.suppress(Exception)`. A SiLA server and a gateway were left behind per scenario.
+- A fix can remove a protection you forgot was one: a conformance fixture for the generic SiLA adapter
+  would have let the suite send test commands to a real instrument. The earlier refusal was doing a job.
 - The machine's disk filling up during the work was its own small lesson in what "cannot write"
   does to a result file (two came out empty and were regenerated).
 
@@ -161,8 +175,8 @@ If you want the "systems" half of the post. All from RFC 0002.
 - Version pins: PyLabRobot 0.2.2, opentrons 10.1.0, pymmcore-plus 0.18.1 (MMCore 12.5.1), sila2
   0.14.0, madsci 0.8.1. They will have moved.
 - Nothing was run on physical hardware. Nobody upstream has been contacted or has endorsed anything.
-- Branch status: the lab-automation work is on `research/lab-automation`; the storage work is on
-  `main`. Check which is merged when you publish links.
+- Branch status: the storage work is on `main`; the lab-automation and hardening work is in PR #10,
+  which has not been merged. Check before publishing links.
 
 ## Diagrams you could draw
 

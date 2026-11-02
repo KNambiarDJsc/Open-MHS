@@ -21,7 +21,7 @@ what the software reported at the snap, nothing optical.
 
 Install: `pip install -r requirements.txt`, then `mmcore install --test-adapters --dest mm`
 next to the manifest, and set `config.adapter_dir` to the folder it creates. pymmcore-plus and
-numpy are imported at module level: on Windows, importing numpy after the SDK starts reading
-stdin never returns. Simulation-only configuration: `state_file`, `evidence_dir`, `fault_file`
+numpy are imported at module level, so a missing install fails at start; the SDK no longer
+requires that order. Simulation-only configuration: `state_file`, `evidence_dir`, `fault_file`
 (including `camera_offline` and `camera_online`). See
 [research/lab-automation/03_micromanager](../../../research/lab-automation/03_micromanager/).

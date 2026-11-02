@@ -207,6 +207,12 @@ most of the way with less machinery.
    Fix options for the core: a way to declare a parameter unique (and have the suite generate
    one), or verification bound to the command id rather than a parameter.
 
+   **Resolved 2026-11-02, more simply than either option.** A parameter that verification reads
+   back is already declared to be what tells commands apart, so the suite now sends a new value
+   each time. With the fixture restocking its simulated plates, the adapter reaches **L3**, with
+   no descriptor or protocol change ([RFC 0003](../../../docs/rfcs/0003-reconciliation-and-verification.md)
+   §2, [results](../results/2026-11-02/SUMMARY.md)). The [conformance.json](results/conformance.json) above is the old run.
+
 ## 16. What OpenMHS contributes
 
 All shown by an execution record above:

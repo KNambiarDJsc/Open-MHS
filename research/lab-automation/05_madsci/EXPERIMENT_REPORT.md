@@ -60,7 +60,7 @@ boundary is a MADSci node that **is an OpenMHS client**: an action turns into on
 | `DENIED`, `REJECTED`, `FAILED` | `failed`, with the policy or adapter error |
 | gateway unreachable before sending | `failed`, "nothing sent" |
 | submitted but no answer back | **`unknown`** |
-| `AWAITING_APPROVAL` | the step waits (up to 60 s) for the operator; after that it returns `failed` (finding 7: it should be `unknown`) |
+| `AWAITING_APPROVAL` | the step waits, bounded, for the operator. When the wait runs out it **withdraws** the command, and reports `failed` only once that is confirmed (`CANCELLED`, never sent); if the withdrawal got no answer, `unknown`; if the approver won the race, the command's real outcome (finding 7) |
 
 No second scheduler: OpenMHS never decides what runs next. **The step's idempotency key is the
 step's identity**: the workflow carries `key` as an argument, so a retried step reaches the same
@@ -115,7 +115,7 @@ Three complete runs, **every scenario passed in all three** (27 scenario runs):
 | MAD-03 | Two experiments at once on the one liquid handler: six transfers, each in its own well, every dose as planned, no overlap in OpenMHS's dispatch windows. **Caveat (§15, finding 4)**: the dispatches were about 3 s apart, so MADSci's own scheduling had already separated them and OpenMHS's lock was not contended |
 | MAD-04 | The transfer happened and its answer was lost. The step went `unknown` and the workflow `failed`. A retry from MADSci **before** reconciling returned the same command: still `unknown`, no second transfer. After `commands.reconcile` in OpenMHS (`RECONCILED_APPLIED`) a retry succeeded from the existing command and the workflow completed. The well holds **60 µL; the measurement is the response of 60 µL (0.646)** |
 | MAD-04 native | The same fault without OpenMHS: MADSci was told the step failed, the retry transferred again, and the well holds **120 µL**; the plate reader reports 0.837, the response of a dose twice the one the experiment believes it ran |
-| MAD-05 | The transfer is held for an operator: OpenMHS `AWAITING_APPROVAL`, nothing transferred, MADSci shows the step running. Approved within the node's 60 s wait: `VERIFIED` and the workflow completes. What happens after 60 s is finding 7 |
+| MAD-05 | The transfer is held for an operator: OpenMHS `AWAITING_APPROVAL`, nothing transferred, MADSci shows the step running. Approved within the node's 60 s wait: `VERIFIED` and the workflow completes. What happens when nobody approves in time is MAD-08 |
 | MAD-06 | The gateway (and its adapter) were killed mid-step. The step went `unknown`. After restart OpenMHS held the command as `UNKNOWN_OUTCOME`, nothing re-sent. Reconciled: `RECONCILED_APPLIED`. The MADSci retry completed from the existing command; one 55 µL dose in the well |
 | MAD-07 | The same experiment twice, fixed seed, two fresh stacks: identical planned doses, measured doses and responses (0.73453, 0.48412, 0.63383, 0.56575, 0.52589, 0.50658), identical estimate, identical simulator state, identical OpenMHS transition sequences per command, and both audit chains verify. The audit hashes themselves differ because they cover timestamps |
 
@@ -168,6 +168,27 @@ Column B was not built.
    OpenMHS command is still `AWAITING_APPROVAL`: approving it later would run a transfer MADSci has
    already recorded as failed. It should return `unknown`. More generally MADSci has no status for
    "held for a person", so a held step looks like a running one.
+
+   **Resolved 2026-11-02; "return `unknown`" would not have been enough.** A transfer that can
+   still run after its workflow has moved on is an uncontrolled transfer whatever status it is
+   given. So the step now takes it off the table first: when the wait runs out it withdraws the
+   command. `CANCELLED` means it can never run, and `failed` is then true. If the approver won the
+   race, the step follows the command to its real outcome. If the withdrawal got no answer, the
+   step is `unknown`, and the deadline the step set at submission still bounds it, so a command
+   whose node has vanished still cannot start late.
+
+   Reading the node for this found four more of the same shape, each fixed with a test:
+   - a gateway lost *during* the wait raised an exception, which MADSci records as `failed`;
+   - `UNVERIFIABLE` (applied, unconfirmed) was reported `failed`;
+   - a definite refusal by the gateway (bad parameters, a key conflict) was reported `unknown`;
+   - a retry re-chose its source well, so once the first well ran low the same key carried a
+     different request and OpenMHS refused it.
+
+   A retry now looks the key up and attaches to what exists. It makes a new attempt, linked in the
+   step's record, only where the gateway's record shows nothing was sent, and a person's denial
+   stands. All of it is decided in `stack/governed.py`, free of MADSci, with deterministic tests on
+   a fake clock plus tests on a real gateway (`tests/test_governed.py`); **MAD-08** and **MAD-09**
+   exercise it on the real stack ([results](../results/2026-11-02/SUMMARY.md)). MADSci still has no status for "held for a person".
 8. **Harness bugs fixed on the way** (not findings about the systems): the gateway restarted on a
    new port the node did not follow; two stacks shared one process-wide environment variable.
 

@@ -170,6 +170,19 @@ Column B was not built.
    adapter only reads it.
 5. **The conformance suite cannot test an adapter whose faults live in the device.** It refuses
    without an adapter-side fixture, which is correct but leaves generic adapters unconformable.
+
+   **Resolved 2026-11-02.** The adapter injects the suite's faults between itself and a real SiLA
+   server, and reaches **L3** against the simulated servers ([results](../results/2026-11-02/SUMMARY.md)). The refusal had a
+   point that a plain fixture would lose: the suite really sends commands, and the adapter cannot
+   tell a simulated server from an instrument. So it offers a fixture only when its configuration
+   says `reading_source: simulator`, and **SILA-08** shows the suite refuses otherwise and sends
+   nothing. That setting also stops a simulated server's readings being reported as `device`, as
+   they were in the runs above.
+
+   The gateway restart this report left out is **SILA-07**, and it holds: `UNKNOWN_OUTCOME`
+   before and after a hard restart, the same key sends nothing, and reconciliation finds the value.
+   Also: reads now have threads of their own (a hung command held one of four shared threads, and
+   four hung commands would have blocked the read that reconciliation needs).
 6. **Validation is duplicated by design.** SiLA validates natively, so OpenMHS's bounds are a
    second check. What they add is refusing before any network traffic, and lab policy
    narrower than the instrument's own range.

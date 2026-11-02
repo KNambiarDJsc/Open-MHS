@@ -1,5 +1,8 @@
 # Writing an OpenMHS adapter
 
+**Before an adapter is accepted**, it should meet the [quality gate](QUALITY_GATE.md): what it must
+provide, and which of that OpenMHS already gives it.
+
 This guide takes you from nothing to a tested adapter for your device. You need to know
 some Rust. You do not need to know anything about OpenMHS: everything the guide relies
 on is explained here, with links to the specification for detail.

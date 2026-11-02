@@ -14,6 +14,13 @@ It starts a throwaway gateway and walks through denial by default, range, unit a
 limits, human approval, a lost acknowledgement becoming `UNKNOWN_OUTCOME`, and audit
 verification.
 
+To follow one failure all the way through, a lost answer, what is uncertain about it, what
+reconciliation can establish, and a separate process checking the evidence afterwards:
+
+```sh
+python examples/first-failure/first_failure.py    # needs the Python SDK from this repository
+```
+
 ## 2. Start a gateway
 
 In terminal 1:

@@ -46,7 +46,10 @@ prototype connects without TLS (`insecure`), so use it only against local, simul
 The SDK is imported at module level: grpcio is a native extension (see
 `research/lab-automation/02_opentrons`, finding 1).
 
-There is no conformance fixture: the faults are in the server, not in the adapter. So
-`openmhs conformance` refuses to send it test commands, which is correct for an adapter that
-cannot know whether the far end is simulated. See
-[research/lab-automation/04_sila2](../../../research/lab-automation/04_sila2/).
+**`config.reading_source` says what the server is:** `device` (the default) or `simulator`. The
+adapter cannot tell, so readings carry what you say. It also decides conformance: the suite really
+sends commands, so `openmhs conformance` refuses this adapter unless `reading_source` is `simulator`.
+Do not set that on a server connected to an instrument. Faults are injected in the adapter, between
+it and the server. Against the simulated servers in
+[research/lab-automation/04_sila2](../../../research/lab-automation/04_sila2/) it reaches L3; that
+says nothing about any instrument.
