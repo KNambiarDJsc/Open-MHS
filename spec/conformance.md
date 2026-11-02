@@ -140,7 +140,9 @@ Notes:
 - **Values come from the descriptor.** A write moves a small step from the current
   reading: 5% of the declared range, at most half the slew limit, and enough to tell
   apart by readback. Booleans toggle; enums move to another declared value. Action
-  parameters that verification reads back move a small step too; others take the middle
+  parameters that verification reads back move a small step too, and a text one is new on
+  every command, because readback can only tell a command's effect from an earlier one's if
+  the value differs, and a device may rightly refuse an id it has seen. Others take the middle
   of their range. A caller can pass sample values instead.
 - **Preconditions are established from the descriptor.** Before sending, the suite asks
   the engine for a preflight. If a precondition fails, it sets the precondition's property
