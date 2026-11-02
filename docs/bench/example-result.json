@@ -56,7 +56,7 @@
  "evidence": [
   {
    "path": "research/lab-automation/results/2026-11-02/gaps/gaps-pylabrobot-001.json",
-   "sha256": "79b042fbb390aaa251f53cb573ea660bcd05eee332be6bff797ac0d183caa309"
+   "sha256": "0f4ce8c2432d65ee42b8a72b6f4c2057fa070d3bc591938654ebb0f3c3d38d68"
   }
  ],
  "outcome": "PASS",
