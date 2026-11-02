@@ -30,9 +30,10 @@ import os
 import types
 from pathlib import Path
 
-# Imported here, before run() starts the SDK's stdin reader thread. On Windows, importing
-# numpy (which opentrons does) while that thread is blocked reading the pipe never returns:
-# reproduced with a minimal adapter whose initialize() only imports opentrons.simulate.
+# Imported at start, though _simulate only needs it there: a missing install fails at start, and
+# the seconds this takes do not come out of the first run's timeout, where they could turn a
+# good run into an unknown outcome. The noqa keeps a linter from "tidying" it away.
+import opentrons.simulate  # noqa: E402, F401
 
 from openmhs.adapter import Adapter, AdapterError, Applied, Rejected, reading, run
 

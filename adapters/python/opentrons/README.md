@@ -34,8 +34,8 @@ Set `OT_API_CONFIG_DIR`, or opentrons writes its configuration under `~/.opentro
 opentrons 10.1.0 simulates the Flex only, and passes neither bundled data nor runtime-parameter
 overrides at the API levels the Flex needs, so the adapter uses the documented interactive
 context (`opentrons.simulate.get_protocol_api`) and calls the protocol's `dilute(protocol,
-params)`. It imports opentrons when a run starts; the SDK no longer restricts when a native
-extension can be imported on Windows.
+params)`. It imports opentrons at start, so that the seconds this takes do not come out of the
+first run's timeout. The SDK no longer restricts when a native extension can be imported on Windows.
 
 Simulation-only configuration: `state_file`, `evidence_dir` (each run's command log as JSON),
 `fault_file`, `run_timeout_ms`. See
