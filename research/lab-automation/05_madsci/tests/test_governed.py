@@ -60,6 +60,7 @@ class FakeGateway:
         self.by_key: dict[str, dict] = {}
         self.by_id: dict[str, dict] = {}
         self.calls: list[str] = []
+        self.timeouts: list[object] = []
         self.submitted: list[dict] = []
         self.submit_result = None
         self.fail: dict[str, Exception] = {}
@@ -72,6 +73,7 @@ class FakeGateway:
 
     def call(self, method: str, params: dict | None = None, *, timeout: object = None) -> dict:
         self.calls.append(method)
+        self.timeouts.append(timeout)
         if method in self.fail:
             raise self.fail[method]
         if method == "commands.get_by_key":
@@ -178,6 +180,14 @@ class Scripted(unittest.TestCase):
         self.held()
         self.run_step()
         self.assertEqual(self.gw.submitted[0]["deadline_ms"], 90_000)
+
+    def test_every_call_to_the_gateway_has_its_own_timeout(self) -> None:
+        # A gateway that accepts a connection and never answers must not outlast the bounds above.
+        self.held()
+        self.run_step()
+        self.assertTrue({"commands.get_by_key", "commands.submit", "commands.get", "commands.cancel"}
+                        <= set(self.gw.calls))
+        self.assertNotIn(None, self.gw.timeouts)
 
     # ---- losing the gateway
 

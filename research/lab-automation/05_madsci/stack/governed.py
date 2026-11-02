@@ -82,6 +82,7 @@ class GovernedStep:
         approval_grace_s: float = 30.0,
         poll_s: float = 0.5,
         submit_timeout_s: float = 60.0,
+        call_timeout_s: float = 10.0,
         clock: Callable[[], float] = time.monotonic,
         sleep: Callable[[float], None] = time.sleep,
     ) -> None:
@@ -92,6 +93,8 @@ class GovernedStep:
         self.approval_grace_s = approval_grace_s
         self.poll_s = poll_s
         self.submit_timeout_s = submit_timeout_s
+        # A gateway that accepts a connection and never answers must not outlast a bound.
+        self.call_timeout_s = call_timeout_s
         self.clock = clock
         self.sleep = sleep
 
@@ -146,7 +149,8 @@ class GovernedStep:
         for attempt in range(1, MAX_ATTEMPTS + 1):
             try:
                 receipt = self.client.call("commands.get_by_key",
-                                           {"device": self.device, "idempotency_key": attempt_key(key, attempt)})
+                                           {"device": self.device, "idempotency_key": attempt_key(key, attempt)},
+                                           timeout=self.call_timeout_s)
             except GatewayError as e:
                 if e.code == "command.unknown":
                     return None, attempt, earlier
@@ -204,14 +208,14 @@ class GovernedStep:
 
     def _get(self, command_id: str) -> dict[str, Any] | None:
         try:
-            return self.client.call("commands.get", {"command_id": command_id})
+            return self.client.call("commands.get", {"command_id": command_id}, timeout=self.call_timeout_s)
         except OpenMHSError:
             return None
 
     def _withdraw(self, command_id: str, record: dict[str, Any]) -> StepResult | None:
         """``None`` when the withdrawal was refused because the command moved on."""
         try:
-            receipt = self.client.call("commands.cancel", {"command_id": command_id})
+            receipt = self.client.call("commands.cancel", {"command_id": command_id}, timeout=self.call_timeout_s)
         except GatewayError as e:
             if e.code == "command.invalid_state":
                 return None  # the approver got there first: follow it

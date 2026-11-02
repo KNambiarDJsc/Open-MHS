@@ -111,11 +111,11 @@ class Stack:
         args = [str(EXP / "stack" / "nodes.py"), "liquid_handler", "--port", str(self.ports["liquid_handler"]),
                 "--mode", self.mode]
         if self.mode == "openmhs":
-            args += ["--gateway", self.lab.url, "--token", self.token,
-                     "--approval-wait-s", str(self.approval_wait_s)]
+            args += ["--gateway", self.lab.url, "--approval-wait-s", str(self.approval_wait_s)]
         else:
             args += ["--state-file", str(self.state), "--native-fault-file", str(self.native_fault)]
-        self.spawn("liquid_handler", args)
+        # In the environment, not on the command line, where any process could read it.
+        self.spawn("liquid_handler", args, env={"OPENMHS_TOKEN": self.token} if self.mode == "openmhs" else None)
         self.wait_http("liquid_handler", "/status")
 
     def start(self) -> None:

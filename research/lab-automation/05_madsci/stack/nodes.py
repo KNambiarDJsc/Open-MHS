@@ -11,7 +11,7 @@ actually in the well from the PyLabRobot simulator's saved state, not from what 
 so a lost or doubled transfer changes the measurement. The response is a known logistic of
 the dose plus seeded noise: a synthetic system with a ground truth, not a chemical model.
 
-    python nodes.py liquid_handler --port 2101 --mode openmhs --gateway URL --token T
+    OPENMHS_TOKEN=T python nodes.py liquid_handler --port 2101 --mode openmhs --gateway URL
     python nodes.py liquid_handler --port 2101 --mode native --state-file F
     python nodes.py plate_reader  --port 2102 --state-file F --seed 7
 """
@@ -22,6 +22,7 @@ import argparse
 import asyncio
 import hashlib
 import json
+import os
 import sys
 import uuid
 from pathlib import Path
@@ -53,7 +54,6 @@ def response(dose_ul: float, seed: int, well: str) -> float:
 class LiquidHandlerConfig(RestNodeConfig):
     mode: str = "openmhs"
     gateway: str = ""
-    token: str = ""
     state_file: str = ""
     native_fault_file: str = ""
     approval_wait_s: float = 60.0
@@ -67,7 +67,8 @@ class LiquidHandler(RestNode):
         if self.config.mode == "openmhs":
             from openmhs import Client
 
-            self.client = Client(self.config.gateway, self.config.token)
+            # The timeout also covers the source-well reads made while building a request.
+            self.client = Client(self.config.gateway, os.environ["OPENMHS_TOKEN"], timeout=30)
             self.step = GovernedStep(self.client, DEVICE, approval_wait_s=self.config.approval_wait_s)
         else:
             self._native_start()
@@ -179,7 +180,6 @@ def main() -> None:
     ap.add_argument("--port", type=int, required=True)
     ap.add_argument("--mode", default="openmhs")
     ap.add_argument("--gateway", default="")
-    ap.add_argument("--token", default="")
     ap.add_argument("--state-file", default="")
     ap.add_argument("--native-fault-file", default="")
     ap.add_argument("--seed", type=int, default=7)
@@ -188,7 +188,7 @@ def main() -> None:
     url = f"http://127.0.0.1:{a.port}"
     if a.node == "liquid_handler":
         node = LiquidHandler(LiquidHandlerConfig(node_name="liquid_handler", node_url=url, mode=a.mode,
-                                                 gateway=a.gateway, token=a.token, state_file=a.state_file,
+                                                 gateway=a.gateway, state_file=a.state_file,
                                                  native_fault_file=a.native_fault_file,
                                                  approval_wait_s=a.approval_wait_s))
     else:
