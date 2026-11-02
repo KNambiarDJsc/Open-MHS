@@ -510,33 +510,34 @@ fn opted_in_reads_become_summaries_through_the_gateway() {
     }
     let (code, r) = gw.cli(Some(&agent), &["read", PSU, "power.output.enabled"]);
     assert_eq!(code, OK, "{r}");
-    // The summary is written once the window has ended, by the gateway on its own.
+    // Summaries are written once a window has ended, by the gateway on its own. The four reads
+    // may fall in more than one 1 s window on a slow machine, so they are added up.
     let deadline = Instant::now() + Duration::from_secs(20);
-    let summary = loop {
+    loop {
         let (code, tail) = gw.op(&["audit", "tail", "--limit", "100"]);
         assert_eq!(code, OK);
         let entries = tail.as_array().unwrap();
-        if let Some(s) = entries.iter().find(|e| e["kind"] == "read.summary") {
-            let kinds: Vec<&str> = entries
-                .iter()
-                .map(|e| e["kind"].as_str().unwrap())
-                .collect();
-            assert_eq!(
-                kinds.iter().filter(|k| **k == "read").count(),
-                1,
-                "{kinds:?}"
-            );
-            break s.clone();
+        let summaries: Vec<_> = entries
+            .iter()
+            .filter(|e| e["kind"] == "read.summary")
+            .collect();
+        let reads: u64 = summaries
+            .iter()
+            .map(|s| s["data"]["reads"].as_u64().unwrap())
+            .sum();
+        if reads >= 4 {
+            assert_eq!(reads, 4, "{tail}");
+            for s in &summaries {
+                assert_eq!(s["subject"], PSU);
+                assert_eq!(s["data"]["capability"], "power.output.voltage.measured");
+            }
+            let individual = entries.iter().filter(|e| e["kind"] == "read").count();
+            assert_eq!(individual, 1, "only the read nobody opted in: {tail}");
+            break;
         }
-        assert!(Instant::now() < deadline, "no summary: {tail}");
+        assert!(Instant::now() < deadline, "summaries cover {reads} of 4 reads: {tail}");
         std::thread::sleep(Duration::from_millis(250));
-    };
-    assert_eq!(summary["subject"], PSU);
-    assert_eq!(summary["data"]["reads"], 4);
-    assert_eq!(
-        summary["data"]["capability"],
-        "power.output.voltage.measured"
-    );
+    }
     assert!(gw.home().join("telemetry.sqlite").exists());
     let (code, v) = gw.op(&["audit", "verify"]);
     assert_eq!(code, OK, "{v}");
