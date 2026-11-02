@@ -83,7 +83,9 @@ class Lab:
                         self.start_ms = (time.perf_counter() - t) * 1000
                         return
             if self.proc.poll() is not None:
-                raise RuntimeError(f"gateway exited: see {self.dir / 'gateway.log'}")
+                self.log.flush()
+                log = (self.dir / "gateway.log").read_text(encoding="utf-8", errors="replace")[-800:]
+                raise RuntimeError(f"gateway exited: {log}")
             time.sleep(0.05)
         raise RuntimeError(f"gateway did not start in {timeout_s} s")
 

@@ -79,9 +79,14 @@ class SilaLab(Lab):
                 try:
                     self.direct = SilaClient("127.0.0.1", self.port, insecure=True)
                     self.direct.SiLAService.ServerName.get()
-                    break
+                    return
                 except Exception:
+                    if self.server.poll() is not None:
+                        break
                     time.sleep(0.1)
+            self.server_log.flush()
+            log = (self.dir / "sila_server.log").read_text(encoding="utf-8", errors="replace")[-800:]
+            raise RuntimeError(f"the SiLA server did not start: {log}")
 
     def start(self, timeout_s: float = 90) -> None:
         self.start_server()

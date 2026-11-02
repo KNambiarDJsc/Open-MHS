@@ -1,5 +1,23 @@
 # Resolved with `uv pip compile --universal`, constrained to the exact versions the experiment
 # ran with on Windows, for Python 3.12. Markers keep it installable on Linux too.
+annotated-doc==0.0.5
+    # via
+    #   typer
+black==26.10.1
+    # via
+    #   sila2
+cffi==2.1.1 ; platform_python_implementation != 'PyPy'
+    # via
+    #   cryptography
+click==8.5.0
+    # via
+    #   black
+colorama==0.4.6 ; sys_platform == 'win32'
+    # via
+    #   typer
+cryptography==50.0.2
+    # via
+    #   sila2
 grpcio==1.85.1
     # via
     #   grpcio-tools
@@ -10,18 +28,64 @@ grpcio-tools==1.85.1
 ifaddr==0.2.0
     # via
     #   zeroconf
+isort==9.0.2
+    # via
+    #   sila2
+jinja2==3.1.6
+    # via
+    #   sila2
 lxml==6.1.3
     # via
     #   sila2
+markdown-it-py==4.2.0
+    # via
+    #   rich
+markupsafe==3.0.4
+    # via
+    #   jinja2
+mdurl==0.1.2
+    # via
+    #   markdown-it-py
+mypy-extensions==1.1.0
+    # via
+    #   black
+    #   isort
+packaging==26.3
+    # via
+    #   black
+pathspec==1.1.1
+    # via
+    #   black
+platformdirs==4.14.2
+    # via
+    #   black
 protobuf==7.36.2
     # via
     #   grpcio-tools
+pycparser==3.12 ; implementation_name != 'PyPy' and platform_python_implementation != 'PyPy'
+    # via
+    #   cffi
+pygments==2.21.0
+    # via
+    #   rich
+pytokens==0.4.1
+    # via
+    #   black
+rich==15.0.0
+    # via
+    #   typer
 setuptools==84.2.1
     # via
     #   grpcio-tools
+shellingham==1.5.4
+    # via
+    #   typer
 sila2==0.14.0
     # via
-    #   -r adapters/python/sila2/requirements.txt
+    #   -r research/lab-automation/04_sila2/requirements.txt
+typer==0.27.3
+    # via
+    #   sila2
 typing-extensions==4.16.0
     # via
     #   grpcio
