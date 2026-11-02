@@ -95,14 +95,12 @@ def finish_report(report: dict[str, Any], out: str | Path) -> Path:
            "environment": environment(), "summary": summarize(report["scenarios"]), **report}
     path.parent.mkdir(parents=True, exist_ok=True)
     try:
-        with open(path, "x", encoding="utf-8", newline="
-") as f:
+        with open(path, "x", encoding="utf-8", newline="\n") as f:
             json.dump(doc, f, indent=1, default=str)
             f.write("\n")
     except FileExistsError:
         fallback = next_path(path.parent, path.stem)
-        with open(fallback, "x", encoding="utf-8", newline="
-") as f:
+        with open(fallback, "x", encoding="utf-8", newline="\n") as f:
             json.dump(doc, f, indent=1, default=str)
             f.write("\n")
         print(f"{path} already exists and is evidence: this run was written to {fallback} instead", flush=True)
@@ -127,8 +125,7 @@ def write_results(directory: Path, stem: str, meta: dict[str, Any], results: dic
         "scenarios": results,
     }
     path = next_path(directory, stem)
-    with open(path, "x", encoding="utf-8", newline="
-") as f:
+    with open(path, "x", encoding="utf-8", newline="\n") as f:
         json.dump(doc, f, indent=1, default=str)
         f.write("\n")
     return path

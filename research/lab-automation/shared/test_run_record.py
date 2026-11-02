@@ -55,8 +55,7 @@ class Evidence(unittest.TestCase):
     def test_a_result_has_the_same_bytes_on_every_platform(self) -> None:
         # Git stores LF. A file written with CRLF would not match a digest taken of it.
         path = write_results(self.dir, "g", {}, {"A": scenario("PASS")})
-        self.assertNotIn(b"
-", path.read_bytes())
+        self.assertNotIn(b"\r\n", path.read_bytes())
 
     def test_an_unknown_outcome_word_is_refused(self) -> None:
         with self.assertRaises(ValueError):
