@@ -37,6 +37,9 @@ HERE = Path(__file__).resolve()
 EXP = HERE.parents[1]
 sys.path[:0] = [str(EXP / "stack"), str(HERE.parents[2] / "shared")]
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+# MADSci prints box-drawing tables; on a cp1252 console that would end the scenario.
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 from harness import REPO, Check, Lab, codes, summary  # noqa: E402
 
 import experiment  # noqa: E402
@@ -55,8 +58,10 @@ def free_port() -> int:
 
 
 class Stack:
-    def __init__(self, root: Path, mode: str = "openmhs", approval: bool = False, seed: int = 7):
+    def __init__(self, root: Path, mode: str = "openmhs", approval: bool = False, seed: int = 7,
+                 approval_wait_s: float = 60.0):
         self.root, self.mode, self.approval, self.seed = root, mode, approval, seed
+        self.approval_wait_s = approval_wait_s
         root.mkdir(parents=True)
         self.state = root / "plr_state.json"
         self.fault = root / "plr_fault.json"
@@ -105,7 +110,8 @@ class Stack:
         args = [str(EXP / "stack" / "nodes.py"), "liquid_handler", "--port", str(self.ports["liquid_handler"]),
                 "--mode", self.mode]
         if self.mode == "openmhs":
-            args += ["--gateway", self.lab.url, "--token", self.token]
+            args += ["--gateway", self.lab.url, "--token", self.token,
+                     "--approval-wait-s", str(self.approval_wait_s)]
         else:
             args += ["--state-file", str(self.state), "--native-fault-file", str(self.native_fault)]
         self.spawn("liquid_handler", args)
@@ -324,6 +330,76 @@ def mad05(s: Stack, check: Check) -> dict:
     return {"held": summary(held) if held else None, "approved": summary(approved), "workflow": experiment.steps_of(wf)}
 
 
+def await_step(s: Stack, wf_id: str, timeout: float = 30) -> dict:
+    wf = await_wf(s, wf_id, timeout)
+    return {"workflow": experiment.status_of(wf), **experiment.steps_of(wf)}
+
+
+def mad08(s: Stack, check: Check) -> dict:
+    """Nobody approves in time. The step must say what is true, and nothing may run later."""
+    started = start_async(s, "B1", 50.0, "mad08")
+    first = await_step(s, started.workflow_id)
+    held = s.receipt("mad08")
+    check("no approval in time: the command was withdrawn, on record, and never sent",
+          held["state"] == "CANCELLED" and "DISPATCHED" not in [t["state"] for t in held["transitions"]],
+          held["state"])
+    check("MADSci's step failed because it is known not to have run, and says why",
+          first["dispense"]["status"] == "failed" and first["workflow"] == "failed"
+          and "withdrawn" in str(first["dispense"]["errors"]), first["dispense"])
+    check("nothing was transferred", s.sim()["count"] == 0, s.sim())
+    # The approver turns up late. It must change nothing.
+    late = None
+    try:
+        s.lab.operator.call("commands.approve", {"command_id": held["command_id"]}, timeout=30)
+    except Exception as e:
+        late = getattr(e, "code", type(e).__name__)
+    check("a late approval is refused and nothing runs", late == "command.invalid_state" and s.sim()["count"] == 0,
+          (late, s.sim()))
+    # MADSci retries the step: approval is asked for again, under a linked new attempt.
+    s.client.retry_workflow(started.workflow_id, index=0, await_completion=False, raise_on_failed=False,
+                            prompt_on_error=False)
+    second, deadline = None, time.time() + 15
+    while time.time() < deadline and not second:
+        second = s.receipt("mad08~2")
+        time.sleep(0.1)
+    check("retry: a new attempt, held for approval, linked to the withdrawn one",
+          second and second["state"] == "AWAITING_APPROVAL" and second["command_id"] != held["command_id"],
+          second and second["state"])
+    approved = s.lab.operator.call("commands.approve", {"command_id": second["command_id"]}, timeout=30)
+    wf = await_wf(s, started.workflow_id)
+    steps = experiment.steps_of(wf)
+    check("approved in time: VERIFIED, the workflow completes, exactly one dose in the well",
+          approved["state"] == "VERIFIED" and experiment.status_of(wf) == "completed" and s.sim()["count"] == 1
+          and abs(steps["measure"]["result"]["dose_ul"] - 50.0) < 1e-9, (approved["state"], s.sim()))
+    check("the step's record ties the attempts together",
+          steps["dispense"]["result"]["earlier_attempts"] == [{"command_id": held["command_id"], "state": "CANCELLED"}]
+          and steps["dispense"]["result"]["command_id"] == second["command_id"]
+          and steps["dispense"]["result"]["approved_by"], steps["dispense"]["result"])
+    return {"first": first, "withdrawn": summary(held), "second": summary(approved), "final": steps}
+
+
+def mad09(s: Stack, check: Check) -> dict:
+    """An approver says no. That is a definite answer, and a retry does not ask again."""
+    started = start_async(s, "B1", 50.0, "mad09")
+    held, deadline = None, time.time() + 15
+    while time.time() < deadline and not held:
+        held = s.receipt("mad09")
+        time.sleep(0.1)
+    approval = next(a for a in s.lab.operator.call("approvals.list", {}) if a.get("command_id") == held["command_id"])
+    s.lab.operator.call("approvals.deny", {"id": approval["id"], "reason": "wrong plate"})
+    wf = await_wf(s, started.workflow_id)
+    steps = experiment.steps_of(wf)
+    check("denied: MADSci's step failed, with the approver's denial, nothing transferred",
+          steps["dispense"]["status"] == "failed" and "approval.denied" in str(steps["dispense"]["errors"])
+          and s.sim()["count"] == 0, (steps["dispense"], s.sim()))
+    wf2 = retry(s, started.workflow_id, 0)
+    steps2 = experiment.steps_of(wf2)
+    check("retry: the denial stands; no new approval is requested, nothing is sent",
+          steps2["dispense"]["status"] == "failed" and s.receipt("mad09~2") is None and s.sim()["count"] == 0,
+          (steps2["dispense"]["status"], s.sim()))
+    return {"denied": steps, "after_retry": steps2}
+
+
 def mad06(s: Stack, check: Check) -> dict:
     s.fault.write_text(json.dumps({"next_transfer": "apply_then_hang"}))
     started = start_async(s, "B1", 55.0, "mad06")
@@ -378,6 +454,9 @@ SCENARIOS = {
     "MAD-05": ("a transfer that needs approval", mad05, {"approval": True}),
     "MAD-06": ("the gateway killed mid-step, restarted, reconciled, retried", mad06, {}),
     "MAD-07": ("the same experiment twice with a fixed seed", mad07, "twice"),
+    "MAD-08": ("no approval in time: withdrawn, a late approval refused, retried, one dose", mad08,
+               {"approval": True, "approval_wait_s": 3.0}),
+    "MAD-09": ("an approver denies: a definite failure that a retry does not undo", mad09, {"approval": True}),
 }
 
 

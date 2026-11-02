@@ -22,9 +22,7 @@ import argparse
 import asyncio
 import hashlib
 import json
-import math
 import sys
-import time
 import uuid
 from pathlib import Path
 
@@ -35,11 +33,13 @@ from madsci.node_module.helpers import action
 from madsci.node_module.rest_node_module import RestNode
 
 REPO = Path(__file__).resolve().parents[4]
-sys.path[:0] = [str(REPO / "python"), str(REPO / "adapters" / "python" / "pylabrobot")]
+sys.path[:0] = [str(REPO / "python"), str(REPO / "adapters" / "python" / "pylabrobot"),
+                str(Path(__file__).resolve().parent)]
+
+from governed import FAILED, SUCCEEDED, GovernedStep, StepResult  # noqa: E402
 
 DEVICE = "plr.lh-01"
 EMAX, EC50_UL, HILL, NOISE = 1.0, 42.0, 1.6, 0.01  # the synthetic system's ground truth
-APPROVAL_WAIT_S = 60.0
 
 
 def response(dose_ul: float, seed: int, well: str) -> float:
@@ -56,6 +56,7 @@ class LiquidHandlerConfig(RestNodeConfig):
     token: str = ""
     state_file: str = ""
     native_fault_file: str = ""
+    approval_wait_s: float = 60.0
 
 
 class LiquidHandler(RestNode):
@@ -67,6 +68,7 @@ class LiquidHandler(RestNode):
             from openmhs import Client
 
             self.client = Client(self.config.gateway, self.config.token)
+            self.step = GovernedStep(self.client, DEVICE, approval_wait_s=self.config.approval_wait_s)
         else:
             self._native_start()
 
@@ -81,45 +83,15 @@ class LiquidHandler(RestNode):
         return "A1"  # let the contract or PyLabRobot refuse it
 
     def _governed(self, well: str, dose_ul: float, key: str) -> ActionResult:
-        try:
-            self.client.info()
-            source = self._source(dose_ul)
-        except Exception as e:  # the gateway is down: nothing was sent
-            return ActionFailed(json_result={"transfer_id": key, "well": well, "dose_ul": dose_ul},
-                                errors=[Error(message=f"OpenMHS gateway unreachable, nothing sent: {e}",
-                                              error_type="OpenMHSUnreachable")])
-        request = {"target": {"device": DEVICE, "capability": "liquid.transfer"}, "operation": "invoke",
-                   "idempotency_key": key,
-                   "params": {"transfer_id": key, "source": source, "dest": well,
-                              "volume": {"value": dose_ul, "unit": "uL"}}}
-        try:
-            r = self.client.call("commands.submit", {"request": request}, timeout=60)
-        except Exception as e:
-            # Sent, but the answer did not come back: the transfer may or may not have happened.
-            return ActionResult(status=ActionStatus.UNKNOWN,
-                                json_result={"transfer_id": key, "well": well, "dose_ul": dose_ul},
-                                errors=[Error(message=f"no answer from OpenMHS after submitting ({type(e).__name__}): "
-                                                      "reconcile in OpenMHS before retrying this step",
-                                              error_type="OpenMHSOutcomeUnknown")])
-        deadline = time.time() + APPROVAL_WAIT_S
-        while r["state"] == "AWAITING_APPROVAL" and time.time() < deadline:
-            time.sleep(0.5)
-            r = self.client.call("commands.get", {"command_id": r["command_id"]})
-        record = {"command_id": r["command_id"], "openmhs_state": r["state"], "transfer_id": key,
-                  "source": request["params"]["source"], "well": well, "dose_ul": dose_ul,
-                  "transitions": [t["state"] for t in r["transitions"]]}
-        if r["state"] in ("VERIFIED", "RECONCILED_APPLIED"):
-            return ActionSucceeded(json_result=record)
-        if r["state"] in ("UNKNOWN_OUTCOME", "TIMED_OUT", "DISPATCHED", "ACCEPTED", "APPLIED"):
-            # The transfer may or may not have happened. Say so; never report success or retry.
-            return ActionResult(status=ActionStatus.UNKNOWN, json_result=record,
-                                errors=[Error(message=f"OpenMHS command {r['command_id']} is {r['state']}: "
-                                                      "reconcile it in OpenMHS before retrying this step",
-                                              error_type="OpenMHSOutcomeUnknown")])
-        errors = r["policy"].get("errors") or [{"code": r["state"], "message": json.dumps(r.get("adapter_result"))}]
-        return ActionFailed(json_result=record,
-                            errors=[Error(message=f"{e['code']}: {e.get('message', '')}", error_type="OpenMHS")
-                                    for e in errors])
+        def request() -> dict:
+            # Built only for a new command, so a retry keeps the source its command named
+            # even if that well has since run low: a different one would be a different
+            # request under the same key, which OpenMHS refuses.
+            return {"target": {"device": DEVICE, "capability": "liquid.transfer"}, "operation": "invoke",
+                    "params": {"transfer_id": key, "source": self._source(dose_ul), "dest": well,
+                               "volume": {"value": dose_ul, "unit": "uL"}}}
+
+        return as_action_result(self.step.run(key, {"transfer_id": key, "well": well, "dose_ul": dose_ul}, request))
 
     # ---------------------------------------------------------------- native
 
@@ -168,6 +140,21 @@ class LiquidHandler(RestNode):
         return self._native(well, float(dose_ul))
 
 
+def as_action_result(result: StepResult) -> ActionResult:
+    """A step's status, as MADSci's. ``unknown`` ends a MADSci workflow without saying the
+    transfer did not happen, which is what ``failed`` would say."""
+    record = dict(result.record)
+    source = (record.get("request_params") or {}).get("source")
+    if source:
+        record["source"] = source
+    errors = [Error(message=message, error_type=kind) for kind, message in result.errors]
+    if result.status == SUCCEEDED:
+        return ActionSucceeded(json_result=record)
+    if result.status == FAILED:
+        return ActionFailed(json_result=record, errors=errors)
+    return ActionResult(status=ActionStatus.UNKNOWN, json_result=record, errors=errors)
+
+
 class PlateReaderConfig(RestNodeConfig):
     state_file: str = ""
     seed: int = 7
@@ -196,12 +183,14 @@ def main() -> None:
     ap.add_argument("--state-file", default="")
     ap.add_argument("--native-fault-file", default="")
     ap.add_argument("--seed", type=int, default=7)
+    ap.add_argument("--approval-wait-s", type=float, default=60.0)
     a = ap.parse_args()
     url = f"http://127.0.0.1:{a.port}"
     if a.node == "liquid_handler":
         node = LiquidHandler(LiquidHandlerConfig(node_name="liquid_handler", node_url=url, mode=a.mode,
                                                  gateway=a.gateway, token=a.token, state_file=a.state_file,
-                                                 native_fault_file=a.native_fault_file))
+                                                 native_fault_file=a.native_fault_file,
+                                                 approval_wait_s=a.approval_wait_s))
     else:
         node = PlateReader(PlateReaderConfig(node_name="plate_reader", node_url=url, state_file=a.state_file,
                                              seed=a.seed))

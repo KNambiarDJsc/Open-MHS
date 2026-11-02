@@ -912,6 +912,7 @@ async fn dispatch(
 
         method::COMMANDS_GET => {
             let p: CommandIdParams = params(raw)?;
+            settle_expired_approvals(engine);
             let receipt = engine
                 .receipt(&p.command_id)
                 .map_err(engine_error)?
@@ -922,6 +923,7 @@ async fn dispatch(
 
         method::COMMANDS_GET_BY_KEY => {
             let p: CommandKeyParams = params(raw)?;
+            settle_expired_approvals(engine);
             let receipt = engine
                 .receipt_by_key(&session.principal, &p.device, &p.idempotency_key)
                 .map_err(engine_error)?
@@ -1339,6 +1341,16 @@ fn unknown_device(device: &str) -> RpcError {
 }
 
 /// Also used for commands the caller may not see, so their existence isn't revealed.
+/// A command past its deadline can no longer be approved, so a status read must not still
+/// say `AWAITING_APPROVAL`. Expiry is otherwise only noticed by approval calls. If the journal
+/// cannot take the write, the read still answers: the deadline binds either way (`approve`
+/// checks it again), and only this report is behind.
+fn settle_expired_approvals(engine: &Engine) {
+    if let Err(e) = engine.sweep_approvals() {
+        tracing::warn!(error = %e, "could not expire approvals past their deadline");
+    }
+}
+
 fn unknown_command(id: &str) -> RpcError {
     gateway_error("command.unknown", format!("unknown command {id}"), vec![])
 }
