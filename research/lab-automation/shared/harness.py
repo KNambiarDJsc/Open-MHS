@@ -34,6 +34,17 @@ def binary() -> Path:
     return Path(path)
 
 
+def kill_tree(proc: subprocess.Popen) -> None:
+    """Hard-kill a process and its children. On Windows a venv's python.exe is a launcher, and
+    killing it alone leaves the real interpreter running."""
+    if proc.poll() is None:
+        if platform.system() == "Windows":
+            subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True)
+        else:
+            proc.kill()
+        proc.wait()
+
+
 class Lab:
     """One gateway home with one adapter, restartable on the same files."""
 
@@ -78,12 +89,8 @@ class Lab:
 
     def kill(self) -> None:
         """Hard-kill the gateway and its adapter child: no orderly shutdown."""
-        if self.proc and self.proc.poll() is None:
-            if platform.system() == "Windows":
-                subprocess.run(["taskkill", "/T", "/F", "/PID", str(self.proc.pid)], capture_output=True)
-            else:
-                self.proc.kill()
-            self.proc.wait()
+        if self.proc:
+            kill_tree(self.proc)
         with contextlib.suppress(Exception):
             self.log.close()
 
@@ -158,11 +165,17 @@ def run_all(scenarios: dict[str, tuple[str, Callable, Callable[[Path], Lab]]], m
             audit = lab.operator.audit_verify().to_dict()
             check("audit chain verifies", audit["valid"], audit["records"])
         except Exception as e:  # report, do not hide
-            detail = {"exception": f"{type(e).__name__}: {e}"}
+            import traceback
+
+            detail = {"exception": f"{type(e).__name__}: {e}", "traceback": traceback.format_exc()[-2500:]}
             check("scenario ran to the end", False, detail["exception"])
         finally:
-            with contextlib.suppress(Exception):
-                lab.kill()
+            # Whatever else the lab started goes too (a SiLA server). Not suppressed quietly:
+            # a harness that cannot stop what it started leaks processes between scenarios.
+            try:
+                getattr(lab, "kill_all", lab.kill)()
+            except Exception as e:
+                check("the lab was stopped", False, f"{type(e).__name__}: {e}")
         report["scenarios"][sid] = {"title": title, "passed": check.passed,
                                     "seconds": round(time.perf_counter() - t, 1),
                                     "checks": check.items, "detail": detail, "run_dir": str(lab.dir)}

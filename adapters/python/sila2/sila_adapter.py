@@ -158,9 +158,12 @@ class SilaAdapter(Adapter):
         self.overrides = json.loads(Path(permissions.check_read(config["overrides"])).read_text(encoding="utf-8"))
         self.report_file = config.get("report_file")
         # What the server on the other end is. The adapter cannot tell a simulated SiLA server
-        # from an instrument, so whoever configures it says; conformance always runs on a test
-        # server. Nothing may claim "simulator" for a device, or "device" for a simulator.
-        self.reading_source = "simulator" if self.fixture_mode else config.get("reading_source", "device")
+        # from an instrument, so whoever configures it says, and it is assumed to be real.
+        self.reading_source = config.get("reading_source", "device")
+        # The conformance suite really sends its commands. So no fixture, and so no test commands,
+        # unless the configuration says the far end is a simulator (spec/conformance.md §5).
+        if self.fixture_mode and self.reading_source != "simulator":
+            self.fixture_faults = ()
         await self._call(self._connect)
         self._build()
         if self.report_file:

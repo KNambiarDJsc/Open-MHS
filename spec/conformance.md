@@ -153,7 +153,9 @@ Notes:
 - **Hazardous capabilities** are exercised by default, because the suite is meant for
   fixtures and simulators. Switching that off leaves their checks `untested`.
 - **Commands are really sent.** Run the suite against fixtures and simulators, not
-  against hardware that could hurt someone.
+  against hardware that could hurt someone. A generic adapter that cannot tell a simulator from
+  an instrument offers no fixture unless its configuration says the far end is simulated, and
+  the suite then refuses it.
 
 ## 6. Report
 

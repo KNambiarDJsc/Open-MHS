@@ -48,8 +48,9 @@ checkable by the suite, so reviewers look for them.
   cannot use up (`adapters/python/sila2/sila_adapter.py`).
 - **Checking a path by string prefix.** `/data/lab` also matches `/data/lab-other`. Use
   `permissions.check_read` and `permissions.check_write`.
-- **Claiming the wrong source.** A generic client cannot tell a simulated server from an instrument:
-  make it a setting, and never default a test run to `"device"`.
+- **Claiming the wrong source, or testing the wrong thing.** A generic client cannot tell a simulated
+  server from an instrument: make it a setting that defaults to `"device"`, and offer no conformance
+  fixture unless it says `"simulator"`, or the suite's real commands could reach an instrument.
 - **A reused id verifying against an earlier effect.** Where verification reads an id back, refuse a
   reused one. The suite sends new ones.
 

@@ -25,7 +25,7 @@ from sila2.client import SilaClient
 
 HERE = Path(__file__).resolve()
 sys.path.insert(0, str(HERE.parents[2] / "shared"))
-from harness import REPO, Check, Lab, codes, reached_device, run_all, summary  # noqa: E402
+from harness import REPO, Check, Lab, binary, codes, kill_tree, reached_device, run_all, summary  # noqa: E402
 
 EXP = HERE.parents[1]
 ADAPTER = REPO / "adapters" / "python" / "sila2" / "sila_adapter.py"
@@ -87,14 +87,10 @@ class SilaLab(Lab):
         self.start_server()
         super().start(timeout_s)
 
-    def kill(self) -> None:
-        super().kill()
-
     def kill_all(self) -> None:
         self.kill()
-        if self.server and self.server.poll() is None:
-            self.server.kill()
-            self.server.wait()
+        if self.server:
+            kill_tree(self.server)
 
     def fault(self, fault: dict) -> None:
         self.fault_file.write_text(json.dumps(fault))
@@ -198,6 +194,44 @@ def sila05(lab: SilaLab, check: Check) -> dict:
     return {"lost": summary(lost), "reconciled": summary(rec), "waited_ms": round(waited)}
 
 
+def sila07(lab: SilaLab, check: Check) -> dict:
+    """The gateway dies and restarts around a lost answer. The SiLA server stays up throughout."""
+    agent = lab.agent("agent:sila", GRANTS)
+    lab.fault({"next_set": "apply_then_delay", "delay_s": 8})
+    request = {"target": {"device": DEVICE, "capability": SET}, "operation": "invoke", "idempotency_key": "sila07",
+               "params": {"target_temperature": degc(41.0)}}
+    lost = agent.call("commands.submit", {"request": request}, timeout=30)
+    check("the answer was lost: UNKNOWN_OUTCOME", lost["state"] == "UNKNOWN_OUTCOME", lost["state"])
+    check("the server holds 41 degC", lab.direct.TemperatureController.TargetTemperature.get() == 41.0)
+    lab.kill()
+    lab.start()
+    after = lab.operator.call("commands.get", {"command_id": lost["command_id"]})
+    check("after a hard restart it is still UNKNOWN_OUTCOME", after["state"] == "UNKNOWN_OUTCOME", after["state"])
+    again_agent = lab.agent("agent:sila", GRANTS)
+    again = again_agent.call("commands.submit", {"request": request}, timeout=30)
+    check("the same key after the restart returns the same command, and sends nothing",
+          again["command_id"] == lost["command_id"] and again["state"] == "UNKNOWN_OUTCOME", again["state"])
+    rec = lab.operator.call("commands.reconcile", {"command_id": lost["command_id"]})
+    check("reconciled by reading the server: RECONCILED_APPLIED", rec["state"] == "RECONCILED_APPLIED", rec["state"])
+    return {"lost": summary(lost), "after_restart": summary(after), "reconciled": summary(rec)}
+
+
+def sila08(lab: SilaLab, check: Check) -> dict:
+    """The suite really sends commands, so an adapter not told its server is simulated refuses."""
+    manifest = json.loads(lab.manifest.read_text())
+    manifest["config"].pop("reading_source")
+    real = lab.dir / "manifest-as-if-real.json"
+    real.write_text(json.dumps(manifest))
+    before = lab.direct.TemperatureController.TargetTemperature.get()
+    done = subprocess.run([str(binary()), "--home", str(lab.dir / "conformance-home"), "conformance",
+                           "--adapter-manifest", str(real)], capture_output=True, text=True, timeout=120)
+    text = done.stdout + done.stderr
+    check("conformance refuses to test a server not declared simulated", done.returncode != 0
+          and "no conformance fixture" in text, (done.returncode, text[-300:]))
+    check("and nothing was sent to it", lab.direct.TemperatureController.TargetTemperature.get() == before)
+    return {"exit": done.returncode}
+
+
 def perf(lab: SilaLab, check: Check, n: int = 20) -> dict:
     agent = lab.agent("agent:sila", GRANTS)
     gov, nat = [], []
@@ -219,10 +253,7 @@ def perf(lab: SilaLab, check: Check, n: int = 20) -> dict:
 
 class Make:
     def __call__(self, root: Path) -> SilaLab:
-        lab = SilaLab(root)
-        # run_all kills the gateway; the SiLA server must go too.
-        lab.kill = lab.kill_all  # type: ignore[method-assign]
-        return lab
+        return SilaLab(root)  # run_all calls kill_all, so the SiLA server goes too
 
 
 SCENARIOS = {
@@ -231,6 +262,8 @@ SCENARIOS = {
     "SILA-03": ("govern a command: verified, narrowed, denied", sila03, Make()),
     "SILA-04": ("a native SiLA execution error, translated", sila04, Make()),
     "SILA-05": ("applied, response lost", sila05, Make()),
+    "SILA-07": ("a hard gateway restart around a lost answer", sila07, Make()),
+    "SILA-08": ("conformance refuses a server not declared simulated", sila08, Make()),
     "PERF": ("latency, governed vs the SiLA client alone", perf, Make()),
 }
 
