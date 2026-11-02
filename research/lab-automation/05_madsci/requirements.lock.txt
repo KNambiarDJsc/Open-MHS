@@ -1,0 +1,303 @@
+# Resolved with `uv pip compile --universal`, constrained to the exact versions the experiment
+# ran with on Windows, for Python 3.12. Markers keep it installable on Linux too.
+aenum==3.1.17
+    # via
+    #   madsci-common
+annotated-doc==0.0.5
+    # via
+    #   fastapi
+annotated-types==0.8.0
+    # via
+    #   pydantic
+anyio==4.16.0
+    # via
+    #   httpx
+    #   starlette
+    #   watchfiles
+argon2-cffi==25.1.0
+    # via
+    #   minio
+argon2-cffi-bindings==26.1.0
+    # via
+    #   argon2-cffi
+certifi==2026.10.23
+    # via
+    #   httpcore
+    #   httpx
+    #   minio
+    #   requests
+cffi==2.1.1
+    # via
+    #   argon2-cffi-bindings
+charset-normalizer==3.5.2
+    # via
+    #   requests
+classy-fastapi==0.7.0
+    # via
+    #   madsci-common
+click==8.5.0
+    # via
+    #   madsci-client
+    #   madsci-common
+    #   trogon
+    #   uvicorn
+colorama==0.4.6
+    # via
+    #   -r research/lab-automation/05_madsci/requirements.txt
+dill==0.4.1
+    # via
+    #   multiprocess
+dnspython==2.9.1
+    # via
+    #   pymongo
+fastapi==0.162.0
+    # via
+    #   classy-fastapi
+    #   madsci-common
+filelock==4.2.6
+    # via
+    #   madsci-common
+grpcio==1.85.1
+    # via
+    #   grpcio-tools
+    #   sila2
+grpcio-tools==1.85.1
+    # via
+    #   sila2
+h11==0.16.0
+    # via
+    #   httpcore
+    #   uvicorn
+httpcore==1.0.9
+    # via
+    #   httpx
+httptools==0.9.0
+    # via
+    #   uvicorn
+httpx==0.28.1
+    # via
+    #   madsci-client
+    #   madsci-common
+idna==3.20
+    # via
+    #   anyio
+    #   httpx
+    #   requests
+ifaddr==0.2.0
+    # via
+    #   zeroconf
+linkify-it-py==2.2.0
+    # via
+    #   markdown-it-py
+lxml==6.1.3
+    # via
+    #   sila2
+madsci-client==0.8.1
+    # via
+    #   -r research/lab-automation/05_madsci/requirements.txt
+    #   madsci-data-manager
+    #   madsci-node-module
+    #   madsci-workcell-manager
+madsci-common==0.8.1
+    # via
+    #   madsci-client
+    #   madsci-data-manager
+    #   madsci-location-manager
+    #   madsci-node-module
+    #   madsci-workcell-manager
+madsci-data-manager==0.8.1
+    # via
+    #   -r research/lab-automation/05_madsci/requirements.txt
+madsci-location-manager==0.8.1
+    # via
+    #   -r research/lab-automation/05_madsci/requirements.txt
+madsci-node-module==0.8.1
+    # via
+    #   -r research/lab-automation/05_madsci/requirements.txt
+madsci-workcell-manager==0.8.1
+    # via
+    #   -r research/lab-automation/05_madsci/requirements.txt
+markdown-it-py==4.2.0
+    # via
+    #   mdit-py-plugins
+    #   rich
+    #   textual
+mdit-py-plugins==0.6.1
+    # via
+    #   textual
+mdurl==0.1.2
+    # via
+    #   markdown-it-py
+minio==7.2.20
+    # via
+    #   madsci-client
+mmh3==5.3.1
+    # via
+    #   pottery
+multiprocess==0.70.19
+    # via
+    #   madsci-common
+opentelemetry-api==1.45.2
+    # via
+    #   fastapi
+    #   madsci-client
+    #   madsci-common
+packaging==26.3
+    # via
+    #   -r research/lab-automation/05_madsci/requirements.txt
+platformdirs==4.14.2
+    # via
+    #   textual
+pottery==3.0.1
+    # via
+    #   madsci-location-manager
+    #   madsci-workcell-manager
+protobuf==7.36.2
+    # via
+    #   grpcio-tools
+pycparser==3.12 ; implementation_name != 'PyPy'
+    # via
+    #   cffi
+pycryptodome==4.2.0
+    # via
+    #   minio
+pydantic==2.11.9
+    # via
+    #   -r research/lab-automation/05_madsci/requirements.txt
+    #   classy-fastapi
+    #   fastapi
+    #   madsci-common
+    #   pydantic-extra-types
+    #   pydantic-settings
+    #   pydantic-settings-export
+    #   python-ulid
+    #   sqlmodel
+pydantic-core==2.33.2
+    # via
+    #   pydantic
+pydantic-extra-types==2.11.1
+    # via
+    #   madsci-common
+pydantic-settings==2.16.2
+    # via
+    #   madsci-common
+    #   pydantic-settings-export
+pydantic-settings-export==1.1.3
+    # via
+    #   madsci-common
+pygments==2.21.0
+    # via
+    #   rich
+    #   textual
+pylabrobot==0.2.2
+    # via
+    #   -r research/lab-automation/05_madsci/requirements.txt
+pymongo==4.19.0
+    # via
+    #   madsci-common
+    #   madsci-location-manager
+python-dotenv==1.2.4
+    # via
+    #   madsci-common
+    #   pydantic-settings
+    #   uvicorn
+python-multipart==0.0.33
+    # via
+    #   madsci-common
+python-ulid==4.1.0
+    # via
+    #   madsci-common
+pyyaml==6.0.3
+    # via
+    #   madsci-common
+    #   uvicorn
+redis==8.1.0
+    # via
+    #   madsci-location-manager
+    #   madsci-workcell-manager
+    #   pottery
+regex==2026.9.29
+    # via
+    #   madsci-common
+    #   madsci-node-module
+requests==2.34.2
+    # via
+    #   madsci-common
+rich==15.0.0
+    # via
+    #   madsci-client
+    #   madsci-common
+    #   textual
+semver==3.1.0
+    # via
+    #   madsci-common
+setuptools==84.2.1
+    # via
+    #   grpcio-tools
+sila2==0.14.0
+    # via
+    #   madsci-client
+simpleeval==1.0.8
+    # via
+    #   madsci-common
+sqlalchemy==2.1.6
+    # via
+    #   sqlmodel
+sqlmodel==0.0.48
+    # via
+    #   madsci-common
+starlette==1.10.0
+    # via
+    #   fastapi
+structlog==26.1.0
+    # via
+    #   madsci-client
+textual==8.2.8
+    # via
+    #   trogon
+trogon==0.6.0
+    # via
+    #   madsci-client
+typing-extensions==4.16.0
+    # via
+    #   anyio
+    #   fastapi
+    #   grpcio
+    #   minio
+    #   opentelemetry-api
+    #   pottery
+    #   pydantic
+    #   pydantic-core
+    #   pydantic-extra-types
+    #   pydantic-settings
+    #   pylabrobot
+    #   sila2
+    #   sqlalchemy
+    #   sqlmodel
+    #   starlette
+    #   textual
+    #   typing-inspection
+typing-inspection==0.4.4
+    # via
+    #   fastapi
+    #   pydantic
+    #   pydantic-settings
+urllib3==2.8.0
+    # via
+    #   minio
+    #   requests
+uvicorn==0.54.0
+    # via
+    #   madsci-common
+uvloop==0.23.0 ; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin' and sys_platform != 'win32'
+    # via uvicorn
+watchfiles==1.3.0
+    # via
+    #   uvicorn
+websockets==17.4
+    # via
+    #   pylabrobot
+    #   uvicorn
+zeroconf==0.153.0
+    # via
+    #   sila2

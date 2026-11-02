@@ -7,8 +7,13 @@
 use openmhs_types::Value;
 use openmhs_types::descriptor::{Capability, Slew, Tolerance, ValueSpec, ValueType, Verification};
 use serde_json::{Map, json};
+use std::sync::atomic::{AtomicU64, Ordering};
 
 const TEXT_SAMPLE: &str = "openmhs-conformance";
+
+/// Distinguishes the text values of one run; the run's start distinguishes runs, as a device
+/// may keep what it has seen across runs.
+static NEXT_TEXT: AtomicU64 = AtomicU64::new(0);
 
 /// The capability whose reading confirms `cap`, if readback is declared.
 pub fn readback_capability(cap: &Capability) -> Option<&str> {
@@ -174,7 +179,7 @@ fn next_value(
                 .ok_or("enum declares no values")?;
             json!(pick)
         }
-        ValueType::String => json!(sample_text(spec)),
+        ValueType::String => json!(fresh_text(spec)),
     })
 }
 
@@ -198,6 +203,24 @@ fn sample_text(spec: &ValueSpec) -> String {
         .and_then(|m| usize::try_from(m).ok())
         .unwrap_or(TEXT_SAMPLE.len());
     TEXT_SAMPLE.chars().take(max.max(1)).collect()
+}
+
+/// Text no earlier command of this run used. Readback can only tell a command's effect from
+/// an earlier one's if the value differs, and a device may rightly refuse an id it has seen
+/// (spec/conformance.md §5). Cut from the left under a short `max_length`: the end changes.
+fn fresh_text(spec: &ValueSpec) -> String {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    let n = NEXT_TEXT.fetch_add(1, Ordering::Relaxed);
+    let run = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_or(0, |d| d.as_millis());
+    let text = format!("omhs-{run:x}-{n}");
+    let max = spec
+        .max_length
+        .and_then(|m| usize::try_from(m).ok())
+        .unwrap_or(text.len())
+        .max(1);
+    text.chars().skip(text.len().saturating_sub(max)).collect()
 }
 
 /// Whether a reading has the type, unit and range `spec` declares. `Err` explains why not.
@@ -337,6 +360,34 @@ mod tests {
             next_value(&n, None, None, None).unwrap(),
             json!({"value": 6.0, "unit": "V"})
         );
+    }
+
+    #[test]
+    fn a_text_parameter_read_back_is_new_on_every_command() {
+        let cap: Capability = serde_json::from_value(json!({
+            "name": "run",
+            "kind": "action",
+            "operations": ["invoke"],
+            "side_effect": "irreversible",
+            "params": {
+                "run_id": {"type": "string", "max_length": 64},
+                "note": {"type": "string", "max_length": 64}
+            },
+            "verification": {"mode": "readback", "capability": "last", "expect_param": "run_id"}
+        }))
+        .unwrap();
+        let a = params(&cap, None).unwrap();
+        let b = params(&cap, None).unwrap();
+        assert_ne!(a["run_id"], b["run_id"], "a device may refuse a reused id");
+        assert_eq!(a["note"], b["note"], "one nothing reads back stays neutral");
+    }
+
+    #[test]
+    fn fresh_text_respects_a_short_max_length_and_still_changes() {
+        let s = spec(json!({"type": "string", "max_length": 4}));
+        let (a, b) = (fresh_text(&s), fresh_text(&s));
+        assert_eq!(a.chars().count(), 4);
+        assert_ne!(a, b);
     }
 
     #[test]

@@ -1,0 +1,1773 @@
+[
+  {
+    "openmhs_conformance": "0.1",
+    "suite_version": "0.1.0",
+    "subject": {
+      "adapter": "openmhs.py.micromanager",
+      "adapter_version": "0.1.0",
+      "device": "mm.scope-01",
+      "descriptor_sha256": "b37e1efe3e727ab64b5c13721ec2e0517fa1ade0bedf671a2698cfe6d4b818a6",
+      "sources": [
+        "simulator"
+      ]
+    },
+    "fixture": {
+      "faults": [
+        "link_down",
+        "no_response",
+        "lost_ack",
+        "garbled",
+        "refuse"
+      ],
+      "counts_deliveries": true
+    },
+    "environment": {
+      "runtime_version": "0.1.0",
+      "os": "windows",
+      "arch": "x86_64"
+    },
+    "achieved": "L1",
+    "passed": true,
+    "started_at": "2026-11-01T13:34:39.821Z",
+    "duration_ms": 17003,
+    "summary": {
+      "pass": 87,
+      "fail": 2,
+      "untested": 0,
+      "not_applicable": 7
+    },
+    "checks": [
+      {
+        "id": "L0.describe",
+        "level": "L0",
+        "status": "pass",
+        "message": "returned a descriptor",
+        "duration_ms": 0
+      },
+      {
+        "id": "L0.descriptor",
+        "level": "L0",
+        "status": "pass",
+        "message": "valid: device 'mm.scope-01', 9 capabilities",
+        "duration_ms": 0
+      },
+      {
+        "id": "L0.adapter_id",
+        "level": "L0",
+        "status": "pass",
+        "message": "'openmhs.py.micromanager'",
+        "duration_ms": 0
+      },
+      {
+        "id": "L0.describe_stable",
+        "level": "L0",
+        "status": "pass",
+        "message": "same descriptor both times",
+        "duration_ms": 0
+      },
+      {
+        "id": "L0.connect",
+        "level": "L0",
+        "status": "pass",
+        "message": "connected and registered",
+        "duration_ms": 2
+      },
+      {
+        "id": "L0.health",
+        "level": "L0",
+        "status": "pass",
+        "message": "healthy",
+        "duration_ms": 0
+      },
+      {
+        "id": "L0.shutdown",
+        "level": "L0",
+        "status": "pass",
+        "message": "shut down cleanly",
+        "duration_ms": 66
+      },
+      {
+        "id": "L1.read",
+        "level": "L1",
+        "capability": "stage.x.position",
+        "status": "pass",
+        "message": "read -0 um",
+        "evidence": {
+          "reading": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-01T13:34:39.824Z",
+            "value": {
+              "unit": "um",
+              "value": -0.0
+            }
+          }
+        },
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.value",
+        "level": "L1",
+        "capability": "stage.x.position",
+        "status": "pass",
+        "message": "-0 um matches the declaration",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.timestamp",
+        "level": "L1",
+        "capability": "stage.x.position",
+        "status": "pass",
+        "message": "1 ms old",
+        "evidence": {
+          "reading": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-01T13:34:39.824Z",
+            "value": {
+              "unit": "um",
+              "value": -0.0
+            }
+          }
+        },
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.quality",
+        "level": "L1",
+        "capability": "stage.x.position",
+        "status": "pass",
+        "message": "GOOD",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read",
+        "level": "L1",
+        "capability": "stage.y.position",
+        "status": "pass",
+        "message": "read -0 um",
+        "evidence": {
+          "reading": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-01T13:34:39.825Z",
+            "value": {
+              "unit": "um",
+              "value": -0.0
+            }
+          }
+        },
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.value",
+        "level": "L1",
+        "capability": "stage.y.position",
+        "status": "pass",
+        "message": "-0 um matches the declaration",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.timestamp",
+        "level": "L1",
+        "capability": "stage.y.position",
+        "status": "pass",
+        "message": "0 ms old",
+        "evidence": {
+          "reading": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-01T13:34:39.825Z",
+            "value": {
+              "unit": "um",
+              "value": -0.0
+            }
+          }
+        },
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.quality",
+        "level": "L1",
+        "capability": "stage.y.position",
+        "status": "pass",
+        "message": "GOOD",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read",
+        "level": "L1",
+        "capability": "stage.z.position",
+        "status": "pass",
+        "message": "read 0 um",
+        "evidence": {
+          "reading": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-01T13:34:39.825Z",
+            "value": {
+              "unit": "um",
+              "value": 0.0
+            }
+          }
+        },
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.value",
+        "level": "L1",
+        "capability": "stage.z.position",
+        "status": "pass",
+        "message": "0 um matches the declaration",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.timestamp",
+        "level": "L1",
+        "capability": "stage.z.position",
+        "status": "pass",
+        "message": "0 ms old",
+        "evidence": {
+          "reading": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-01T13:34:39.825Z",
+            "value": {
+              "unit": "um",
+              "value": 0.0
+            }
+          }
+        },
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.quality",
+        "level": "L1",
+        "capability": "stage.z.position",
+        "status": "pass",
+        "message": "GOOD",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read",
+        "level": "L1",
+        "capability": "camera.exposure",
+        "status": "pass",
+        "message": "read 10 ms",
+        "evidence": {
+          "reading": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-01T13:34:39.825Z",
+            "value": {
+              "unit": "ms",
+              "value": 10.0
+            }
+          }
+        },
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.value",
+        "level": "L1",
+        "capability": "camera.exposure",
+        "status": "pass",
+        "message": "10 ms matches the declaration",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.timestamp",
+        "level": "L1",
+        "capability": "camera.exposure",
+        "status": "pass",
+        "message": "0 ms old",
+        "evidence": {
+          "reading": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-01T13:34:39.825Z",
+            "value": {
+              "unit": "ms",
+              "value": 10.0
+            }
+          }
+        },
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.quality",
+        "level": "L1",
+        "capability": "camera.exposure",
+        "status": "pass",
+        "message": "GOOD",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read",
+        "level": "L1",
+        "capability": "channel",
+        "status": "pass",
+        "message": "read 'DAPI'",
+        "evidence": {
+          "reading": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-01T13:34:39.826Z",
+            "value": "DAPI"
+          }
+        },
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.value",
+        "level": "L1",
+        "capability": "channel",
+        "status": "pass",
+        "message": "'DAPI' matches the declaration",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.timestamp",
+        "level": "L1",
+        "capability": "channel",
+        "status": "pass",
+        "message": "0 ms old",
+        "evidence": {
+          "reading": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-01T13:34:39.826Z",
+            "value": "DAPI"
+          }
+        },
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.quality",
+        "level": "L1",
+        "capability": "channel",
+        "status": "pass",
+        "message": "GOOD",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read",
+        "level": "L1",
+        "capability": "camera.available",
+        "status": "pass",
+        "message": "read true",
+        "evidence": {
+          "reading": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-01T13:34:39.826Z",
+            "value": true
+          }
+        },
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.value",
+        "level": "L1",
+        "capability": "camera.available",
+        "status": "pass",
+        "message": "true matches the declaration",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.timestamp",
+        "level": "L1",
+        "capability": "camera.available",
+        "status": "pass",
+        "message": "0 ms old",
+        "evidence": {
+          "reading": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-01T13:34:39.826Z",
+            "value": true
+          }
+        },
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.quality",
+        "level": "L1",
+        "capability": "camera.available",
+        "status": "pass",
+        "message": "GOOD",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read",
+        "level": "L1",
+        "capability": "camera.last_image_id",
+        "status": "pass",
+        "message": "read ''",
+        "evidence": {
+          "reading": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-01T13:34:39.826Z",
+            "value": ""
+          }
+        },
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.value",
+        "level": "L1",
+        "capability": "camera.last_image_id",
+        "status": "pass",
+        "message": "'' matches the declaration",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.timestamp",
+        "level": "L1",
+        "capability": "camera.last_image_id",
+        "status": "pass",
+        "message": "0 ms old",
+        "evidence": {
+          "reading": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-01T13:34:39.826Z",
+            "value": ""
+          }
+        },
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.quality",
+        "level": "L1",
+        "capability": "camera.last_image_id",
+        "status": "pass",
+        "message": "GOOD",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read",
+        "level": "L1",
+        "capability": "camera.images",
+        "status": "pass",
+        "message": "read 0",
+        "evidence": {
+          "reading": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-01T13:34:39.826Z",
+            "value": 0
+          }
+        },
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.value",
+        "level": "L1",
+        "capability": "camera.images",
+        "status": "pass",
+        "message": "0 matches the declaration",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.timestamp",
+        "level": "L1",
+        "capability": "camera.images",
+        "status": "pass",
+        "message": "1 ms old",
+        "evidence": {
+          "reading": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-01T13:34:39.826Z",
+            "value": 0
+          }
+        },
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.read.quality",
+        "level": "L1",
+        "capability": "camera.images",
+        "status": "pass",
+        "message": "GOOD",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.subscribe",
+        "level": "L1",
+        "status": "not_applicable",
+        "message": "deferred: the adapter contract (v0.1) has no subscription API, so there is nothing to test yet (ADR-0013)",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.disconnect.read",
+        "level": "L1",
+        "capability": "stage.x.position",
+        "status": "pass",
+        "message": "failed with adapter.disconnected",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.disconnect.read",
+        "level": "L1",
+        "capability": "stage.y.position",
+        "status": "pass",
+        "message": "failed with adapter.disconnected",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.disconnect.read",
+        "level": "L1",
+        "capability": "stage.z.position",
+        "status": "pass",
+        "message": "failed with adapter.disconnected",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.disconnect.read",
+        "level": "L1",
+        "capability": "camera.exposure",
+        "status": "pass",
+        "message": "failed with adapter.disconnected",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.disconnect.read",
+        "level": "L1",
+        "capability": "channel",
+        "status": "pass",
+        "message": "failed with adapter.disconnected",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.disconnect.read",
+        "level": "L1",
+        "capability": "camera.available",
+        "status": "pass",
+        "message": "failed with adapter.disconnected",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.disconnect.read",
+        "level": "L1",
+        "capability": "camera.last_image_id",
+        "status": "pass",
+        "message": "failed with adapter.disconnected",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.disconnect.read",
+        "level": "L1",
+        "capability": "camera.images",
+        "status": "pass",
+        "message": "failed with adapter.disconnected",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.disconnect.health",
+        "level": "L1",
+        "status": "pass",
+        "message": "disconnected: simulated disconnect",
+        "duration_ms": 0
+      },
+      {
+        "id": "L1.reconnect",
+        "level": "L1",
+        "status": "pass",
+        "message": "back after 1 ms",
+        "duration_ms": 2
+      },
+      {
+        "id": "L2.command",
+        "level": "L2",
+        "capability": "stage.x.position",
+        "status": "pass",
+        "message": "carried out in 66 ms (expected about 200 ms, limit 5000 ms)",
+        "evidence": {
+          "adapter_result": {
+            "acknowledged": true,
+            "reported_applied": true
+          },
+          "command_id": "01a19751-c0d8-73c3-abb3-91c8d2ee74db",
+          "outcome": "succeeded",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 6000,
+            "operation": "write",
+            "target": {
+              "capability": "stage.x.position",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "um",
+              "value": 500.0
+            }
+          },
+          "state": "VERIFIED",
+          "verification": {
+            "capability": "stage.x.position",
+            "expected": {
+              "unit": "um",
+              "value": 500.0
+            },
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:34:39.913Z",
+              "value": {
+                "unit": "um",
+                "value": 499.995
+              }
+            }
+          }
+        },
+        "duration_ms": 83
+      },
+      {
+        "id": "L2.verification",
+        "level": "L2",
+        "capability": "stage.x.position",
+        "status": "pass",
+        "message": "VERIFIED: 'stage.x.position' read back 499.995 um",
+        "duration_ms": 0
+      },
+      {
+        "id": "L2.reject",
+        "level": "L2",
+        "capability": "stage.x.position",
+        "status": "pass",
+        "message": "REJECTED with adapter.rejected",
+        "evidence": {
+          "adapter_result": {
+            "error": {
+              "code": "adapter.rejected",
+              "message": "simulated refusal (conformance fixture)"
+            }
+          },
+          "command_id": "01a19751-c12c-7273-b6ba-dd923561dafc",
+          "outcome": "failed",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 6000,
+            "operation": "write",
+            "target": {
+              "capability": "stage.x.position",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "um",
+              "value": 999.995
+            }
+          },
+          "state": "REJECTED",
+          "verification": null
+        },
+        "duration_ms": 3
+      },
+      {
+        "id": "L2.malformed",
+        "level": "L2",
+        "capability": "stage.x.position",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+        "evidence": {
+          "adapter_result": {
+            "acknowledged": true,
+            "error": {
+              "code": "adapter.malformed_response",
+              "message": "simulated garbled response (conformance fixture)"
+            }
+          },
+          "command_id": "01a19751-c12f-770f-837c-3c4ca48e9ec9",
+          "outcome": "uncertain",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 6000,
+            "operation": "write",
+            "target": {
+              "capability": "stage.x.position",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "um",
+              "value": 999.995
+            }
+          },
+          "state": "UNKNOWN_OUTCOME",
+          "verification": null
+        },
+        "duration_ms": 62
+      },
+      {
+        "id": "L2.timeout",
+        "level": "L2",
+        "capability": "stage.x.position",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+        "evidence": {
+          "adapter_result": {
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 1000 ms"
+            }
+          },
+          "command_id": "01a19751-c16e-702f-aa6c-5baf50a1aa19",
+          "outcome": "uncertain",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 1000,
+            "operation": "write",
+            "target": {
+              "capability": "stage.x.position",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "um",
+              "value": 1499.99
+            }
+          },
+          "state": "UNKNOWN_OUTCOME",
+          "verification": null
+        },
+        "duration_ms": 1017
+      },
+      {
+        "id": "L2.lost_ack",
+        "level": "L2",
+        "capability": "stage.x.position",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'stage.x.position'",
+        "evidence": {
+          "adapter_result": {
+            "acknowledged": true,
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 1000 ms"
+            }
+          },
+          "command_id": "01a19751-c568-727f-a3e3-b50b1547c4e8",
+          "outcome": "uncertain",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 1000,
+            "operation": "write",
+            "target": {
+              "capability": "stage.x.position",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "um",
+              "value": 1499.99
+            }
+          },
+          "state": "UNKNOWN_OUTCOME",
+          "verification": null
+        },
+        "duration_ms": 1006
+      },
+      {
+        "id": "L2.no_retry",
+        "level": "L2",
+        "capability": "stage.x.position",
+        "status": "not_applicable",
+        "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+        "duration_ms": 0
+      },
+      {
+        "id": "L2.command",
+        "level": "L2",
+        "capability": "stage.y.position",
+        "status": "pass",
+        "message": "carried out in 62 ms (expected about 200 ms, limit 5000 ms)",
+        "evidence": {
+          "adapter_result": {
+            "acknowledged": true,
+            "reported_applied": true
+          },
+          "command_id": "01a19751-c955-7664-afdd-7d0876073b23",
+          "outcome": "succeeded",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 6000,
+            "operation": "write",
+            "target": {
+              "capability": "stage.y.position",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "um",
+              "value": 500.0
+            }
+          },
+          "state": "VERIFIED",
+          "verification": {
+            "capability": "stage.y.position",
+            "expected": {
+              "unit": "um",
+              "value": 500.0
+            },
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:34:42.084Z",
+              "value": {
+                "unit": "um",
+                "value": 499.995
+              }
+            }
+          }
+        },
+        "duration_ms": 80
+      },
+      {
+        "id": "L2.verification",
+        "level": "L2",
+        "capability": "stage.y.position",
+        "status": "pass",
+        "message": "VERIFIED: 'stage.y.position' read back 499.995 um",
+        "duration_ms": 0
+      },
+      {
+        "id": "L2.reject",
+        "level": "L2",
+        "capability": "stage.y.position",
+        "status": "pass",
+        "message": "REJECTED with adapter.rejected",
+        "evidence": {
+          "adapter_result": {
+            "error": {
+              "code": "adapter.rejected",
+              "message": "simulated refusal (conformance fixture)"
+            }
+          },
+          "command_id": "01a19751-c9a7-7698-99db-0eff56b65419",
+          "outcome": "failed",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 6000,
+            "operation": "write",
+            "target": {
+              "capability": "stage.y.position",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "um",
+              "value": 999.995
+            }
+          },
+          "state": "REJECTED",
+          "verification": null
+        },
+        "duration_ms": 3
+      },
+      {
+        "id": "L2.malformed",
+        "level": "L2",
+        "capability": "stage.y.position",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+        "evidence": {
+          "adapter_result": {
+            "acknowledged": true,
+            "error": {
+              "code": "adapter.malformed_response",
+              "message": "simulated garbled response (conformance fixture)"
+            }
+          },
+          "command_id": "01a19751-c9a9-7534-9ac1-02cc0c566174",
+          "outcome": "uncertain",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 6000,
+            "operation": "write",
+            "target": {
+              "capability": "stage.y.position",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "um",
+              "value": 999.995
+            }
+          },
+          "state": "UNKNOWN_OUTCOME",
+          "verification": null
+        },
+        "duration_ms": 62
+      },
+      {
+        "id": "L2.timeout",
+        "level": "L2",
+        "capability": "stage.y.position",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+        "evidence": {
+          "adapter_result": {
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 999 ms"
+            }
+          },
+          "command_id": "01a19751-c9e8-76b9-891a-d1414f8390c4",
+          "outcome": "uncertain",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 1000,
+            "operation": "write",
+            "target": {
+              "capability": "stage.y.position",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "um",
+              "value": 1499.99
+            }
+          },
+          "state": "UNKNOWN_OUTCOME",
+          "verification": null
+        },
+        "duration_ms": 1013
+      },
+      {
+        "id": "L2.lost_ack",
+        "level": "L2",
+        "capability": "stage.y.position",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'stage.y.position'",
+        "evidence": {
+          "adapter_result": {
+            "acknowledged": true,
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 999 ms"
+            }
+          },
+          "command_id": "01a19751-cddd-74b3-88d4-7af81fd1292e",
+          "outcome": "uncertain",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 1000,
+            "operation": "write",
+            "target": {
+              "capability": "stage.y.position",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "um",
+              "value": 1499.99
+            }
+          },
+          "state": "UNKNOWN_OUTCOME",
+          "verification": null
+        },
+        "duration_ms": 1018
+      },
+      {
+        "id": "L2.no_retry",
+        "level": "L2",
+        "capability": "stage.y.position",
+        "status": "not_applicable",
+        "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+        "duration_ms": 0
+      },
+      {
+        "id": "L2.command",
+        "level": "L2",
+        "capability": "stage.z.position",
+        "status": "pass",
+        "message": "carried out in 2 ms (expected about 200 ms, limit 5000 ms)",
+        "evidence": {
+          "adapter_result": {
+            "acknowledged": true,
+            "reported_applied": true
+          },
+          "command_id": "01a19751-d1d8-7098-9e4d-979d67589b45",
+          "outcome": "succeeded",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 6000,
+            "operation": "write",
+            "target": {
+              "capability": "stage.z.position",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "um",
+              "value": 5.0
+            }
+          },
+          "state": "VERIFIED",
+          "verification": {
+            "capability": "stage.z.position",
+            "expected": {
+              "unit": "um",
+              "value": 5.0
+            },
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:34:44.188Z",
+              "value": {
+                "unit": "um",
+                "value": 5.0
+              }
+            }
+          }
+        },
+        "duration_ms": 6
+      },
+      {
+        "id": "L2.verification",
+        "level": "L2",
+        "capability": "stage.z.position",
+        "status": "pass",
+        "message": "VERIFIED: 'stage.z.position' read back 5 um",
+        "duration_ms": 0
+      },
+      {
+        "id": "L2.reject",
+        "level": "L2",
+        "capability": "stage.z.position",
+        "status": "pass",
+        "message": "REJECTED with adapter.rejected",
+        "evidence": {
+          "adapter_result": {
+            "error": {
+              "code": "adapter.rejected",
+              "message": "simulated refusal (conformance fixture)"
+            }
+          },
+          "command_id": "01a19751-d1de-70da-88a6-886d69d90483",
+          "outcome": "failed",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 6000,
+            "operation": "write",
+            "target": {
+              "capability": "stage.z.position",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "um",
+              "value": 10.0
+            }
+          },
+          "state": "REJECTED",
+          "verification": null
+        },
+        "duration_ms": 1
+      },
+      {
+        "id": "L2.malformed",
+        "level": "L2",
+        "capability": "stage.z.position",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+        "evidence": {
+          "adapter_result": {
+            "acknowledged": true,
+            "error": {
+              "code": "adapter.malformed_response",
+              "message": "simulated garbled response (conformance fixture)"
+            }
+          },
+          "command_id": "01a19751-d1e0-746f-a917-ae6d42c75742",
+          "outcome": "uncertain",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 6000,
+            "operation": "write",
+            "target": {
+              "capability": "stage.z.position",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "um",
+              "value": 10.0
+            }
+          },
+          "state": "UNKNOWN_OUTCOME",
+          "verification": null
+        },
+        "duration_ms": 2
+      },
+      {
+        "id": "L2.timeout",
+        "level": "L2",
+        "capability": "stage.z.position",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+        "evidence": {
+          "adapter_result": {
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 1000 ms"
+            }
+          },
+          "command_id": "01a19751-d1e2-7708-863d-9fb57109d72d",
+          "outcome": "uncertain",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 1000,
+            "operation": "write",
+            "target": {
+              "capability": "stage.z.position",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "um",
+              "value": 15.0
+            }
+          },
+          "state": "UNKNOWN_OUTCOME",
+          "verification": null
+        },
+        "duration_ms": 1005
+      },
+      {
+        "id": "L2.lost_ack",
+        "level": "L2",
+        "capability": "stage.z.position",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'stage.z.position'",
+        "evidence": {
+          "adapter_result": {
+            "acknowledged": true,
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 1000 ms"
+            }
+          },
+          "command_id": "01a19751-d5d0-73f8-b764-3cedbddb32fe",
+          "outcome": "uncertain",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 1000,
+            "operation": "write",
+            "target": {
+              "capability": "stage.z.position",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "um",
+              "value": 15.0
+            }
+          },
+          "state": "UNKNOWN_OUTCOME",
+          "verification": null
+        },
+        "duration_ms": 1016
+      },
+      {
+        "id": "L2.no_retry",
+        "level": "L2",
+        "capability": "stage.z.position",
+        "status": "not_applicable",
+        "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+        "duration_ms": 0
+      },
+      {
+        "id": "L2.command",
+        "level": "L2",
+        "capability": "camera.exposure",
+        "status": "pass",
+        "message": "carried out in 2 ms (expected about 50 ms, limit 3000 ms)",
+        "evidence": {
+          "adapter_result": {
+            "acknowledged": true,
+            "reported_applied": true
+          },
+          "command_id": "01a19751-d9c8-75ae-ba15-e7134f36090c",
+          "outcome": "succeeded",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 4000,
+            "operation": "write",
+            "target": {
+              "capability": "camera.exposure",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "ms",
+              "value": 59.95
+            }
+          },
+          "state": "VERIFIED",
+          "verification": {
+            "capability": "camera.exposure",
+            "expected": {
+              "unit": "ms",
+              "value": 59.95
+            },
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:34:46.219Z",
+              "value": {
+                "unit": "ms",
+                "value": 59.95
+              }
+            }
+          }
+        },
+        "duration_ms": 4
+      },
+      {
+        "id": "L2.verification",
+        "level": "L2",
+        "capability": "camera.exposure",
+        "status": "pass",
+        "message": "VERIFIED: 'camera.exposure' read back 59.95 ms",
+        "duration_ms": 0
+      },
+      {
+        "id": "L2.reject",
+        "level": "L2",
+        "capability": "camera.exposure",
+        "status": "pass",
+        "message": "REJECTED with adapter.rejected",
+        "evidence": {
+          "adapter_result": {
+            "error": {
+              "code": "adapter.rejected",
+              "message": "simulated refusal (conformance fixture)"
+            }
+          },
+          "command_id": "01a19751-d9cd-719b-98a4-a3b3e22218b4",
+          "outcome": "failed",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 4000,
+            "operation": "write",
+            "target": {
+              "capability": "camera.exposure",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "ms",
+              "value": 109.9
+            }
+          },
+          "state": "REJECTED",
+          "verification": null
+        },
+        "duration_ms": 2
+      },
+      {
+        "id": "L2.malformed",
+        "level": "L2",
+        "capability": "camera.exposure",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+        "evidence": {
+          "adapter_result": {
+            "acknowledged": true,
+            "error": {
+              "code": "adapter.malformed_response",
+              "message": "simulated garbled response (conformance fixture)"
+            }
+          },
+          "command_id": "01a19751-d9cf-721f-8c1d-410168b45514",
+          "outcome": "uncertain",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 4000,
+            "operation": "write",
+            "target": {
+              "capability": "camera.exposure",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "ms",
+              "value": 109.9
+            }
+          },
+          "state": "UNKNOWN_OUTCOME",
+          "verification": null
+        },
+        "duration_ms": 2
+      },
+      {
+        "id": "L2.timeout",
+        "level": "L2",
+        "capability": "camera.exposure",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+        "evidence": {
+          "adapter_result": {
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 999 ms"
+            }
+          },
+          "command_id": "01a19751-d9d1-7050-a136-8282e11c3a76",
+          "outcome": "uncertain",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 1000,
+            "operation": "write",
+            "target": {
+              "capability": "camera.exposure",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "ms",
+              "value": 159.85
+            }
+          },
+          "state": "UNKNOWN_OUTCOME",
+          "verification": null
+        },
+        "duration_ms": 1010
+      },
+      {
+        "id": "L2.lost_ack",
+        "level": "L2",
+        "capability": "camera.exposure",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'camera.exposure'",
+        "evidence": {
+          "adapter_result": {
+            "acknowledged": true,
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 1000 ms"
+            }
+          },
+          "command_id": "01a19751-ddc5-70cd-95b9-fae2dea4350a",
+          "outcome": "uncertain",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 1000,
+            "operation": "write",
+            "target": {
+              "capability": "camera.exposure",
+              "device": "mm.scope-01"
+            },
+            "value": {
+              "unit": "ms",
+              "value": 159.85
+            }
+          },
+          "state": "UNKNOWN_OUTCOME",
+          "verification": null
+        },
+        "duration_ms": 1019
+      },
+      {
+        "id": "L2.no_retry",
+        "level": "L2",
+        "capability": "camera.exposure",
+        "status": "not_applicable",
+        "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+        "duration_ms": 0
+      },
+      {
+        "id": "L2.command",
+        "level": "L2",
+        "capability": "channel",
+        "status": "pass",
+        "message": "carried out in 1 ms (expected about 100 ms, limit 3000 ms)",
+        "evidence": {
+          "adapter_result": {
+            "acknowledged": true,
+            "reported_applied": true
+          },
+          "command_id": "01a19751-e1bf-71bb-838f-163a6198d4b2",
+          "outcome": "succeeded",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 4000,
+            "operation": "write",
+            "target": {
+              "capability": "channel",
+              "device": "mm.scope-01"
+            },
+            "value": "Cy5"
+          },
+          "state": "VERIFIED",
+          "verification": {
+            "capability": "channel",
+            "expected": "Cy5",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:34:48.27Z",
+              "value": "Cy5"
+            }
+          }
+        },
+        "duration_ms": 16
+      },
+      {
+        "id": "L2.verification",
+        "level": "L2",
+        "capability": "channel",
+        "status": "pass",
+        "message": "VERIFIED: 'channel' read back 'Cy5'",
+        "duration_ms": 0
+      },
+      {
+        "id": "L2.reject",
+        "level": "L2",
+        "capability": "channel",
+        "status": "pass",
+        "message": "REJECTED with adapter.rejected",
+        "evidence": {
+          "adapter_result": {
+            "error": {
+              "code": "adapter.rejected",
+              "message": "simulated refusal (conformance fixture)"
+            }
+          },
+          "command_id": "01a19751-e1d0-7509-906a-65f88257c795",
+          "outcome": "failed",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 4000,
+            "operation": "write",
+            "target": {
+              "capability": "channel",
+              "device": "mm.scope-01"
+            },
+            "value": "DAPI"
+          },
+          "state": "REJECTED",
+          "verification": null
+        },
+        "duration_ms": 2
+      },
+      {
+        "id": "L2.malformed",
+        "level": "L2",
+        "capability": "channel",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+        "evidence": {
+          "adapter_result": {
+            "acknowledged": true,
+            "error": {
+              "code": "adapter.malformed_response",
+              "message": "simulated garbled response (conformance fixture)"
+            }
+          },
+          "command_id": "01a19751-e1d3-77ff-a5df-88e60ebe004e",
+          "outcome": "uncertain",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 4000,
+            "operation": "write",
+            "target": {
+              "capability": "channel",
+              "device": "mm.scope-01"
+            },
+            "value": "DAPI"
+          },
+          "state": "UNKNOWN_OUTCOME",
+          "verification": null
+        },
+        "duration_ms": 2
+      },
+      {
+        "id": "L2.timeout",
+        "level": "L2",
+        "capability": "channel",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+        "evidence": {
+          "adapter_result": {
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 999 ms"
+            }
+          },
+          "command_id": "01a19751-e1d5-75ce-80fa-f5c9e1a30d5c",
+          "outcome": "uncertain",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 1000,
+            "operation": "write",
+            "target": {
+              "capability": "channel",
+              "device": "mm.scope-01"
+            },
+            "value": "Cy5"
+          },
+          "state": "UNKNOWN_OUTCOME",
+          "verification": null
+        },
+        "duration_ms": 1012
+      },
+      {
+        "id": "L2.lost_ack",
+        "level": "L2",
+        "capability": "channel",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'channel'",
+        "evidence": {
+          "adapter_result": {
+            "acknowledged": true,
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 998 ms"
+            }
+          },
+          "command_id": "01a19751-e5cb-7536-b260-6632fcebf8ac",
+          "outcome": "uncertain",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 1000,
+            "operation": "write",
+            "target": {
+              "capability": "channel",
+              "device": "mm.scope-01"
+            },
+            "value": "Cy5"
+          },
+          "state": "UNKNOWN_OUTCOME",
+          "verification": null
+        },
+        "duration_ms": 1007
+      },
+      {
+        "id": "L2.no_retry",
+        "level": "L2",
+        "capability": "channel",
+        "status": "not_applicable",
+        "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+        "duration_ms": 0
+      },
+      {
+        "id": "L2.command",
+        "level": "L2",
+        "capability": "camera.snap",
+        "status": "pass",
+        "message": "carried out in 172 ms (expected about 100 ms, limit 5000 ms)",
+        "evidence": {
+          "adapter_result": {
+            "acknowledged": true,
+            "reported_applied": true,
+            "result": {
+              "height": 512,
+              "sha256": "9297fbe65c0965c4bb6b3c67260ae1079da663bc1fda7251ac9d61d7dbd3c818",
+              "width": 512
+            }
+          },
+          "command_id": "01a19751-e9b9-75d7-9d4b-84eba93ef3bc",
+          "outcome": "succeeded",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 6000,
+            "operation": "invoke",
+            "params": {
+              "image_id": "openmhs-conformance"
+            },
+            "target": {
+              "capability": "camera.snap",
+              "device": "mm.scope-01"
+            }
+          },
+          "state": "VERIFIED",
+          "verification": {
+            "capability": "camera.last_image_id",
+            "expected": "openmhs-conformance",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:34:50.484Z",
+              "value": "openmhs-conformance"
+            }
+          }
+        },
+        "duration_ms": 188
+      },
+      {
+        "id": "L2.verification",
+        "level": "L2",
+        "capability": "camera.snap",
+        "status": "pass",
+        "message": "VERIFIED: 'camera.last_image_id' read back 'openmhs-conformance'",
+        "duration_ms": 0
+      },
+      {
+        "id": "L2.reject",
+        "level": "L2",
+        "capability": "camera.snap",
+        "status": "pass",
+        "message": "REJECTED with adapter.rejected",
+        "evidence": {
+          "adapter_result": {
+            "error": {
+              "code": "adapter.rejected",
+              "message": "image_id 'openmhs-conformance' was already used"
+            }
+          },
+          "command_id": "01a19751-ea75-70b6-9d87-fbb50b10b947",
+          "outcome": "failed",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 6000,
+            "operation": "invoke",
+            "params": {
+              "image_id": "openmhs-conformance"
+            },
+            "target": {
+              "capability": "camera.snap",
+              "device": "mm.scope-01"
+            }
+          },
+          "state": "REJECTED",
+          "verification": null
+        },
+        "duration_ms": 2
+      },
+      {
+        "id": "L2.malformed",
+        "level": "L2",
+        "capability": "camera.snap",
+        "status": "fail",
+        "message": "ended REJECTED with adapter.rejected; the device may have applied it, so return AdapterErrorKind::MalformedResponse, which keeps the outcome uncertain",
+        "evidence": {
+          "adapter_result": {
+            "error": {
+              "code": "adapter.rejected",
+              "message": "image_id 'openmhs-conformance' was already used"
+            }
+          },
+          "command_id": "01a19751-ea78-7025-a17d-c876b829197e",
+          "outcome": "failed",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 6000,
+            "operation": "invoke",
+            "params": {
+              "image_id": "openmhs-conformance"
+            },
+            "target": {
+              "capability": "camera.snap",
+              "device": "mm.scope-01"
+            }
+          },
+          "state": "REJECTED",
+          "verification": null
+        },
+        "duration_ms": 2
+      },
+      {
+        "id": "L2.timeout",
+        "level": "L2",
+        "capability": "camera.snap",
+        "status": "pass",
+        "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+        "evidence": {
+          "adapter_result": {
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 5000 ms"
+            }
+          },
+          "command_id": "01a19751-ea7b-71d1-838b-425f2e76cbc0",
+          "outcome": "uncertain",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 5000,
+            "operation": "invoke",
+            "params": {
+              "image_id": "openmhs-conformance"
+            },
+            "target": {
+              "capability": "camera.snap",
+              "device": "mm.scope-01"
+            }
+          },
+          "state": "UNKNOWN_OUTCOME",
+          "verification": null
+        },
+        "duration_ms": 5015
+      },
+      {
+        "id": "L2.lost_ack",
+        "level": "L2",
+        "capability": "camera.snap",
+        "status": "fail",
+        "message": "ended REJECTED (adapter.rejected: image_id 'openmhs-conformance' was already used); a lost answer must leave the outcome uncertain",
+        "evidence": {
+          "adapter_result": {
+            "error": {
+              "code": "adapter.rejected",
+              "message": "image_id 'openmhs-conformance' was already used"
+            }
+          },
+          "command_id": "01a19751-fe13-708f-be84-cac65f1a6684",
+          "outcome": "failed",
+          "policy_errors": [],
+          "request": {
+            "deadline_ms": 5000,
+            "operation": "invoke",
+            "params": {
+              "image_id": "openmhs-conformance"
+            },
+            "target": {
+              "capability": "camera.snap",
+              "device": "mm.scope-01"
+            }
+          },
+          "state": "REJECTED",
+          "verification": null
+        },
+        "duration_ms": 3
+      },
+      {
+        "id": "L2.no_retry",
+        "level": "L2",
+        "capability": "camera.snap",
+        "status": "pass",
+        "message": "each command reached the device at most once (refuse: 1, garbled: 1, no_response: 1, lost_ack: 1)",
+        "duration_ms": 0
+      },
+      {
+        "id": "L2.recovery",
+        "level": "L2",
+        "status": "pass",
+        "message": "'stage.x.position' carried out after the faults cleared",
+        "duration_ms": 67
+      },
+      {
+        "id": "L3.leases",
+        "level": "L3",
+        "capability": "stage.x.position",
+        "status": "pass",
+        "message": "another principal's command was refused (lease.held), without reaching the device; the holder's was carried out",
+        "duration_ms": 78
+      },
+      {
+        "id": "L3.plan",
+        "level": "L3",
+        "capability": "stage.x.position",
+        "status": "pass",
+        "message": "a one-step plan succeeded and released its lease; under refuse the plan halted at that step and sent nothing more; under no_response it stopped for a decision instead of guessing",
+        "duration_ms": 1102
+      },
+      {
+        "id": "L3.stop",
+        "level": "L3",
+        "status": "not_applicable",
+        "message": "the descriptor declares no stop action",
+        "duration_ms": 0
+      }
+    ]
+  }
+]

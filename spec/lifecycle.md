@@ -174,6 +174,22 @@ must also postdate the moment the gateway gave up, because "not applied" invites
 and a slow device may not have finished. A reading older than that leaves the command in
 `UNKNOWN_OUTCOME` (reconciliation is refused), never concludes it.
 
+**A later write takes the reading away.** Rule 3 lets a new write to an idempotent capability
+through while an earlier one is unresolved, and other capabilities may read back from the same
+state. Once such a write has been dispatched, a reading can no longer speak for the earlier
+command: a mismatch may mean it never applied or that it was overwritten, and a match may be
+the later command's effect. So the dispatch records `command.superseded` in the audit chain
+against each unresolved earlier command that reads back from the state it writes, and
+reconciling that command is refused (`command.reconcile.superseded`, naming the later
+commands). It stays `UNKNOWN_OUTCOME` until an operator resolves it. A later command that the
+device `REJECTED`, or that `FAILED` with `adapter.not_sent`, changed nothing and does not
+count. Writes that did not go through this gateway are invisible to it: a manual move at the
+instrument can still make reconciliation report the wrong thing, as it always could.
+
+`commands.resolve` can only record `RECONCILED_APPLIED` or `RECONCILED_NOT_APPLIED`, and for a
+superseded command a person may not be able to establish either: see
+[RFC 0003](../docs/rfcs/0003-reconciliation-and-verification.md).
+
 Commands with `verification: none` cannot be reconciled automatically; they stay
 `UNKNOWN_OUTCOME` until an operator resolves them with a recorded reason
 (`commands.resolve`): `RECONCILED_APPLIED` or `RECONCILED_NOT_APPLIED`, with the

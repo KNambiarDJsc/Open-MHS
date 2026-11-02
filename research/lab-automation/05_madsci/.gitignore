@@ -1,0 +1,4 @@
+# MADSci writes client logs and registries into the working directory
+.madsci/
+__pycache__/
+*.pyc

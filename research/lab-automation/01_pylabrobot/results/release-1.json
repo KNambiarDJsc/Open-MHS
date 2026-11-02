@@ -1,0 +1,356 @@
+{
+  "openmhs_commit": "b64532a03d411b566a4723952eba6b2dddaa55c2",
+  "openmhs_bin": "D:\\openmhs-release-target\\release\\openmhs.exe",
+  "pylabrobot": "0.2.2",
+  "python": "3.13.4",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "started": "2026-11-01T18:14:24+0530",
+  "scenarios": {
+    "PLR-04": {
+      "title": "applied, acknowledgment lost",
+      "passed": true,
+      "seconds": 4.1,
+      "checks": [
+        {
+          "check": "the simulator applied the transfer",
+          "ok": true,
+          "observed": {
+            "count": 2,
+            "last_id": "t-lost",
+            "source": {
+              "A1": 140.0,
+              "A2": 200.0,
+              "A3": 200.0
+            },
+            "dest": {
+              "B1": 50.0,
+              "B2": 10.0,
+              "B3": 0
+            },
+            "tips": 94
+          }
+        },
+        {
+          "check": "receipt is UNKNOWN_OUTCOME, not success",
+          "ok": true,
+          "observed": [
+            "UNKNOWN_OUTCOME",
+            [
+              "CREATED",
+              "VALIDATING",
+              "APPROVED",
+              "DISPATCHED",
+              "ACCEPTED",
+              "TIMED_OUT",
+              "UNKNOWN_OUTCOME"
+            ]
+          ]
+        },
+        {
+          "check": "next transfer on the capability is held, not sent",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.outcome_unresolved"
+            ]
+          ]
+        },
+        {
+          "check": "no blind repeat",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "reconciled from the simulator's state: RECONCILED_APPLIED",
+          "ok": true,
+          "observed": "RECONCILED_APPLIED"
+        },
+        {
+          "check": "capability free again after reconciliation",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "simulator executed t-lost exactly once",
+          "ok": true,
+          "observed": 3
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 33
+        }
+      ],
+      "detail": {
+        "lost": {
+          "command_id": "01a19723-c15f-7247-816b-21a450cca465",
+          "state": "UNKNOWN_OUTCOME",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "TIMED_OUT",
+            "UNKNOWN_OUTCOME"
+          ],
+          "errors": [],
+          "verification": null
+        },
+        "held": {
+          "command_id": "01a19723-cd39-774e-b515-874f7ccb4780",
+          "state": "DENIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ],
+          "errors": [
+            "command.outcome_unresolved"
+          ],
+          "verification": null
+        },
+        "reconciled": {
+          "command_id": "01a19723-c15f-7247-816b-21a450cca465",
+          "state": "RECONCILED_APPLIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "TIMED_OUT",
+            "UNKNOWN_OUTCOME",
+            "RECONCILED_APPLIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "transfer.last_id",
+            "expected": "t-lost",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T12:44:28.353Z",
+              "value": "t-lost"
+            }
+          }
+        },
+        "after": {
+          "command_id": "01a19723-cd43-776b-92ba-1635751c9679",
+          "state": "VERIFIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "APPLIED",
+            "VERIFIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "transfer.last_id",
+            "expected": "t-after",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T12:44:28.375Z",
+              "value": "t-after"
+            }
+          }
+        },
+        "waited_ms": 3020,
+        "reconcile_ms": 3
+      },
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-04-813d67"
+    },
+    "PLR-07": {
+      "title": "gateway killed mid-transfer, restarted, reconciled",
+      "passed": true,
+      "seconds": 3.1,
+      "checks": [
+        {
+          "check": "applied: after restart the command is UNKNOWN_OUTCOME, not resent",
+          "ok": true,
+          "observed": [
+            "UNKNOWN_OUTCOME",
+            1
+          ]
+        },
+        {
+          "check": "applied: reconciliation reads the simulator: RECONCILED_APPLIED",
+          "ok": true,
+          "observed": "RECONCILED_APPLIED"
+        },
+        {
+          "check": "applied: simulator count +1, never repeated",
+          "ok": true,
+          "observed": 1
+        },
+        {
+          "check": "not_applied: after restart the command is UNKNOWN_OUTCOME, not resent",
+          "ok": true,
+          "observed": [
+            "UNKNOWN_OUTCOME",
+            1
+          ]
+        },
+        {
+          "check": "not_applied: reconciliation reads the simulator: RECONCILED_NOT_APPLIED",
+          "ok": true,
+          "observed": "RECONCILED_NOT_APPLIED"
+        },
+        {
+          "check": "not_applied: simulator count +0, never repeated",
+          "ok": true,
+          "observed": 1
+        },
+        {
+          "check": "audit chain intact across both crashes",
+          "ok": true,
+          "observed": {
+            "records": 28,
+            "valid": true
+          }
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 28
+        }
+      ],
+      "detail": {
+        "applied": {
+          "recovered": {
+            "command_id": "01a19723-d0de-73b6-97d4-1efea1ab1fec",
+            "state": "UNKNOWN_OUTCOME",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "APPROVED",
+              "DISPATCHED",
+              "ACCEPTED",
+              "UNKNOWN_OUTCOME"
+            ],
+            "errors": [],
+            "verification": null
+          },
+          "reconciled": {
+            "command_id": "01a19723-d0de-73b6-97d4-1efea1ab1fec",
+            "state": "RECONCILED_APPLIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "APPROVED",
+              "DISPATCHED",
+              "ACCEPTED",
+              "UNKNOWN_OUTCOME",
+              "RECONCILED_APPLIED"
+            ],
+            "errors": [],
+            "verification": {
+              "capability": "transfer.last_id",
+              "expected": "t-crash-applied",
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T12:44:30.183Z",
+                "value": "t-crash-applied"
+              }
+            }
+          },
+          "client": "GatewayUnreachableError",
+          "restart_ms": 680
+        },
+        "not_applied": {
+          "recovered": {
+            "command_id": "01a19723-d489-72f9-96c5-acac906fc100",
+            "state": "UNKNOWN_OUTCOME",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "APPROVED",
+              "DISPATCHED",
+              "UNKNOWN_OUTCOME"
+            ],
+            "errors": [],
+            "verification": null
+          },
+          "reconciled": {
+            "command_id": "01a19723-d489-72f9-96c5-acac906fc100",
+            "state": "RECONCILED_NOT_APPLIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "APPROVED",
+              "DISPATCHED",
+              "UNKNOWN_OUTCOME",
+              "RECONCILED_NOT_APPLIED"
+            ],
+            "errors": [],
+            "verification": {
+              "capability": "transfer.last_id",
+              "expected": "t-crash-not_applied",
+              "matched": false,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T12:44:31.459Z",
+                "value": "t-crash-applied"
+              }
+            }
+          },
+          "client": "GatewayUnreachableError",
+          "restart_ms": 731
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-07-81745e"
+    },
+    "PERF": {
+      "title": "latency, governed vs native",
+      "passed": true,
+      "seconds": 2.3,
+      "checks": [
+        {
+          "check": "30 governed transfers all VERIFIED",
+          "ok": true,
+          "observed": {
+            "median": 34.0,
+            "p95": 49.3,
+            "max": 61.2
+          }
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 218
+        }
+      ],
+      "detail": {
+        "n": 30,
+        "openmhs_ms": {
+          "median": 34.0,
+          "p95": 49.3,
+          "max": 61.2
+        },
+        "native_ms": {
+          "median": 1.24,
+          "p95": 1.54,
+          "max": 1.71
+        },
+        "gateway_start_ms": 684,
+        "journal_bytes": 278528,
+        "audit_records": 218
+      },
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PERF-f13cbd"
+    }
+  }
+}

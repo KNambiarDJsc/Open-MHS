@@ -1,0 +1,74 @@
+{
+ "gaps": {},
+ "scenarios": {
+  "madsci|MAD-01": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-01-native": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-02": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-03": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-04": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-04-native": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-05": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-06": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-07": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-08": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-09": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  }
+ },
+ "conformance": [],
+ "not_tested": [],
+ "failed_steps": []
+}

@@ -60,8 +60,9 @@ final authority.
 
 ## Quickstart
 
-About a minute, with simulated devices only. You need a built `openmhs` binary; there is
-no published release yet, so build from source (Rust 1.89+):
+About a minute, with simulated devices only. You need an `openmhs` binary. Build it from
+source (Rust 1.89+), or take one from the [v0.1.0 pre-release](https://github.com/KNambiarDJsc/Open-MHS/releases/tag/v0.1.0),
+whose Linux and macOS archives have not been run by the project:
 
 ```sh
 git clone https://github.com/KNambiarDJsc/Open-MHS
@@ -75,6 +76,9 @@ openmhs --version
 ```sh
 openmhs demo
 ```
+
+To follow one failure end to end, a lost answer through reconciliation to a separate process checking
+the evidence: `python examples/first-failure/first_failure.py`.
 
 **Already use an MCP host (Claude Code, Claude Desktop, an IDE agent)?** Skip to the agent
 side in one line, with the virtual lab built in and no token to handle
@@ -137,10 +141,12 @@ takes it from there to an agent, with each step tried against a simulator first.
 - **Deterministic policy.** Deny by default, scoped credentials, operator and agent roles, single-use approvals, [layers of checks](spec/authorization.md) no model can talk its way past.
 - **Honest lifecycle.** Idempotent commands, deadlines, [`UNKNOWN_OUTCOME`](spec/lifecycle.md), readback verification, reconciliation and crash recovery over a SQLite journal.
 - **Audit.** A hash-chained, tamper-evident log of grants, reads, transitions and faults, verified with `openmhs audit verify`.
+- **Long-running journals.** Start-up that does not grow with history: sealed audit segments that verify offline, a seal that lets a gateway start from the tail, opt-in compaction (`--archive`) that moves finished history out without losing any command's identity, and an opt-in telemetry store that summarizes routine reads. [RFC 0002](docs/rfcs/0002-storage-engine.md) has the design, drills and measurements.
 - **Three front doors.** A [CLI](docs/cli.md), an [MCP server](docs/mcp.md) for agents (stdio), and a [Python SDK](python/README.md) with no dependencies.
 - **Coordination.** A [capability graph](spec/topology.md), leases, and [plans](spec/plans.md): ordered multi-device steps with halt, compensate or ask, and twin preflight.
 - **Adapters.** [Modbus TCP, MQTT, SCPI and HTTP](docs/adapters/profiles.md) from JSON profiles, out-of-process adapters with permission manifests, and a [conformance suite](spec/conformance.md) any adapter can be tested with.
 - **Virtual lab.** Three simulated devices with fault injection, so everything above can be tried without hardware.
+- **Lab-automation experiments.** Simulator-only adapters and experiments put the same checks in front of [PyLabRobot, Opentrons, Micro-Manager, SiLA 2 and a MADSci workflow](research/lab-automation/README.md) without replacing any of them, with native baselines and injected faults.
 
 ## How it works
 
@@ -244,13 +250,21 @@ OpenMHS does not replace these. It sits at a different point.
 
 OpenMHS reduces what can go wrong. It does not make hardware safe.
 
-- **No physical hardware has been tested.** Everything runs against simulators. Treat any
-  real-device use as unproven, and read [docs/hardware/](docs/hardware/README.md) first.
+- **No physical hardware has been tested.** Everything runs against simulators, including the
+  PyLabRobot, Opentrons, Micro-Manager, SiLA 2 and MADSci experiments, where `VERIFIED` means a
+  simulator's own software state agrees. Treat any real-device use as unproven, and read
+  [docs/hardware/](docs/hardware/README.md) first.
+- **The journal grows until you compact it.** Compaction deletes journal rows, so it is off
+  unless the gateway runs with `--archive`; it holds the journal while it runs, segments are
+  local files, seals are unsigned, and a compacted journal cannot be opened by older versions.
+  Details in [docs/limitations.md](docs/limitations.md).
 - **Not a safety system.** Emergency stops and interlocks belong to the hardware. A `stop`
   action is an ordinary, authorized command that skips the device lock and leases; it
   only interrupts a move if the adapter and device do.
 - **Conformance is not certification.** A level says an integration behaved as specified
   under the tested faults. The suite really sends commands; run it against simulators only.
+- **Reconciliation cannot always conclude.** If a newer write has overwritten what an unresolved
+  command did, it refuses, and a person has to settle it with a recorded reason.
 - **Single-user trust boundary.** Any process running as your OS user can read the
   operator token in the gateway home. Give agents scoped credentials.
 - **Twin preflight has no physics.** `ok` means a plan fits the contract and current
@@ -273,6 +287,9 @@ Vulnerabilities: [SECURITY.md](SECURITY.md). Threat model: [docs/security/](docs
 - [Compatibility matrix](docs/compatibility.md) and the [adapter registry](registry/README.md)
 - [Trying real hardware](docs/hardware/README.md) (unverified guides)
 - [Architecture decisions](docs/adr/README.md), [landscape research](docs/research/landscape.md), [roadmap](docs/roadmap.md)
+- [System design as implemented](docs/architecture/SYSTEM_DESIGN.md), the [storage engine RFC](docs/rfcs/0002-storage-engine.md) and its [benchmarks](docs/benchmarks.md)
+- [Lab-automation experiments](research/lab-automation/README.md) (PyLabRobot, Opentrons, Micro-Manager, SiLA 2, MADSci; simulator only)
+- [Reproducing the experiments](research/lab-automation/REPRODUCING.md), the [adapter quality gate](docs/adapters/QUALITY_GATE.md) and a [proposed Bench format](docs/bench/RESULT_FORMAT.md)
 - Build the documentation site locally: [docs/book/README.md](docs/book/README.md)
 
 ## Contributing

@@ -27,6 +27,21 @@ class AgentLoop(unittest.TestCase):
         self.assertTrue(result["audit_valid"])
 
 
+class FirstFailure(unittest.TestCase):
+    def test_the_lost_answer_walkthrough_behaves_as_it_describes(self) -> None:
+        p = subprocess.run(
+            [sys.executable, str(REPO / "examples" / "first-failure" / "first_failure.py")],
+            env={**os.environ, "OPENMHS_BIN": str(binary()), "PYTHONIOENCODING": "utf-8"},
+            capture_output=True,
+            timeout=180,
+        )
+        out = p.stdout.decode("utf-8", "replace")
+        self.assertEqual(p.returncode, 0, out + p.stderr.decode("utf-8", "replace"))
+        self.assertIn("Every step behaved as described", out)
+        self.assertNotIn("NOT AS DESCRIBED", out)
+        self.assertIn("Nothing here is a physical measurement", out)
+
+
 class LearningAgent(unittest.TestCase):
     def test_a_second_session_learns_the_limit_from_the_journal(self) -> None:
         p = subprocess.run(

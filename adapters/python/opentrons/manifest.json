@@ -1,0 +1,26 @@
+{
+  "openmhs_manifest": "0.1",
+  "adapter": { "id": "openmhs.py.opentrons", "version": "0.1.0" },
+  "runtime": {
+    "command": ["python", "{manifest_dir}/ot_adapter.py"],
+    "env": { "PYTHONPATH": "{manifest_dir}/../../../python" },
+    "protocol": ["0.1"]
+  },
+  "capabilities": {
+    "allow": [
+      { "name": "run.*", "operations": ["read"] },
+      { "name": "protocol.*", "operations": ["read"] },
+      { "name": "protocol.run", "operations": ["invoke"] }
+    ]
+  },
+  "filesystem": { "read": ["protocols"] },
+  "limits": { "start_timeout_ms": 60000, "call_timeout_ms": 30000 },
+  "config": {
+    "protocols": {
+      "serial_dilution": {
+        "path": "{adapter_dir}/protocols/serial_dilution.py",
+        "sha256": "512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671"
+      }
+    }
+  }
+}

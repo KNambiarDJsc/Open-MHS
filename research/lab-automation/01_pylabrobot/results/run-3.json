@@ -1,0 +1,960 @@
+{
+  "openmhs_commit": "b64532a03d411b566a4723952eba6b2dddaa55c2",
+  "openmhs_bin": "D:\\openmhs-target\\debug\\openmhs.exe",
+  "pylabrobot": "0.2.2",
+  "python": "3.13.4",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "started": "2026-11-01T18:05:30+0530",
+  "scenarios": {
+    "PLR-01": {
+      "title": "normal transfer A1 -> B1, 50 uL",
+      "passed": true,
+      "seconds": 1.1,
+      "checks": [
+        {
+          "check": "receipt VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "simulator executed exactly once",
+          "ok": true,
+          "observed": 1
+        },
+        {
+          "check": "tracker moved 50 uL A1 -> B1",
+          "ok": true,
+          "observed": [
+            150.0,
+            50.0
+          ]
+        },
+        {
+          "check": "one tip used",
+          "ok": true,
+          "observed": 95
+        },
+        {
+          "check": "reads agree with the simulator's state",
+          "ok": true,
+          "observed": {
+            "source_a1": {
+              "value": 150.0,
+              "unit": "uL"
+            },
+            "dest_b1": {
+              "value": 50.0,
+              "unit": "uL"
+            },
+            "tips": 95
+          }
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 18
+        }
+      ],
+      "detail": {
+        "receipt": {
+          "command_id": "01a1971b-9d06-7085-9bae-8595bc0b3540",
+          "state": "VERIFIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "APPLIED",
+            "VERIFIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "transfer.last_id",
+            "expected": "t-plr01",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T12:35:31.754Z",
+              "value": "t-plr01"
+            }
+          }
+        },
+        "simulator_before": {
+          "count": 0,
+          "last_id": "",
+          "source": {
+            "A1": 200.0,
+            "A2": 200.0,
+            "A3": 200.0
+          },
+          "dest": {
+            "B1": 0,
+            "B2": 0,
+            "B3": 0
+          },
+          "tips": 96
+        },
+        "simulator_after": {
+          "count": 1,
+          "last_id": "t-plr01",
+          "source": {
+            "A1": 150.0,
+            "A2": 200.0,
+            "A3": 200.0
+          },
+          "dest": {
+            "B1": 50.0,
+            "B2": 0,
+            "B3": 0
+          },
+          "tips": 95
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-01-48658b"
+    },
+    "PLR-02": {
+      "title": "invalid volume and wells are denied before dispatch",
+      "passed": true,
+      "seconds": 1.1,
+      "checks": [
+        {
+          "check": "volume 500 uL (above 200): DENIED",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.out_of_range"
+            ]
+          ]
+        },
+        {
+          "check": "volume 500 uL (above 200): never dispatched",
+          "ok": true,
+          "observed": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ]
+        },
+        {
+          "check": "volume 0.5 uL (below 1): DENIED",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.out_of_range"
+            ]
+          ]
+        },
+        {
+          "check": "volume 0.5 uL (below 1): never dispatched",
+          "ok": true,
+          "observed": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ]
+        },
+        {
+          "check": "unknown source well C7: DENIED",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.not_allowed"
+            ]
+          ]
+        },
+        {
+          "check": "unknown source well C7: never dispatched",
+          "ok": true,
+          "observed": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ]
+        },
+        {
+          "check": "destination used as source: DENIED",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.not_allowed",
+              "command.value.not_allowed"
+            ]
+          ]
+        },
+        {
+          "check": "destination used as source: never dispatched",
+          "ok": true,
+          "observed": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ]
+        },
+        {
+          "check": "simulator untouched",
+          "ok": true,
+          "observed": 0
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 20
+        }
+      ],
+      "detail": {
+        "receipts": {
+          "volume 500 uL (above 200)": {
+            "command_id": "01a1971b-a168-73ba-b302-47614eca762f",
+            "state": "DENIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "DENIED"
+            ],
+            "errors": [
+              "command.value.out_of_range"
+            ],
+            "verification": null
+          },
+          "volume 0.5 uL (below 1)": {
+            "command_id": "01a1971b-a188-7617-8459-cac6e1156159",
+            "state": "DENIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "DENIED"
+            ],
+            "errors": [
+              "command.value.out_of_range"
+            ],
+            "verification": null
+          },
+          "unknown source well C7": {
+            "command_id": "01a1971b-a18e-717c-9b26-0dd5d12883d6",
+            "state": "DENIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "DENIED"
+            ],
+            "errors": [
+              "command.value.not_allowed"
+            ],
+            "verification": null
+          },
+          "destination used as source": {
+            "command_id": "01a1971b-a194-7200-829d-106600bbe5db",
+            "state": "DENIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "DENIED"
+            ],
+            "errors": [
+              "command.value.not_allowed",
+              "command.value.not_allowed"
+            ],
+            "verification": null
+          }
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-02-7a0d4d"
+    },
+    "PLR-03": {
+      "title": "missing tip",
+      "passed": true,
+      "seconds": 1.4,
+      "checks": [
+        {
+          "check": "the rack's only tip is used",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            0
+          ]
+        },
+        {
+          "check": "no tip: DENIED by OpenMHS's precondition",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.precondition.failed"
+            ]
+          ]
+        },
+        {
+          "check": "never dispatched",
+          "ok": true,
+          "observed": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ]
+        },
+        {
+          "check": "simulator untouched",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "PyLabRobot itself also refuses a pickup from an empty spot",
+          "ok": true,
+          "observed": {
+            "refused": true,
+            "error": "pylabrobot.resources.errors.NoTipError: Tip spot does not have a tip."
+          }
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 18
+        }
+      ],
+      "detail": {
+        "with_tip": {
+          "command_id": "01a1971b-a5b1-7728-a05c-777fe7253e7f",
+          "state": "VERIFIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "APPLIED",
+            "VERIFIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "transfer.last_id",
+            "expected": "t-last-tip",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T12:35:33.971Z",
+              "value": "t-last-tip"
+            }
+          }
+        },
+        "without_tip": {
+          "command_id": "01a1971b-a5e0-7799-8b28-63061ec61c8d",
+          "state": "DENIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ],
+          "errors": [
+            "command.precondition.failed"
+          ],
+          "verification": null
+        },
+        "native": {
+          "refused": true,
+          "error": "pylabrobot.resources.errors.NoTipError: Tip spot does not have a tip."
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-03-d031ae"
+    },
+    "PLR-04": {
+      "title": "applied, acknowledgment lost",
+      "passed": true,
+      "seconds": 4.2,
+      "checks": [
+        {
+          "check": "the simulator applied the transfer",
+          "ok": true,
+          "observed": {
+            "count": 2,
+            "last_id": "t-lost",
+            "source": {
+              "A1": 140.0,
+              "A2": 200.0,
+              "A3": 200.0
+            },
+            "dest": {
+              "B1": 50.0,
+              "B2": 10.0,
+              "B3": 0
+            },
+            "tips": 94
+          }
+        },
+        {
+          "check": "receipt is UNKNOWN_OUTCOME, not success",
+          "ok": true,
+          "observed": [
+            "UNKNOWN_OUTCOME",
+            [
+              "CREATED",
+              "VALIDATING",
+              "APPROVED",
+              "DISPATCHED",
+              "ACCEPTED",
+              "TIMED_OUT",
+              "UNKNOWN_OUTCOME"
+            ]
+          ]
+        },
+        {
+          "check": "next transfer on the capability is held, not sent",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.outcome_unresolved"
+            ]
+          ]
+        },
+        {
+          "check": "no blind repeat",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "reconciled from the simulator's state: RECONCILED_APPLIED",
+          "ok": true,
+          "observed": "RECONCILED_APPLIED"
+        },
+        {
+          "check": "capability free again after reconciliation",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "simulator executed t-lost exactly once",
+          "ok": true,
+          "observed": 3
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 33
+        }
+      ],
+      "detail": {
+        "lost": {
+          "command_id": "01a1971b-aafc-743c-a6a8-b07a9ce92e19",
+          "state": "UNKNOWN_OUTCOME",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "TIMED_OUT",
+            "UNKNOWN_OUTCOME"
+          ],
+          "errors": [],
+          "verification": null
+        },
+        "held": {
+          "command_id": "01a1971b-b6da-734a-b27b-0980052c7971",
+          "state": "DENIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ],
+          "errors": [
+            "command.outcome_unresolved"
+          ],
+          "verification": null
+        },
+        "reconciled": {
+          "command_id": "01a1971b-aafc-743c-a6a8-b07a9ce92e19",
+          "state": "RECONCILED_APPLIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "TIMED_OUT",
+            "UNKNOWN_OUTCOME",
+            "RECONCILED_APPLIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "transfer.last_id",
+            "expected": "t-lost",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T12:35:38.345Z",
+              "value": "t-lost"
+            }
+          }
+        },
+        "after": {
+          "command_id": "01a1971b-b702-719a-9311-d82f8a2fe577",
+          "state": "VERIFIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "APPLIED",
+            "VERIFIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "transfer.last_id",
+            "expected": "t-after",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T12:35:38.407Z",
+              "value": "t-after"
+            }
+          }
+        },
+        "waited_ms": 3025,
+        "reconcile_ms": 7
+      },
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-04-2524c0"
+    },
+    "PLR-05": {
+      "title": "duplicate request",
+      "passed": true,
+      "seconds": 1.2,
+      "checks": [
+        {
+          "check": "first VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "same key returns the same command",
+          "ok": true,
+          "observed": [
+            "01a1971b-bb36-7673-aad9-27ca9117231e",
+            "01a1971b-bb36-7673-aad9-27ca9117231e"
+          ]
+        },
+        {
+          "check": "executed once",
+          "ok": true,
+          "observed": 1
+        },
+        {
+          "check": "a reused transfer_id is refused by the simulator adapter, nothing applied",
+          "ok": true,
+          "observed": [
+            "REJECTED",
+            1
+          ]
+        },
+        {
+          "check": "without a key, two submissions are two transfers (documented)",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 34
+        }
+      ],
+      "detail": {
+        "first": {
+          "command_id": "01a1971b-bb36-7673-aad9-27ca9117231e",
+          "state": "VERIFIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "APPLIED",
+            "VERIFIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "transfer.last_id",
+            "expected": "t-dup",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T12:35:39.49Z",
+              "value": "t-dup"
+            }
+          }
+        },
+        "again": {
+          "command_id": "01a1971b-bb36-7673-aad9-27ca9117231e",
+          "state": "VERIFIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "APPLIED",
+            "VERIFIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "transfer.last_id",
+            "expected": "t-dup",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T12:35:39.49Z",
+              "value": "t-dup"
+            }
+          }
+        },
+        "reused_id": {
+          "command_id": "01a1971b-bb83-714a-a0ff-ed4c8c473ae5",
+          "state": "REJECTED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "REJECTED"
+          ],
+          "errors": [],
+          "verification": null
+        },
+        "no_key": [
+          {
+            "command_id": "01a1971b-bb93-77d1-bfe8-8e2dfe95baf9",
+            "state": "VERIFIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "APPROVED",
+              "DISPATCHED",
+              "ACCEPTED",
+              "APPLIED",
+              "VERIFIED"
+            ],
+            "errors": [],
+            "verification": {
+              "capability": "transfer.last_id",
+              "expected": "t-nokey-0",
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T12:35:39.57Z",
+                "value": "t-nokey-0"
+              }
+            }
+          },
+          {
+            "command_id": "01a1971b-bbc1-71b3-b1a2-a941571a7bc4",
+            "state": "VERIFIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "APPROVED",
+              "DISPATCHED",
+              "ACCEPTED",
+              "APPLIED",
+              "VERIFIED"
+            ],
+            "errors": [],
+            "verification": {
+              "capability": "transfer.last_id",
+              "expected": "t-nokey-1",
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T12:35:39.616Z",
+                "value": "t-nokey-1"
+              }
+            }
+          }
+        ]
+      },
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-05-0e3059"
+    },
+    "PLR-06": {
+      "title": "two agents compete for one source well",
+      "passed": true,
+      "seconds": 1.1,
+      "checks": [
+        {
+          "check": "one VERIFIED, one REJECTED (only 100 uL for two 80 uL transfers)",
+          "ok": true,
+          "observed": [
+            "REJECTED",
+            "VERIFIED"
+          ]
+        },
+        {
+          "check": "the refusal came from PyLabRobot's volume tracker",
+          "ok": true,
+          "observed": "{\"error\": {\"code\": \"adapter.rejected\", \"message\": \"PyLabRobot refused: TooLittleLiquidError: Not enough liquid in container: 80.0uL > 20.0uL.\"}}"
+        },
+        {
+          "check": "source never went negative; 80 uL moved once",
+          "ok": true,
+          "observed": [
+            20.0,
+            1
+          ]
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 25
+        }
+      ],
+      "detail": {
+        "a": {
+          "command_id": "01a1971b-c016-76c5-9caa-475f198b42bb",
+          "state": "REJECTED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "REJECTED"
+          ],
+          "errors": [],
+          "verification": null
+        },
+        "b": {
+          "command_id": "01a1971b-bffb-7036-8e29-d2c742e5044f",
+          "state": "VERIFIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "APPLIED",
+            "VERIFIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "transfer.last_id",
+            "expected": "t-b",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T12:35:40.693Z",
+              "value": "t-b"
+            }
+          }
+        },
+        "dispatch_times": [
+          "2026-11-01T12:35:40.673Z",
+          "2026-11-01T12:35:40.7Z"
+        ],
+        "rejected_reason": "{\"error\": {\"code\": \"adapter.rejected\", \"message\": \"PyLabRobot refused: TooLittleLiquidError: Not enough liquid in container: 80.0uL > 20.0uL.\"}}"
+      },
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-06-a91366"
+    },
+    "PLR-07": {
+      "title": "gateway killed mid-transfer, restarted, reconciled",
+      "passed": true,
+      "seconds": 3.2,
+      "checks": [
+        {
+          "check": "applied: after restart the command is UNKNOWN_OUTCOME, not resent",
+          "ok": true,
+          "observed": [
+            "UNKNOWN_OUTCOME",
+            1
+          ]
+        },
+        {
+          "check": "applied: reconciliation reads the simulator: RECONCILED_APPLIED",
+          "ok": true,
+          "observed": "RECONCILED_APPLIED"
+        },
+        {
+          "check": "applied: simulator count +1, never repeated",
+          "ok": true,
+          "observed": 1
+        },
+        {
+          "check": "not_applied: after restart the command is UNKNOWN_OUTCOME, not resent",
+          "ok": true,
+          "observed": [
+            "UNKNOWN_OUTCOME",
+            1
+          ]
+        },
+        {
+          "check": "not_applied: reconciliation reads the simulator: RECONCILED_NOT_APPLIED",
+          "ok": true,
+          "observed": "RECONCILED_NOT_APPLIED"
+        },
+        {
+          "check": "not_applied: simulator count +0, never repeated",
+          "ok": true,
+          "observed": 1
+        },
+        {
+          "check": "audit chain intact across both crashes",
+          "ok": true,
+          "observed": {
+            "records": 28,
+            "valid": true
+          }
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 28
+        }
+      ],
+      "detail": {
+        "applied": {
+          "recovered": {
+            "command_id": "01a1971b-c41d-73be-8618-1afe5cdd9e41",
+            "state": "UNKNOWN_OUTCOME",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "APPROVED",
+              "DISPATCHED",
+              "ACCEPTED",
+              "UNKNOWN_OUTCOME"
+            ],
+            "errors": [],
+            "verification": null
+          },
+          "reconciled": {
+            "command_id": "01a1971b-c41d-73be-8618-1afe5cdd9e41",
+            "state": "RECONCILED_APPLIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "APPROVED",
+              "DISPATCHED",
+              "ACCEPTED",
+              "UNKNOWN_OUTCOME",
+              "RECONCILED_APPLIED"
+            ],
+            "errors": [],
+            "verification": {
+              "capability": "transfer.last_id",
+              "expected": "t-crash-applied",
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T12:35:42.684Z",
+                "value": "t-crash-applied"
+              }
+            }
+          },
+          "client": "GatewayUnreachableError",
+          "restart_ms": 732
+        },
+        "not_applied": {
+          "recovered": {
+            "command_id": "01a1971b-c801-72df-9f3e-af96b06de279",
+            "state": "UNKNOWN_OUTCOME",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "APPROVED",
+              "DISPATCHED",
+              "UNKNOWN_OUTCOME"
+            ],
+            "errors": [],
+            "verification": null
+          },
+          "reconciled": {
+            "command_id": "01a1971b-c801-72df-9f3e-af96b06de279",
+            "state": "RECONCILED_NOT_APPLIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "APPROVED",
+              "DISPATCHED",
+              "UNKNOWN_OUTCOME",
+              "RECONCILED_NOT_APPLIED"
+            ],
+            "errors": [],
+            "verification": {
+              "capability": "transfer.last_id",
+              "expected": "t-crash-not_applied",
+              "matched": false,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T12:35:43.957Z",
+                "value": "t-crash-applied"
+              }
+            }
+          },
+          "client": "GatewayUnreachableError",
+          "restart_ms": 732
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PLR-07-3efddc"
+    },
+    "PERF": {
+      "title": "latency, governed vs native",
+      "passed": true,
+      "seconds": 2.5,
+      "checks": [
+        {
+          "check": "30 governed transfers all VERIFIED",
+          "ok": true,
+          "observed": {
+            "median": 46.3,
+            "p95": 54.6,
+            "max": 63.2
+          }
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 218
+        }
+      ],
+      "detail": {
+        "n": 30,
+        "openmhs_ms": {
+          "median": 46.3,
+          "p95": 54.6,
+          "max": 63.2
+        },
+        "native_ms": {
+          "median": 1.37,
+          "p95": 1.78,
+          "max": 2.03
+        },
+        "gateway_start_ms": 784,
+        "journal_bytes": 278528,
+        "audit_records": 218
+      },
+      "run_dir": "D:\\openmhs-research\\plr-runs\\PERF-cc4889"
+    }
+  }
+}

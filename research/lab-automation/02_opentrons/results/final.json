@@ -1,0 +1,945 @@
+{
+  "openmhs_commit": "3630cf90f76a21e6beb931c1545dd0d0f25c4603",
+  "openmhs_bin": "D:\\openmhs-release-target\\release\\openmhs.exe",
+  "python": "3.12.11",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "started": "2026-11-01T19:10:20+0530",
+  "opentrons": "10.1.0",
+  "protocol_sha256": "512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671",
+  "scenarios": {
+    "OT-01": {
+      "title": "a valid serial dilution, simulated",
+      "passed": true,
+      "seconds": 4.8,
+      "checks": [
+        {
+          "check": "receipt VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "simulator ran once",
+          "ok": true,
+          "observed": {
+            "count": 1,
+            "last_id": "r-ot01",
+            "last_commands": 78
+          }
+        },
+        {
+          "check": "the receipt carries the reviewed protocol's digest",
+          "ok": true,
+          "observed": "512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671"
+        },
+        {
+          "check": "the run log in the receipt is the one on disk",
+          "ok": true,
+          "observed": {
+            "commands": 78,
+            "protocol_sha256": "512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671",
+            "runlog_sha256": "feccb6034bd013b1be0e19f9105515708d7d44fbdf10681aa2200c01cbccf6e7"
+          }
+        },
+        {
+          "check": "same commands as the simulator run without OpenMHS",
+          "ok": true,
+          "observed": [
+            78,
+            78
+          ]
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 15
+        }
+      ],
+      "detail": {
+        "receipt": {
+          "command_id": "01a19756-fcfe-7428-b890-3dece1cf8b68",
+          "state": "VERIFIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "APPLIED",
+            "VERIFIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "run.last_id",
+            "expected": "r-ot01",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:40:23.094Z",
+              "value": "r-ot01"
+            }
+          },
+          "adapter_result": {
+            "acknowledged": true,
+            "reported_applied": true,
+            "result": {
+              "commands": 78,
+              "protocol_sha256": "512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671",
+              "runlog_sha256": "feccb6034bd013b1be0e19f9105515708d7d44fbdf10681aa2200c01cbccf6e7"
+            }
+          }
+        },
+        "simulator": {
+          "count": 1,
+          "last_id": "r-ot01",
+          "last_commands": 78
+        },
+        "commands": 78
+      },
+      "run_dir": "D:\\openmhs-research\\ot-runs\\OT-01-38bf37"
+    },
+    "OT-02": {
+      "title": "invalid parameters and an edited protocol",
+      "passed": true,
+      "seconds": 3.2,
+      "checks": [
+        {
+          "check": "transfer 400 uL (simulator accepts it): DENIED before dispatch",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.out_of_range"
+            ]
+          ]
+        },
+        {
+          "check": "negative transfer (simulator accepts it): DENIED before dispatch",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.out_of_range"
+            ]
+          ]
+        },
+        {
+          "check": "14 wells (the protocol would silently use 12): DENIED before dispatch",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.out_of_range"
+            ]
+          ]
+        },
+        {
+          "check": "diluent 190 uL (overfills; simulator accepts it): DENIED before dispatch",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.out_of_range"
+            ]
+          ]
+        },
+        {
+          "check": "an unreviewed protocol name: DENIED before dispatch",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.not_allowed"
+            ]
+          ]
+        },
+        {
+          "check": "edited protocol: DENIED by the reviewed-digest precondition",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.precondition.failed"
+            ]
+          ]
+        },
+        {
+          "check": "restored protocol runs",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "only the restored run reached the simulator",
+          "ok": true,
+          "observed": {
+            "count": 1,
+            "last_id": "r-restored",
+            "last_commands": 78
+          }
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 33
+        }
+      ],
+      "detail": {
+        "denied": {
+          "transfer 400 uL (simulator accepts it)": {
+            "command_id": "01a19757-0f7c-7147-8803-28f031ac9cf5",
+            "state": "DENIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "DENIED"
+            ],
+            "errors": [
+              "command.value.out_of_range"
+            ],
+            "verification": null,
+            "adapter_result": null
+          },
+          "negative transfer (simulator accepts it)": {
+            "command_id": "01a19757-0f8e-7472-a2b5-d191c654f569",
+            "state": "DENIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "DENIED"
+            ],
+            "errors": [
+              "command.value.out_of_range"
+            ],
+            "verification": null,
+            "adapter_result": null
+          },
+          "14 wells (the protocol would silently use 12)": {
+            "command_id": "01a19757-0f9e-7686-91ee-fc1cd166d860",
+            "state": "DENIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "DENIED"
+            ],
+            "errors": [
+              "command.value.out_of_range"
+            ],
+            "verification": null,
+            "adapter_result": null
+          },
+          "diluent 190 uL (overfills; simulator accepts it)": {
+            "command_id": "01a19757-0fbe-7775-86f6-f656e9842aa6",
+            "state": "DENIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "DENIED"
+            ],
+            "errors": [
+              "command.value.out_of_range"
+            ],
+            "verification": null,
+            "adapter_result": null
+          },
+          "an unreviewed protocol name": {
+            "command_id": "01a19757-0fc6-7434-8211-05c3007c18c1",
+            "state": "DENIED",
+            "transitions": [
+              "CREATED",
+              "VALIDATING",
+              "DENIED"
+            ],
+            "errors": [
+              "command.value.not_allowed"
+            ],
+            "verification": null,
+            "adapter_result": null
+          }
+        },
+        "tampered": {
+          "command_id": "01a19757-0fd0-71b5-ba1d-cd83a2697761",
+          "state": "DENIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ],
+          "errors": [
+            "command.precondition.failed"
+          ],
+          "verification": null,
+          "adapter_result": null
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\ot-runs\\OT-02-843d4f"
+    },
+    "OT-03": {
+      "title": "approval before execution",
+      "passed": true,
+      "seconds": 3.0,
+      "checks": [
+        {
+          "check": "held for approval, not run",
+          "ok": true,
+          "observed": [
+            "AWAITING_APPROVAL",
+            0
+          ]
+        },
+        {
+          "check": "approved by the operator: run and VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "a held run that is cancelled never runs",
+          "ok": true,
+          "observed": [
+            "CANCELLED",
+            {
+              "count": 1,
+              "last_id": "r-approve",
+              "last_commands": 78
+            }
+          ]
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 25
+        }
+      ],
+      "detail": {
+        "held": {
+          "command_id": "01a19757-1b63-71d5-a842-7e09f7214516",
+          "state": "AWAITING_APPROVAL",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "AWAITING_APPROVAL"
+          ],
+          "errors": [],
+          "verification": null,
+          "adapter_result": null
+        },
+        "approved": {
+          "command_id": "01a19757-1b63-71d5-a842-7e09f7214516",
+          "state": "VERIFIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "AWAITING_APPROVAL",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "APPLIED",
+            "VERIFIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "run.last_id",
+            "expected": "r-approve",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:40:30.861Z",
+              "value": "r-approve"
+            }
+          },
+          "adapter_result": {
+            "acknowledged": true,
+            "reported_applied": true,
+            "result": {
+              "commands": 78,
+              "protocol_sha256": "512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671",
+              "runlog_sha256": "feccb6034bd013b1be0e19f9105515708d7d44fbdf10681aa2200c01cbccf6e7"
+            }
+          }
+        },
+        "cancelled": {
+          "command_id": "01a19757-1c1f-731a-8bbe-0a660dad23c5",
+          "state": "CANCELLED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "AWAITING_APPROVAL",
+            "CANCELLED"
+          ],
+          "errors": [],
+          "verification": null,
+          "adapter_result": null
+        },
+        "approved_by": "operator:local"
+      },
+      "run_dir": "D:\\openmhs-research\\ot-runs\\OT-03-f974e5"
+    },
+    "OT-04": {
+      "title": "run completed, response lost",
+      "passed": true,
+      "seconds": 7.7,
+      "checks": [
+        {
+          "check": "the simulator completed the run",
+          "ok": true,
+          "observed": {
+            "count": 1,
+            "last_id": "r-lost",
+            "last_commands": 78
+          }
+        },
+        {
+          "check": "receipt is UNKNOWN_OUTCOME",
+          "ok": true,
+          "observed": "UNKNOWN_OUTCOME"
+        },
+        {
+          "check": "the next run is held, not sent",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.outcome_unresolved"
+            ]
+          ]
+        },
+        {
+          "check": "RECONCILED_APPLIED from the simulator's record",
+          "ok": true,
+          "observed": "RECONCILED_APPLIED"
+        },
+        {
+          "check": "run once, never repeated",
+          "ok": true,
+          "observed": {
+            "count": 1,
+            "last_id": "r-lost",
+            "last_commands": 78
+          }
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 19
+        }
+      ],
+      "detail": {
+        "lost": {
+          "command_id": "01a19757-26d1-7024-b5bb-b8afdfa81f70",
+          "state": "UNKNOWN_OUTCOME",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "TIMED_OUT",
+            "UNKNOWN_OUTCOME"
+          ],
+          "errors": [],
+          "verification": null,
+          "adapter_result": {
+            "acknowledged": true,
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 5000 ms"
+            }
+          }
+        },
+        "held": {
+          "command_id": "01a19757-3a79-724c-a433-4386d73eded4",
+          "state": "DENIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ],
+          "errors": [
+            "command.outcome_unresolved"
+          ],
+          "verification": null,
+          "adapter_result": null
+        },
+        "reconciled": {
+          "command_id": "01a19757-26d1-7024-b5bb-b8afdfa81f70",
+          "state": "RECONCILED_APPLIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "TIMED_OUT",
+            "UNKNOWN_OUTCOME",
+            "RECONCILED_APPLIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "run.last_id",
+            "expected": "r-lost",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:40:38.653Z",
+              "value": "r-lost"
+            }
+          },
+          "adapter_result": {
+            "acknowledged": true,
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 5000 ms"
+            }
+          }
+        },
+        "waited_ms": 5032
+      },
+      "run_dir": "D:\\openmhs-research\\ot-runs\\OT-04-3280a0"
+    },
+    "OT-05": {
+      "title": "duplicate submission",
+      "passed": true,
+      "seconds": 3.3,
+      "checks": [
+        {
+          "check": "same key, same command, one run",
+          "ok": true,
+          "observed": [
+            "01a19757-46b8-7450-9c77-213f8bf28366",
+            "01a19757-46b8-7450-9c77-213f8bf28366",
+            {
+              "count": 1,
+              "last_id": "r-dup",
+              "last_commands": 78
+            }
+          ]
+        },
+        {
+          "check": "same run_id under a new key: REJECTED, nothing run",
+          "ok": true,
+          "observed": [
+            "REJECTED",
+            {
+              "count": 1,
+              "last_id": "r-dup",
+              "last_commands": 78
+            }
+          ]
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 20
+        }
+      ],
+      "detail": {
+        "first": {
+          "command_id": "01a19757-46b8-7450-9c77-213f8bf28366",
+          "state": "VERIFIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "APPLIED",
+            "VERIFIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "run.last_id",
+            "expected": "r-dup",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:40:41.952Z",
+              "value": "r-dup"
+            }
+          },
+          "adapter_result": {
+            "acknowledged": true,
+            "reported_applied": true,
+            "result": {
+              "commands": 78,
+              "protocol_sha256": "512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671",
+              "runlog_sha256": "feccb6034bd013b1be0e19f9105515708d7d44fbdf10681aa2200c01cbccf6e7"
+            }
+          }
+        },
+        "again": {
+          "command_id": "01a19757-46b8-7450-9c77-213f8bf28366",
+          "state": "VERIFIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "APPLIED",
+            "VERIFIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "run.last_id",
+            "expected": "r-dup",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:40:41.952Z",
+              "value": "r-dup"
+            }
+          },
+          "adapter_result": {
+            "acknowledged": true,
+            "reported_applied": true,
+            "result": {
+              "commands": 78,
+              "protocol_sha256": "512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671",
+              "runlog_sha256": "feccb6034bd013b1be0e19f9105515708d7d44fbdf10681aa2200c01cbccf6e7"
+            }
+          }
+        },
+        "reused": {
+          "command_id": "01a19757-4773-7625-9fb5-e5634b8b42ae",
+          "state": "REJECTED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "REJECTED"
+          ],
+          "errors": [],
+          "verification": null,
+          "adapter_result": {
+            "error": {
+              "code": "adapter.rejected",
+              "message": "run_id 'r-dup' was already used"
+            }
+          }
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\ot-runs\\OT-05-78bdaa"
+    },
+    "OT-06": {
+      "title": "evidence export and replay",
+      "passed": true,
+      "seconds": 3.2,
+      "checks": [
+        {
+          "check": "exported evidence verifies offline, valid and complete",
+          "ok": true,
+          "observed": {
+            "exit": 0,
+            "valid": true,
+            "complete": true,
+            "records": 15,
+            "receipts": 1,
+            "unbound_commands": [],
+            "errors": []
+          }
+        },
+        {
+          "check": "replay: the same protocol and parameters give the same command log",
+          "ok": true,
+          "observed": 92
+        },
+        {
+          "check": "the evidence names protocol, digest, parameters and the gateway command",
+          "ok": true,
+          "observed": {
+            "n_wells": 8,
+            "transfer_ul": 40.0,
+            "diluent_ul": 80.0,
+            "mix_reps": 2
+          }
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 15
+        }
+      ],
+      "detail": {
+        "receipt": {
+          "command_id": "01a19757-52b4-73b0-97db-9930225d76ea",
+          "state": "VERIFIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "APPLIED",
+            "VERIFIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "run.last_id",
+            "expected": "r-evidence",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:40:45.018Z",
+              "value": "r-evidence"
+            }
+          },
+          "adapter_result": {
+            "acknowledged": true,
+            "reported_applied": true,
+            "result": {
+              "commands": 92,
+              "protocol_sha256": "512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671",
+              "runlog_sha256": "e43184489433f69ab4806f2b5499a9432990fc3df26d1b2e583aa3756994ea3a"
+            }
+          }
+        },
+        "evidence": {
+          "protocol_sha256": "512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671",
+          "runlog_sha256": "e43184489433f69ab4806f2b5499a9432990fc3df26d1b2e583aa3756994ea3a",
+          "commands": 92,
+          "requested": {
+            "diluent_ul": {
+              "value": 80.0,
+              "unit": "uL"
+            },
+            "mix_reps": 2,
+            "n_wells": 8,
+            "protocol": "serial_dilution",
+            "run_id": "r-evidence",
+            "transfer_ul": {
+              "value": 40.0,
+              "unit": "uL"
+            }
+          },
+          "offline_verify": {
+            "exit": 0,
+            "valid": true,
+            "complete": true,
+            "records": 15,
+            "receipts": 1,
+            "unbound_commands": [],
+            "errors": []
+          }
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\ot-runs\\OT-06-8a6b23"
+    },
+    "OT-07": {
+      "title": "gateway killed after the run, restarted",
+      "passed": true,
+      "seconds": 5.6,
+      "checks": [
+        {
+          "check": "after the restart: UNKNOWN_OUTCOME, not re-run",
+          "ok": true,
+          "observed": [
+            "UNKNOWN_OUTCOME",
+            {
+              "count": 1,
+              "last_id": "r-crash",
+              "last_commands": 78
+            }
+          ]
+        },
+        {
+          "check": "RECONCILED_APPLIED",
+          "ok": true,
+          "observed": "RECONCILED_APPLIED"
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 18
+        }
+      ],
+      "detail": {
+        "recovered": {
+          "command_id": "01a19757-5ebf-7254-b892-7f24a4f73b8d",
+          "state": "UNKNOWN_OUTCOME",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "UNKNOWN_OUTCOME"
+          ],
+          "errors": [],
+          "verification": null,
+          "adapter_result": {
+            "acknowledged": true
+          }
+        },
+        "reconciled": {
+          "command_id": "01a19757-5ebf-7254-b892-7f24a4f73b8d",
+          "state": "RECONCILED_APPLIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "UNKNOWN_OUTCOME",
+            "RECONCILED_APPLIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "run.last_id",
+            "expected": "r-crash",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:40:50.805Z",
+              "value": "r-crash"
+            }
+          },
+          "adapter_result": {
+            "acknowledged": true
+          }
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\ot-runs\\OT-07-d587c5"
+    },
+    "PERF": {
+      "title": "latency, governed vs native",
+      "passed": true,
+      "seconds": 7.1,
+      "checks": [
+        {
+          "check": "run 0 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 1 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 2 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 3 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 4 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 5 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 6 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 7 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 8 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 9 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 10 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 11 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 12 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 13 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 14 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 15 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 16 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 17 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 18 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "run 19 VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 148
+        }
+      ],
+      "detail": {
+        "n": 20,
+        "openmhs_ms": {
+          "median": 118.3,
+          "p95": 168.2,
+          "max": 171.3
+        },
+        "native_ms": {
+          "median": 83.5,
+          "p95": 145.0,
+          "max": 149.8
+        },
+        "gateway_start_ms": 2604,
+        "journal_bytes": 4096
+      },
+      "run_dir": "D:\\openmhs-research\\ot-runs\\PERF-0002ce"
+    }
+  }
+}

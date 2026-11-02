@@ -1,0 +1,3 @@
+# What the experiment needs: the SiLA 2 SDK with what its generated servers import. The adapter
+# alone needs less (adapters/python/sila2/requirements.txt). Python 3.12.
+sila2[codegen,cryptography]==0.14.0

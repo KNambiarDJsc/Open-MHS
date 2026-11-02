@@ -9,6 +9,31 @@ and the entry will say so under **Changed** or **Removed**.
 
 ### Fixed
 
+- **Reconciliation could report the opposite of what happened after a newer write.** An idempotent
+  write is allowed through while an earlier one is unresolved. Reconciling the earlier one then read
+  the newer command's effect: an applied command came back `RECONCILED_NOT_APPLIED`, and one that
+  never applied could come back `RECONCILED_APPLIED`. A newer write is now recorded in the audit chain
+  (`command.superseded`) when it is dispatched, and reconciling the earlier command is refused
+  (`command.reconcile.superseded`); it stays `UNKNOWN_OUTCOME` until a person resolves it
+  ([lifecycle.md](spec/lifecycle.md) §5). **A client that expected a conclusion gets an error here.**
+- `commands.get` and `commands.get_by_key` said `AWAITING_APPROVAL` for a command past its deadline,
+  which can no longer be approved. They now show `EXPIRED`.
+- **Python adapter SDK.** Importing a native extension such as numpy after the SDK had started hung
+  forever on Windows; the protocol now reads a duplicate of stdin, with descriptor 0 on the null
+  device. An adapter stuck in a blocking call kept running after its gateway was killed; a process
+  that has been told to stop, or whose gateway has gone, now ends within 5 s.
+- **Lab adapters.** PyLabRobot, Opentrons and Micro-Manager checked `filesystem.write` by string
+  prefix, so a sibling directory sharing the prefix passed; they use the new
+  `Permissions.check_write`. The SiLA 2 adapter's hung commands could use up the threads its reads
+  need, a connect failure was reported as an internal error, and a simulated server's readings were
+  reported as `device` (now `config.reading_source`). Micro-Manager unloads its devices on shutdown.
+- **MADSci node** (research code). A step returned `failed` after 60 s of waiting for approval,
+  although the transfer could still be approved and run later. It now withdraws the command, and
+  reports `failed` only once that is confirmed. See `research/lab-automation/05_madsci`, finding 7,
+  with four related fixes.
+- The documentation book omitted `docs/benchmarks.md`, and its link check failed. README and website
+  said no release had been published; v0.1.0 is a GitHub pre-release.
+
 - A journal write that failed after a command was dispatched (an I/O error, or the journal
   reaching its size limit) ended the call early: the device lock was released while the
   adapter call still ran, the command stayed `DISPATCHED`/`ACCEPTED` on record, and the next
@@ -62,9 +87,31 @@ and the entry will say so under **Changed** or **Removed**.
   window (count, first and last, min and max, quality, and how many raw readings were
   dropped) instead of one record per read. Denied and failed reads, and every read nobody
   opted in, are still individual records. Nothing is aggregated by default.
+- **Lab-automation experiments, simulator only** ([research/lab-automation](research/lab-automation/README.md)).
+  Four out-of-process Python adapters (`adapters/python/{pylabrobot,opentrons,micromanager,sila2}`)
+  and five experiments (PyLabRobot, Opentrons, Micro-Manager, SiLA 2, and a MADSci closed loop),
+  each with a native baseline, injected faults, raw results and a report that says what was not
+  shown. The generic SiLA 2 adapter builds the descriptor from a server's Feature Definitions plus
+  a reviewed override file. Findings that may change the core are taken in turn in
+  [RFC 0003](docs/rfcs/0003-reconciliation-and-verification.md). Nothing here ran on physical hardware.
+- **Contract gaps, in every ecosystem** (`research/lab-automation/06_contract_gaps`): ten properties
+  the experiments had left blank, each tried against each adapter and simulator through a real
+  gateway, including SiLA 2's gateway restart.
+- **Reproducible research.** `research/lab-automation/reproduce.py` runs everything from one command;
+  results record versions and every installed package, say they are simulated, and refuse to be
+  overwritten; `summarize.py` derives PASS / FAIL / NOT_TESTED deterministically; locked dependencies;
+  and CI runs the experiments on Linux.
+- **`examples/first-failure`**: one command to follow a lost answer from discovery to offline
+  verification of the evidence, on the existing gateway and CLI.
+- **[Adapter quality gate](docs/adapters/QUALITY_GATE.md)**, and a proposed
+  [result format for an OpenMHS Bench](docs/bench/RESULT_FORMAT.md): no scores or rankings.
 
 ### Changed
 
+- **Conformance:** a text parameter that verification reads back is now new on every command. The
+  suite used to send one fixed value, so an adapter that rightly refuses a reused id could not get
+  past L1. PyLabRobot, Opentrons and Micro-Manager now reach L3, on simulators. Requirement ids
+  and their meaning are unchanged; an adapter that insists on one particular string needs a sample value.
 - The gateway refuses to start on a journal that fails SQLite's integrity check
   (`journal.corrupt`: `quick_check`, plus the full check of the commands and approvals
   tables, whose unique indexes stop duplicate commands and double-spent approvals) or whose

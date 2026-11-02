@@ -1,0 +1,283 @@
+{
+ "format": "openmhs-lab-result/1",
+ "finished_at": "2026-11-02T14:41:25+00:00",
+ "simulated": true,
+ "physical_effects": false,
+ "source": {
+  "commit": "1b8fd521c1072d6a8b4c9d6c8a2a0c726de413b7",
+  "dirty": false
+ },
+ "environment": {
+  "os": "Windows",
+  "os_release": "11",
+  "machine": "AMD64",
+  "python": "3.12.11",
+  "python_implementation": "CPython",
+  "rustc": "rustc 1.89.0 (29483883e 2025-08-04)",
+  "openmhs_version": "openmhs 0.1.0",
+  "packages": {
+   "annotated-doc": "0.0.5",
+   "black": "26.10.1",
+   "cffi": "2.1.1",
+   "click": "8.5.0",
+   "colorama": "0.4.6",
+   "cryptography": "50.0.2",
+   "grpcio": "1.85.1",
+   "grpcio-tools": "1.85.1",
+   "ifaddr": "0.2.0",
+   "isort": "9.0.2",
+   "jinja2": "3.1.6",
+   "lxml": "6.1.3",
+   "markdown-it-py": "4.2.0",
+   "markupsafe": "3.0.4",
+   "mdurl": "0.1.2",
+   "mypy_extensions": "1.1.0",
+   "packaging": "26.3",
+   "pathspec": "1.1.1",
+   "platformdirs": "4.14.2",
+   "protobuf": "7.36.2",
+   "pycparser": "3.12",
+   "pygments": "2.21.0",
+   "pytokens": "0.4.1",
+   "rich": "15.0.0",
+   "setuptools": "84.2.1",
+   "shellingham": "1.5.4",
+   "sila2": "0.14.0",
+   "typer": "0.27.3",
+   "typing_extensions": "4.16.0",
+   "zeroconf": "0.153.0"
+  }
+ },
+ "ecosystem": "sila2",
+ "summary": {
+  "PASS": 2,
+  "FAIL": 0,
+  "NOT_TESTED": 0
+ },
+ "scenarios": {
+  "GAP-05": {
+   "title": "a gateway restart does not repeat an uncertain command",
+   "outcome": "PASS",
+   "seconds": 8.9,
+   "checks": [
+    {
+     "check": "the answer was lost: UNKNOWN_OUTCOME",
+     "ok": true,
+     "observed": "UNKNOWN_OUTCOME"
+    },
+    {
+     "check": "after a hard restart it is still UNKNOWN_OUTCOME",
+     "ok": true,
+     "observed": "UNKNOWN_OUTCOME"
+    },
+    {
+     "check": "the same key after the restart returns the same command, unsent",
+     "ok": true,
+     "observed": "UNKNOWN_OUTCOME"
+    },
+    {
+     "check": "reconciliation finds what the simulator holds: RECONCILED_APPLIED",
+     "ok": true,
+     "observed": "RECONCILED_APPLIED"
+    },
+    {
+     "check": "audit chain verifies",
+     "ok": true,
+     "observed": 19
+    }
+   ],
+   "detail": {
+    "lost": {
+     "command_id": "01a19cb5-0f12-76f3-9336-3cc9b9b98c6e",
+     "state": "UNKNOWN_OUTCOME",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "APPROVED",
+      "DISPATCHED",
+      "TIMED_OUT",
+      "UNKNOWN_OUTCOME"
+     ],
+     "errors": [],
+     "verification": null,
+     "adapter_result": {
+      "error": {
+       "code": "adapter.timeout",
+       "message": "no result within 3000 ms"
+      }
+     }
+    },
+    "after_restart": {
+     "command_id": "01a19cb5-0f12-76f3-9336-3cc9b9b98c6e",
+     "state": "UNKNOWN_OUTCOME",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "APPROVED",
+      "DISPATCHED",
+      "TIMED_OUT",
+      "UNKNOWN_OUTCOME"
+     ],
+     "errors": [],
+     "verification": null,
+     "adapter_result": {
+      "error": {
+       "code": "adapter.timeout",
+       "message": "no result within 3000 ms"
+      }
+     }
+    },
+    "reconciled": {
+     "command_id": "01a19cb5-0f12-76f3-9336-3cc9b9b98c6e",
+     "state": "RECONCILED_APPLIED",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "APPROVED",
+      "DISPATCHED",
+      "TIMED_OUT",
+      "UNKNOWN_OUTCOME",
+      "RECONCILED_APPLIED"
+     ],
+     "errors": [],
+     "verification": {
+      "capability": "temperature_controller.target_temperature",
+      "expected": {
+       "unit": "Cel",
+       "value": 28.0
+      },
+      "matched": true,
+      "mode": "readback",
+      "observed": {
+       "quality": "GOOD",
+       "source": "simulator",
+       "timestamp": "2026-11-02T14:41:18.665Z",
+       "value": {
+        "unit": "Cel",
+        "value": 28.0
+       }
+      }
+     },
+     "adapter_result": {
+      "error": {
+       "code": "adapter.timeout",
+       "message": "no result within 3000 ms"
+      }
+     }
+    },
+    "operation": {
+     "target": {
+      "device": "sila.heater-01",
+      "capability": "temperature_controller.set_target_temperature"
+     },
+     "operation": "invoke",
+     "params": {
+      "target_temperature": {
+       "value": 28.0,
+       "unit": "Cel"
+      }
+     }
+    },
+    "dispatch_count": null
+   }
+  },
+  "GAP-08": {
+   "title": "a superseded write does not reconcile misleadingly",
+   "outcome": "PASS",
+   "seconds": 6.2,
+   "checks": [
+    {
+     "check": "the first write's answer was lost",
+     "ok": true,
+     "observed": "UNKNOWN_OUTCOME"
+    },
+    {
+     "check": "an idempotent capability lets the newer write through",
+     "ok": true,
+     "observed": [
+      "VERIFIED",
+      []
+     ]
+    },
+    {
+     "check": "reconciling the overtaken write refuses to conclude",
+     "ok": true,
+     "observed": "command.reconcile.superseded"
+    },
+    {
+     "check": "it stays UNKNOWN_OUTCOME",
+     "ok": true,
+     "observed": "UNKNOWN_OUTCOME"
+    },
+    {
+     "check": "a person can settle it, on the record",
+     "ok": true,
+     "observed": "RECONCILED_APPLIED"
+    },
+    {
+     "check": "audit chain verifies",
+     "ok": true,
+     "observed": 23
+    }
+   ],
+   "detail": {
+    "lost": {
+     "command_id": "01a19cb5-2d43-740f-8084-52cfa16096e2",
+     "state": "UNKNOWN_OUTCOME",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "APPROVED",
+      "DISPATCHED",
+      "TIMED_OUT",
+      "UNKNOWN_OUTCOME"
+     ],
+     "errors": [],
+     "verification": null,
+     "adapter_result": {
+      "error": {
+       "code": "adapter.timeout",
+       "message": "TemperatureController.SetTargetTemperature: no answer within 3.0 s"
+      }
+     }
+    },
+    "newer": {
+     "command_id": "01a19cb5-3925-7322-b415-1be67736f52b",
+     "state": "VERIFIED",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "APPROVED",
+      "DISPATCHED",
+      "ACCEPTED",
+      "APPLIED",
+      "VERIFIED"
+     ],
+     "errors": [],
+     "verification": {
+      "capability": "temperature_controller.target_temperature",
+      "expected": {
+       "unit": "Cel",
+       "value": 34.0
+      },
+      "matched": true,
+      "mode": "readback",
+      "observed": {
+       "quality": "GOOD",
+       "source": "simulator",
+       "timestamp": "2026-11-02T14:41:24.788Z",
+       "value": {
+        "unit": "Cel",
+        "value": 34.0
+       }
+      }
+     },
+     "adapter_result": {
+      "acknowledged": true,
+      "reported_applied": true
+     }
+    }
+   }
+  }
+ }
+}

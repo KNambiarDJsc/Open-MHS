@@ -1,0 +1,23 @@
+[
+ {
+  "stage": "scenarios",
+  "ecosystem": "madsci",
+  "name": "madsci-001",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "madsci",
+  "name": "madsci-002",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "madsci",
+  "name": "madsci-003",
+  "exit": 0,
+  "outcome": "PASS"
+ }
+]

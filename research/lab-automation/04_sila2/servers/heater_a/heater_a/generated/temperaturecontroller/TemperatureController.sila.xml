@@ -1,0 +1,113 @@
+<Feature xmlns="http://www.sila-standard.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Category="research" FeatureVersion="1.0" MaturityLevel="Draft" Originator="org.openmhs" SiLA2Version="1.0" xsi:schemaLocation="http://www.sila-standard.org https://gitlab.com/SiLA2/sila_base/raw/master/schema/FeatureDefinition.xsd">
+  <Identifier>TemperatureController</Identifier>
+  <DisplayName>Temperature Controller</DisplayName>
+  <Description>A heating block that drives its temperature towards a target. Simulated: written for the OpenMHS lab-automation research, not a SiLA standard feature.</Description>
+  <Command>
+    <Identifier>SetTargetTemperature</Identifier>
+    <DisplayName>Set Target Temperature</DisplayName>
+    <Description>Set the temperature the block drives towards.</Description>
+    <Observable>No</Observable>
+    <Parameter>
+      <Identifier>TargetTemperature</Identifier>
+      <DisplayName>Target Temperature</DisplayName>
+      <Description>The new target.</Description>
+      <DataType>
+        <Constrained>
+          <DataType>
+            <Basic>Real</Basic>
+          </DataType>
+          <Constraints>
+            <Unit>
+              <Label>degC</Label>
+              <Factor>1</Factor>
+              <Offset>273.15</Offset>
+              <UnitComponent>
+                <SIUnit>Kelvin</SIUnit>
+                <Exponent>1</Exponent>
+              </UnitComponent>
+            </Unit>
+            <MinimalInclusive>4</MinimalInclusive>
+            <MaximalInclusive>100</MaximalInclusive>
+          </Constraints>
+        </Constrained>
+      </DataType>
+    </Parameter>
+    <DefinedExecutionErrors>
+      <Identifier>HeaterFault</Identifier>
+    </DefinedExecutionErrors>
+  </Command>
+  <Command>
+    <Identifier>ResetHeater</Identifier>
+    <DisplayName>Reset Heater</DisplayName>
+    <Description>Clear a heater fault.</Description>
+    <Observable>No</Observable>
+  </Command>
+  <Command>
+    <Identifier>ShutDown</Identifier>
+    <DisplayName>Shut Down</DisplayName>
+    <Description>Switch the block off.</Description>
+    <Observable>No</Observable>
+  </Command>
+  <Property>
+    <Identifier>CurrentTemperature</Identifier>
+    <DisplayName>Current Temperature</DisplayName>
+    <Description>The block's measured temperature.</Description>
+    <Observable>Yes</Observable>
+    <DataType>
+      <Constrained>
+        <DataType>
+          <Basic>Real</Basic>
+        </DataType>
+        <Constraints>
+          <Unit>
+            <Label>degC</Label>
+            <Factor>1</Factor>
+            <Offset>273.15</Offset>
+            <UnitComponent>
+              <SIUnit>Kelvin</SIUnit>
+              <Exponent>1</Exponent>
+            </UnitComponent>
+          </Unit>
+        </Constraints>
+      </Constrained>
+    </DataType>
+  </Property>
+  <Property>
+    <Identifier>TargetTemperature</Identifier>
+    <DisplayName>Target Temperature</DisplayName>
+    <Description>The temperature the block drives towards.</Description>
+    <Observable>No</Observable>
+    <DataType>
+      <Constrained>
+        <DataType>
+          <Basic>Real</Basic>
+        </DataType>
+        <Constraints>
+          <Unit>
+            <Label>degC</Label>
+            <Factor>1</Factor>
+            <Offset>273.15</Offset>
+            <UnitComponent>
+              <SIUnit>Kelvin</SIUnit>
+              <Exponent>1</Exponent>
+            </UnitComponent>
+          </Unit>
+        </Constraints>
+      </Constrained>
+    </DataType>
+  </Property>
+  <Property>
+    <Identifier>HeaterFaulted</Identifier>
+    <DisplayName>Heater Faulted</DisplayName>
+    <Description>The heater is in a fault state and refuses new targets until reset.</Description>
+    <Observable>No</Observable>
+    <DataType>
+      <Basic>Boolean</Basic>
+    </DataType>
+  </Property>
+  <DefinedExecutionError>
+    <Identifier>HeaterFault</Identifier>
+    <DisplayName>Heater Fault</DisplayName>
+    <Description>The heater is faulted and cannot take a new target.</Description>
+  </DefinedExecutionError>
+</Feature>

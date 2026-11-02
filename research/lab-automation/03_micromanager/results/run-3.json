@@ -1,0 +1,1407 @@
+{
+  "openmhs_commit": "3630cf90f76a21e6beb931c1545dd0d0f25c4603",
+  "openmhs_bin": "D:\\openmhs-release-target\\release\\openmhs.exe",
+  "python": "3.12.11",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "started": "2026-11-01T19:04:12+0530",
+  "pymmcore_plus": "0.18.1",
+  "micro_manager": "Micro-Manager-75.20261014.post1",
+  "scenarios": {
+    "MM-01": {
+      "title": "multi-position, two-channel imaging",
+      "passed": true,
+      "seconds": 2.6,
+      "checks": [
+        {
+          "check": "exposure 20 ms",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "focus at 10 um",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "move stage.x.position=0.0 VERIFIED",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "stage.x.position",
+              "expected": {
+                "unit": "um",
+                "value": 0.0
+              },
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T13:34:13.866Z",
+                "value": {
+                  "unit": "um",
+                  "value": -0.0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "check": "move stage.y.position=0.0 VERIFIED",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "stage.y.position",
+              "expected": {
+                "unit": "um",
+                "value": 0.0
+              },
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T13:34:13.937Z",
+                "value": {
+                  "unit": "um",
+                  "value": -0.0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "check": "channel FITC VERIFIED",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "channel",
+              "expected": "FITC",
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T13:34:13.968Z",
+                "value": "FITC"
+              }
+            }
+          ]
+        },
+        {
+          "check": "image at (0,0) FITC: VERIFIED and provenance agrees",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "x": -0.0,
+              "y": -0.0,
+              "z": 10.0,
+              "exposure": 20.0,
+              "channel": "FITC"
+            }
+          ]
+        },
+        {
+          "check": "channel DAPI VERIFIED",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "channel",
+              "expected": "DAPI",
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T13:34:14.089Z",
+                "value": "DAPI"
+              }
+            }
+          ]
+        },
+        {
+          "check": "image at (0,0) DAPI: VERIFIED and provenance agrees",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "x": -0.0,
+              "y": -0.0,
+              "z": 10.0,
+              "exposure": 20.0,
+              "channel": "DAPI"
+            }
+          ]
+        },
+        {
+          "check": "move stage.x.position=0.0 VERIFIED",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "stage.x.position",
+              "expected": {
+                "unit": "um",
+                "value": 0.0
+              },
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T13:34:14.236Z",
+                "value": {
+                  "unit": "um",
+                  "value": -0.0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "check": "move stage.y.position=250.0 VERIFIED",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "stage.y.position",
+              "expected": {
+                "unit": "um",
+                "value": 250.0
+              },
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T13:34:14.314Z",
+                "value": {
+                  "unit": "um",
+                  "value": 250.005
+                }
+              }
+            }
+          ]
+        },
+        {
+          "check": "channel FITC VERIFIED",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "channel",
+              "expected": "FITC",
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T13:34:14.346Z",
+                "value": "FITC"
+              }
+            }
+          ]
+        },
+        {
+          "check": "image at (0,250) FITC: VERIFIED and provenance agrees",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "x": -0.0,
+              "y": 250.005,
+              "z": 10.0,
+              "exposure": 20.0,
+              "channel": "FITC"
+            }
+          ]
+        },
+        {
+          "check": "channel DAPI VERIFIED",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "channel",
+              "expected": "DAPI",
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T13:34:14.455Z",
+                "value": "DAPI"
+              }
+            }
+          ]
+        },
+        {
+          "check": "image at (0,250) DAPI: VERIFIED and provenance agrees",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "x": -0.0,
+              "y": 250.005,
+              "z": 10.0,
+              "exposure": 20.0,
+              "channel": "DAPI"
+            }
+          ]
+        },
+        {
+          "check": "move stage.x.position=250.0 VERIFIED",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "stage.x.position",
+              "expected": {
+                "unit": "um",
+                "value": 250.0
+              },
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T13:34:14.603Z",
+                "value": {
+                  "unit": "um",
+                  "value": 250.005
+                }
+              }
+            }
+          ]
+        },
+        {
+          "check": "move stage.y.position=0.0 VERIFIED",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "stage.y.position",
+              "expected": {
+                "unit": "um",
+                "value": 0.0
+              },
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T13:34:14.661Z",
+                "value": {
+                  "unit": "um",
+                  "value": -0.0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "check": "channel FITC VERIFIED",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "channel",
+              "expected": "FITC",
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T13:34:14.674Z",
+                "value": "FITC"
+              }
+            }
+          ]
+        },
+        {
+          "check": "image at (250,0) FITC: VERIFIED and provenance agrees",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "x": 250.005,
+              "y": -0.0,
+              "z": 10.0,
+              "exposure": 20.0,
+              "channel": "FITC"
+            }
+          ]
+        },
+        {
+          "check": "channel DAPI VERIFIED",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "channel",
+              "expected": "DAPI",
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T13:34:14.752Z",
+                "value": "DAPI"
+              }
+            }
+          ]
+        },
+        {
+          "check": "image at (250,0) DAPI: VERIFIED and provenance agrees",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "x": 250.005,
+              "y": -0.0,
+              "z": 10.0,
+              "exposure": 20.0,
+              "channel": "DAPI"
+            }
+          ]
+        },
+        {
+          "check": "move stage.x.position=250.0 VERIFIED",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "stage.x.position",
+              "expected": {
+                "unit": "um",
+                "value": 250.0
+              },
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T13:34:14.87Z",
+                "value": {
+                  "unit": "um",
+                  "value": 250.005
+                }
+              }
+            }
+          ]
+        },
+        {
+          "check": "move stage.y.position=250.0 VERIFIED",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "stage.y.position",
+              "expected": {
+                "unit": "um",
+                "value": 250.0
+              },
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T13:34:14.938Z",
+                "value": {
+                  "unit": "um",
+                  "value": 250.005
+                }
+              }
+            }
+          ]
+        },
+        {
+          "check": "channel FITC VERIFIED",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "channel",
+              "expected": "FITC",
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T13:34:14.955Z",
+                "value": "FITC"
+              }
+            }
+          ]
+        },
+        {
+          "check": "image at (250,250) FITC: VERIFIED and provenance agrees",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "x": 250.005,
+              "y": 250.005,
+              "z": 10.0,
+              "exposure": 20.0,
+              "channel": "FITC"
+            }
+          ]
+        },
+        {
+          "check": "channel DAPI VERIFIED",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "capability": "channel",
+              "expected": "DAPI",
+              "matched": true,
+              "mode": "readback",
+              "observed": {
+                "quality": "GOOD",
+                "source": "simulator",
+                "timestamp": "2026-11-01T13:34:15.069Z",
+                "value": "DAPI"
+              }
+            }
+          ]
+        },
+        {
+          "check": "image at (250,250) DAPI: VERIFIED and provenance agrees",
+          "ok": true,
+          "observed": [
+            "VERIFIED",
+            {
+              "x": 250.005,
+              "y": 250.005,
+              "z": 10.0,
+              "exposure": 20.0,
+              "channel": "DAPI"
+            }
+          ]
+        },
+        {
+          "check": "8 images, 8 distinct contents",
+          "ok": true,
+          "observed": 8
+        },
+        {
+          "check": "the camera counted 8 images",
+          "ok": true,
+          "observed": 8
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 192
+        }
+      ],
+      "detail": {
+        "images": [
+          {
+            "image_id": "img-0-0-FITC",
+            "sha256": "9f7582ae2974402d3b804bb785e4eff3037d8fb5d458cca37a6442074afb321c",
+            "command_id": "01a19751-5be5-7306-b5da-7785e3a7dd27",
+            "software_state": {
+              "x": -0.0,
+              "y": -0.0,
+              "z": 10.0,
+              "exposure": 20.0,
+              "channel": "FITC"
+            }
+          },
+          {
+            "image_id": "img-0-0-DAPI",
+            "sha256": "68c7f5d32519a16f05fe43969142c2010d66a2ca32c29e360a050dda98c0bb86",
+            "command_id": "01a19751-5c59-7199-bc13-f614e712b76c",
+            "software_state": {
+              "x": -0.0,
+              "y": -0.0,
+              "z": 10.0,
+              "exposure": 20.0,
+              "channel": "DAPI"
+            }
+          },
+          {
+            "image_id": "img-0-250-FITC",
+            "sha256": "5f9143a63584a0bd267d7404f64acfe0071ddfd6a6ee295ef53a74f3e76178f0",
+            "command_id": "01a19751-5d59-736e-a816-6a6afa759bcf",
+            "software_state": {
+              "x": -0.0,
+              "y": 250.005,
+              "z": 10.0,
+              "exposure": 20.0,
+              "channel": "FITC"
+            }
+          },
+          {
+            "image_id": "img-0-250-DAPI",
+            "sha256": "e2c6985ae38fc1f52c8d75f7583082d9800e7f8b52d0aca4b7ac719d3840149f",
+            "command_id": "01a19751-5dc7-7335-8a9a-7cff3e117fd9",
+            "software_state": {
+              "x": -0.0,
+              "y": 250.005,
+              "z": 10.0,
+              "exposure": 20.0,
+              "channel": "DAPI"
+            }
+          },
+          {
+            "image_id": "img-250-0-FITC",
+            "sha256": "3670ea251c11e7bc45c172ff27b942717d0497fb36fa6e63dfe74e36c371b2b3",
+            "command_id": "01a19751-5e95-718c-8164-caf4188d06a1",
+            "software_state": {
+              "x": 250.005,
+              "y": -0.0,
+              "z": 10.0,
+              "exposure": 20.0,
+              "channel": "FITC"
+            }
+          },
+          {
+            "image_id": "img-250-0-DAPI",
+            "sha256": "85c3fc082af08330820578188adf0d85827e36ebaf04d092819d973dc6693fc3",
+            "command_id": "01a19751-5ee3-7457-9eb5-f861fe893e09",
+            "software_state": {
+              "x": 250.005,
+              "y": -0.0,
+              "z": 10.0,
+              "exposure": 20.0,
+              "channel": "DAPI"
+            }
+          },
+          {
+            "image_id": "img-250-250-FITC",
+            "sha256": "94a87dd007782fb837c7c3dda7dc2a3cbd6668639cc14beffdae9e1dbc278a61",
+            "command_id": "01a19751-5fba-711c-b633-c2421578ad37",
+            "software_state": {
+              "x": 250.005,
+              "y": 250.005,
+              "z": 10.0,
+              "exposure": 20.0,
+              "channel": "FITC"
+            }
+          },
+          {
+            "image_id": "img-250-250-DAPI",
+            "sha256": "012cc487ee357d7a006c49742a2edc0106d40bb00ddb649a5b67a0b9295c0f72",
+            "command_id": "01a19751-602e-77dc-bd6d-40e0618f7e39",
+            "software_state": {
+              "x": 250.005,
+              "y": 250.005,
+              "z": 10.0,
+              "exposure": 20.0,
+              "channel": "DAPI"
+            }
+          }
+        ]
+      },
+      "run_dir": "D:\\openmhs-research\\mm-runs\\MM-01-7d5439"
+    },
+    "MM-02": {
+      "title": "out-of-contract stage, exposure and channel",
+      "passed": true,
+      "seconds": 1.2,
+      "checks": [
+        {
+          "check": "x = 6000 um (envelope 5000): DENIED before dispatch",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.out_of_range"
+            ]
+          ]
+        },
+        {
+          "check": "x = 1e9 um (the demo stage would try): DENIED before dispatch",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.out_of_range"
+            ]
+          ]
+        },
+        {
+          "check": "z = -5 um: DENIED before dispatch",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.out_of_range"
+            ]
+          ]
+        },
+        {
+          "check": "exposure 5 s: DENIED before dispatch",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.out_of_range"
+            ]
+          ]
+        },
+        {
+          "check": "channel UV (not a preset): DENIED before dispatch",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.not_allowed"
+            ]
+          ]
+        },
+        {
+          "check": "x in an unconvertible unit: DENIED before dispatch",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.value.unit_mismatch"
+            ]
+          ]
+        },
+        {
+          "check": "the stage never moved",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 30
+        }
+      ],
+      "detail": {
+        "x = 6000 um (envelope 5000)": {
+          "command_id": "01a19751-64ba-747c-a19c-10596faa00f7",
+          "state": "DENIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ],
+          "errors": [
+            "command.value.out_of_range"
+          ],
+          "verification": null,
+          "adapter_result": null
+        },
+        "x = 1e9 um (the demo stage would try)": {
+          "command_id": "01a19751-64ca-7361-8a00-a10ec6f593ec",
+          "state": "DENIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ],
+          "errors": [
+            "command.value.out_of_range"
+          ],
+          "verification": null,
+          "adapter_result": null
+        },
+        "z = -5 um": {
+          "command_id": "01a19751-64ce-7779-8a4c-6ad1618b612b",
+          "state": "DENIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ],
+          "errors": [
+            "command.value.out_of_range"
+          ],
+          "verification": null,
+          "adapter_result": null
+        },
+        "exposure 5 s": {
+          "command_id": "01a19751-64df-767a-a12d-0026c9209ec4",
+          "state": "DENIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ],
+          "errors": [
+            "command.value.out_of_range"
+          ],
+          "verification": null,
+          "adapter_result": null
+        },
+        "channel UV (not a preset)": {
+          "command_id": "01a19751-64f1-707a-87a8-f281accaf7f8",
+          "state": "DENIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ],
+          "errors": [
+            "command.value.not_allowed"
+          ],
+          "verification": null,
+          "adapter_result": null
+        },
+        "x in an unconvertible unit": {
+          "command_id": "01a19751-6503-7383-8073-a9024adf21a9",
+          "state": "DENIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ],
+          "errors": [
+            "command.value.unit_mismatch"
+          ],
+          "verification": null,
+          "adapter_result": null
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\mm-runs\\MM-02-1404d7"
+    },
+    "MM-03": {
+      "title": "two agents: commands serialized, sequences only under a lease",
+      "passed": true,
+      "seconds": 2.0,
+      "checks": [
+        {
+          "check": "without a lease, A's image is where B left the stage, and its provenance says so",
+          "ok": true,
+          "observed": 1999.995
+        },
+        {
+          "check": "B is refused while A holds the lease",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "lease.held"
+            ]
+          ]
+        },
+        {
+          "check": "B can still read",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "A's leased image is where A put the stage",
+          "ok": true,
+          "observed": 100.005
+        },
+        {
+          "check": "after release B moves",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 65
+        }
+      ],
+      "detail": {
+        "interleaved_x": 1999.995,
+        "leased_x": 100.005,
+        "blocked": {
+          "command_id": "01a19751-6be9-759f-b9ed-be59c6de2c8d",
+          "state": "DENIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ],
+          "errors": [
+            "lease.held"
+          ],
+          "verification": null,
+          "adapter_result": null
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\mm-runs\\MM-03-b91b5e"
+    },
+    "MM-04": {
+      "title": "camera unavailable",
+      "passed": true,
+      "seconds": 1.3,
+      "checks": [
+        {
+          "check": "the adapter reports the camera unavailable",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "snap DENIED by the camera precondition, never dispatched",
+          "ok": true,
+          "observed": [
+            "DENIED",
+            [
+              "command.precondition.failed"
+            ]
+          ]
+        },
+        {
+          "check": "the stage still works without the camera",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "camera back: snap VERIFIED",
+          "ok": true,
+          "observed": "VERIFIED"
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 40
+        }
+      ],
+      "detail": {
+        "denied": {
+          "command_id": "01a19751-717a-70f7-b3b3-1b078df11801",
+          "state": "DENIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "DENIED"
+          ],
+          "errors": [
+            "command.precondition.failed"
+          ],
+          "verification": null,
+          "adapter_result": null
+        },
+        "restored": {
+          "command_id": "01a19751-71ea-71eb-b767-7584bcdce1bb",
+          "state": "VERIFIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "APPLIED",
+            "VERIFIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "camera.last_image_id",
+            "expected": "img-camera-back",
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:34:19.662Z",
+              "value": "img-camera-back"
+            }
+          },
+          "adapter_result": {
+            "acknowledged": true,
+            "reported_applied": true,
+            "result": {
+              "height": 512,
+              "sha256": "79b0dd2d7735e2ecaf8e48bb79c775bf079926bee2197f1f9cba02c40017e794",
+              "width": 512
+            }
+          }
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\mm-runs\\MM-04-75e9f4"
+    },
+    "MM-05": {
+      "title": "move done, response lost",
+      "passed": true,
+      "seconds": 11.2,
+      "checks": [
+        {
+          "check": "the stage moved",
+          "ok": true,
+          "observed": {
+            "x": 499.995,
+            "y": -0.0,
+            "z": 0.0,
+            "exposure": 10.0,
+            "channel": "DAPI"
+          }
+        },
+        {
+          "check": "UNKNOWN_OUTCOME",
+          "ok": true,
+          "observed": "UNKNOWN_OUTCOME"
+        },
+        {
+          "check": "reconciled straight away: RECONCILED_APPLIED",
+          "ok": true,
+          "observed": "RECONCILED_APPLIED"
+        },
+        {
+          "check": "a new absolute move is allowed while the first is unknown (idempotent, as specified)",
+          "ok": true,
+          "observed": [
+            "UNKNOWN_OUTCOME",
+            "VERIFIED"
+          ]
+        },
+        {
+          "check": "FINDING: the superseded move reconciles NOT_APPLIED although the stage did reach 700 um",
+          "ok": true,
+          "observed": [
+            true,
+            "RECONCILED_NOT_APPLIED"
+          ]
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 33
+        }
+      ],
+      "detail": {
+        "lost": {
+          "command_id": "01a19751-7673-7165-9c65-4e81ceefd18a",
+          "state": "UNKNOWN_OUTCOME",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "TIMED_OUT",
+            "UNKNOWN_OUTCOME"
+          ],
+          "errors": [],
+          "verification": null,
+          "adapter_result": {
+            "acknowledged": true,
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 5000 ms"
+            }
+          }
+        },
+        "reconciled": {
+          "command_id": "01a19751-7673-7165-9c65-4e81ceefd18a",
+          "state": "RECONCILED_APPLIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "TIMED_OUT",
+            "UNKNOWN_OUTCOME",
+            "RECONCILED_APPLIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "stage.x.position",
+            "expected": {
+              "unit": "um",
+              "value": 500.0
+            },
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:34:25.823Z",
+              "value": {
+                "unit": "um",
+                "value": 499.995
+              }
+            }
+          },
+          "adapter_result": {
+            "acknowledged": true,
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 5000 ms"
+            }
+          }
+        },
+        "lost_then_superseded": {
+          "command_id": "01a19751-8a2f-74dd-b355-ecf008ea6911",
+          "state": "UNKNOWN_OUTCOME",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "TIMED_OUT",
+            "UNKNOWN_OUTCOME"
+          ],
+          "errors": [],
+          "verification": null,
+          "adapter_result": {
+            "acknowledged": true,
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 5000 ms"
+            }
+          }
+        },
+        "superseding": {
+          "command_id": "01a19751-9dd5-74ce-8f4f-6eaf05c8d578",
+          "state": "VERIFIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "APPLIED",
+            "VERIFIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "stage.x.position",
+            "expected": {
+              "unit": "um",
+              "value": 800.0
+            },
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:34:30.908Z",
+              "value": {
+                "unit": "um",
+                "value": 799.995
+              }
+            }
+          },
+          "adapter_result": {
+            "acknowledged": true,
+            "reported_applied": true
+          }
+        },
+        "reconciled_after_supersede": {
+          "command_id": "01a19751-8a2f-74dd-b355-ecf008ea6911",
+          "state": "RECONCILED_NOT_APPLIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "TIMED_OUT",
+            "UNKNOWN_OUTCOME",
+            "RECONCILED_NOT_APPLIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "stage.x.position",
+            "expected": {
+              "unit": "um",
+              "value": 700.0
+            },
+            "matched": false,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:34:30.912Z",
+              "value": {
+                "unit": "um",
+                "value": 799.995
+              }
+            }
+          },
+          "adapter_result": {
+            "acknowledged": true,
+            "error": {
+              "code": "adapter.timeout",
+              "message": "no result within 5000 ms"
+            }
+          }
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\mm-runs\\MM-05-29a594"
+    },
+    "MM-06": {
+      "title": "image-to-command provenance and evidence",
+      "passed": true,
+      "seconds": 1.4,
+      "checks": [
+        {
+          "check": "image, provenance record and receipt agree",
+          "ok": true,
+          "observed": "a6d1849a26f2f55993e5bab7f86d8b37097efecafd6c733e06dcfe677445e392"
+        },
+        {
+          "check": "exported evidence verifies offline",
+          "ok": true,
+          "observed": {
+            "exit": 0,
+            "valid": true,
+            "complete": true,
+            "records": 31,
+            "receipts": 3,
+            "unbound_commands": [],
+            "errors": []
+          }
+        },
+        {
+          "check": "the exported receipt holds the image's SHA-256",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "an edited image no longer matches its receipt",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 31
+        }
+      ],
+      "detail": {
+        "record": {
+          "image_id": "img-provenance",
+          "command_id": "01a19751-a2c1-720e-ac91-f85e312aabcc",
+          "sha256": "a6d1849a26f2f55993e5bab7f86d8b37097efecafd6c733e06dcfe677445e392",
+          "shape": [
+            512,
+            512
+          ],
+          "dtype": "uint16",
+          "taken_at": "2026-11-01T13:34:32.157452+00:00",
+          "camera": "Camera",
+          "software_state": {
+            "x": 123.0,
+            "y": -0.0,
+            "z": 0.0,
+            "exposure": 10.0,
+            "channel": "Cy5"
+          },
+          "source": "Micro-Manager DemoCamera (synthetic image)"
+        },
+        "offline_verify": {
+          "exit": 0,
+          "valid": true,
+          "complete": true
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\mm-runs\\MM-06-c77bb4"
+    },
+    "MM-07": {
+      "title": "gateway killed after a move, restarted",
+      "passed": true,
+      "seconds": 2.5,
+      "checks": [
+        {
+          "check": "after restart: UNKNOWN_OUTCOME",
+          "ok": true,
+          "observed": "UNKNOWN_OUTCOME"
+        },
+        {
+          "check": "RECONCILED_APPLIED: the restored stage is where the move left it",
+          "ok": true,
+          "observed": "RECONCILED_APPLIED"
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 20
+        }
+      ],
+      "detail": {
+        "recovered": {
+          "command_id": "01a19751-a818-75d2-b10e-1787364ef54c",
+          "state": "UNKNOWN_OUTCOME",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "UNKNOWN_OUTCOME"
+          ],
+          "errors": [],
+          "verification": null,
+          "adapter_result": {
+            "acknowledged": true
+          }
+        },
+        "reconciled": {
+          "command_id": "01a19751-a818-75d2-b10e-1787364ef54c",
+          "state": "RECONCILED_APPLIED",
+          "transitions": [
+            "CREATED",
+            "VALIDATING",
+            "APPROVED",
+            "DISPATCHED",
+            "ACCEPTED",
+            "UNKNOWN_OUTCOME",
+            "RECONCILED_APPLIED"
+          ],
+          "errors": [],
+          "verification": {
+            "capability": "stage.y.position",
+            "expected": {
+              "unit": "um",
+              "value": -300.0
+            },
+            "matched": true,
+            "mode": "readback",
+            "observed": {
+              "quality": "GOOD",
+              "source": "simulator",
+              "timestamp": "2026-11-01T13:34:34.685Z",
+              "value": {
+                "unit": "um",
+                "value": -300.0
+              }
+            }
+          },
+          "adapter_result": {
+            "acknowledged": true
+          }
+        }
+      },
+      "run_dir": "D:\\openmhs-research\\mm-runs\\MM-07-287db2"
+    },
+    "PERF": {
+      "title": "latency per position, governed vs native",
+      "passed": true,
+      "seconds": 4.0,
+      "checks": [
+        {
+          "check": "position 0: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 1: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 2: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 3: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 4: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 5: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 6: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 7: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 8: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 9: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 10: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 11: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 12: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 13: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 14: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 15: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 16: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 17: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 18: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "position 19: move and image VERIFIED",
+          "ok": true,
+          "observed": null
+        },
+        {
+          "check": "audit chain verifies",
+          "ok": true,
+          "observed": 290
+        }
+      ],
+      "detail": {
+        "n": 20,
+        "openmhs_ms": {
+          "median": 110.1,
+          "p95": 136.3,
+          "max": 180.9
+        },
+        "native_ms": {
+          "median": 31.7,
+          "p95": 38.1,
+          "max": 39.1
+        },
+        "gateway_start_ms": 893,
+        "note": "governed: one verified move and one verified snap with provenance; native: setXYPosition + snap"
+      },
+      "run_dir": "D:\\openmhs-research\\mm-runs\\PERF-cc5d27"
+    }
+  }
+}

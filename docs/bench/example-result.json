@@ -1,0 +1,72 @@
+{
+ "format": "openmhs-bench-result/0.1",
+ "system": {
+  "name": "OpenMHS",
+  "version": "0.1.0",
+  "commit": "6c30a5bddfa73a6c7a5a69e0723ddd65662a8594"
+ },
+ "scenario": {
+  "id": "GAP-05",
+  "version": 1,
+  "title": "a gateway restart does not repeat an uncertain command"
+ },
+ "target": {
+  "name": "pylabrobot",
+  "version": "",
+  "kind": "simulator"
+ },
+ "operation": {
+  "target": {
+   "device": "plr.lh-01",
+   "capability": "liquid.transfer"
+  },
+  "operation": "invoke",
+  "params": {
+   "transfer_id": "gap-8",
+   "source": "A1",
+   "dest": "B1",
+   "volume": {
+    "value": 10.0,
+    "unit": "uL"
+   }
+  }
+ },
+ "fault": {
+  "kind": "lost-answer-then-hard-restart",
+  "at": "after the device applied the command"
+ },
+ "invariant": {
+  "id": "no-blind-repeat-after-restart",
+  "statement": "After a lost answer and a hard restart, the command is reported uncertain, is not sent again, and recovery agrees with the device."
+ },
+ "transitions": [
+  "CREATED",
+  "VALIDATING",
+  "APPROVED",
+  "DISPATCHED",
+  "ACCEPTED",
+  "TIMED_OUT",
+  "UNKNOWN_OUTCOME"
+ ],
+ "dispatch_count": 1,
+ "recovery": {
+  "concluded": "RECONCILED_APPLIED",
+  "matches_target": true
+ },
+ "evidence": [
+  {
+   "path": "research/lab-automation/results/2026-11-02/gaps/gaps-pylabrobot-001.json",
+   "sha256": "0f4ce8c2432d65ee42b8a72b6f4c2057fa070d3bc591938654ebb0f3c3d38d68"
+  }
+ ],
+ "outcome": "PASS",
+ "environment": {
+  "os": "Windows",
+  "os_release": "11",
+  "machine": "AMD64",
+  "python": "3.13.4",
+  "python_implementation": "CPython",
+  "rustc": "rustc 1.89.0 (29483883e 2025-08-04)",
+  "openmhs_version": "openmhs 0.1.0"
+ }
+}

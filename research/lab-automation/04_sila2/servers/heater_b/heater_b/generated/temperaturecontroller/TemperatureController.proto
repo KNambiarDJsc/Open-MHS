@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+import "SiLAFramework.proto";
+
+package sila2.org.openmhs.research.temperaturecontroller.v1;
+
+/* A heating block that drives its temperature towards a target. Simulated: written for the OpenMHS lab-automation research, not a SiLA standard feature. */
+service TemperatureController {
+  /* Set the temperature the block drives towards. */
+  rpc SetTargetTemperature (sila2.org.openmhs.research.temperaturecontroller.v1.SetTargetTemperature_Parameters) returns (sila2.org.openmhs.research.temperaturecontroller.v1.SetTargetTemperature_Responses) {}
+  /* Clear a heater fault. */
+  rpc ResetHeater (sila2.org.openmhs.research.temperaturecontroller.v1.ResetHeater_Parameters) returns (sila2.org.openmhs.research.temperaturecontroller.v1.ResetHeater_Responses) {}
+  /* Switch the block off. */
+  rpc ShutDown (sila2.org.openmhs.research.temperaturecontroller.v1.ShutDown_Parameters) returns (sila2.org.openmhs.research.temperaturecontroller.v1.ShutDown_Responses) {}
+  /* The block's measured temperature. */
+  rpc Subscribe_CurrentTemperature (sila2.org.openmhs.research.temperaturecontroller.v1.Subscribe_CurrentTemperature_Parameters) returns (stream sila2.org.openmhs.research.temperaturecontroller.v1.Subscribe_CurrentTemperature_Responses) {}
+  /* The temperature the block drives towards. */
+  rpc Get_TargetTemperature (sila2.org.openmhs.research.temperaturecontroller.v1.Get_TargetTemperature_Parameters) returns (sila2.org.openmhs.research.temperaturecontroller.v1.Get_TargetTemperature_Responses) {}
+  /* The heater is in a fault state and refuses new targets until reset. */
+  rpc Get_HeaterFaulted (sila2.org.openmhs.research.temperaturecontroller.v1.Get_HeaterFaulted_Parameters) returns (sila2.org.openmhs.research.temperaturecontroller.v1.Get_HeaterFaulted_Responses) {}
+}
+
+/* Parameters for SetTargetTemperature */
+message SetTargetTemperature_Parameters {
+  sila2.org.silastandard.Real TargetTemperature = 1;  /* The new target. */
+}
+
+/* Responses of SetTargetTemperature */
+message SetTargetTemperature_Responses {
+}
+
+/* Parameters for ResetHeater */
+message ResetHeater_Parameters {
+}
+
+/* Responses of ResetHeater */
+message ResetHeater_Responses {
+}
+
+/* Parameters for ShutDown */
+message ShutDown_Parameters {
+}
+
+/* Responses of ShutDown */
+message ShutDown_Responses {
+}
+
+/* Parameters for CurrentTemperature */
+message Subscribe_CurrentTemperature_Parameters {
+}
+
+/* Responses of CurrentTemperature */
+message Subscribe_CurrentTemperature_Responses {
+  sila2.org.silastandard.Real CurrentTemperature = 1;  /* The block's measured temperature. */
+}
+
+/* Parameters for TargetTemperature */
+message Get_TargetTemperature_Parameters {
+}
+
+/* Responses of TargetTemperature */
+message Get_TargetTemperature_Responses {
+  sila2.org.silastandard.Real TargetTemperature = 1;  /* The temperature the block drives towards. */
+}
+
+/* Parameters for HeaterFaulted */
+message Get_HeaterFaulted_Parameters {
+}
+
+/* Responses of HeaterFaulted */
+message Get_HeaterFaulted_Responses {
+  sila2.org.silastandard.Boolean HeaterFaulted = 1;  /* The heater is in a fault state and refuses new targets until reset. */
+}

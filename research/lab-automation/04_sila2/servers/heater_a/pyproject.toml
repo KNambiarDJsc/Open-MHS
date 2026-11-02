@@ -1,0 +1,21 @@
+[project]
+name = "heater_a"
+version = "0.0.0"
+requires-python = ">=3.10"
+dependencies = [
+    "sila2",
+    "typer",
+]
+
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["heater_a*"]
+
+[tool.setuptools.package-data]
+"heater_a.generated" = [
+    "*/*.sila.xml",
+    "*/*.proto",
+]

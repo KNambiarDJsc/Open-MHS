@@ -39,6 +39,8 @@
         <li><a href="#m10">M10: release readiness</a></li>
         <li><a href="#matrix">Compatibility matrix</a></li>
         <li><a href="#experiments">Experiments: OctoPrint and ESP32</a></li>
+        <li><a href="#storage">Storage engine: bounded start-up</a></li>
+        <li><a href="#lab">Lab-automation experiments</a></li>
         <li><a href="#demo">Guided demo, step by step</a></li>
         <li><a href="#conformance">Simulator conformance</a></li>
         <li><a href="#agent">Agent replanning run</a></li>
@@ -51,9 +53,9 @@
     <div class="table-scroll">
     <table>
       <tr><th>Item</th><th>Value</th></tr>
-      <tr><td>Version</td><td>0.1.0, pre-alpha. <strong>No release published yet.</strong></td></tr>
+      <tr><td>Version</td><td>0.1.0, pre-alpha. One GitHub pre-release, <a href="https://github.com/KNambiarDJsc/Open-MHS/releases/tag/v0.1.0">v0.1.0</a>; not on PyPI or crates.io.</td></tr>
       <tr><td>Specification</td><td>v0.1 draft; may change incompatibly before 1.0</td></tr>
-      <tr><td>Milestones</td><td>M0 to M9 done (M7 to M9 pending review). M10 built, not published. M11+ planned.</td></tr>
+      <tr><td>Milestones</td><td>M0 to M11 done, on <code>main</code>. M12 (first physical validation) planned: its runbook is written, and it has not been run. See <a href="#roadmap">the roadmap</a>.</td></tr>
       <tr><td>Languages</td><td>Rust (gateway, engine, adapters), Python (SDK, Python adapters, examples, tools)</td></tr>
       <tr><td>Interfaces</td><td>MCP over stdio, local JSON-RPC API, CLI, Python SDK</td></tr>
       <tr><td>Platforms</td><td>Windows 11 and Linux (Ubuntu) tested; macOS arm64 configured in CI; macOS x86_64 untested</td></tr>
@@ -64,9 +66,9 @@
     </div>
 
     <h2 id="m10">M10: release readiness</h2>
-    <p><strong>Status: built and verified locally on Windows; not releasable until the
-    blockers below are cleared.</strong> No release, PyPI upload or documentation site has
-    been published. Source: <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/release/M10_TEST_REPORT.md">M10 test report</a>.</p>
+    <p><strong>Kept as the record of that gate, which ran on Windows.</strong> Since then CI has
+    passed on Linux, macOS and Windows and v0.1.0 was published as a GitHub pre-release; nothing is
+    on PyPI. The blockers below are what remains. Source: <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/release/M10_TEST_REPORT.md">M10 test report</a>.</p>
     <div class="table-scroll">
     <table>
       <tr><th>Deliverable</th><th>Verified by</th><th>State</th></tr>
@@ -95,8 +97,9 @@
     </div>
     <h3>Release blockers</h3>
     <ol>
-      <li><strong>Nothing has run on Linux or macOS.</strong> Only the Windows build was made.</li>
-      <li><strong>CI has not run on the M10 work.</strong> Two new CI jobs have never executed.</li>
+      <li><strong>Nothing has been validated on physical hardware.</strong></li>
+      <li><strong>Release archives for Linux and macOS have not been run</strong> by the project. CI
+      builds and tests from source on all three systems.</li>
       <li><strong>Owner actions:</strong> private vulnerability reporting, code-of-conduct
       contact, PyPI trusted publisher, GitHub Pages, repository settings.</li>
       <li><strong>The demo video is not rendered.</strong></li>
@@ -174,6 +177,90 @@
     verified (53 records). The key finding: <strong>a node that stops answering may still
     apply the command later.</strong> That is exactly what <code>UNKNOWN_OUTCOME</code> is for,
     and why the gateway never retries: a retried pulse would have run twice.</p>
+
+    <h2 id="storage">Storage engine: bounded start-up</h2>
+    <p>A gateway re-hashes its whole audit chain at every start, so start-up grew with
+    history. <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/rfcs/0002-storage-engine.md">RFC 0002</a> bounds it in
+    stages, each shipped alone with its own tests. Measured on one desktop (i7-10700, NVMe, warm
+    cache, release build; three opens in fresh processes, medians), journals made by the real
+    engine:</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Journal</th><th>Open as before</th><th>Open from a seal</th><th>Open after compaction</th><th>File after compaction</th></tr>
+      <tr><td>10k writes (105 MB, 174 k audit records)</td><td>759 ms</td><td>281 ms</td><td>23 ms</td><td>7 MB</td></tr>
+      <tr><td>100k writes (1.0 GB, 1.70 M audit records)</td><td>7.30 s</td><td>2.39 s</td><td>80 ms</td><td>28 MB</td></tr>
+    </table>
+    </div>
+    <ul>
+      <li><strong>A seal alone does not make start-up flat.</strong> It removes the chain pass
+      (about two thirds of the open here); the rest follows the file's size until compaction
+      shrinks it. The milestone's exit test, &ldquo;start-up flat in history&rdquo;, holds for a
+      sealed <em>and compacted</em> journal, not a sealed one.</li>
+      <li><strong>Other measured changes:</strong> recovery 1.21 s to 1.1 ms with nothing
+      unfinished (100k commands); <code>audit tail</code> on a 1 GB journal 2.3 s and 973 MB of
+      gateway memory down to 31 ms and 16 MB; evidence export and its offline verification
+      stream (a 101 MB export verifies in 1.6 s and 19 MB, was 155 s and 130 MB).</li>
+      <li><strong>Drills:</strong> a crash at every step of archival, a full disk, a lost segment
+      file, a damaged manifest, a journal restored from before its segments, duplicate archiving,
+      a repeated idempotency key after archiving (the stored receipt comes back and nothing is
+      sent), and sampled bit flips of both the journal and a segment. Not run: the power-cut and
+      disk-error rigs.</li>
+      <li><strong>Not measured:</strong> a Raspberry Pi, cold caches, and the throughput and
+      growth of the telemetry store. <strong>Not built:</strong> signed seals, offsite archive,
+      retention by class or age, chunked (non-blocking) compaction.</li>
+    </ul>
+    <p>Tests: 565 in 89 binaries on <code>main</code> at <code>b64532a</code> (Windows 11),
+    <code>clippy -D warnings</code> clean.</p>
+
+    <h2 id="lab">Lab-automation experiments</h2>
+    <p>Can one execution boundary enforce the same contracts, permissions, lifecycle, recovery and
+    evidence in front of different laboratory-automation software, without replacing it? Five
+    ecosystems were tried, <strong>all simulated, none on physical hardware</strong>. Each was
+    installed at a pinned version, run natively first, then governed, then broken on purpose: a
+    lost answer, a killed gateway, two clients at once, a device unavailable. Every scenario checks
+    three records against each other: what the orchestrator said, what OpenMHS said, and the
+    simulator's own state.</p>
+    <div class="table-scroll">
+    <table>
+      <tr><th>Ecosystem (version)</th><th>What OpenMHS governs</th><th>Scenarios</th><th>Per operation, governed vs native</th><th>Conformance</th></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/01_pylabrobot/EXPERIMENT_REPORT.md">PyLabRobot</a> 0.2.2</td><td>One composite transfer</td><td><span class="tag ok">pass</span> 7 + latency, repeated</td><td>34&ndash;43 ms vs 1.3 ms</td><td>L3</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/02_opentrons/EXPERIMENT_REPORT.md">Opentrons</a> 10.1.0 (Flex simulator)</td><td>A reviewed protocol, pinned by SHA-256</td><td><span class="tag ok">pass</span> 7 + latency, 3 runs</td><td>~131 ms vs ~88 ms</td><td>L3</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/03_micromanager/EXPERIMENT_REPORT.md">Micro-Manager</a> (pymmcore-plus 0.18.1)</td><td>A microscope: stage, exposure, channel, snap with provenance</td><td><span class="tag ok">pass</span> 7 + latency, 3 runs</td><td>~110 ms vs ~32 ms (move and snap)</td><td>L3</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/04_sila2/EXPERIMENT_REPORT.md">SiLA 2</a> (sila2 0.14.0)</td><td>Any SiLA server, from its Feature Definitions plus a reviewed override file; tried on two separately written servers</td><td><span class="tag ok">pass</span> 7 + latency, 3 runs per server</td><td>~31 ms vs ~1.2 ms</td><td>L3</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/05_madsci/EXPERIMENT_REPORT.md">MADSci</a> 0.8.1</td><td>One node of a closed-loop experiment</td><td><span class="tag ok">pass</span> 11 (two native baselines), 3 complete runs</td><td>4.55 s vs 4.55 s per iteration</td><td>n/a</td></tr>
+    </table>
+    </div>
+    <ul>
+      <li><strong>Refusing what the simulator accepts.</strong> Opentrons' simulator ran 400 &micro;L
+      into a 200 &micro;L well and a negative volume; Micro-Manager's demo stage, asked for 10<sup>9</sup>
+      &micro;m, wandered. OpenMHS refused both before dispatch.</li>
+      <li><strong>A lost answer, retried.</strong> In the MADSci loop, with OpenMHS the well holds
+      one 60 &micro;L dose and the plate reader measures it; without, the retry transfers again, the
+      well holds 120 &micro;L, and the optimizer is fed a measurement of twice the dose it believes
+      it ran. MADSci ends a workflow when a step is unknown; OpenMHS supplies the resolution and the
+      key that makes the retry safe.</li>
+      <li><strong>What <code>VERIFIED</code> means here.</strong> A simulator's own software state
+      agrees. Nothing is a physical measurement.</li>
+      <li><strong>Cost.</strong> About 30&ndash;40 ms per governed operation, a gateway process, a
+      manifest and about 300 lines per adapter. Not worth it for one script and one bench
+      instrument.</li>
+    </ul>
+    <p><strong>Ten contract properties, tried in every adapter</strong>, through a real gateway:
+    unauthorized requests, expired and revoked credentials, stale observations, idempotency, gateway
+    restart, leases, offline evidence, superseded writes, approvals that run out, and an adapter lost
+    mid-command. All pass in three runs on one Windows desktop, and one run on Linux CI from a clean
+    install. <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/results/2026-11-02/SUMMARY.md">Results</a>. All four adapters reach L3
+    against simulators; a level is not a safety certification.</p>
+    <p><strong>Not shown:</strong> anything physical. No network adversary, no second gateway, and no
+    reproduction by anyone else, or on macOS. Old readings were produced by a test hook, not by the
+    simulators. MADSci's two experiments in one loop were scheduled seconds apart by MADSci itself, so
+    OpenMHS's lock was not contended there. Where a newer write has overwritten what an unresolved
+    command did, OpenMHS refuses to conclude, and a person has to choose with a recorded reason, even
+    if the evidence for either answer is gone.</p>
+    <p>All five reports, raw results and a
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/FINAL_RESEARCH_REPORT.md">cross-project report</a> that answers ten questions,
+    including what stands between this and a remote, autonomous laboratory (a lot), are in
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/README.md">research/lab-automation</a>.</p>
 
     <h2 id="demo">Guided demo, step by step</h2>
     <p>Command: <code>openmhs demo</code>. A real gateway with three simulated devices
@@ -253,8 +340,11 @@
       read the operator token. The adapter host has no OS sandbox.</li>
       <li><strong>No signed descriptors or signed audit export.</strong> Rate and slew
       history, and simulator state, reset on restart.</li>
-      <li><strong>The journal still grows until its limit.</strong> A size limit and reserve
-      exist; archiving and retention are a draft design, not built.</li>
+      <li><strong>The journal grows until you compact it.</strong> Sealed segments and
+      compaction are built but off by default (<code>--archive</code>): compaction deletes
+      journal rows, holds the journal while it runs, keeps segments on local disk only, and
+      makes the journal unreadable by older versions. Seals are not signed, and retention by
+      event class or age is not built.</li>
       <li><strong>Events live in memory.</strong> A restart loses them and ends every watch;
       individual watch samples are not audited, only their start and end.</li>
     </ul>
@@ -270,12 +360,13 @@
       <tr><td>M4</td><td>MCP server, Python SDK, replanning agent example</td><td><span class="tag ok">done</span></td></tr>
       <tr><td>M5</td><td>Conformance suite, adapter scaffolding, adapter author guide</td><td><span class="tag ok">done</span></td></tr>
       <tr><td>M6</td><td>Protocol adapters: Modbus TCP, MQTT, SCPI, HTTP</td><td><span class="tag ok">done</span></td></tr>
-      <tr><td>M7</td><td>Out-of-process adapter host, Python adapter SDK, OPC UA and ROS 2, verified TLS</td><td><span class="tag ok">done</span> pending review</td></tr>
-      <tr><td>M8</td><td>Identity and trust: scoped credentials, approval records, signed manifests, threat model</td><td><span class="tag ok">done</span> pending review</td></tr>
-      <tr><td>M9</td><td>Capability graph, leases, plans with twin preflight, stop lane, L3 conformance</td><td><span class="tag ok">done</span> pending review</td></tr>
+      <tr><td>M7</td><td>Out-of-process adapter host, Python adapter SDK, OPC UA and ROS 2, verified TLS</td><td><span class="tag ok">done</span></td></tr>
+      <tr><td>M8</td><td>Identity and trust: scoped credentials, approval records, signed manifests, threat model</td><td><span class="tag ok">done</span></td></tr>
+      <tr><td>M9</td><td>Capability graph, leases, plans with twin preflight, stop lane, L3 conformance</td><td><span class="tag ok">done</span></td></tr>
       <tr><td>M10</td><td>Release readiness: binaries, PyPI, docs site, adapter registry, compatibility matrix, governance</td><td><span class="tag warn">built</span> nothing published; see <a href="#m10">blockers</a></td></tr>
-      <tr><td>M11</td><td>Release readiness and green CI on all three systems</td><td><span class="tag warn">in progress</span> macOS CI has not completed</td></tr>
+      <tr><td>M11</td><td>Release readiness and green CI on all three systems</td><td><span class="tag ok">done</span></td></tr>
       <tr><td>M12</td><td>First physical validation: an ESP32 driving one LED, observed with a multimeter</td><td><span class="tag info">planned</span> runbook written, not run</td></tr>
+      <tr><td>RFC 0002</td><td>Storage engine: indexed recovery, bounded API reads, streamed evidence, sealed segments, seals with a tail-only start, guarded compaction, event classes and an opt-in telemetry store (M1&ndash;M6). Evaluation on a Raspberry Pi and 10 M-record journals (M7) is not done</td><td><span class="tag ok">built</span> on <code>main</code>; see <a href="#storage">results</a></td></tr>
       <tr><td>M17a</td><td>State fabric (events, watches, <code>subscribe</code>), capability-based selection, insights, <code>mcp --sim</code></td><td><span class="tag ok">built</span> on a branch, not merged</td></tr>
       <tr><td>M18&ndash;M20</td><td>Procedures, a model-agnostic agent harness, conditional plan steps, SCPI discovery, <code>openmhs bench</code>. Parallel plan steps and federation are designed, not built</td><td><span class="tag ok">built</span> on a branch, not merged</td></tr>
       <tr><td>Later</td><td>Advanced track, design documents first: WASM-sandboxed adapters, OpenTelemetry, remote and federated gateways, fleets, assisted adapter generation, hardware-in-the-loop rigs, OPC UA, ros2_control and SiLA 2 bridges, device attestation</td><td><span class="tag info">planned</span></td></tr>

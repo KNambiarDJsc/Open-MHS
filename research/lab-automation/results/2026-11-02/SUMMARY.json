@@ -1,0 +1,631 @@
+{
+ "gaps": {
+  "GAP-01|micromanager": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-01|opentrons": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-01|pylabrobot": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-01|sila2": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-02|micromanager": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-02|opentrons": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-02|pylabrobot": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-02|sila2": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-03|micromanager": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-03|opentrons": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-03|pylabrobot": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-03|sila2": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-04|micromanager": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-04|opentrons": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-04|pylabrobot": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-04|sila2": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-05|micromanager": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-05|opentrons": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-05|pylabrobot": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-05|sila2": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-05|sila2 (heater_b)": {
+   "PASS": 1,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-06|micromanager": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-06|opentrons": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-06|pylabrobot": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-06|sila2": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-07|micromanager": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-07|opentrons": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-07|pylabrobot": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-07|sila2": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-08|micromanager": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-08|opentrons": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-08|pylabrobot": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-08|sila2": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-08|sila2 (heater_b)": {
+   "PASS": 1,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-09|micromanager": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-09|opentrons": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-09|pylabrobot": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-09|sila2": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-10|micromanager": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-10|opentrons": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-10|pylabrobot": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "GAP-10|sila2": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  }
+ },
+ "scenarios": {
+  "madsci|MAD-01": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-01-native": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-02": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-03": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-04": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-04-native": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-05": {
+   "PASS": 2,
+   "FAIL": 1,
+   "NOT_TESTED": 0,
+   "verdict": "FAIL"
+  },
+  "madsci|MAD-06": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-07": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "madsci|MAD-08": {
+   "PASS": 2,
+   "FAIL": 1,
+   "NOT_TESTED": 0,
+   "verdict": "FAIL"
+  },
+  "madsci|MAD-09": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "micromanager|MM-01": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "micromanager|MM-02": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "micromanager|MM-03": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "micromanager|MM-04": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "micromanager|MM-05": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "micromanager|MM-06": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "micromanager|MM-07": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "micromanager|PERF": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "opentrons|OT-01": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "opentrons|OT-02": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "opentrons|OT-03": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "opentrons|OT-04": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "opentrons|OT-05": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "opentrons|OT-06": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "opentrons|OT-07": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "opentrons|PERF": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "pylabrobot|PERF": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "pylabrobot|PLR-01": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "pylabrobot|PLR-02": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "pylabrobot|PLR-03": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "pylabrobot|PLR-04": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "pylabrobot|PLR-05": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "pylabrobot|PLR-06": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "pylabrobot|PLR-07": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "sila2-heater_a|PERF": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "sila2-heater_a|SILA-01": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "sila2-heater_a|SILA-02": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "sila2-heater_a|SILA-03": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "sila2-heater_a|SILA-04": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "sila2-heater_a|SILA-05": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "sila2-heater_a|SILA-07": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "sila2-heater_a|SILA-08": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "sila2-heater_b|PERF": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "sila2-heater_b|SILA-01": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "sila2-heater_b|SILA-02": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "sila2-heater_b|SILA-03": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "sila2-heater_b|SILA-04": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "sila2-heater_b|SILA-05": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "sila2-heater_b|SILA-07": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  },
+  "sila2-heater_b|SILA-08": {
+   "PASS": 3,
+   "FAIL": 0,
+   "NOT_TESTED": 0,
+   "verdict": "PASS"
+  }
+ },
+ "conformance": [
+  {
+   "run": "micromanager-001",
+   "device": "mm.scope-01",
+   "adapter": "openmhs.py.micromanager",
+   "reached": "L3",
+   "sources": [
+    "simulator"
+   ],
+   "pass": 89,
+   "fail": 0,
+   "untested": 0,
+   "not_applicable": 7
+  },
+  {
+   "run": "opentrons-001",
+   "device": "ot.flex-01",
+   "adapter": "openmhs.py.opentrons",
+   "reached": "L3",
+   "sources": [
+    "simulator"
+   ],
+   "pass": 44,
+   "fail": 0,
+   "untested": 0,
+   "not_applicable": 2
+  },
+  {
+   "run": "pylabrobot-001",
+   "device": "plr.lh-01",
+   "adapter": "openmhs.py.pylabrobot",
+   "reached": "L3",
+   "sources": [
+    "simulator"
+   ],
+   "pass": 64,
+   "fail": 0,
+   "untested": 0,
+   "not_applicable": 2
+  },
+  {
+   "run": "sila2-001",
+   "device": "sila.heater-01",
+   "adapter": "openmhs.py.sila2",
+   "reached": "L3",
+   "sources": [
+    "simulator"
+   ],
+   "pass": 39,
+   "fail": 0,
+   "untested": 0,
+   "not_applicable": 4
+  }
+ ],
+ "not_tested": [
+  [
+   "conformance",
+   "madsci",
+   "MADSci is an orchestrator: it has no adapter of its own to test"
+  ],
+  [
+   "gaps",
+   "madsci",
+   "not run separately: MADSci governs through the PyLabRobot adapter (its approval and restart behaviour is in MAD-05, 06, 08, 09)"
+  ]
+ ],
+ "failed_steps": []
+}

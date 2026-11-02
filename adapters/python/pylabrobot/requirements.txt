@@ -1,0 +1,2 @@
+# Pinned: the adapter, its descriptor and the experiment were checked against this release.
+pylabrobot==0.2.2

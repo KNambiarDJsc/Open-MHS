@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openmhs.dev/schemas/bench-result-0.1.schema.json",
+  "title": "OpenMHS Bench result (proposed, version 0.1)",
+  "description": "One run of one scenario against one system. Proposal: expected to change. Contains no score: results are PASS, FAIL or NOT_TESTED.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "system", "scenario", "target", "operation", "fault", "invariant", "transitions", "dispatch_count", "recovery", "evidence", "outcome", "environment"],
+  "properties": {
+    "format": { "const": "openmhs-bench-result/0.1" },
+    "system": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "commit": { "type": ["string", "null"] }
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "title"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "version": { "type": "integer", "minimum": 1 },
+        "title": { "type": "string" }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "kind"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string" },
+        "kind": { "enum": ["simulator", "physical"], "description": "Required, with no default: a simulated result is never presented as a physical one." },
+        "configuration": { "type": "object" }
+      }
+    },
+    "operation": { "type": "object", "description": "What was asked for, as data." },
+    "fault": {
+      "description": "What was injected, and where. Null if none.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": { "type": "string", "minLength": 1 },
+            "at": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "invariant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "statement": { "type": "string", "minLength": 1 }
+      }
+    },
+    "transitions": { "type": "array", "items": { "type": "string" }, "description": "The states the system reported, in order, in its own vocabulary." },
+    "dispatch_count": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Times the device received it, observed at the device. Null if not observable: never assumed from the system's own report."
+    },
+    "recovery": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["concluded", "matches_target"],
+      "properties": {
+        "concluded": { "type": "string" },
+        "matches_target": { "type": ["boolean", "null"], "description": "Whether the conclusion agrees with the target's own state. Null if that cannot be observed." }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": { "type": "string" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "outcome": { "enum": ["PASS", "FAIL", "NOT_TESTED"] },
+    "reason": { "type": "string", "minLength": 1 },
+    "environment": { "type": "object" }
+  },
+  "if": { "properties": { "outcome": { "const": "NOT_TESTED" } } },
+  "then": { "required": ["reason"] },
+  "not": { "anyOf": [{ "required": ["score"] }, { "required": ["rank"] }] }
+}

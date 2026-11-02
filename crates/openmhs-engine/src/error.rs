@@ -32,6 +32,14 @@ pub enum EngineError {
     Adapter(AdapterError),
     #[error("cannot reconcile: {0}")]
     NotReconcilable(String),
+    /// A later command may have changed the state this command would be read back from, so
+    /// no reading can show what this command did (spec/lifecycle.md §5).
+    #[error(
+        "cannot reconcile: '{capability}' has been written since by {}, so a reading of it \
+         cannot show whether this command took effect; have an operator resolve it",
+        .by.join(", ")
+    )]
+    Superseded { capability: String, by: Vec<String> },
     #[error("journal: {0}")]
     Journal(JournalError),
 }
@@ -60,6 +68,7 @@ impl EngineError {
             Self::DuplicateDevice(_) => "registry.duplicate_device",
             Self::Adapter(e) => e.kind.code(),
             Self::NotReconcilable(_) => "command.not_reconcilable",
+            Self::Superseded { .. } => "command.reconcile.superseded",
             Self::Journal(_) => "gateway.journal",
         }
     }

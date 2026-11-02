@@ -174,6 +174,11 @@ class Permissions:
         ``runtime.cwd`` or the manifest's directory. Returns the absolute path."""
         return _check_path(path, self.filesystem_read + self.filesystem_write, "read")
 
+    def check_write(self, path: str) -> str:
+        """Raise ``not_sent`` unless ``path`` is, or is inside, a declared ``filesystem.write``
+        entry. Returns the absolute path."""
+        return _check_path(path, self.filesystem_write, "write")
+
 
 def _check_path(path: str, allowed: tuple, what: str) -> str:
     target = os.path.realpath(path)
@@ -222,6 +227,9 @@ class Adapter:
     fixture_faults: tuple = ()
     #: Whether the adapter calls :meth:`report_deliveries`.
     fixture_counts_deliveries: bool = False
+    #: True when run by the conformance suite: the adapter is standing in for its device.
+    #: Set before :meth:`initialize`. Never true in a running gateway.
+    fixture_mode: bool = False
 
     config: dict
     permissions: Permissions
@@ -295,10 +303,47 @@ def _claim_stdout():
     return os.fdopen(fd, "wb")
 
 
+def _claim_stdin():
+    """Keep the real stdin for the protocol and point file descriptor 0 at the null device.
+
+    On Windows, loading a native extension (numpy's DLL, and others like it) hangs forever
+    while another thread is blocked reading the process's inherited stdin pipe. Reproduced on
+    numpy 1.26 and 2.5 under Python 3.12; which call inside the DLL's start-up blocks has not
+    been identified. Reading a duplicate instead, with the inherited descriptor on the null
+    device, removes the hang, so an adapter may import what it needs when it needs it. It
+    also keeps child processes off the protocol's pipe, on every platform.
+    """
+    fd = os.dup(sys.stdin.fileno())
+    null = os.open(os.devnull, os.O_RDONLY)
+    os.dup2(null, sys.stdin.fileno())
+    os.close(null)
+    return os.fdopen(fd, "rb")
+
+
+#: How long a process has to finish once its gateway has told it to stop or gone away.
+EXIT_GRACE_S = 5.0
+
+
+def _exit_soon() -> None:
+    """Make sure this process ends, whatever is still running in it.
+
+    A gateway that is killed cannot kill its adapter, and a blocking device call that never
+    returns would hold the process at exit: Python waits for executor threads, and a device
+    stays claimed by a process nobody can reach. ``os._exit`` is safe here because the adapter
+    was given the chance to shut down first, and the command was already out of this process's
+    hands: the gateway treats whatever was in flight as an unknown outcome.
+    """
+    timer = threading.Timer(EXIT_GRACE_S, os._exit, args=(0,))
+    timer.daemon = True
+    timer.start()
+
+
 class _Server:
-    def __init__(self, adapter: Adapter, out):
+    def __init__(self, adapter: Adapter, out, in_stream=None, on_stop: Optional[Callable[[], None]] = None):
         self.adapter = adapter
         self.out = out
+        self.in_stream = in_stream
+        self.on_stop = on_stop or (lambda: None)
         self.max_bytes = 1 << 20
         self.initialized = False
         self.fixture = False
@@ -334,7 +379,7 @@ class _Server:
     # Input.
 
     def _read_stdin(self, loop: asyncio.AbstractEventLoop, queue: asyncio.Queue) -> None:
-        stream = sys.stdin.buffer
+        stream = self.in_stream if self.in_stream is not None else sys.stdin.buffer
 
         def put(item: Any) -> bool:
             try:
@@ -368,6 +413,7 @@ class _Server:
         while True:
             line = await queue.get()
             if line is None:
+                self.on_stop()
                 break  # the gateway has gone
             if line is _TOO_LONG:
                 self.error(None, INVALID_REQUEST, "message exceeds the size limit")
@@ -396,6 +442,7 @@ class _Server:
             elif not self.initialized:
                 self.error(id, NOT_INITIALIZED, f"{method} before initialize")
             elif method == "shutdown":
+                self.on_stop()
                 await self._shutdown(id)
                 return 0
             elif method in self.HANDLERS and (self.fixture or not method.startswith("fixture.")):
@@ -448,6 +495,7 @@ class _Server:
             filesystem_write=tuple(fs.get("write") or ()),
         )
         self.fixture = bool(params.get("fixture"))
+        self.adapter.fixture_mode = self.fixture
         try:
             await self.adapter.initialize(dict(params.get("config") or {}), permissions)
         except AdapterError as e:
@@ -558,7 +606,7 @@ class _Server:
 def serve(adapter: Adapter) -> int:
     """Speak the protocol on stdin/stdout until the gateway says ``shutdown`` or goes away."""
     out = _claim_stdout()
-    return asyncio.run(_Server(adapter, out).run())
+    return asyncio.run(_Server(adapter, out, _claim_stdin(), on_stop=_exit_soon).run())
 
 
 def run(adapter: Adapter) -> None:

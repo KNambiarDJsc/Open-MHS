@@ -1,0 +1,266 @@
+[
+ {
+  "stage": "unit",
+  "ecosystem": "madsci",
+  "name": "governed-step",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "conformance",
+  "ecosystem": "pylabrobot",
+  "name": "pylabrobot-001",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "conformance",
+  "ecosystem": "opentrons",
+  "name": "opentrons-001",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "conformance",
+  "ecosystem": "micromanager",
+  "name": "micromanager-001",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "conformance",
+  "ecosystem": "sila2",
+  "name": "sila2-001",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "conformance",
+  "ecosystem": "madsci",
+  "outcome": "NOT_TESTED",
+  "why": "MADSci is an orchestrator: it has no adapter of its own to test"
+ },
+ {
+  "stage": "gaps",
+  "ecosystem": "pylabrobot",
+  "name": "run-1",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "gaps",
+  "ecosystem": "pylabrobot",
+  "name": "run-2",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "gaps",
+  "ecosystem": "pylabrobot",
+  "name": "run-3",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "gaps",
+  "ecosystem": "opentrons",
+  "name": "run-1",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "gaps",
+  "ecosystem": "opentrons",
+  "name": "run-2",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "gaps",
+  "ecosystem": "opentrons",
+  "name": "run-3",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "gaps",
+  "ecosystem": "micromanager",
+  "name": "run-1",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "gaps",
+  "ecosystem": "micromanager",
+  "name": "run-2",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "gaps",
+  "ecosystem": "micromanager",
+  "name": "run-3",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "gaps",
+  "ecosystem": "sila2",
+  "name": "run-1",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "gaps",
+  "ecosystem": "sila2",
+  "name": "run-2",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "gaps",
+  "ecosystem": "sila2",
+  "name": "run-3",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "gaps",
+  "ecosystem": "sila2",
+  "name": "heater_b",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "gaps",
+  "ecosystem": "madsci",
+  "outcome": "NOT_TESTED",
+  "why": "not run separately: MADSci governs through the PyLabRobot adapter (its approval and restart behaviour is in MAD-05, 06, 08, 09)"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "pylabrobot",
+  "name": "pylabrobot-001",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "pylabrobot",
+  "name": "pylabrobot-002",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "pylabrobot",
+  "name": "pylabrobot-003",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "opentrons",
+  "name": "opentrons-001",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "opentrons",
+  "name": "opentrons-002",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "opentrons",
+  "name": "opentrons-003",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "micromanager",
+  "name": "micromanager-001",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "micromanager",
+  "name": "micromanager-002",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "micromanager",
+  "name": "micromanager-003",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "sila2",
+  "name": "sila2-heater_a-001",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "sila2",
+  "name": "sila2-heater_a-002",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "sila2",
+  "name": "sila2-heater_a-003",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "sila2",
+  "name": "sila2-heater_b-001",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "sila2",
+  "name": "sila2-heater_b-002",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "sila2",
+  "name": "sila2-heater_b-003",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "madsci",
+  "name": "madsci-001",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "madsci",
+  "name": "madsci-002",
+  "exit": 0,
+  "outcome": "PASS"
+ },
+ {
+  "stage": "scenarios",
+  "ecosystem": "madsci",
+  "name": "madsci-003",
+  "exit": 0,
+  "outcome": "PASS"
+ }
+]
