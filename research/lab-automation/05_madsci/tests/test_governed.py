@@ -342,6 +342,16 @@ class RealGateway(unittest.TestCase):
         return {"target": {"device": self.PSU, "capability": self.LIMIT}, "operation": "write",
                 "value": {"value": amps, "unit": "A"}}
 
+    def await_held(self, key: str):
+        """Once it has settled into waiting: it passes through CREATED and VALIDATING first."""
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            found = self.agent.command_by_key(self.PSU, key)
+            if found is not None and found.to_dict()["state"] == "AWAITING_APPROVAL":
+                return found
+            time.sleep(0.02)
+        self.fail(f"{key} was not held for approval within 10 s")
+
     def step(self, wait: float) -> GovernedStep:
         return GovernedStep(self.agent, self.PSU, approval_wait_s=wait, settle_wait_s=10, approval_grace_s=30,
                             poll_s=0.05)
@@ -361,12 +371,7 @@ class RealGateway(unittest.TestCase):
         worker = threading.Thread(target=lambda: out.setdefault(
             "r", self.step(15).run("real-1", {}, lambda: self.request(0.5))))
         worker.start()
-        second = None
-        deadline = time.monotonic() + 10
-        while time.monotonic() < deadline and second is None:
-            second = self.agent.command_by_key(self.PSU, "real-1~2")
-            time.sleep(0.02)
-        self.assertIsNotNone(second)
+        second = self.await_held("real-1~2")
         self.operator.call("commands.approve", {"command_id": second.command_id})
         worker.join(20)
         self.assertEqual(out["r"].status, SUCCEEDED, out["r"].errors)
@@ -379,11 +384,7 @@ class RealGateway(unittest.TestCase):
         worker = threading.Thread(target=lambda: out.setdefault(
             "r", self.step(15).run("real-2", {}, lambda: self.request(0.6))))
         worker.start()
-        held = None
-        deadline = time.monotonic() + 10
-        while time.monotonic() < deadline and held is None:
-            held = self.agent.command_by_key(self.PSU, "real-2")
-            time.sleep(0.02)
+        held = self.await_held("real-2")
         approval = next(a for a in self.operator.call("approvals.list", {}) if a.get("command_id") == held.command_id)
         self.operator.call("approvals.deny", {"id": approval["id"], "reason": "no"})
         worker.join(20)

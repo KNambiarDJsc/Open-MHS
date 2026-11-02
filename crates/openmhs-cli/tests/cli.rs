@@ -535,7 +535,10 @@ fn opted_in_reads_become_summaries_through_the_gateway() {
             assert_eq!(individual, 1, "only the read nobody opted in: {tail}");
             break;
         }
-        assert!(Instant::now() < deadline, "summaries cover {reads} of 4 reads: {tail}");
+        assert!(
+            Instant::now() < deadline,
+            "summaries cover {reads} of 4 reads: {tail}"
+        );
         std::thread::sleep(Duration::from_millis(250));
     }
     assert!(gw.home().join("telemetry.sqlite").exists());

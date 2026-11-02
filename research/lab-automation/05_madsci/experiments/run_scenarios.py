@@ -196,6 +196,18 @@ def retry(stack: Stack, wf_id: str, index: int = 0):
 # ------------------------------------------------------------------ scenarios
 
 
+def await_held(s: Stack, key: str, timeout: float = 20) -> dict | None:
+    """The command once it has settled into waiting. Between submission and the hold it is
+    briefly CREATED and VALIDATING, and an earlier look would see those."""
+    deadline, found = time.time() + timeout, None
+    while time.time() < deadline:
+        found = s.receipt(key)
+        if found and found["state"] not in ("CREATED", "VALIDATING"):
+            return found
+        time.sleep(0.05)
+    return found
+
+
 def mad01(s: Stack, check: Check) -> dict:
     result = experiment.run(s.client.workcell_server_url, 6, "mad01")
     recs = result["records"]
@@ -314,10 +326,7 @@ def mad04_native(s: Stack, check: Check) -> dict:
 
 def mad05(s: Stack, check: Check) -> dict:
     started = start_async(s, "B1", 50.0, "mad05")
-    deadline, held = time.time() + 20, None
-    while time.time() < deadline and not held:
-        held = s.receipt("mad05")
-        time.sleep(0.2)
+    held = await_held(s, "mad05")
     check("OpenMHS holds the transfer for approval; nothing transferred", held and held["state"] == "AWAITING_APPROVAL"
           and s.sim()["count"] == 0, held and held["state"])
     mid = s.client.query_workflow(started.workflow_id)
@@ -359,10 +368,7 @@ def mad08(s: Stack, check: Check) -> dict:
     # MADSci retries the step: approval is asked for again, under a linked new attempt.
     s.client.retry_workflow(started.workflow_id, index=0, await_completion=False, raise_on_failed=False,
                             prompt_on_error=False)
-    second, deadline = None, time.time() + 15
-    while time.time() < deadline and not second:
-        second = s.receipt("mad08~2")
-        time.sleep(0.1)
+    second = await_held(s, "mad08~2")
     check("retry: a new attempt, held for approval, linked to the withdrawn one",
           second and second["state"] == "AWAITING_APPROVAL" and second["command_id"] != held["command_id"],
           second and second["state"])
@@ -382,10 +388,7 @@ def mad08(s: Stack, check: Check) -> dict:
 def mad09(s: Stack, check: Check) -> dict:
     """An approver says no. That is a definite answer, and a retry does not ask again."""
     started = start_async(s, "B1", 50.0, "mad09")
-    held, deadline = None, time.time() + 15
-    while time.time() < deadline and not held:
-        held = s.receipt("mad09")
-        time.sleep(0.1)
+    held = await_held(s, "mad09")
     approval = next(a for a in s.lab.operator.call("approvals.list", {}) if a.get("command_id") == held["command_id"])
     s.lab.operator.call("approvals.deny", {"id": approval["id"], "reason": "wrong plate"})
     wf = await_wf(s, started.workflow_id)
