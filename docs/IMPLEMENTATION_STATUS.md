@@ -25,9 +25,9 @@ of 2026-10-25 and have not been revised; the section that follows covers later w
 | # | Status | Verified |
 |---|---|---|
 | M0–M6 | Done, on `main` | Yes, at their milestones |
-| M7 | Done on branch `m7` (`a30aa63`), awaiting review and a push decision | Full gate run at the milestone, except the ROS 2 conformance (Docker was unavailable) |
-| M8 | Built on branch `m8`; full gate run on Windows except ROS 2 | Yes, see below |
-| M9 | Built and pushed to `main`; full gate run on Windows; CI green except macOS (queued) | Yes, see below |
+| M7 | Done, on `main` | Full gate run at the milestone, except the ROS 2 conformance (Docker was unavailable) |
+| M8 | Done, on `main`; full gate run on Windows except ROS 2 | Yes, see below |
+| M9 | Done, on `main`; full gate run on Windows; CI green on all three systems since | Yes, see below |
 
 ## M9: capability graph and multi-device orchestration
 

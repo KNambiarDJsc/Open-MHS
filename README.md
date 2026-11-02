@@ -60,8 +60,9 @@ final authority.
 
 ## Quickstart
 
-About a minute, with simulated devices only. You need a built `openmhs` binary; there is
-no published release yet, so build from source (Rust 1.89+):
+About a minute, with simulated devices only. You need an `openmhs` binary. Build it from
+source (Rust 1.89+), or take one from the [v0.1.0 pre-release](https://github.com/KNambiarDJsc/Open-MHS/releases/tag/v0.1.0),
+whose Linux and macOS archives have not been run by the project:
 
 ```sh
 git clone https://github.com/KNambiarDJsc/Open-MHS

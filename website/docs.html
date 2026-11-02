@@ -54,9 +54,10 @@
     <p>OpenMHS ships two programs: <code>openmhs</code> (the command line, which can also run
     the gateway) and <code>openmhsd</code> (the gateway only). Both are one self-contained
     binary with the virtual lab built in.</p>
-    <div class="note warn"><strong>No release has been published yet.</strong> Until one is,
-    build from source. Release archives for Windows, Linux and macOS, and the Python package
-    on PyPI, are prepared but not published.</div>
+    <div class="note warn"><strong>Pre-alpha.</strong> There is one pre-release,
+    <a href="https://github.com/KNambiarDJsc/Open-MHS/releases/tag/v0.1.0">v0.1.0</a>. Its Windows
+    binary was run; its Linux and macOS archives were checked by checksum and attestation, not
+    run. The Python package is not on PyPI. Building from source is the path this page describes.</div>
     <p>You need Rust 1.89 or newer from <a href="https://rustup.rs">rustup.rs</a>, and Git.
     Python 3.10+ is needed for the Python SDK, examples and Python adapters.</p>
 <pre><code>git clone https://github.com/KNambiarDJsc/Open-MHS
@@ -326,7 +327,7 @@ python -m unittest discover -s python/tests     # Python SDK, examples, parity (
       <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/limitations.md">Limitations</a></td><td>What it does not do, and what is untested</td></tr>
       <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/security/transport-security.md">Transport security</a></td><td>TLS for MQTT and HTTP; when plaintext is refused</td></tr>
       <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/adr/README.md">Architecture decisions</a></td><td>Why each design was chosen</td></tr>
-      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/CHANGELOG.md">Changelog</a></td><td>What changed; no release yet</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/CHANGELOG.md">Changelog</a></td><td>What changed; one pre-release so far (v0.1.0)</td></tr>
     </table>
     </div>
   </div>

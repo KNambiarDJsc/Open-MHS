@@ -53,9 +53,9 @@
     <div class="table-scroll">
     <table>
       <tr><th>Item</th><th>Value</th></tr>
-      <tr><td>Version</td><td>0.1.0, pre-alpha. <strong>No release published yet.</strong></td></tr>
+      <tr><td>Version</td><td>0.1.0, pre-alpha. One GitHub pre-release, <a href="https://github.com/KNambiarDJsc/Open-MHS/releases/tag/v0.1.0">v0.1.0</a>; not on PyPI or crates.io.</td></tr>
       <tr><td>Specification</td><td>v0.1 draft; may change incompatibly before 1.0</td></tr>
-      <tr><td>Milestones</td><td>M0 to M9 done (M7 to M9 pending review). M10 built, not published. M11+ planned.</td></tr>
+      <tr><td>Milestones</td><td>M0 to M11 done, on <code>main</code>. M12 (first physical validation) planned: its runbook is written, and it has not been run. See <a href="#roadmap">the roadmap</a>.</td></tr>
       <tr><td>Languages</td><td>Rust (gateway, engine, adapters), Python (SDK, Python adapters, examples, tools)</td></tr>
       <tr><td>Interfaces</td><td>MCP over stdio, local JSON-RPC API, CLI, Python SDK</td></tr>
       <tr><td>Platforms</td><td>Windows 11 and Linux (Ubuntu) tested; macOS arm64 configured in CI; macOS x86_64 untested</td></tr>
@@ -66,9 +66,9 @@
     </div>
 
     <h2 id="m10">M10: release readiness</h2>
-    <p><strong>Status: built and verified locally on Windows; not releasable until the
-    blockers below are cleared.</strong> No release, PyPI upload or documentation site has
-    been published. Source: <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/release/M10_TEST_REPORT.md">M10 test report</a>.</p>
+    <p><strong>Kept as the record of that gate, which ran on Windows.</strong> Since then CI has
+    passed on Linux, macOS and Windows and v0.1.0 was published as a GitHub pre-release; nothing is
+    on PyPI. The blockers below are what remains. Source: <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/docs/release/M10_TEST_REPORT.md">M10 test report</a>.</p>
     <div class="table-scroll">
     <table>
       <tr><th>Deliverable</th><th>Verified by</th><th>State</th></tr>
@@ -97,8 +97,9 @@
     </div>
     <h3>Release blockers</h3>
     <ol>
-      <li><strong>Nothing has run on Linux or macOS.</strong> Only the Windows build was made.</li>
-      <li><strong>CI has not run on the M10 work.</strong> Two new CI jobs have never executed.</li>
+      <li><strong>Nothing has been validated on physical hardware.</strong></li>
+      <li><strong>Release archives for Linux and macOS have not been run</strong> by the project. CI
+      builds and tests from source on all three systems.</li>
       <li><strong>Owner actions:</strong> private vulnerability reporting, code-of-conduct
       contact, PyPI trusted publisher, GitHub Pages, repository settings.</li>
       <li><strong>The demo video is not rendered.</strong></li>
@@ -353,11 +354,11 @@
       <tr><td>M4</td><td>MCP server, Python SDK, replanning agent example</td><td><span class="tag ok">done</span></td></tr>
       <tr><td>M5</td><td>Conformance suite, adapter scaffolding, adapter author guide</td><td><span class="tag ok">done</span></td></tr>
       <tr><td>M6</td><td>Protocol adapters: Modbus TCP, MQTT, SCPI, HTTP</td><td><span class="tag ok">done</span></td></tr>
-      <tr><td>M7</td><td>Out-of-process adapter host, Python adapter SDK, OPC UA and ROS 2, verified TLS</td><td><span class="tag ok">done</span> pending review</td></tr>
-      <tr><td>M8</td><td>Identity and trust: scoped credentials, approval records, signed manifests, threat model</td><td><span class="tag ok">done</span> pending review</td></tr>
-      <tr><td>M9</td><td>Capability graph, leases, plans with twin preflight, stop lane, L3 conformance</td><td><span class="tag ok">done</span> pending review</td></tr>
+      <tr><td>M7</td><td>Out-of-process adapter host, Python adapter SDK, OPC UA and ROS 2, verified TLS</td><td><span class="tag ok">done</span></td></tr>
+      <tr><td>M8</td><td>Identity and trust: scoped credentials, approval records, signed manifests, threat model</td><td><span class="tag ok">done</span></td></tr>
+      <tr><td>M9</td><td>Capability graph, leases, plans with twin preflight, stop lane, L3 conformance</td><td><span class="tag ok">done</span></td></tr>
       <tr><td>M10</td><td>Release readiness: binaries, PyPI, docs site, adapter registry, compatibility matrix, governance</td><td><span class="tag warn">built</span> nothing published; see <a href="#m10">blockers</a></td></tr>
-      <tr><td>M11</td><td>Release readiness and green CI on all three systems</td><td><span class="tag warn">in progress</span> macOS CI has not completed</td></tr>
+      <tr><td>M11</td><td>Release readiness and green CI on all three systems</td><td><span class="tag ok">done</span></td></tr>
       <tr><td>M12</td><td>First physical validation: an ESP32 driving one LED, observed with a multimeter</td><td><span class="tag info">planned</span> runbook written, not run</td></tr>
       <tr><td>RFC 0002</td><td>Storage engine: indexed recovery, bounded API reads, streamed evidence, sealed segments, seals with a tail-only start, guarded compaction, event classes and an opt-in telemetry store (M1&ndash;M6). Evaluation on a Raspberry Pi and 10 M-record journals (M7) is not done</td><td><span class="tag ok">built</span> on <code>main</code>; see <a href="#storage">results</a></td></tr>
       <tr><td>M17a</td><td>State fabric (events, watches, <code>subscribe</code>), capability-based selection, insights, <code>mcp --sim</code></td><td><span class="tag ok">built</span> on a branch, not merged</td></tr>
