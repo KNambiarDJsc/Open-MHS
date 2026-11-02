@@ -63,11 +63,12 @@ class SilaLab(Lab):
             "endpoints": {"network": [url]},
             "filesystem": {"read": [str(OVERRIDES)], "write": [str(root)]},
             "limits": {"start_timeout_ms": 60000, "call_timeout_ms": 10000},
-            "config": {"server": url, "overrides": str(OVERRIDES), "report_file": str(self.report)},
+            "config": {"server": url, "overrides": str(OVERRIDES), "report_file": str(self.report),
+                       "reading_source": "simulator"},
         })
         self.server = None
 
-    def start(self, timeout_s: float = 90) -> None:
+    def start_server(self) -> None:
         if self.server is None or self.server.poll() is not None:
             env = {**os.environ, "PYTHONPATH": str(EXP / "servers" / SERVER), "SIM_FAULT_FILE": str(self.fault_file)}
             self.server_log = open(self.dir / "sila_server.log", "ab")
@@ -81,6 +82,9 @@ class SilaLab(Lab):
                     break
                 except Exception:
                     time.sleep(0.1)
+
+    def start(self, timeout_s: float = 90) -> None:
+        self.start_server()
         super().start(timeout_s)
 
     def kill(self) -> None:

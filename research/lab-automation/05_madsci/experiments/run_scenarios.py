@@ -40,7 +40,8 @@ os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 # MADSci prints box-drawing tables; on a cp1252 console that would end the scenario.
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-from harness import REPO, Check, Lab, codes, summary  # noqa: E402
+from harness import REPO, Check, Lab, summary  # noqa: E402
+from run_record import finish_report  # noqa: E402
 
 import experiment  # noqa: E402
 from madsci.client.workcell_client import WorkcellClient  # noqa: E402
@@ -470,10 +471,7 @@ def main() -> None:
     import pylabrobot
 
     root = Path(a.work or tempfile.mkdtemp(prefix="mad-runs-"))
-    report = {"openmhs_commit": subprocess.run(["git", "-C", str(REPO), "rev-parse", "HEAD"], capture_output=True,
-                                               text=True).stdout.strip(),
-              "openmhs_bin": os.environ["OPENMHS_BIN"], "python": sys.version.split()[0],
-              "platform": platform.platform(), "pylabrobot": pylabrobot.__version__,
+    report = {"pylabrobot": pylabrobot.__version__,
               "madsci_client": getattr(madsci.client, "__version__", "0.8.1"),
               "started": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "scenarios": {}}
     for sid, (title, fn, opts) in SCENARIOS.items():
@@ -506,8 +504,7 @@ def main() -> None:
         for item in check.items:
             if not item["ok"]:
                 print(f"     failed: {item['check']}: {str(item['observed'])[:300]}", flush=True)
-    Path(a.out).write_text(json.dumps(report, indent=1, default=str))
-    print(f"wrote {a.out}")
+    print(f"wrote {finish_report(report, a.out)}")
 
 
 if __name__ == "__main__":

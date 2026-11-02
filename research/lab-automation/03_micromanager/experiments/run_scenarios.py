@@ -23,6 +23,7 @@ import numpy as np
 
 HERE = Path(__file__).resolve()
 sys.path.insert(0, str(HERE.parents[2] / "shared"))
+from openmhs.errors import GatewayError  # noqa: E402
 from harness import REPO, Check, Lab, codes, reached_device, run_all, summary  # noqa: E402
 
 ADAPTER = REPO / "adapters" / "python" / "micromanager" / "mm_adapter.py"
@@ -206,11 +207,18 @@ def mm05(lab: MmLab, check: Check) -> dict:
     newer = write(agent, "stage.x.position", um(800.0))
     check("a new absolute move is allowed while the first is unknown (idempotent, as specified)",
           lost2["state"] == "UNKNOWN_OUTCOME" and newer["state"] == "VERIFIED", (lost2["state"], newer["state"]))
-    rec2 = lab.operator.call("commands.reconcile", {"command_id": lost2["command_id"]})
-    check("FINDING: the superseded move reconciles NOT_APPLIED although the stage did reach 700 um",
-          applied_700 and rec2["state"] == "RECONCILED_NOT_APPLIED", (applied_700, rec2["state"]))
+    # This used to reconcile NOT_APPLIED although the stage did reach 700 um (report, finding 2).
+    refused = None
+    try:
+        lab.operator.call("commands.reconcile", {"command_id": lost2["command_id"]})
+    except GatewayError as e:
+        refused = e.code
+    still = lab.operator.call("commands.get", {"command_id": lost2["command_id"]})
+    check("the superseded move is not concluded either way: reconciling it is refused, it stays UNKNOWN_OUTCOME",
+          applied_700 and refused == "command.reconcile.superseded" and still["state"] == "UNKNOWN_OUTCOME",
+          (applied_700, refused, still["state"]))
     return {"lost": summary(lost), "reconciled": summary(rec), "lost_then_superseded": summary(lost2),
-            "superseding": summary(newer), "reconciled_after_supersede": summary(rec2)}
+            "superseding": summary(newer), "reconcile_after_supersede_refused": refused}
 
 
 def mm06(lab: MmLab, check: Check) -> dict:

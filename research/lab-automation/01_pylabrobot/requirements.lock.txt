@@ -1,0 +1,11 @@
+# Resolved with `uv pip compile --universal`, constrained to the exact versions the experiment
+# ran with on Windows, for Python 3.12. Markers keep it installable on Linux too.
+pylabrobot==0.2.2
+    # via
+    #   -r adapters/python/pylabrobot/requirements.txt
+typing-extensions==4.16.0
+    # via
+    #   pylabrobot
+websockets==17.4
+    # via
+    #   pylabrobot

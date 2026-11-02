@@ -1,0 +1,82 @@
+# Resolved with `uv pip compile --universal`, constrained to the exact versions the experiment
+# ran with on Windows, for Python 3.12. Markers keep it installable on Linux too.
+aionotify==0.3.1
+    # via
+    #   opentrons
+annotated-types==0.8.0
+    # via
+    #   pydantic
+anyio==4.16.0
+    # via
+    #   opentrons
+attrs==26.1.0
+    # via
+    #   jsonschema
+click==8.5.0
+    # via
+    #   opentrons
+idna==3.20
+    # via
+    #   anyio
+jsonschema==4.17.3
+    # via
+    #   opentrons
+    #   opentrons-shared-data
+numpy==1.26.4
+    # via
+    #   opentrons
+    #   opentrons-shared-data
+opentrons==10.1.0
+    # via
+    #   -r adapters/python/opentrons/requirements.txt
+opentrons-shared-data==10.1.0
+    # via
+    #   opentrons
+packaging==26.3
+    # via
+    #   opentrons
+pydantic==2.14.2
+    # via
+    #   opentrons
+    #   opentrons-shared-data
+    #   pydantic-settings
+pydantic-core==2.50.2
+    # via
+    #   pydantic
+pydantic-settings==2.16.2
+    # via
+    #   opentrons
+pyro5==5.17
+    # via
+    #   opentrons
+pyrsistent==0.20.0
+    # via
+    #   jsonschema
+pyserial==3.5
+    # via
+    #   opentrons
+python-dotenv==1.2.4
+    # via
+    #   pydantic-settings
+pyusb==1.2.1
+    # via
+    #   opentrons
+serpent==1.43
+    # via
+    #   pyro5
+typing-extensions==4.16.0
+    # via
+    #   anyio
+    #   opentrons
+    #   opentrons-shared-data
+    #   pydantic
+    #   pydantic-core
+    #   pydantic-settings
+    #   typing-inspection
+typing-inspection==0.4.4
+    # via
+    #   pydantic
+    #   pydantic-settings
+zipstream-ng==1.9.3
+    # via
+    #   opentrons

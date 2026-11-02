@@ -34,8 +34,9 @@ import uuid
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[4]
-sys.path.insert(0, str(REPO / "python"))
+sys.path[:0] = [str(REPO / "python"), str(REPO / "research" / "lab-automation" / "shared")]
 from openmhs import Client  # noqa: E402
+from run_record import finish_report  # noqa: E402
 
 ADAPTER = REPO / "adapters" / "python" / "pylabrobot" / "plr_adapter.py"
 DEVICE = "plr.lh-01"
@@ -524,12 +525,7 @@ def main() -> None:
 
     work = Path(args.work or tempfile.mkdtemp(prefix="plr-runs-"))
     report = {
-        "openmhs_commit": subprocess.run(["git", "-C", str(REPO), "rev-parse", "HEAD"],
-                                         capture_output=True, text=True).stdout.strip(),
-        "openmhs_bin": str(binary()),
         "pylabrobot": pylabrobot.__version__,
-        "python": sys.version.split()[0],
-        "platform": platform.platform(),
         "started": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         "scenarios": {},
     }
@@ -563,8 +559,7 @@ def main() -> None:
         for item in check.items:
             if not item["ok"]:
                 print(f"     failed: {item['check']}: {item['observed']}")
-    Path(args.out).write_text(json.dumps(report, indent=2))
-    print(f"wrote {args.out}")
+    print(f"wrote {finish_report(report, args.out)}")
 
 
 if __name__ == "__main__":

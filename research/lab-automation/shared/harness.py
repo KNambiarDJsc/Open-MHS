@@ -22,8 +22,9 @@ from pathlib import Path
 from typing import Any, Callable
 
 REPO = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(REPO / "python"))
+sys.path[:0] = [str(REPO / "python"), str(Path(__file__).resolve().parent)]
 from openmhs import Client  # noqa: E402
+from run_record import finish_report  # noqa: E402
 
 
 def binary() -> Path:
@@ -141,11 +142,6 @@ def run_all(scenarios: dict[str, tuple[str, Callable, Callable[[Path], Lab]]], m
     """Run each scenario on a fresh lab; write and return the report."""
     root = Path(work or tempfile.mkdtemp(prefix="lab-runs-"))
     report = {
-        "openmhs_commit": subprocess.run(["git", "-C", str(REPO), "rev-parse", "HEAD"],
-                                         capture_output=True, text=True).stdout.strip(),
-        "openmhs_bin": str(binary()),
-        "python": sys.version.split()[0],
-        "platform": platform.platform(),
         "started": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
         **meta,
         "scenarios": {},
@@ -174,6 +170,5 @@ def run_all(scenarios: dict[str, tuple[str, Callable, Callable[[Path], Lab]]], m
         for item in check.items:
             if not item["ok"]:
                 print(f"     failed: {item['check']}: {item['observed']}")
-    Path(out).write_text(json.dumps(report, indent=2))
-    print(f"wrote {out}")
+    print(f"wrote {finish_report(report, out)}")
     return report

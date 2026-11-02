@@ -1,0 +1,174 @@
+# Resolved with `uv pip compile --universal`, constrained to the exact versions the experiment
+# ran with on Windows, for Python 3.12. Markers keep it installable on Linux too.
+aiobotocore==3.10.0
+    # via
+    #   s3fs
+aiohappyeyeballs==2.7.1
+    # via
+    #   aiohttp
+aiohttp==3.14.5
+    # via
+    #   aiobotocore
+    #   fsspec
+    #   s3fs
+aioitertools==0.13.0
+    # via
+    #   aiobotocore
+aiosignal==1.4.0
+    # via
+    #   aiohttp
+annotated-doc==0.0.5
+    # via
+    #   typer
+annotated-types==0.8.0
+    # via
+    #   pydantic
+attrs==26.1.0
+    # via
+    #   aiohttp
+botocore==1.43.117
+    # via
+    #   aiobotocore
+colorama==0.4.6 ; sys_platform == 'win32'
+    # via
+    #   typer
+frozenlist==1.8.0
+    # via
+    #   aiohttp
+    #   aiosignal
+fsspec==2026.9.0
+    # via
+    #   s3fs
+    #   yaozarrs
+idna==3.20
+    # via
+    #   yarl
+jmespath==1.1.0
+    # via
+    #   aiobotocore
+    #   botocore
+markdown-it-py==4.2.0
+    # via
+    #   rich
+mdurl==0.1.2
+    # via
+    #   markdown-it-py
+ml-dtypes==0.6.0
+    # via
+    #   tensorstore
+multidict==7.2.1
+    # via
+    #   aiobotocore
+    #   aiohttp
+    #   yarl
+numpy==2.5.4
+    # via
+    #   ml-dtypes
+    #   ome-writers
+    #   pymmcore
+    #   pymmcore-plus
+    #   shapely
+    #   tensorstore
+    #   useq-schema
+ome-types==0.7.0
+    # via
+    #   pymmcore-plus
+ome-writers==0.3.2
+    # via
+    #   pymmcore-plus
+platformdirs==4.14.2
+    # via
+    #   pymmcore-plus
+propcache==0.5.4
+    # via
+    #   aiohttp
+    #   yarl
+psygnal==0.16.1
+    # via
+    #   pymmcore-plus
+pydantic==2.14.2
+    # via
+    #   ome-types
+    #   ome-writers
+    #   pydantic-extra-types
+    #   useq-schema
+    #   yaozarrs
+pydantic-core==2.50.2
+    # via
+    #   ome-types
+    #   pydantic
+    #   yaozarrs
+pydantic-extra-types==2.11.1
+    # via
+    #   ome-types
+    #   ome-writers
+pygments==2.21.0
+    # via
+    #   rich
+pymmcore==12.5.1.75.0
+    # via
+    #   pymmcore-plus
+pymmcore-plus==0.18.1
+    # via
+    #   -r adapters/python/micromanager/requirements.txt
+python-dateutil==2.9.0.post0
+    # via
+    #   aiobotocore
+    #   botocore
+rich==15.0.0
+    # via
+    #   pymmcore-plus
+    #   typer
+s3fs==2026.9.0
+    # via
+    #   fsspec
+shapely==2.2.0
+    # via
+    #   useq-schema
+shellingham==1.5.4
+    # via
+    #   typer
+six==1.17.0
+    # via
+    #   python-dateutil
+tensorstore==0.1.86
+    # via
+    #   ome-writers
+    #   yaozarrs
+typer==0.27.3
+    # via
+    #   pymmcore-plus
+typing-extensions==4.16.0
+    # via
+    #   aiohttp
+    #   aiosignal
+    #   ome-writers
+    #   pydantic
+    #   pydantic-core
+    #   pydantic-extra-types
+    #   pymmcore-plus
+    #   typing-inspection
+    #   useq-schema
+    #   xsdata
+    #   yaozarrs
+typing-inspection==0.4.4
+    # via
+    #   pydantic
+urllib3==2.8.0
+    # via
+    #   botocore
+useq-schema==0.9.2
+    # via
+    #   pymmcore-plus
+wrapt==2.5.2
+    # via
+    #   aiobotocore
+xsdata==26.10
+    # via
+    #   ome-types
+yaozarrs==0.3.4
+    # via
+    #   ome-writers
+yarl==1.25.1
+    # via
+    #   aiohttp
