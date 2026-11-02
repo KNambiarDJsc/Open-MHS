@@ -330,9 +330,9 @@ continued; the simulator's own records show the move ran exactly once.
   contracts, permissions, lifecycle, recovery and evidence in front of PyLabRobot, Opentrons,
   Micro-Manager and a generic SiLA 2 adapter, and a MADSci closed loop. Each has a native
   baseline, injected faults (lost answer, killed gateway, concurrent clients), raw results and a
-  report of what was not shown. Findings that changed OpenMHS's design questions (unique ids per
-  effectful request, reconciliation of superseded writes, parameter-bound preconditions) are
-  listed in `research/lab-automation/FINAL_RESEARCH_REPORT.md`.
+  report of what was not shown. Findings that changed OpenMHS's design questions are in
+  `research/lab-automation/FINAL_RESEARCH_REPORT.md`, and what was done about each in
+  `docs/rfcs/0003-reconciliation-and-verification.md`.
 
 ## 14. Not built
 

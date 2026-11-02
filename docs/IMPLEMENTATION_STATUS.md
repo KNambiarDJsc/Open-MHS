@@ -7,6 +7,19 @@ the end of each milestone and says plainly when something has not been run.
 Last updated: 2026-11-01. The milestone table below and everything after it describe M0 to M9 as
 of 2026-10-25 and have not been revised; the section that follows covers later work.
 
+## Pre-expansion hardening (2026-11-02, PR #10, not merged)
+
+| Item | Status | Verified |
+|---|---|---|
+| Reconciliation refuses a superseded write (`command.reconcile.superseded`) | Built | `crates/openmhs-engine/tests/superseded_reconcile.rs`, failed first on the old code; restart and compaction covered |
+| Conformance: read-back text parameters new on every command | Built | PyLabRobot, Opentrons, Micro-Manager and SiLA 2 reach L3 against simulators |
+| SDK: no import hang on Windows; a process ends when its gateway goes; `check_write` | Built | `python/tests/test_adapter_process.py`, failed first on the old code |
+| MADSci step lifecycle: withdraw when an approval wait runs out | Built, research code | `05_madsci/tests/test_governed.py` (fake clock and real gateway), MAD-08, MAD-09 on a real stack |
+| Contract gaps: ten properties, four adapters | Built | `research/lab-automation/results/2026-11-02/`. Simulated |
+| Third reconciled state; preconditions over parameters; delta verification | **Proposed, not built** | [RFC 0003](rfcs/0003-reconciliation-and-verification.md) |
+| OpenMHS Bench | **Proposed format only**, no benchmark | [docs/bench](bench/RESULT_FORMAT.md) |
+| Physical validation | **Not done** | Nothing in this work touches hardware |
+
 ## Storage engine and lab-automation research (2026-11-01)
 
 | Item | Status | Verified |

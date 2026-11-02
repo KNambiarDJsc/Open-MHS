@@ -1,0 +1,667 @@
+{
+  "openmhs_conformance": "0.1",
+  "suite_version": "0.1.0",
+  "subject": {
+    "adapter": "openmhs.py.opentrons",
+    "adapter_version": "0.1.0",
+    "device": "ot.flex-01",
+    "descriptor_sha256": "b8e7286d4c8e575cae508cead41632406f54ad5c0aba9672c8082fc1915725fd",
+    "sources": [
+      "simulator"
+    ]
+  },
+  "fixture": {
+    "faults": [
+      "link_down",
+      "no_response",
+      "lost_ack",
+      "garbled",
+      "refuse"
+    ],
+    "counts_deliveries": true
+  },
+  "environment": {
+    "runtime_version": "0.1.0",
+    "os": "windows",
+    "arch": "x86_64"
+  },
+  "achieved": "L3",
+  "passed": true,
+  "started_at": "2026-11-02T14:28:50.326Z",
+  "duration_ms": 17181,
+  "summary": {
+    "pass": 44,
+    "fail": 0,
+    "untested": 0,
+    "not_applicable": 2
+  },
+  "checks": [
+    {
+      "id": "L0.describe",
+      "level": "L0",
+      "status": "pass",
+      "message": "returned a descriptor",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.descriptor",
+      "level": "L0",
+      "status": "pass",
+      "message": "valid: device 'ot.flex-01', 6 capabilities",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.adapter_id",
+      "level": "L0",
+      "status": "pass",
+      "message": "'openmhs.py.opentrons'",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.describe_stable",
+      "level": "L0",
+      "status": "pass",
+      "message": "same descriptor both times",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.connect",
+      "level": "L0",
+      "status": "pass",
+      "message": "connected and registered",
+      "duration_ms": 4
+    },
+    {
+      "id": "L0.health",
+      "level": "L0",
+      "status": "pass",
+      "message": "healthy",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.shutdown",
+      "level": "L0",
+      "status": "pass",
+      "message": "shut down cleanly",
+      "duration_ms": 849
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "run.last_id",
+      "status": "pass",
+      "message": "read ''",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:50.331Z",
+          "value": ""
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "run.last_id",
+      "status": "pass",
+      "message": "'' matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "run.last_id",
+      "status": "pass",
+      "message": "1 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:50.331Z",
+          "value": ""
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "run.last_id",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "run.count",
+      "status": "pass",
+      "message": "read 0",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:50.331Z",
+          "value": 0
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "run.count",
+      "status": "pass",
+      "message": "0 matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "run.count",
+      "status": "pass",
+      "message": "1 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:50.331Z",
+          "value": 0
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "run.count",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "run.last_commands",
+      "status": "pass",
+      "message": "read 0",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:50.332Z",
+          "value": 0
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "run.last_commands",
+      "status": "pass",
+      "message": "0 matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "run.last_commands",
+      "status": "pass",
+      "message": "1 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:50.332Z",
+          "value": 0
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "run.last_commands",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "protocol.serial_dilution.reviewed",
+      "status": "pass",
+      "message": "read true",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:50.334Z",
+          "value": true
+        }
+      },
+      "duration_ms": 2
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "protocol.serial_dilution.reviewed",
+      "status": "pass",
+      "message": "true matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "protocol.serial_dilution.reviewed",
+      "status": "pass",
+      "message": "1 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:50.334Z",
+          "value": true
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "protocol.serial_dilution.reviewed",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "protocol.serial_dilution.sha256",
+      "status": "pass",
+      "message": "read '512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671'",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:50.335Z",
+          "value": "512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671"
+        }
+      },
+      "duration_ms": 1
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "protocol.serial_dilution.sha256",
+      "status": "pass",
+      "message": "'512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671' matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "protocol.serial_dilution.sha256",
+      "status": "pass",
+      "message": "1 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:50.335Z",
+          "value": "512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671"
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "protocol.serial_dilution.sha256",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.subscribe",
+      "level": "L1",
+      "status": "not_applicable",
+      "message": "deferred: the adapter contract (v0.1) has no subscription API, so there is nothing to test yet (ADR-0013)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "run.last_id",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "run.count",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "run.last_commands",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "protocol.serial_dilution.reviewed",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "protocol.serial_dilution.sha256",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.health",
+      "level": "L1",
+      "status": "pass",
+      "message": "disconnected: simulated disconnect",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.reconnect",
+      "level": "L1",
+      "status": "pass",
+      "message": "back after 3 ms",
+      "duration_ms": 4
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "protocol.run",
+      "status": "pass",
+      "message": "carried out in 387 ms (expected about 1000 ms, limit 5000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true,
+          "result": {
+            "commands": 92,
+            "protocol_sha256": "512e344350bdc3fba9a062d7f7036030b57a6ba4b3cfd1a6cbbf7d1f46d8f671",
+            "runlog_sha256": "c05b1c20ea94132728409b941cbd9bb6f8a50c9e58572f3919d0e7105ea7eb44"
+          }
+        },
+        "command_id": "01a19ca9-b62a-7361-b4b6-f2d7d2c0bffd",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 6000,
+          "operation": "invoke",
+          "params": {
+            "diluent_ul": {
+              "unit": "uL",
+              "value": 60.0
+            },
+            "mix_reps": 3,
+            "n_wells": 7,
+            "protocol": "serial_dilution",
+            "run_id": "omhs-1a19ca9b627-0",
+            "transfer_ul": {
+              "unit": "uL",
+              "value": 55.0
+            }
+          },
+          "target": {
+            "capability": "protocol.run",
+            "device": "ot.flex-01"
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "run.last_id",
+          "expected": "omhs-1a19ca9b627-0",
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-02T14:28:50.736Z",
+            "value": "omhs-1a19ca9b627-0"
+          }
+        }
+      },
+      "duration_ms": 394
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "protocol.run",
+      "status": "pass",
+      "message": "VERIFIED: 'run.last_id' read back 'omhs-1a19ca9b627-0'",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "protocol.run",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "simulated refusal (conformance fixture)"
+          }
+        },
+        "command_id": "01a19ca9-b7b4-739f-8ce0-fd6a171badb5",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 6000,
+          "operation": "invoke",
+          "params": {
+            "diluent_ul": {
+              "unit": "uL",
+              "value": 60.0
+            },
+            "mix_reps": 3,
+            "n_wells": 7,
+            "protocol": "serial_dilution",
+            "run_id": "omhs-1a19ca9b7b2-1",
+            "transfer_ul": {
+              "unit": "uL",
+              "value": 55.0
+            }
+          },
+          "target": {
+            "capability": "protocol.run",
+            "device": "ot.flex-01"
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 6
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "protocol.run",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "simulated garbled response (conformance fixture)"
+          }
+        },
+        "command_id": "01a19ca9-b7b9-742f-9dc6-b31f4a2c5720",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 6000,
+          "operation": "invoke",
+          "params": {
+            "diluent_ul": {
+              "unit": "uL",
+              "value": 60.0
+            },
+            "mix_reps": 3,
+            "n_wells": 7,
+            "protocol": "serial_dilution",
+            "run_id": "omhs-1a19ca9b7b8-2",
+            "transfer_ul": {
+              "unit": "uL",
+              "value": 55.0
+            }
+          },
+          "target": {
+            "capability": "protocol.run",
+            "device": "ot.flex-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 267
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "protocol.run",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 4997 ms"
+          }
+        },
+        "command_id": "01a19ca9-b8c6-748b-844a-86fdf7d75284",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 5000,
+          "operation": "invoke",
+          "params": {
+            "diluent_ul": {
+              "unit": "uL",
+              "value": 60.0
+            },
+            "mix_reps": 3,
+            "n_wells": 7,
+            "protocol": "serial_dilution",
+            "run_id": "omhs-1a19ca9b8c4-3",
+            "transfer_ul": {
+              "unit": "uL",
+              "value": 55.0
+            }
+          },
+          "target": {
+            "capability": "protocol.run",
+            "device": "ot.flex-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 5017
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "protocol.run",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'run.last_id'",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 4997 ms"
+          }
+        },
+        "command_id": "01a19ca9-cc60-72ce-bea3-9c94873735da",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 5000,
+          "operation": "invoke",
+          "params": {
+            "diluent_ul": {
+              "unit": "uL",
+              "value": 60.0
+            },
+            "mix_reps": 3,
+            "n_wells": 7,
+            "protocol": "serial_dilution",
+            "run_id": "omhs-1a19ca9cc5d-4",
+            "transfer_ul": {
+              "unit": "uL",
+              "value": 55.0
+            }
+          },
+          "target": {
+            "capability": "protocol.run",
+            "device": "ot.flex-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 5018
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "protocol.run",
+      "status": "pass",
+      "message": "each command reached the device at most once (refuse: 1, garbled: 1, no_response: 1, lost_ack: 1)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.recovery",
+      "level": "L2",
+      "status": "pass",
+      "message": "'protocol.run' carried out after the faults cleared",
+      "duration_ms": 202
+    },
+    {
+      "id": "L3.leases",
+      "level": "L3",
+      "capability": "protocol.run",
+      "status": "pass",
+      "message": "another principal's command was refused (lease.held), without reaching the device; the holder's was carried out",
+      "duration_ms": 208
+    },
+    {
+      "id": "L3.plan",
+      "level": "L3",
+      "capability": "protocol.run",
+      "status": "pass",
+      "message": "a one-step plan succeeded and released its lease; under refuse the plan halted at that step and sent nothing more; under no_response it stopped for a decision instead of guessing",
+      "duration_ms": 5198
+    },
+    {
+      "id": "L3.stop",
+      "level": "L3",
+      "status": "not_applicable",
+      "message": "the descriptor declares no stop action",
+      "duration_ms": 0
+    }
+  ]
+}

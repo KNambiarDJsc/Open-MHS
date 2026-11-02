@@ -223,11 +223,11 @@
     <div class="table-scroll">
     <table>
       <tr><th>Ecosystem (version)</th><th>What OpenMHS governs</th><th>Scenarios</th><th>Per operation, governed vs native</th><th>Conformance</th></tr>
-      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/01_pylabrobot/EXPERIMENT_REPORT.md">PyLabRobot</a> 0.2.2</td><td>One composite transfer</td><td><span class="tag ok">pass</span> 7 + latency, repeated</td><td>34&ndash;36 ms vs 1.3 ms</td><td>L1</td></tr>
-      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/02_opentrons/EXPERIMENT_REPORT.md">Opentrons</a> 10.1.0 (Flex simulator)</td><td>A reviewed protocol, pinned by SHA-256</td><td><span class="tag ok">pass</span> 7 + latency, 3 runs</td><td>~131 ms vs ~88 ms</td><td>L1</td></tr>
-      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/03_micromanager/EXPERIMENT_REPORT.md">Micro-Manager</a> (pymmcore-plus 0.18.1)</td><td>A microscope: stage, exposure, channel, snap with provenance</td><td><span class="tag ok">pass</span> 7 + latency, 3 runs</td><td>~112 ms vs ~32 ms (move and snap)</td><td>L1</td></tr>
-      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/04_sila2/EXPERIMENT_REPORT.md">SiLA 2</a> (sila2 0.14.0)</td><td>Any SiLA server, from its Feature Definitions plus a reviewed override file; tried on two separately written servers</td><td><span class="tag ok">pass</span> 5 + latency, 3 runs per server</td><td>~31 ms vs ~1.2 ms</td><td>no fixture</td></tr>
-      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/05_madsci/EXPERIMENT_REPORT.md">MADSci</a> 0.8.1</td><td>One node of a closed-loop experiment</td><td><span class="tag ok">pass</span> 9 (two native baselines), 3 complete runs</td><td>4.55 s vs 4.55 s per iteration</td><td>n/a</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/01_pylabrobot/EXPERIMENT_REPORT.md">PyLabRobot</a> 0.2.2</td><td>One composite transfer</td><td><span class="tag ok">pass</span> 7 + latency, repeated</td><td>34&ndash;43 ms vs 1.3 ms</td><td>L3</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/02_opentrons/EXPERIMENT_REPORT.md">Opentrons</a> 10.1.0 (Flex simulator)</td><td>A reviewed protocol, pinned by SHA-256</td><td><span class="tag ok">pass</span> 7 + latency, 3 runs</td><td>~131 ms vs ~88 ms</td><td>L3</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/03_micromanager/EXPERIMENT_REPORT.md">Micro-Manager</a> (pymmcore-plus 0.18.1)</td><td>A microscope: stage, exposure, channel, snap with provenance</td><td><span class="tag ok">pass</span> 7 + latency, 3 runs</td><td>~110 ms vs ~32 ms (move and snap)</td><td>L3</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/04_sila2/EXPERIMENT_REPORT.md">SiLA 2</a> (sila2 0.14.0)</td><td>Any SiLA server, from its Feature Definitions plus a reviewed override file; tried on two separately written servers</td><td><span class="tag ok">pass</span> 7 + latency, 3 runs per server</td><td>~31 ms vs ~1.2 ms</td><td>L3</td></tr>
+      <tr><td><a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/05_madsci/EXPERIMENT_REPORT.md">MADSci</a> 0.8.1</td><td>One node of a closed-loop experiment</td><td><span class="tag ok">pass</span> 11 (two native baselines), 3 complete runs</td><td>4.55 s vs 4.55 s per iteration</td><td>n/a</td></tr>
     </table>
     </div>
     <ul>
@@ -245,12 +245,18 @@
       manifest and about 300 lines per adapter. Not worth it for one script and one bench
       instrument.</li>
     </ul>
-    <p><strong>Not shown:</strong> unauthorized access and stale readings were not re-exercised in
-    each ecosystem; SiLA 2's gateway restart was not run; the generic SiLA adapter has no
-    conformance fixture; OpenMHS's conformance suite cannot yet fully test adapters that need a
-    fresh id per request (L1, not L2, for three of them); and MADSci's two experiments in one loop
-    were scheduled seconds apart by MADSci itself, so OpenMHS's lock was not contended there.
-    Nothing was reproduced by anyone else, or on Linux or macOS.</p>
+    <p><strong>Ten contract properties, tried in every adapter</strong>, through a real gateway:
+    unauthorized requests, expired and revoked credentials, stale observations, idempotency, gateway
+    restart, leases, offline evidence, superseded writes, approvals that run out, and an adapter lost
+    mid-command. All pass in three runs on one Windows desktop, and one run on Linux CI from a clean
+    install. <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/results/2026-11-02/SUMMARY.md">Results</a>. All four adapters reach L3
+    against simulators; a level is not a safety certification.</p>
+    <p><strong>Not shown:</strong> anything physical. No network adversary, no second gateway, and no
+    reproduction by anyone else, or on macOS. Old readings were produced by a test hook, not by the
+    simulators. MADSci's two experiments in one loop were scheduled seconds apart by MADSci itself, so
+    OpenMHS's lock was not contended there. Where a newer write has overwritten what an unresolved
+    command did, OpenMHS refuses to conclude, and a person has to choose with a recorded reason, even
+    if the evidence for either answer is gone.</p>
     <p>All five reports, raw results and a
     <a href="https://github.com/KNambiarDJsc/Open-MHS/blob/main/research/lab-automation/FINAL_RESEARCH_REPORT.md">cross-project report</a> that answers ten questions,
     including what stands between this and a remote, autonomous laboratory (a lot), are in

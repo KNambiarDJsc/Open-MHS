@@ -1,0 +1,897 @@
+{
+  "openmhs_conformance": "0.1",
+  "suite_version": "0.1.0",
+  "subject": {
+    "adapter": "openmhs.py.pylabrobot",
+    "adapter_version": "0.1.0",
+    "device": "plr.lh-01",
+    "descriptor_sha256": "20f1ae4f81edc6285a1def50928eb6839482e4940a7ce70a14ac26e94fd3541f",
+    "sources": [
+      "simulator"
+    ]
+  },
+  "fixture": {
+    "faults": [
+      "link_down",
+      "no_response",
+      "lost_ack",
+      "garbled",
+      "refuse"
+    ],
+    "counts_deliveries": true
+  },
+  "environment": {
+    "runtime_version": "0.1.0",
+    "os": "windows",
+    "arch": "x86_64"
+  },
+  "achieved": "L3",
+  "passed": true,
+  "started_at": "2026-11-02T14:28:34.494Z",
+  "duration_ms": 9409,
+  "summary": {
+    "pass": 64,
+    "fail": 0,
+    "untested": 0,
+    "not_applicable": 2
+  },
+  "checks": [
+    {
+      "id": "L0.describe",
+      "level": "L0",
+      "status": "pass",
+      "message": "returned a descriptor",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.descriptor",
+      "level": "L0",
+      "status": "pass",
+      "message": "valid: device 'plr.lh-01', 10 capabilities",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.adapter_id",
+      "level": "L0",
+      "status": "pass",
+      "message": "'openmhs.py.pylabrobot'",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.describe_stable",
+      "level": "L0",
+      "status": "pass",
+      "message": "same descriptor both times",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.connect",
+      "level": "L0",
+      "status": "pass",
+      "message": "connected and registered",
+      "duration_ms": 4
+    },
+    {
+      "id": "L0.health",
+      "level": "L0",
+      "status": "pass",
+      "message": "healthy",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.shutdown",
+      "level": "L0",
+      "status": "pass",
+      "message": "shut down cleanly",
+      "duration_ms": 185
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "tips.available",
+      "status": "pass",
+      "message": "read 96",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.5Z",
+          "value": 96
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "tips.available",
+      "status": "pass",
+      "message": "96 matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "tips.available",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.5Z",
+          "value": 96
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "tips.available",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "transfer.last_id",
+      "status": "pass",
+      "message": "read ''",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.5Z",
+          "value": ""
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "transfer.last_id",
+      "status": "pass",
+      "message": "'' matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "transfer.last_id",
+      "status": "pass",
+      "message": "1 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.5Z",
+          "value": ""
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "transfer.last_id",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "transfer.count",
+      "status": "pass",
+      "message": "read 0",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.501Z",
+          "value": 0
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "transfer.count",
+      "status": "pass",
+      "message": "0 matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "transfer.count",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.501Z",
+          "value": 0
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "transfer.count",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "source.a1.volume",
+      "status": "pass",
+      "message": "read 360 uL",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.501Z",
+          "value": {
+            "unit": "uL",
+            "value": 360.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "source.a1.volume",
+      "status": "pass",
+      "message": "360 uL matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "source.a1.volume",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.501Z",
+          "value": {
+            "unit": "uL",
+            "value": 360.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "source.a1.volume",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "source.a2.volume",
+      "status": "pass",
+      "message": "read 360 uL",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.502Z",
+          "value": {
+            "unit": "uL",
+            "value": 360.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "source.a2.volume",
+      "status": "pass",
+      "message": "360 uL matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "source.a2.volume",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.502Z",
+          "value": {
+            "unit": "uL",
+            "value": 360.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "source.a2.volume",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "source.a3.volume",
+      "status": "pass",
+      "message": "read 360 uL",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.502Z",
+          "value": {
+            "unit": "uL",
+            "value": 360.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "source.a3.volume",
+      "status": "pass",
+      "message": "360 uL matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "source.a3.volume",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.502Z",
+          "value": {
+            "unit": "uL",
+            "value": 360.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "source.a3.volume",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "dest.b1.volume",
+      "status": "pass",
+      "message": "read 0 uL",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.502Z",
+          "value": {
+            "unit": "uL",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "dest.b1.volume",
+      "status": "pass",
+      "message": "0 uL matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "dest.b1.volume",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.502Z",
+          "value": {
+            "unit": "uL",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "dest.b1.volume",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "dest.b2.volume",
+      "status": "pass",
+      "message": "read 0 uL",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.503Z",
+          "value": {
+            "unit": "uL",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "dest.b2.volume",
+      "status": "pass",
+      "message": "0 uL matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "dest.b2.volume",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.503Z",
+          "value": {
+            "unit": "uL",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "dest.b2.volume",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "dest.b3.volume",
+      "status": "pass",
+      "message": "read 0 uL",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.503Z",
+          "value": {
+            "unit": "uL",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "dest.b3.volume",
+      "status": "pass",
+      "message": "0 uL matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "dest.b3.volume",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:28:34.503Z",
+          "value": {
+            "unit": "uL",
+            "value": 0.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "dest.b3.volume",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.subscribe",
+      "level": "L1",
+      "status": "not_applicable",
+      "message": "deferred: the adapter contract (v0.1) has no subscription API, so there is nothing to test yet (ADR-0013)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "tips.available",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "transfer.last_id",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "transfer.count",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "source.a1.volume",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "source.a2.volume",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "source.a3.volume",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "dest.b1.volume",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "dest.b2.volume",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "dest.b3.volume",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.health",
+      "level": "L1",
+      "status": "pass",
+      "message": "disconnected: simulated disconnect",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.reconnect",
+      "level": "L1",
+      "status": "pass",
+      "message": "back after 3 ms",
+      "duration_ms": 3
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "liquid.transfer",
+      "status": "pass",
+      "message": "carried out in 23 ms (expected about 200 ms, limit 3000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a19ca9-7850-7788-8a65-17a115907731",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 4000,
+          "operation": "invoke",
+          "params": {
+            "dest": "B1",
+            "source": "A1",
+            "transfer_id": "omhs-1a19ca9784e-0",
+            "volume": {
+              "unit": "uL",
+              "value": 100.5
+            }
+          },
+          "target": {
+            "capability": "liquid.transfer",
+            "device": "plr.lh-01"
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "transfer.last_id",
+          "expected": "omhs-1a19ca9784e-0",
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-02T14:28:34.541Z",
+            "value": "omhs-1a19ca9784e-0"
+          }
+        }
+      },
+      "duration_ms": 32
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "liquid.transfer",
+      "status": "pass",
+      "message": "VERIFIED: 'transfer.last_id' read back 'omhs-1a19ca9784e-0'",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "liquid.transfer",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "simulated refusal (conformance fixture)"
+          }
+        },
+        "command_id": "01a19ca9-7870-7708-9286-7cd63cb55163",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 4000,
+          "operation": "invoke",
+          "params": {
+            "dest": "B1",
+            "source": "A1",
+            "transfer_id": "omhs-1a19ca9786f-1",
+            "volume": {
+              "unit": "uL",
+              "value": 100.5
+            }
+          },
+          "target": {
+            "capability": "liquid.transfer",
+            "device": "plr.lh-01"
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 5
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "liquid.transfer",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "simulated garbled response (conformance fixture)"
+          }
+        },
+        "command_id": "01a19ca9-7876-7136-beaf-2020f0fc4fe0",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 4000,
+          "operation": "invoke",
+          "params": {
+            "dest": "B1",
+            "source": "A1",
+            "transfer_id": "omhs-1a19ca97874-2",
+            "volume": {
+              "unit": "uL",
+              "value": 100.5
+            }
+          },
+          "target": {
+            "capability": "liquid.transfer",
+            "device": "plr.lh-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 27
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "liquid.transfer",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 2999 ms"
+          }
+        },
+        "command_id": "01a19ca9-7891-7498-b0ea-1cef96ccfb16",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {
+            "dest": "B1",
+            "source": "A1",
+            "transfer_id": "omhs-1a19ca97890-3",
+            "volume": {
+              "unit": "uL",
+              "value": 100.5
+            }
+          },
+          "target": {
+            "capability": "liquid.transfer",
+            "device": "plr.lh-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 3013
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "liquid.transfer",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'transfer.last_id'",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 2999 ms"
+          }
+        },
+        "command_id": "01a19ca9-8457-7683-9465-9664ebbb4c39",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 3000,
+          "operation": "invoke",
+          "params": {
+            "dest": "B1",
+            "source": "A1",
+            "transfer_id": "omhs-1a19ca98455-4",
+            "volume": {
+              "unit": "uL",
+              "value": 100.5
+            }
+          },
+          "target": {
+            "capability": "liquid.transfer",
+            "device": "plr.lh-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 3012
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "liquid.transfer",
+      "status": "pass",
+      "message": "each command reached the device at most once (refuse: 1, garbled: 1, no_response: 1, lost_ack: 1)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.recovery",
+      "level": "L2",
+      "status": "pass",
+      "message": "'liquid.transfer' carried out after the faults cleared",
+      "duration_ms": 31
+    },
+    {
+      "id": "L3.leases",
+      "level": "L3",
+      "capability": "liquid.transfer",
+      "status": "pass",
+      "message": "another principal's command was refused (lease.held), without reaching the device; the holder's was carried out",
+      "duration_ms": 27
+    },
+    {
+      "id": "L3.plan",
+      "level": "L3",
+      "capability": "liquid.transfer",
+      "status": "pass",
+      "message": "a one-step plan succeeded and released its lease; under refuse the plan halted at that step and sent nothing more; under no_response it stopped for a decision instead of guessing",
+      "duration_ms": 3056
+    },
+    {
+      "id": "L3.stop",
+      "level": "L3",
+      "status": "not_applicable",
+      "message": "the descriptor declares no stop action",
+      "duration_ms": 0
+    }
+  ]
+}

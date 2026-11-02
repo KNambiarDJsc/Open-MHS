@@ -1,0 +1,705 @@
+{
+  "openmhs_conformance": "0.1",
+  "suite_version": "0.1.0",
+  "subject": {
+    "adapter": "openmhs.py.sila2",
+    "adapter_version": "0.1.0",
+    "device": "sila.heater-01",
+    "descriptor_sha256": "a1b4529e9c600c707b554e674ad0c968e75c2eb905800087971b24aa7aa04026",
+    "sources": [
+      "simulator"
+    ]
+  },
+  "fixture": {
+    "faults": [
+      "link_down",
+      "no_response",
+      "lost_ack",
+      "garbled",
+      "refuse"
+    ],
+    "counts_deliveries": true
+  },
+  "environment": {
+    "runtime_version": "0.1.0",
+    "os": "windows",
+    "arch": "x86_64"
+  },
+  "achieved": "L3",
+  "passed": true,
+  "started_at": "2026-11-02T14:29:36.778Z",
+  "duration_ms": 5544,
+  "summary": {
+    "pass": 39,
+    "fail": 0,
+    "untested": 0,
+    "not_applicable": 4
+  },
+  "checks": [
+    {
+      "id": "L0.describe",
+      "level": "L0",
+      "status": "pass",
+      "message": "returned a descriptor",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.descriptor",
+      "level": "L0",
+      "status": "pass",
+      "message": "valid: device 'sila.heater-01', 5 capabilities",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.adapter_id",
+      "level": "L0",
+      "status": "pass",
+      "message": "'openmhs.py.sila2'",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.describe_stable",
+      "level": "L0",
+      "status": "pass",
+      "message": "same descriptor both times",
+      "duration_ms": 0
+    },
+    {
+      "id": "L0.connect",
+      "level": "L0",
+      "status": "pass",
+      "message": "connected and registered",
+      "duration_ms": 9
+    },
+    {
+      "id": "L0.health",
+      "level": "L0",
+      "status": "pass",
+      "message": "healthy",
+      "duration_ms": 5
+    },
+    {
+      "id": "L0.shutdown",
+      "level": "L0",
+      "status": "pass",
+      "message": "shut down cleanly",
+      "duration_ms": 182
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "temperature_controller.current_temperature",
+      "status": "pass",
+      "message": "read 22 Cel",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:29:36.803Z",
+          "value": {
+            "unit": "Cel",
+            "value": 22.0
+          }
+        }
+      },
+      "duration_ms": 10
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "temperature_controller.current_temperature",
+      "status": "pass",
+      "message": "22 Cel matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "temperature_controller.current_temperature",
+      "status": "pass",
+      "message": "1 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:29:36.803Z",
+          "value": {
+            "unit": "Cel",
+            "value": 22.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "temperature_controller.current_temperature",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "temperature_controller.target_temperature",
+      "status": "pass",
+      "message": "read 22 Cel",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:29:36.806Z",
+          "value": {
+            "unit": "Cel",
+            "value": 22.0
+          }
+        }
+      },
+      "duration_ms": 2
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "temperature_controller.target_temperature",
+      "status": "pass",
+      "message": "22 Cel matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "temperature_controller.target_temperature",
+      "status": "pass",
+      "message": "1 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:29:36.806Z",
+          "value": {
+            "unit": "Cel",
+            "value": 22.0
+          }
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "temperature_controller.target_temperature",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read",
+      "level": "L1",
+      "capability": "temperature_controller.heater_faulted",
+      "status": "pass",
+      "message": "read false",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:29:36.809Z",
+          "value": false
+        }
+      },
+      "duration_ms": 2
+    },
+    {
+      "id": "L1.read.value",
+      "level": "L1",
+      "capability": "temperature_controller.heater_faulted",
+      "status": "pass",
+      "message": "false matches the declaration",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.timestamp",
+      "level": "L1",
+      "capability": "temperature_controller.heater_faulted",
+      "status": "pass",
+      "message": "0 ms old",
+      "evidence": {
+        "reading": {
+          "quality": "GOOD",
+          "source": "simulator",
+          "timestamp": "2026-11-02T14:29:36.809Z",
+          "value": false
+        }
+      },
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.read.quality",
+      "level": "L1",
+      "capability": "temperature_controller.heater_faulted",
+      "status": "pass",
+      "message": "GOOD",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.subscribe",
+      "level": "L1",
+      "status": "not_applicable",
+      "message": "deferred: the adapter contract (v0.1) has no subscription API, so there is nothing to test yet (ADR-0013)",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "temperature_controller.current_temperature",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "temperature_controller.target_temperature",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.read",
+      "level": "L1",
+      "capability": "temperature_controller.heater_faulted",
+      "status": "pass",
+      "message": "failed with adapter.disconnected",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.disconnect.health",
+      "level": "L1",
+      "status": "pass",
+      "message": "disconnected: simulated disconnect",
+      "duration_ms": 0
+    },
+    {
+      "id": "L1.reconnect",
+      "level": "L1",
+      "status": "pass",
+      "message": "back after 11 ms",
+      "duration_ms": 11
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "temperature_controller.set_target_temperature",
+      "status": "pass",
+      "message": "carried out in 5 ms (expected about 50 ms, limit 3000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a19caa-6bbc-71bd-9085-0f6c0a223b31",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 4000,
+          "operation": "invoke",
+          "params": {
+            "target_temperature": {
+              "unit": "Cel",
+              "value": 24.5
+            }
+          },
+          "target": {
+            "capability": "temperature_controller.set_target_temperature",
+            "device": "sila.heater-01"
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "temperature_controller.target_temperature",
+          "expected": {
+            "unit": "Cel",
+            "value": 24.5
+          },
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-02T14:29:36.852Z",
+            "value": {
+              "unit": "Cel",
+              "value": 24.5
+            }
+          }
+        }
+      },
+      "duration_ms": 30
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "temperature_controller.set_target_temperature",
+      "status": "pass",
+      "message": "VERIFIED: 'temperature_controller.target_temperature' read back 24.5 Cel",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "temperature_controller.set_target_temperature",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "simulated refusal (conformance fixture)"
+          }
+        },
+        "command_id": "01a19caa-6bdc-735c-9f0a-9129a8a92e9f",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 4000,
+          "operation": "invoke",
+          "params": {
+            "target_temperature": {
+              "unit": "Cel",
+              "value": 27.0
+            }
+          },
+          "target": {
+            "capability": "temperature_controller.set_target_temperature",
+            "device": "sila.heater-01"
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 15
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "temperature_controller.set_target_temperature",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "simulated garbled response (conformance fixture)"
+          }
+        },
+        "command_id": "01a19caa-6bee-7626-85b6-2ff8d3f1fb1a",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 4000,
+          "operation": "invoke",
+          "params": {
+            "target_temperature": {
+              "unit": "Cel",
+              "value": 27.0
+            }
+          },
+          "target": {
+            "capability": "temperature_controller.set_target_temperature",
+            "device": "sila.heater-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 21
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "temperature_controller.set_target_temperature",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 995 ms"
+          }
+        },
+        "command_id": "01a19caa-6c02-70da-a4ac-96438b0f43cf",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "invoke",
+          "params": {
+            "target_temperature": {
+              "unit": "Cel",
+              "value": 29.5
+            }
+          },
+          "target": {
+            "capability": "temperature_controller.set_target_temperature",
+            "device": "sila.heater-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1012
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "temperature_controller.set_target_temperature",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'temperature_controller.target_temperature'",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 997 ms"
+          }
+        },
+        "command_id": "01a19caa-6ff7-7728-8895-57526e6b5e36",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "invoke",
+          "params": {
+            "target_temperature": {
+              "unit": "Cel",
+              "value": 29.5
+            }
+          },
+          "target": {
+            "capability": "temperature_controller.set_target_temperature",
+            "device": "sila.heater-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1040
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "temperature_controller.set_target_temperature",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.command",
+      "level": "L2",
+      "capability": "temperature_controller.reset_heater",
+      "status": "pass",
+      "message": "carried out in 11 ms (expected about 50 ms, limit 3000 ms)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "reported_applied": true
+        },
+        "command_id": "01a19caa-7402-7199-9bed-6ed3d7b320b4",
+        "outcome": "succeeded",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 4000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "temperature_controller.reset_heater",
+            "device": "sila.heater-01"
+          }
+        },
+        "state": "VERIFIED",
+        "verification": {
+          "capability": "temperature_controller.heater_faulted",
+          "expected": false,
+          "matched": true,
+          "mode": "readback",
+          "observed": {
+            "quality": "GOOD",
+            "source": "simulator",
+            "timestamp": "2026-11-02T14:29:38.966Z",
+            "value": false
+          }
+        }
+      },
+      "duration_ms": 24
+    },
+    {
+      "id": "L2.verification",
+      "level": "L2",
+      "capability": "temperature_controller.reset_heater",
+      "status": "pass",
+      "message": "VERIFIED: 'temperature_controller.heater_faulted' read back false",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.reject",
+      "level": "L2",
+      "capability": "temperature_controller.reset_heater",
+      "status": "pass",
+      "message": "REJECTED with adapter.rejected",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.rejected",
+            "message": "simulated refusal (conformance fixture)"
+          }
+        },
+        "command_id": "01a19caa-741e-7505-827e-42082f7e1f6c",
+        "outcome": "failed",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 4000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "temperature_controller.reset_heater",
+            "device": "sila.heater-01"
+          }
+        },
+        "state": "REJECTED",
+        "verification": null
+      },
+      "duration_ms": 9
+    },
+    {
+      "id": "L2.malformed",
+      "level": "L2",
+      "capability": "temperature_controller.reset_heater",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME with adapter.malformed_response",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.malformed_response",
+            "message": "simulated garbled response (conformance fixture)"
+          }
+        },
+        "command_id": "01a19caa-742a-70bd-a4db-d295a1677ede",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 4000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "temperature_controller.reset_heater",
+            "device": "sila.heater-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 15
+    },
+    {
+      "id": "L2.timeout",
+      "level": "L2",
+      "capability": "temperature_controller.reset_heater",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME (adapter.timeout)",
+      "evidence": {
+        "adapter_result": {
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 1000 ms"
+          }
+        },
+        "command_id": "01a19caa-7434-7403-9f88-e1e3db69e4d7",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "temperature_controller.reset_heater",
+            "device": "sila.heater-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1007
+    },
+    {
+      "id": "L2.lost_ack",
+      "level": "L2",
+      "capability": "temperature_controller.reset_heater",
+      "status": "pass",
+      "message": "UNKNOWN_OUTCOME, then reconciled as applied by reading back 'temperature_controller.heater_faulted' (the readback already held before the command, so this shows the path, not that this command applied)",
+      "evidence": {
+        "adapter_result": {
+          "acknowledged": true,
+          "error": {
+            "code": "adapter.timeout",
+            "message": "no result within 999 ms"
+          }
+        },
+        "command_id": "01a19caa-7825-7107-8889-da8e75a7674d",
+        "outcome": "uncertain",
+        "policy_errors": [],
+        "request": {
+          "deadline_ms": 1000,
+          "operation": "invoke",
+          "params": {},
+          "target": {
+            "capability": "temperature_controller.reset_heater",
+            "device": "sila.heater-01"
+          }
+        },
+        "state": "UNKNOWN_OUTCOME",
+        "verification": null
+      },
+      "duration_ms": 1014
+    },
+    {
+      "id": "L2.no_retry",
+      "level": "L2",
+      "capability": "temperature_controller.reset_heater",
+      "status": "not_applicable",
+      "message": "declared idempotent: repeating it is harmless, so retries are allowed",
+      "duration_ms": 0
+    },
+    {
+      "id": "L2.recovery",
+      "level": "L2",
+      "status": "pass",
+      "message": "'temperature_controller.set_target_temperature' carried out after the faults cleared",
+      "duration_ms": 28
+    },
+    {
+      "id": "L3.leases",
+      "level": "L3",
+      "capability": "temperature_controller.set_target_temperature",
+      "status": "pass",
+      "message": "another principal's command was refused (lease.held), without reaching the device; the holder's was carried out",
+      "duration_ms": 36
+    },
+    {
+      "id": "L3.plan",
+      "level": "L3",
+      "capability": "temperature_controller.set_target_temperature",
+      "status": "pass",
+      "message": "a one-step plan succeeded and released its lease; under refuse the plan halted at that step and sent nothing more; under no_response it stopped for a decision instead of guessing",
+      "duration_ms": 1060
+    },
+    {
+      "id": "L3.stop",
+      "level": "L3",
+      "status": "not_applicable",
+      "message": "the descriptor declares no stop action",
+      "duration_ms": 0
+    }
+  ]
+}

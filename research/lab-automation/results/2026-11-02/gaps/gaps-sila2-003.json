@@ -1,0 +1,797 @@
+{
+ "format": "openmhs-lab-result/1",
+ "finished_at": "2026-11-02T14:41:08+00:00",
+ "simulated": true,
+ "physical_effects": false,
+ "source": {
+  "commit": "1b8fd521c1072d6a8b4c9d6c8a2a0c726de413b7",
+  "dirty": false
+ },
+ "environment": {
+  "os": "Windows",
+  "os_release": "11",
+  "machine": "AMD64",
+  "python": "3.12.11",
+  "python_implementation": "CPython",
+  "rustc": "rustc 1.89.0 (29483883e 2025-08-04)",
+  "openmhs_version": "openmhs 0.1.0",
+  "packages": {
+   "annotated-doc": "0.0.5",
+   "black": "26.10.1",
+   "cffi": "2.1.1",
+   "click": "8.5.0",
+   "colorama": "0.4.6",
+   "cryptography": "50.0.2",
+   "grpcio": "1.85.1",
+   "grpcio-tools": "1.85.1",
+   "ifaddr": "0.2.0",
+   "isort": "9.0.2",
+   "jinja2": "3.1.6",
+   "lxml": "6.1.3",
+   "markdown-it-py": "4.2.0",
+   "markupsafe": "3.0.4",
+   "mdurl": "0.1.2",
+   "mypy_extensions": "1.1.0",
+   "packaging": "26.3",
+   "pathspec": "1.1.1",
+   "platformdirs": "4.14.2",
+   "protobuf": "7.36.2",
+   "pycparser": "3.12",
+   "pygments": "2.21.0",
+   "pytokens": "0.4.1",
+   "rich": "15.0.0",
+   "setuptools": "84.2.1",
+   "shellingham": "1.5.4",
+   "sila2": "0.14.0",
+   "typer": "0.27.3",
+   "typing_extensions": "4.16.0",
+   "zeroconf": "0.153.0"
+  }
+ },
+ "ecosystem": "sila2",
+ "summary": {
+  "PASS": 10,
+  "FAIL": 0,
+  "NOT_TESTED": 0
+ },
+ "scenarios": {
+  "GAP-01": {
+   "title": "unauthorized requests do not dispatch",
+   "outcome": "PASS",
+   "seconds": 5.0,
+   "checks": [
+    {
+     "check": "a credential without a grant is denied",
+     "ok": true,
+     "observed": [
+      "DENIED",
+      [
+       "policy.denied.no_grant"
+      ]
+     ]
+    },
+    {
+     "check": "the denial names the policy",
+     "ok": true,
+     "observed": [
+      "policy.denied.no_grant"
+     ]
+    },
+    {
+     "check": "it never reached the device",
+     "ok": true,
+     "observed": [
+      "CREATED",
+      "VALIDATING",
+      "DENIED"
+     ]
+    },
+    {
+     "check": "the simulator did nothing",
+     "ok": true,
+     "observed": 0
+    },
+    {
+     "check": "audit chain verifies",
+     "ok": true,
+     "observed": 9
+    }
+   ],
+   "detail": {
+    "denied": {
+     "command_id": "01a19cb4-1d81-7382-b0f3-6f80b2d76113",
+     "state": "DENIED",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "DENIED"
+     ],
+     "errors": [
+      "policy.denied.no_grant"
+     ],
+     "verification": null,
+     "adapter_result": null
+    }
+   }
+  },
+  "GAP-02": {
+   "title": "expired and revoked credentials authorize nothing new",
+   "outcome": "PASS",
+   "seconds": 5.0,
+   "checks": [
+    {
+     "check": "a revoked credential is refused",
+     "ok": true,
+     "observed": "gateway.unauthorized"
+    },
+    {
+     "check": "an expired credential is refused",
+     "ok": true,
+     "observed": "gateway.unauthorized"
+    },
+    {
+     "check": "neither reached the simulator",
+     "ok": true,
+     "observed": 0
+    },
+    {
+     "check": "a valid credential still works",
+     "ok": true,
+     "observed": [
+      "VERIFIED",
+      []
+     ]
+    },
+    {
+     "check": "audit chain verifies",
+     "ok": true,
+     "observed": 20
+    }
+   ],
+   "detail": {}
+  },
+  "GAP-03": {
+   "title": "a stale observation is not presented as fresh",
+   "outcome": "PASS",
+   "seconds": 4.2,
+   "checks": [
+    {
+     "check": "a current reading is usable",
+     "ok": true,
+     "observed": true
+    },
+    {
+     "check": "an hour-old reading is reported old, and not usable",
+     "ok": true,
+     "observed": [
+      false,
+      3600001
+     ]
+    },
+    {
+     "check": "a command cannot be confirmed by an old reading",
+     "ok": true,
+     "observed": [
+      "DENIED",
+      [
+       "command.state.stale"
+      ]
+     ]
+    },
+    {
+     "check": "the receipt says why",
+     "ok": true,
+     "observed": [
+      "DENIED",
+      [
+       "command.state.stale"
+      ]
+     ]
+    },
+    {
+     "check": "refused before dispatch, on the stale state",
+     "ok": true,
+     "observed": [
+      "command.state.stale"
+     ]
+    },
+    {
+     "check": "audit chain verifies",
+     "ok": true,
+     "observed": 13
+    }
+   ],
+   "detail": {
+    "old_reading": {
+     "device": "sila.heater-01",
+     "capability": "temperature_controller.target_temperature",
+     "state": {
+      "value": {
+       "value": 22.0,
+       "unit": "Cel"
+      },
+      "timestamp": "2026-11-02T13:40:21.69Z",
+      "source": "simulator",
+      "quality": "GOOD"
+     },
+     "age_ms": 3600001,
+     "usable": false,
+     "max_age_ms": 2000
+    },
+    "command": {
+     "command_id": "01a19cb4-42cc-7695-8316-ba1ecb7b1628",
+     "state": "DENIED",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "DENIED"
+     ],
+     "errors": [
+      "command.state.stale"
+     ],
+     "verification": null,
+     "adapter_result": null
+    }
+   }
+  },
+  "GAP-04": {
+   "title": "a repeated request follows idempotency",
+   "outcome": "PASS",
+   "seconds": 4.5,
+   "checks": [
+    {
+     "check": "the same key returns the same command",
+     "ok": true,
+     "observed": [
+      "VERIFIED",
+      true
+     ]
+    },
+    {
+     "check": "the same key on a different request is refused",
+     "ok": true,
+     "observed": "command.idempotency.conflict"
+    },
+    {
+     "check": "(no execution counter in this simulator: delivery counted by the conformance suite)",
+     "ok": true,
+     "observed": null
+    },
+    {
+     "check": "audit chain verifies",
+     "ok": true,
+     "observed": 15
+    }
+   ],
+   "detail": {
+    "first": {
+     "command_id": "01a19cb4-545e-731c-bdea-207e45c0ba48",
+     "state": "VERIFIED",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "APPROVED",
+      "DISPATCHED",
+      "ACCEPTED",
+      "APPLIED",
+      "VERIFIED"
+     ],
+     "errors": [],
+     "verification": {
+      "capability": "temperature_controller.target_temperature",
+      "expected": {
+       "unit": "Cel",
+       "value": 26.0
+      },
+      "matched": true,
+      "mode": "readback",
+      "observed": {
+       "quality": "GOOD",
+       "source": "simulator",
+       "timestamp": "2026-11-02T14:40:26.244Z",
+       "value": {
+        "unit": "Cel",
+        "value": 26.0
+       }
+      }
+     },
+     "adapter_result": {
+      "acknowledged": true,
+      "reported_applied": true
+     }
+    }
+   }
+  },
+  "GAP-05": {
+   "title": "a gateway restart does not repeat an uncertain command",
+   "outcome": "PASS",
+   "seconds": 11.3,
+   "checks": [
+    {
+     "check": "the answer was lost: UNKNOWN_OUTCOME",
+     "ok": true,
+     "observed": "UNKNOWN_OUTCOME"
+    },
+    {
+     "check": "after a hard restart it is still UNKNOWN_OUTCOME",
+     "ok": true,
+     "observed": "UNKNOWN_OUTCOME"
+    },
+    {
+     "check": "the same key after the restart returns the same command, unsent",
+     "ok": true,
+     "observed": "UNKNOWN_OUTCOME"
+    },
+    {
+     "check": "reconciliation finds what the simulator holds: RECONCILED_APPLIED",
+     "ok": true,
+     "observed": "RECONCILED_APPLIED"
+    },
+    {
+     "check": "audit chain verifies",
+     "ok": true,
+     "observed": 19
+    }
+   ],
+   "detail": {
+    "lost": {
+     "command_id": "01a19cb4-69c8-71da-9ae4-0ebf606625b4",
+     "state": "UNKNOWN_OUTCOME",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "APPROVED",
+      "DISPATCHED",
+      "TIMED_OUT",
+      "UNKNOWN_OUTCOME"
+     ],
+     "errors": [],
+     "verification": null,
+     "adapter_result": {
+      "error": {
+       "code": "adapter.timeout",
+       "message": "no result within 3000 ms"
+      }
+     }
+    },
+    "after_restart": {
+     "command_id": "01a19cb4-69c8-71da-9ae4-0ebf606625b4",
+     "state": "UNKNOWN_OUTCOME",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "APPROVED",
+      "DISPATCHED",
+      "TIMED_OUT",
+      "UNKNOWN_OUTCOME"
+     ],
+     "errors": [],
+     "verification": null,
+     "adapter_result": {
+      "error": {
+       "code": "adapter.timeout",
+       "message": "no result within 3000 ms"
+      }
+     }
+    },
+    "reconciled": {
+     "command_id": "01a19cb4-69c8-71da-9ae4-0ebf606625b4",
+     "state": "RECONCILED_APPLIED",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "APPROVED",
+      "DISPATCHED",
+      "TIMED_OUT",
+      "UNKNOWN_OUTCOME",
+      "RECONCILED_APPLIED"
+     ],
+     "errors": [],
+     "verification": {
+      "capability": "temperature_controller.target_temperature",
+      "expected": {
+       "unit": "Cel",
+       "value": 28.0
+      },
+      "matched": true,
+      "mode": "readback",
+      "observed": {
+       "quality": "GOOD",
+       "source": "simulator",
+       "timestamp": "2026-11-02T14:40:37.533Z",
+       "value": {
+        "unit": "Cel",
+        "value": 28.0
+       }
+      }
+     },
+     "adapter_result": {
+      "error": {
+       "code": "adapter.timeout",
+       "message": "no result within 3000 ms"
+      }
+     }
+    },
+    "operation": {
+     "target": {
+      "device": "sila.heater-01",
+      "capability": "temperature_controller.set_target_temperature"
+     },
+     "operation": "invoke",
+     "params": {
+      "target_temperature": {
+       "value": 28.0,
+       "unit": "Cel"
+      }
+     }
+    },
+    "dispatch_count": null
+   }
+  },
+  "GAP-06": {
+   "title": "a lease keeps conflicting operations off the device",
+   "outcome": "PASS",
+   "seconds": 5.0,
+   "checks": [
+    {
+     "check": "another principal is refused while the lease is held",
+     "ok": true,
+     "observed": [
+      "DENIED",
+      [
+       "lease.held"
+      ]
+     ]
+    },
+    {
+     "check": "the refused command never reached the device",
+     "ok": true,
+     "observed": [
+      "CREATED",
+      "VALIDATING",
+      "DENIED"
+     ]
+    },
+    {
+     "check": "nothing happened for it",
+     "ok": true,
+     "observed": 0
+    },
+    {
+     "check": "the holder is carried out",
+     "ok": true,
+     "observed": [
+      "VERIFIED",
+      []
+     ]
+    },
+    {
+     "check": "once released, the other principal may go",
+     "ok": true,
+     "observed": [
+      "VERIFIED",
+      []
+     ]
+    },
+    {
+     "check": "audit chain verifies",
+     "ok": true,
+     "observed": 32
+    }
+   ],
+   "detail": {
+    "refused": {
+     "command_id": "01a19cb4-936e-71d3-9fd7-9981a2a9e0ed",
+     "state": "DENIED",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "DENIED"
+     ],
+     "errors": [
+      "lease.held"
+     ],
+     "verification": null,
+     "adapter_result": null
+    }
+   }
+  },
+  "GAP-07": {
+   "title": "evidence verifies independently, and an edit is detected",
+   "outcome": "PASS",
+   "seconds": 4.5,
+   "checks": [
+    {
+     "check": "an out-of-contract request is refused before dispatch",
+     "ok": true,
+     "observed": [
+      "DENIED",
+      [
+       "command.value.out_of_range"
+      ]
+     ]
+    },
+    {
+     "check": "the export verifies with a separate process, without the gateway's home",
+     "ok": true,
+     "observed": {
+      "exit": 0,
+      "valid": true,
+      "complete": true,
+      "records": 18,
+      "receipts": 2,
+      "unbound_commands": [],
+      "errors": []
+     }
+    },
+    {
+     "check": "the edit changed the file",
+     "ok": true,
+     "observed": null
+    },
+    {
+     "check": "an edited export fails verification",
+     "ok": true,
+     "observed": 3
+    },
+    {
+     "check": "audit chain verifies",
+     "ok": true,
+     "observed": 18
+    }
+   ],
+   "detail": {
+    "verify": {
+     "exit": 0,
+     "valid": true,
+     "complete": true,
+     "records": 18,
+     "receipts": 2,
+     "unbound_commands": []
+    }
+   }
+  },
+  "GAP-08": {
+   "title": "a superseded write does not reconcile misleadingly",
+   "outcome": "PASS",
+   "seconds": 7.6,
+   "checks": [
+    {
+     "check": "the first write's answer was lost",
+     "ok": true,
+     "observed": "UNKNOWN_OUTCOME"
+    },
+    {
+     "check": "an idempotent capability lets the newer write through",
+     "ok": true,
+     "observed": [
+      "VERIFIED",
+      []
+     ]
+    },
+    {
+     "check": "reconciling the overtaken write refuses to conclude",
+     "ok": true,
+     "observed": "command.reconcile.superseded"
+    },
+    {
+     "check": "it stays UNKNOWN_OUTCOME",
+     "ok": true,
+     "observed": "UNKNOWN_OUTCOME"
+    },
+    {
+     "check": "a person can settle it, on the record",
+     "ok": true,
+     "observed": "RECONCILED_APPLIED"
+    },
+    {
+     "check": "audit chain verifies",
+     "ok": true,
+     "observed": 23
+    }
+   ],
+   "detail": {
+    "lost": {
+     "command_id": "01a19cb4-b6e3-73fc-ab55-21e7245bc02f",
+     "state": "UNKNOWN_OUTCOME",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "APPROVED",
+      "DISPATCHED",
+      "TIMED_OUT",
+      "UNKNOWN_OUTCOME"
+     ],
+     "errors": [],
+     "verification": null,
+     "adapter_result": {
+      "error": {
+       "code": "adapter.timeout",
+       "message": "no result within 3000 ms"
+      }
+     }
+    },
+    "newer": {
+     "command_id": "01a19cb4-c2c8-7323-8da0-ff102eb9520e",
+     "state": "VERIFIED",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "APPROVED",
+      "DISPATCHED",
+      "ACCEPTED",
+      "APPLIED",
+      "VERIFIED"
+     ],
+     "errors": [],
+     "verification": {
+      "capability": "temperature_controller.target_temperature",
+      "expected": {
+       "unit": "Cel",
+       "value": 34.0
+      },
+      "matched": true,
+      "mode": "readback",
+      "observed": {
+       "quality": "GOOD",
+       "source": "simulator",
+       "timestamp": "2026-11-02T14:40:54.555Z",
+       "value": {
+        "unit": "Cel",
+        "value": 34.0
+       }
+      }
+     },
+     "adapter_result": {
+      "acknowledged": true,
+      "reported_applied": true
+     }
+    }
+   }
+  },
+  "GAP-09": {
+   "title": "an approval that runs out never runs late",
+   "outcome": "PASS",
+   "seconds": 5.4,
+   "checks": [
+    {
+     "check": "held for approval, not sent",
+     "ok": true,
+     "observed": [
+      "AWAITING_APPROVAL",
+      []
+     ]
+    },
+    {
+     "check": "past its deadline it no longer says it is waiting",
+     "ok": true,
+     "observed": "EXPIRED"
+    },
+    {
+     "check": "a late approval is refused",
+     "ok": true,
+     "observed": "command.invalid_state"
+    },
+    {
+     "check": "nothing ran",
+     "ok": true,
+     "observed": 0
+    },
+    {
+     "check": "audit chain verifies",
+     "ok": true,
+     "observed": 14
+    }
+   ],
+   "detail": {
+    "expired": {
+     "command_id": "01a19cb4-d474-73c5-aae2-2119523c7fc6",
+     "state": "EXPIRED",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "AWAITING_APPROVAL",
+      "EXPIRED"
+     ],
+     "errors": [],
+     "verification": null,
+     "adapter_result": null
+    }
+   }
+  },
+  "GAP-10": {
+   "title": "an adapter lost mid-command: uncertain, then back",
+   "outcome": "PASS",
+   "seconds": 7.8,
+   "checks": [
+    {
+     "check": "the adapter process died mid-command: UNKNOWN_OUTCOME",
+     "ok": true,
+     "observed": [
+      "UNKNOWN_OUTCOME",
+      [
+       "CREATED",
+       "VALIDATING",
+       "APPROVED",
+       "DISPATCHED",
+       "UNKNOWN_OUTCOME"
+      ]
+     ]
+    },
+    {
+     "check": "the device comes back without being registered again",
+     "ok": true,
+     "observed": null
+    },
+    {
+     "check": "reconciled against the restarted adapter",
+     "ok": true,
+     "observed": "RECONCILED_APPLIED"
+    },
+    {
+     "check": "audit chain verifies",
+     "ok": true,
+     "observed": 21
+    }
+   ],
+   "detail": {
+    "lost": {
+     "command_id": "01a19cb4-eb5a-77a4-9b23-632026268146",
+     "state": "UNKNOWN_OUTCOME",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "APPROVED",
+      "DISPATCHED",
+      "UNKNOWN_OUTCOME"
+     ],
+     "errors": [],
+     "verification": null,
+     "adapter_result": {
+      "error": {
+       "code": "adapter.disconnected",
+       "message": "adapter process lost during execute: process exited (exit code: 1)"
+      }
+     }
+    },
+    "reconciled": {
+     "command_id": "01a19cb4-eb5a-77a4-9b23-632026268146",
+     "state": "RECONCILED_APPLIED",
+     "transitions": [
+      "CREATED",
+      "VALIDATING",
+      "APPROVED",
+      "DISPATCHED",
+      "UNKNOWN_OUTCOME",
+      "RECONCILED_APPLIED"
+     ],
+     "errors": [],
+     "verification": {
+      "capability": "temperature_controller.target_temperature",
+      "expected": {
+       "unit": "Cel",
+       "value": 36.0
+      },
+      "matched": true,
+      "mode": "readback",
+      "observed": {
+       "quality": "GOOD",
+       "source": "simulator",
+       "timestamp": "2026-11-02T14:41:08.091Z",
+       "value": {
+        "unit": "Cel",
+        "value": 36.0
+       }
+      }
+     },
+     "adapter_result": {
+      "error": {
+       "code": "adapter.disconnected",
+       "message": "adapter process lost during execute: process exited (exit code: 1)"
+      }
+     }
+    }
+   }
+  }
+ }
+}

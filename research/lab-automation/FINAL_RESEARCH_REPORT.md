@@ -1,10 +1,59 @@
 # Final research report: OpenMHS across laboratory-automation ecosystems
 
-Date: 2026-11-01. Everything below is simulated; no physical instrument was used, and no
-result says anything about a physical effect. Each claim points at an experiment report, and
-each of those at raw results.
+Date: 2026-11-01, updated 2026-11-02. Everything below is simulated; no physical instrument was
+used, and no result says anything about a physical effect. Each claim points at an experiment
+report, and each of those at raw results.
+
+## Update, 2026-11-02: the gaps, closed or named
+
+The original report below left dashes where no scenario had exercised a property. They have now
+been tried. Evidence: [results/2026-11-02/SUMMARY.md](results/2026-11-02/SUMMARY.md) and
+[results/README.md](results/README.md).
+
+| Property (06_contract_gaps) | PyLabRobot | Opentrons | Micro-Manager | SiLA 2 | MADSci |
+|---|---|---|---|---|---|
+| Unauthorized requests do not dispatch (GAP-01) | 3/3 | 3/3 | 3/3 | 3/3 | NOT_TESTED ¹ |
+| Expired and revoked credentials authorize nothing new (GAP-02) | 3/3 | 3/3 | 3/3 | 3/3 | NOT_TESTED ¹ |
+| A stale observation is not presented as fresh (GAP-03) ² | 3/3 | 3/3 | 3/3 | 3/3 | NOT_TESTED ¹ |
+| A repeated request follows idempotency (GAP-04) | 3/3 | 3/3 | 3/3 ³ | 3/3 ³ | MAD-04 |
+| A gateway restart does not repeat an uncertain command (GAP-05) | 3/3 | 3/3 | 3/3 ³ | 3/3 ³ and SILA-07 | MAD-06 |
+| A lease keeps conflicting operations off the device (GAP-06) | 3/3 | 3/3 | 3/3 | 3/3 | NOT_TESTED ¹ |
+| Evidence verifies independently; an edit is detected (GAP-07) | 3/3 | 3/3 | 3/3 | 3/3 | NOT_TESTED ¹ |
+| A superseded write does not mislead (GAP-08) | 3/3 ⁴ | 3/3 ⁴ | 3/3 | 3/3 | NOT_TESTED ¹ |
+| An approval that runs out never runs late (GAP-09) | 3/3 | 3/3 | 3/3 | 3/3 | MAD-08, 09 |
+| An adapter lost mid-command (GAP-10) | 3/3 | 3/3 | 3/3 | 3/3 | NOT_TESTED ¹ |
+| **Conformance reached** | **L3** | **L3** | **L3** | **L3** | n/a |
+
+¹ MADSci governs through the PyLabRobot adapter, so the gateway's behaviour is the PyLabRobot column.
+What MADSci itself does with that was not separately tried.
+² Readings were aged by a test hook around the real adapter: this shows what the gateway does with an
+old reading, not that these simulators can produce one.
+³ No independent execution counter in this simulator. "Sent once" rests on the suite's delivery count,
+which is taken in the adapter.
+⁴ Not idempotent, so a newer command is refused and nothing can supersede.
+
+**L3 means what [spec/conformance.md](../../spec/conformance.md) says, against a simulator, on one
+device.** `L3.stop` is not applicable: these adapters declare no stop. It is not a safety finding.
+
+**What changed in the core.** The original conclusion "no change to the OpenMHS core was needed" is
+true of governing these stacks, and was not true of doing it honestly. Fixing the findings changed
+reconciliation (a superseded write is refused, not concluded), the conformance suite (read-back text
+parameters are new on each command), and two status reads. See
+[RFC 0003](../../docs/rfcs/0003-reconciliation-and-verification.md), which also lists what is still only
+proposed. In the Python SDK: the Windows import hang and orphaned adapter processes.
+
+**Linux.** All five ecosystems pass on GitHub's `ubuntu-latest` from a clean install of the locks: one
+run each, with a debug gateway, as CI artifacts. **That clean install found a real gap**: the SiLA lock
+was missing packages my Windows environment already had. macOS, ARM and anyone else's machine remain
+unverified.
+
+**Still not shown:** anything physical; a network adversary; more than one gateway; an independent
+reproduction; stale readings arising naturally; contention of OpenMHS's lock within MADSci (finding 4
+of experiment 05 stands); and a person's ability to settle a superseded command truthfully.
 
 ## What was done
+
+As first run, on 2026-11-01. Conformance and scenario counts have since moved: see the update above.
 
 | # | Ecosystem (version) | Boundary | Scenarios | Runs | Governed vs native, per operation | Conformance |
 |---|---|---|---|---|---|---|
@@ -46,12 +95,12 @@ exercised the freshness rule), and **restart** for SiLA 2.
 ### 1. Can OpenMHS provide reusable execution governance across several ecosystems?
 
 **Yes, for the properties exercised and in simulation.** In all five, with no change to the
-OpenMHS core, a contract refused out-of-range requests before dispatch, a lost answer became
+OpenMHS core at the time (see the update above for what later changed), a contract refused out-of-range requests before dispatch, a lost answer became
 `UNKNOWN_OUTCOME` and held the capability until reconciled, a killed gateway recovered without
 re-sending, and the evidence verified offline. Adapters are 294 to 376 lines. What is *not* free:
 every one needed ecosystem-specific care (below); two (Opentrons, MADSci) had install problems that
 pinning had to work around; and importing numpy or gRPC after the adapter SDK starts reading its
-pipe hangs on Windows, which any scientific-Python adapter can hit.
+pipe hung on Windows, which the SDK now prevents.
 
 ### 2. Which abstractions generalize, and which stay device-specific?
 
@@ -101,10 +150,10 @@ script that talks to a bench instrument it alone uses.
 
 ### 5. Can developers reproduce this without hardware?
 
-**On the machine used, yes.** Each experiment has pinned requirements, a quickstart and a harness
-that reports PASS/FAIL per scenario, and ran repeatedly. **Not shown:** reproduction by someone
-else, or on Linux or macOS. Every one of the runs was on one Windows 11 desktop. Two ecosystems
-need Python 3.12 specifically (Opentrons, MADSci), and MADSci needs a pydantic pin.
+**On one Windows desktop and on GitHub's Linux runners, yes** ([REPRODUCING.md](REPRODUCING.md)):
+locked environments, one command, and results that record what ran and refuse to be overwritten.
+**Not shown:** reproduction by someone else, or on macOS. Two ecosystems need Python 3.12 specifically
+(Opentrons, MADSci), and MADSci needs a pydantic pin.
 
 ### 6. Can it handle failures during multi-instrument procedures?
 
@@ -135,6 +184,9 @@ Judged by concrete, reportable gaps found, not by any contact (none was made):
 
 ### 9. What belongs in OpenMHS core, and what in adapters or examples?
 
+**Now settled or proposed in [RFC 0003](../../docs/rfcs/0003-reconciliation-and-verification.md).** As
+first written:
+
 **Core, each needing a design note and a failing test before any change:**
 - *Preconditions over a request's own parameters*, so "this well holds the requested volume" is
   expressible (01, finding 2).
@@ -160,8 +212,7 @@ stands between this and a remote autonomous laboratory:
 - one gateway on one machine, a single-user trust boundary, unsigned adapters and seals;
 - no network adversary, no remote-access security review;
 - no independent reproduction;
-- the open items in question 9, one of which (unique ids) means OpenMHS's own conformance suite
-  cannot yet fully test the adapters written for it.
+- the decisions left open in [RFC 0003](../../docs/rfcs/0003-reconciliation-and-verification.md).
 
 The next gate is a supervised physical validation of one low-risk device, and an independent
 reproduction of these runs.
@@ -178,4 +229,15 @@ Kept here because they shaped the results:
 - A reading of MAD-03 as proof OpenMHS serializes was wrong: MADSci had already separated the
   work.
 - A flaw in my MADSci glue (a held step returns `failed` after 60 s) was found by reading it, not by
-  a test, and is documented rather than fixed after the fact.
+  a test. It is now fixed, and the fix I first proposed ("return `unknown`") would have been wrong.
+
+And in hardening, on 2026-11-02:
+- A lint auto-fix silently removed a deliberate import from the Opentrons adapter. Caught by rereading
+  the diff, and restored before the final runs.
+- The first conformance fixture for SiLA 2 removed a protection: the suite could have sent commands to
+  a real instrument. It now refuses unless the server is declared simulated (SILA-08).
+- `kill = kill_all`, which called `kill`, inside a suppressed exception, leaked a SiLA server and a
+  gateway per scenario. A lab that cannot be stopped now fails its scenario.
+- Three probes of the Windows hang "showed" no hang, because `communicate()` had closed stdin.
+- MAD-05 and MAD-08 each failed one final run in three, because the scenario looked at a command during
+  its momentary `VALIDATING` state. Those failures stay in the evidence, explained.

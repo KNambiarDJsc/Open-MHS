@@ -118,6 +118,8 @@ Three complete runs, **every scenario passed in all three** (27 scenario runs):
 | MAD-05 | The transfer is held for an operator: OpenMHS `AWAITING_APPROVAL`, nothing transferred, MADSci shows the step running. Approved within the node's 60 s wait: `VERIFIED` and the workflow completes. What happens when nobody approves in time is MAD-08 |
 | MAD-06 | The gateway (and its adapter) were killed mid-step. The step went `unknown`. After restart OpenMHS held the command as `UNKNOWN_OUTCOME`, nothing re-sent. Reconciled: `RECONCILED_APPLIED`. The MADSci retry completed from the existing command; one 55 µL dose in the well |
 | MAD-07 | The same experiment twice, fixed seed, two fresh stacks: identical planned doses, measured doses and responses (0.73453, 0.48412, 0.63383, 0.56575, 0.52589, 0.50658), identical estimate, identical simulator state, identical OpenMHS transition sequences per command, and both audit chains verify. The audit hashes themselves differ because they cover timestamps |
+| MAD-08 | *Added 2026-11-02.* Nobody approves within the wait: the command is withdrawn (`CANCELLED`, never dispatched), MADSci's step is `failed` and says why, and nothing moves. A late approval is refused and nothing runs. MADSci's retry makes a new, linked attempt; approved in time it is `VERIFIED`, the workflow completes, and the well holds exactly one dose |
+| MAD-09 | *Added 2026-11-02.* An approver denies: the step is `failed` with the denial, nothing moves, and a retry does not ask again |
 
 ## 13. Performance
 

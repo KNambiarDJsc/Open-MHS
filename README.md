@@ -77,6 +77,9 @@ openmhs --version
 openmhs demo
 ```
 
+To follow one failure end to end, a lost answer through reconciliation to a separate process checking
+the evidence: `python examples/first-failure/first_failure.py`.
+
 **Already use an MCP host (Claude Code, Claude Desktop, an IDE agent)?** Skip to the agent
 side in one line, with the virtual lab built in and no token to handle
 ([docs/mcp.md](docs/mcp.md)):
@@ -260,6 +263,8 @@ OpenMHS reduces what can go wrong. It does not make hardware safe.
   only interrupts a move if the adapter and device do.
 - **Conformance is not certification.** A level says an integration behaved as specified
   under the tested faults. The suite really sends commands; run it against simulators only.
+- **Reconciliation cannot always conclude.** If a newer write has overwritten what an unresolved
+  command did, it refuses, and a person has to settle it with a recorded reason.
 - **Single-user trust boundary.** Any process running as your OS user can read the
   operator token in the gateway home. Give agents scoped credentials.
 - **Twin preflight has no physics.** `ok` means a plan fits the contract and current
@@ -284,6 +289,7 @@ Vulnerabilities: [SECURITY.md](SECURITY.md). Threat model: [docs/security/](docs
 - [Architecture decisions](docs/adr/README.md), [landscape research](docs/research/landscape.md), [roadmap](docs/roadmap.md)
 - [System design as implemented](docs/architecture/SYSTEM_DESIGN.md), the [storage engine RFC](docs/rfcs/0002-storage-engine.md) and its [benchmarks](docs/benchmarks.md)
 - [Lab-automation experiments](research/lab-automation/README.md) (PyLabRobot, Opentrons, Micro-Manager, SiLA 2, MADSci; simulator only)
+- [Reproducing the experiments](research/lab-automation/REPRODUCING.md), the [adapter quality gate](docs/adapters/QUALITY_GATE.md) and a [proposed Bench format](docs/bench/RESULT_FORMAT.md)
 - Build the documentation site locally: [docs/book/README.md](docs/book/README.md)
 
 ## Contributing

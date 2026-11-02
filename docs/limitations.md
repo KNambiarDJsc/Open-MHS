@@ -14,7 +14,15 @@ the README links here.
 - **No safety certification is claimed**, for the software or for any device. A
   conformance level says an integration behaved as specified under the tested faults.
 - **The conformance suite sends real commands.** Run it against simulators and fixtures
-  only.
+  only. The generic SiLA 2 adapter refuses it unless told its server is simulated, and that setting
+  is the operator's word: nothing checks it.
+- **A person may have to guess about a superseded command.** Once a newer write has overwritten what
+  an unresolved command did, reconciliation refuses to conclude, and `commands.resolve` only offers
+  "applied" or "not applied". The reason recorded says how it was decided; the state cannot say "not
+  known" ([RFC 0003](rfcs/0003-reconciliation-and-verification.md) §1). Writes made outside the gateway
+  are invisible to all of this.
+- **`VERIFIED` is only as strong as what is read back.** In the lab adapters it is mostly an id
+  recorded by a simulator, not an amount moved ([RFC 0003](rfcs/0003-reconciliation-and-verification.md) §5).
 
 ## Evidence
 
