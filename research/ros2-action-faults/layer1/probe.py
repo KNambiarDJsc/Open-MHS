@@ -24,7 +24,6 @@ import platform
 import signal
 import subprocess
 import sys
-import tempfile
 import threading
 import time
 
@@ -157,6 +156,17 @@ class Rig:
             return "timeout"
         return STATUS.get(box["r"].status, str(box["r"].status))
 
+    def timeline(self, order: int, t0: float) -> list:
+        """Server-side events for one trial, as [event, seconds since the trial started]."""
+        out = []
+        if os.path.exists(self.events):
+            with open(self.events, encoding="utf-8") as fh:
+                for line in fh:
+                    e = json.loads(line)
+                    if e.get("order") == order or (e["event"] == "server_up" and e["t"] >= t0):
+                        out.append([e["event"], round(e["t"] - t0, 2)])
+        return out
+
     def effects(self, order: int) -> int:
         if not os.path.exists(self.ledger):
             return 0
@@ -224,7 +234,8 @@ def main() -> int:
     ap.add_argument("--only", default="")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
-    workdir = tempfile.mkdtemp(prefix="layer1a-")
+    workdir = os.path.join(args.out, "work")  # kept with the results: ledger and server events
+    os.makedirs(workdir, exist_ok=True)
     rig = Rig(workdir)
 
     rclpy_action = __import__("rclpy.action", fromlist=["ActionServer"])
@@ -263,7 +274,8 @@ def main() -> int:
                 finally:
                     rig.end_trial()
                 obs.update({"scenario": name, "trial": i, "order": order,
-                            "seconds": round(time.time() - t0, 2)})
+                            "seconds": round(time.time() - t0, 2),
+                            "server_events": rig.timeline(order, t0)})
                 fh.write(json.dumps(obs, sort_keys=True) + "\n")
                 fh.flush()
                 print(name, i, {k: v for k, v in obs.items() if k != "scenario"}, flush=True)

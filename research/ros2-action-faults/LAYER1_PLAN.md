@@ -37,3 +37,25 @@ fault; SIGINT for the clean end of a trial. `ROS_LOCALHOST_ONLY=1`, `ROS_DOMAIN_
 
 Message-loss faults at the DDS level (F1, F2), the full arm matrix on real rclpy (Layer 1b), the
 OpenMHS-governed arm D, other RMWs (Cyclone, Zenoh), rclcpp servers, and any timing statistics.
+
+## Amendment 1 (written after run 1, before run 2)
+
+**Run 1** (`results/layer1a_run1/`, n = 20 per scenario, 100 trials, no harness errors) gave: P1 held in
+20 of 20. In 14 of 20 `expiry_10s` trials and 3 of 20 `kill_after_effect` trials the client never received a
+response to its **first** send within 8 s, so the premise could not be tested in those trials. The
+server-side timelines of those trials were lost because the rig kept its work files in the distro's
+`/tmp`. A diagnostic rerun of `expiry_10s` alone (n = 10, in `D:\openmhs-tmp\l1diag`, not part of the
+results) had every first send confirmed in under a second. The cause of the run 1 timeouts is therefore
+unexplained and intermittent.
+
+**Changes to the rig for run 2:** work files (ledger, server events) are kept next to the results, and each
+observation carries the server-side event timeline for that trial.
+
+**Validity rule, fixed before run 2:** a trial is *valid for the premise test* only if the first send
+returned `accepted` within 8 s. Invalid trials are counted and reported per scenario, never discarded
+silently, and never counted as agreement or disagreement. A premise is reported "held" only if every valid
+trial agrees and at least 15 of 20 trials were valid. Otherwise it is reported "inconclusive". Whatever
+causes unconfirmed first sends is itself a finding (a goal accepted by the server whose response never
+arrives is the F1 fault occurring naturally), and the timelines will show whether the server received it.
+
+**Run 2** goes to `results/layer1a/`. Run 1 stays in the record.

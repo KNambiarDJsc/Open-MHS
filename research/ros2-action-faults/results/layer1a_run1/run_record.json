@@ -1,0 +1,13 @@
+{
+  "duration_s": 3.0,
+  "effect_frac": 0.5,
+  "finished_utc": "2026-11-03T16:53:58Z",
+  "layer": "1a (real rclpy action server; one RMW; one machine)",
+  "n": 20,
+  "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "python": "3.12.3",
+  "rclpy_ActionServer_default_result_timeout_s": 900,
+  "rmw": "default (rmw_fastrtps_cpp)",
+  "ros_distro": "jazzy",
+  "started_utc": "2026-11-03T16:33:55Z"
+}
