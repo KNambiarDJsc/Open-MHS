@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import hashlib
+import io
 import json
 import os
 import platform
@@ -198,9 +199,11 @@ def main() -> int:
     record["trials_total"] = len(trials)
 
     raw_path = os.path.join(args.out, "trials.jsonl.gz")
-    with gzip.open(raw_path, "wt", encoding="utf-8", newline="\n") as fh:
-        for t in trials:
-            fh.write(json.dumps(t, sort_keys=True) + "\n")
+    # mtime=0 keeps the gzip header constant so the file hash is reproducible across runs
+    with gzip.GzipFile(raw_path, "wb", mtime=0) as raw:
+        with io.TextIOWrapper(raw, encoding="utf-8", newline="\n") as fh:
+            for t in trials:
+                fh.write(json.dumps(t, sort_keys=True) + "\n")
     with open(raw_path, "rb") as fh:
         record["trials_sha256"] = hashlib.sha256(fh.read()).hexdigest()
 
