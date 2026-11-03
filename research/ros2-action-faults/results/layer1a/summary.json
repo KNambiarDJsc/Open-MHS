@@ -1,0 +1,96 @@
+{
+  "harness_errors": 0,
+  "n_observations": 100,
+  "premises": {
+    "dup_held": {
+      "agree": 20,
+      "agreement_lower95": 0.8315665290169136,
+      "disagree": 0,
+      "disagreeing_observations": [],
+      "invalid_first_send": 0,
+      "invalid_timelines": [],
+      "premise": "P1 duplicate goal id rejected while held; one effect",
+      "trials": 20,
+      "valid": 20,
+      "verdict": "held"
+    },
+    "expiry_10s": {
+      "agree": 20,
+      "agreement_lower95": 0.8315665290169136,
+      "disagree": 0,
+      "disagreeing_observations": [],
+      "invalid_first_send": 0,
+      "invalid_timelines": [],
+      "premise": "P2 after expiry: UNKNOWN; same id accepted again; two effects",
+      "trials": 20,
+      "valid": 20,
+      "verdict": "held"
+    },
+    "kill_after_effect": {
+      "agree": 19,
+      "agreement_lower95": 0.7512672372279718,
+      "disagree": 1,
+      "disagreeing_observations": [
+        {
+          "client_exceptions": [],
+          "effects": 2,
+          "effects_at_kill": 1,
+          "first": "accepted",
+          "order": 56,
+          "resend_same_uuid": "accepted",
+          "resend_status": "SUCCEEDED",
+          "resend_via": "fresh_client",
+          "scenario": "kill_after_effect",
+          "seconds": 15.92,
+          "status_old_goal_after_restart": "timeout",
+          "trial": 15
+        }
+      ],
+      "invalid_first_send": 0,
+      "invalid_timelines": [],
+      "premise": "P3 after kill+restart: UNKNOWN; same id accepted again; two effects",
+      "trials": 20,
+      "valid": 20,
+      "verdict": "contradicted in 1 valid trial(s)"
+    },
+    "kill_after_effect_same_client": {
+      "agree": 20,
+      "agreement_lower95": 0.8315665290169136,
+      "disagree": 0,
+      "disagreeing_observations": [],
+      "invalid_first_send": 0,
+      "invalid_timelines": [],
+      "premise": "P5 same-client resend: client exception recorded; server executes it (two effects)",
+      "trials": 20,
+      "valid": 20,
+      "verdict": "held"
+    },
+    "kill_before_effect": {
+      "agree": 19,
+      "agreement_lower95": 0.7512672372279718,
+      "disagree": 1,
+      "disagreeing_observations": [
+        {
+          "client_exceptions": [],
+          "effects": 1,
+          "effects_at_kill": 0,
+          "first": "accepted",
+          "order": 76,
+          "resend_same_uuid": "accepted",
+          "resend_status": "SUCCEEDED",
+          "resend_via": "fresh_client",
+          "scenario": "kill_before_effect",
+          "seconds": 14.84,
+          "status_old_goal_after_restart": "timeout",
+          "trial": 15
+        }
+      ],
+      "invalid_first_send": 0,
+      "invalid_timelines": [],
+      "premise": "P4 kill before the effect: UNKNOWN; resend accepted; one effect",
+      "trials": 20,
+      "valid": 20,
+      "verdict": "contradicted in 1 valid trial(s)"
+    }
+  }
+}
