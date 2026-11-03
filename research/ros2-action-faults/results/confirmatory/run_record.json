@@ -1,0 +1,31 @@
+{
+  "argv": [
+    "run_study.py",
+    "--n",
+    "200",
+    "--base-seed",
+    "20261103",
+    "--out",
+    "results/confirmatory"
+  ],
+  "base_seed": 20261103,
+  "channel": {
+    "alpha": 0.01,
+    "dropout": 0.1,
+    "eps_fn": 0.05,
+    "eps_fp": 0.02,
+    "prior": 0.5,
+    "readings": 5
+  },
+  "code_commit": "bd7fd1826fba2f02a0b49493ffb3c1512960ec3b",
+  "dirty": false,
+  "layer": "0 (model of ROS 2 action semantics; not ROS 2)",
+  "n_per_cell": 200,
+  "platform": "Windows-11-10.0.26300-SP0",
+  "preregistration_commit": "9a29ea1d11108fb7f0d4ba1d333c7f01c8776564",
+  "python": "3.13.4",
+  "started_utc": "2026-11-03T16:20:13Z",
+  "trials_sha256": "b3de363ddee0004ff8e8f7c3e6f1cd355cc458d1d989d941b578ae3b14ff9192",
+  "trials_total": 14000,
+  "wall_seconds": 0.73
+}

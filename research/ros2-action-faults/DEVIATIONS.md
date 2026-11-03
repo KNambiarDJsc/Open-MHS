@@ -35,4 +35,22 @@ and whether it was known **before** the confirmatory run.
 
 ## Found after the confirmatory run
 
-(appended below, with the date, after the run)
+Recorded 2026-11-03, after the confirmatory run.
+
+7. **The confirmatory run was executed twice.** The first run wrote a gzip whose header carried a
+   timestamp, so the file hash differed between runs. `run_study.py` was changed to write a
+   constant header (commit `bd7fd18`) and the run was repeated from a clean tree with the same seed.
+   The metrics (`summary.json`) were identical to the first run; only the file hash differs. The
+   committed results are from the second run. Trial-record bytes are identical across repeated runs.
+8. **H3m is falsified as pre-registered, in F6.** I predicted that careful clients without measurement
+   would leave unresolved outcomes after a client crash. They do not (0 %): after a short client outage
+   the result is still retained on the server, so the durable client re-reads it. This is a wrong
+   prediction, kept in the record.
+9. **The wrong-resolution count excludes duplicates caused by a wrong intermediate decision.** It counts
+   final reports only. One duplicate (F1, measured arms, one seed shared by B-M1 and C-M1) arose from a
+   run of false-negative readings that made the client resend. It appears under D, not under
+   wrong-resolution. This was not anticipated by the pre-registration.
+10. **Paired arms share seeds, including the measurement stream.** B-M1 and C-M1 therefore reproduce the
+    same channel-error events, so their error counts are not independent evidence. Cells are
+    independent across seeds, not across these two arms.
+11. **Python version.** The harness was run only on Python 3.13.4.
