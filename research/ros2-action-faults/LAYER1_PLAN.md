@@ -59,3 +59,31 @@ causes unconfirmed first sends is itself a finding (a goal accepted by the serve
 arrives is the F1 fault occurring naturally), and the timelines will show whether the server received it.
 
 **Run 2** goes to `results/layer1a/`. Run 1 stays in the record.
+
+## Amendment 2 (written after run 2, before run 3)
+
+**Run 2** (`results/layer1a_run2/`) reproduced run 1's pattern exactly: `expiry_10s` had 6 of 20 valid
+trials, the first send unconfirmed from trial 27 onwards. The server timelines show the server received
+and executed those goals within about 0.5 s and succeeded by about 3.6 s, so the goal acceptance
+response never reached the client: a naturally occurring lost goal response.
+
+**Data loss in run 2 (my error):** while starting run 3 I failed to move run 2's folder first (the command
+chain stopped at a failed `mv`), and the run 3 orchestrator overwrote run 2's `observations.jsonl` before I
+stopped it. Run 2's raw client observations are lost. What survives in `layer1a_run2/` is the analysis
+`summary.json` (tallies, the first five disagreeing observations and the first ten unconfirmed-send
+timelines), the server-side `work/events.jsonl` and `work/ledger.jsonl` (the last two contain the first
+trials of the aborted run 3 appended to run 2's), and `aborted_run3_start.jsonl`. Run 2 supports no
+verdict; the verdicts come from run 3.
+
+**Diagnosis (not part of the results):** a single-process run of `dup_held` alone, n = 45 (in
+`D:\openmhs-tmp\l1diag`), gave first-send timeouts from trial 27 to trial 42 and recovery at trial 43.
+The failure is tied to the number of trials already run in one client process, not to the scenario. The
+rig is therefore at fault: a long-lived rclpy client that has seen many short-lived servers and action
+names stops receiving goal responses for a while. Why was not investigated, and this is **not** reported as
+a ROS 2 finding.
+
+**Rig change for run 3:** every trial runs in its own process (a fresh client and fresh server
+processes), so nothing carries over between trials. The validity rule of Amendment 1 is unchanged. Runs 1
+and 2 stay in the record as flawed. The single-process mode remains available as `--legacy-single-process`.
+
+**Run 3** goes to a fresh `results/layer1a/` and is the run the premise verdicts are taken from.

@@ -641,3 +641,14 @@
 {"event": "goal_request", "order": 100, "t": 1793726327.4558313}
 {"event": "executing", "order": 100, "t": 1793726327.4759564, "uuid": "000000000000000000000000a11ce064"}
 {"event": "succeeded", "order": 100, "t": 1793726330.5051692, "uuid": "000000000000000000000000a11ce064"}
+{"event": "server_up", "result_timeout": 10, "t": 1793726706.270663}
+{"event": "goal_request", "order": 1, "t": 1793726706.4018304}
+{"event": "executing", "order": 1, "t": 1793726706.4072337, "uuid": "000000000000000000000000a11ce001"}
+{"event": "succeeded", "order": 1, "t": 1793726709.4186804, "uuid": "000000000000000000000000a11ce001"}
+{"event": "server_up", "result_timeout": 10, "t": 1793726710.5211928}
+{"event": "goal_request", "order": 2, "t": 1793726710.6560528}
+{"event": "executing", "order": 2, "t": 1793726710.6645172, "uuid": "000000000000000000000000a11ce002"}
+{"event": "succeeded", "order": 2, "t": 1793726713.739758, "uuid": "000000000000000000000000a11ce002"}
+{"event": "server_up", "result_timeout": 10, "t": 1793726715.115412}
+{"event": "goal_request", "order": 3, "t": 1793726715.1689968}
+{"event": "executing", "order": 3, "t": 1793726715.176332, "uuid": "000000000000000000000000a11ce003"}
