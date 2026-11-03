@@ -1,0 +1,148 @@
+{
+  "harness_errors": 0,
+  "n_observations": 100,
+  "premises": {
+    "dup_held": {
+      "agree": 20,
+      "agreement_lower95": 0.8315665290169136,
+      "disagree": 0,
+      "disagreeing_observations": [],
+      "invalid_first_send": 0,
+      "invalid_timelines": [],
+      "premise": "P1 duplicate goal id rejected while held; one effect",
+      "trials": 20,
+      "valid": 20,
+      "verdict": "held"
+    },
+    "expiry_10s": {
+      "agree": 6,
+      "agreement_lower95": 0.540741873560104,
+      "disagree": 0,
+      "disagreeing_observations": [],
+      "invalid_first_send": 14,
+      "invalid_timelines": [
+        {
+          "first": "timeout",
+          "order": 27,
+          "server_events": null
+        },
+        {
+          "first": "timeout",
+          "order": 28,
+          "server_events": null
+        },
+        {
+          "first": "timeout",
+          "order": 29,
+          "server_events": null
+        },
+        {
+          "first": "timeout",
+          "order": 30,
+          "server_events": null
+        },
+        {
+          "first": "timeout",
+          "order": 31,
+          "server_events": null
+        },
+        {
+          "first": "timeout",
+          "order": 32,
+          "server_events": null
+        },
+        {
+          "first": "timeout",
+          "order": 33,
+          "server_events": null
+        },
+        {
+          "first": "timeout",
+          "order": 34,
+          "server_events": null
+        },
+        {
+          "first": "timeout",
+          "order": 35,
+          "server_events": null
+        },
+        {
+          "first": "timeout",
+          "order": 36,
+          "server_events": null
+        }
+      ],
+      "premise": "P2 after expiry: UNKNOWN; same id accepted again; two effects",
+      "trials": 20,
+      "valid": 6,
+      "verdict": "inconclusive"
+    },
+    "kill_after_effect": {
+      "agree": 16,
+      "agreement_lower95": 0.7131106033327839,
+      "disagree": 1,
+      "disagreeing_observations": [
+        {
+          "client_exceptions": [],
+          "effects": 2,
+          "effects_at_kill": 1,
+          "first": "accepted",
+          "order": 46,
+          "resend_same_uuid": "accepted",
+          "resend_status": "SUCCEEDED",
+          "resend_via": "fresh_client",
+          "scenario": "kill_after_effect",
+          "seconds": 16.72,
+          "status_old_goal_after_restart": "timeout",
+          "trial": 5
+        }
+      ],
+      "invalid_first_send": 3,
+      "invalid_timelines": [
+        {
+          "first": "timeout",
+          "order": 41,
+          "server_events": null
+        },
+        {
+          "first": "timeout",
+          "order": 42,
+          "server_events": null
+        },
+        {
+          "first": "timeout",
+          "order": 43,
+          "server_events": null
+        }
+      ],
+      "premise": "P3 after kill+restart: UNKNOWN; same id accepted again; two effects",
+      "trials": 20,
+      "valid": 17,
+      "verdict": "contradicted in 1 valid trial(s)"
+    },
+    "kill_after_effect_same_client": {
+      "agree": 20,
+      "agreement_lower95": 0.8315665290169136,
+      "disagree": 0,
+      "disagreeing_observations": [],
+      "invalid_first_send": 0,
+      "invalid_timelines": [],
+      "premise": "P5 same-client resend: client exception recorded; server executes it (two effects)",
+      "trials": 20,
+      "valid": 20,
+      "verdict": "held"
+    },
+    "kill_before_effect": {
+      "agree": 20,
+      "agreement_lower95": 0.8315665290169136,
+      "disagree": 0,
+      "disagreeing_observations": [],
+      "invalid_first_send": 0,
+      "invalid_timelines": [],
+      "premise": "P4 kill before the effect: UNKNOWN; resend accepted; one effect",
+      "trials": 20,
+      "valid": 20,
+      "verdict": "held"
+    }
+  }
+}

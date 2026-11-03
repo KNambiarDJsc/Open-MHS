@@ -227,12 +227,94 @@ def scenario_kill(rig: Rig, order: int, seed: int, after_effect: bool, same_clie
             "effects": rig.effects(order), "client_exceptions": list(rig.client_errors)}
 
 
+def run_single(args) -> int:
+    """One trial in this (fresh) process; prints the observation as the last stdout line."""
+    workdir = os.path.join(args.out, "work")
+    os.makedirs(workdir, exist_ok=True)
+    rig = Rig(workdir)
+    name, order = args.single, args.order
+    scenarios = {
+        "dup_held": lambda o, s: scenario_dup_held(rig, o, s),
+        "expiry_10s": lambda o, s: scenario_expiry(rig, o, s, 10),
+        "kill_after_effect": lambda o, s: scenario_kill(rig, o, s, True, False),
+        "kill_before_effect": lambda o, s: scenario_kill(rig, o, s, False, False),
+        "kill_after_effect_same_client": lambda o, s: scenario_kill(rig, o, s, True, True),
+    }
+    t0 = time.time()
+    rig.new_trial(order)
+    try:
+        obs = scenarios[name](order, 0xA11CE000 + order)
+    except Exception as exc:  # noqa: BLE001
+        obs = {"harness_error": f"{type(exc).__name__}: {exc}"}
+    finally:
+        rig.end_trial()
+    obs.update({"scenario": name, "order": order, "seconds": round(time.time() - t0, 2),
+                "server_events": rig.timeline(order, t0)})
+    rig._running = False
+    print("OBSERVATION " + json.dumps(obs, sort_keys=True), flush=True)
+    os._exit(0)  # skip interpreter teardown: the executor thread is a daemon
+
+
+def run_isolated(args) -> int:
+    """Orchestrator: every trial runs in its own process, so no rclpy state carries over."""
+    os.makedirs(args.out, exist_ok=True)
+    names = ["dup_held", "expiry_10s", "kill_after_effect", "kill_before_effect",
+             "kill_after_effect_same_client"]
+    wanted = [s for s in names if not args.only or s in args.only.split(",")]
+    rclpy_action = __import__("rclpy.action", fromlist=["ActionServer"])
+    sig = inspect.signature(rclpy_action.ActionServer.__init__)
+    record = {
+        "layer": "1a (real rclpy action server; one RMW; one machine; process per trial)",
+        "rclpy_ActionServer_default_result_timeout_s": sig.parameters["result_timeout"].default,
+        "rmw": os.environ.get("RMW_IMPLEMENTATION", "default (rmw_fastrtps_cpp)"),
+        "ros_distro": os.environ.get("ROS_DISTRO"),
+        "python": sys.version.split()[0],
+        "platform": platform.platform(),
+        "n": args.n, "duration_s": DURATION, "effect_frac": EFFECT_FRAC,
+        "started_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+    order = args.order_start
+    with open(os.path.join(args.out, "observations.jsonl"), "w", encoding="utf-8", newline="\n") as fh:
+        for name in wanted:
+            for i in range(args.n):
+                order += 1
+                cmd = [sys.executable, os.path.abspath(__file__), "--single", name,
+                       "--order", str(order), "--out", args.out]
+                try:
+                    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=240)
+                    lines = [x for x in proc.stdout.splitlines() if x.startswith("OBSERVATION ")]
+                    obs = json.loads(lines[-1][len("OBSERVATION "):]) if lines else {
+                        "harness_error": "no observation; rc=%s" % proc.returncode,
+                        "scenario": name, "order": order}
+                except subprocess.TimeoutExpired:
+                    obs = {"harness_error": "trial process timed out", "scenario": name, "order": order}
+                obs["trial"] = i
+                fh.write(json.dumps(obs, sort_keys=True) + "\n")
+                fh.flush()
+                print(name, i, {k: v for k, v in obs.items() if k not in ("scenario", "server_events")},
+                      flush=True)
+    record["finished_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    with open(os.path.join(args.out, "run_record.json"), "w", encoding="utf-8", newline="\n") as fh:
+        json.dump(record, fh, indent=2, sort_keys=True)
+        fh.write("\n")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=20)
     ap.add_argument("--out", required=True)
     ap.add_argument("--only", default="")
+    ap.add_argument("--single", default="", help="internal: run one trial of this scenario")
+    ap.add_argument("--order", type=int, default=0)
+    ap.add_argument("--order-start", type=int, default=0)
+    ap.add_argument("--legacy-single-process", action="store_true",
+                    help="runs 1 and 2 behaviour; known to lose goal responses after ~26 trials")
     args = ap.parse_args()
+    if args.single:
+        return run_single(args)
+    if not args.legacy_single_process:
+        return run_isolated(args)
     os.makedirs(args.out, exist_ok=True)
     workdir = os.path.join(args.out, "work")  # kept with the results: ledger and server events
     os.makedirs(workdir, exist_ok=True)

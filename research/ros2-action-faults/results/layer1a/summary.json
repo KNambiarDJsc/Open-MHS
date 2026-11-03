@@ -1,0 +1,537 @@
+{
+  "harness_errors": 0,
+  "n_observations": 100,
+  "premises": {
+    "dup_held": {
+      "agree": 20,
+      "agreement_lower95": 0.8315665290169136,
+      "disagree": 0,
+      "disagreeing_observations": [],
+      "invalid_first_send": 0,
+      "invalid_timelines": [],
+      "premise": "P1 duplicate goal id rejected while held; one effect",
+      "trials": 20,
+      "valid": 20,
+      "verdict": "held"
+    },
+    "expiry_10s": {
+      "agree": 6,
+      "agreement_lower95": 0.540741873560104,
+      "disagree": 0,
+      "disagreeing_observations": [],
+      "invalid_first_send": 14,
+      "invalid_timelines": [
+        {
+          "first": "timeout",
+          "order": 27,
+          "server_events": [
+            [
+              "server_up",
+              0.24
+            ],
+            [
+              "goal_request",
+              0.49
+            ],
+            [
+              "executing",
+              0.6
+            ],
+            [
+              "succeeded",
+              3.61
+            ],
+            [
+              "goal_request",
+              19.82
+            ],
+            [
+              "executing",
+              19.83
+            ],
+            [
+              "succeeded",
+              22.84
+            ]
+          ]
+        },
+        {
+          "first": "timeout",
+          "order": 28,
+          "server_events": [
+            [
+              "server_up",
+              0.25
+            ],
+            [
+              "goal_request",
+              0.5
+            ],
+            [
+              "executing",
+              0.61
+            ],
+            [
+              "succeeded",
+              3.62
+            ],
+            [
+              "goal_request",
+              19.82
+            ],
+            [
+              "executing",
+              19.83
+            ],
+            [
+              "succeeded",
+              22.85
+            ]
+          ]
+        },
+        {
+          "first": "timeout",
+          "order": 29,
+          "server_events": [
+            [
+              "server_up",
+              0.24
+            ],
+            [
+              "goal_request",
+              0.5
+            ],
+            [
+              "executing",
+              0.6
+            ],
+            [
+              "succeeded",
+              3.61
+            ],
+            [
+              "goal_request",
+              19.82
+            ],
+            [
+              "executing",
+              19.83
+            ],
+            [
+              "succeeded",
+              22.84
+            ]
+          ]
+        },
+        {
+          "first": "timeout",
+          "order": 30,
+          "server_events": [
+            [
+              "server_up",
+              0.23
+            ],
+            [
+              "goal_request",
+              0.48
+            ],
+            [
+              "executing",
+              0.59
+            ],
+            [
+              "succeeded",
+              3.61
+            ],
+            [
+              "goal_request",
+              19.82
+            ],
+            [
+              "executing",
+              19.83
+            ],
+            [
+              "succeeded",
+              22.84
+            ]
+          ]
+        },
+        {
+          "first": "timeout",
+          "order": 31,
+          "server_events": [
+            [
+              "server_up",
+              0.23
+            ],
+            [
+              "goal_request",
+              0.48
+            ],
+            [
+              "executing",
+              0.59
+            ],
+            [
+              "succeeded",
+              3.6
+            ],
+            [
+              "goal_request",
+              19.82
+            ],
+            [
+              "executing",
+              19.83
+            ],
+            [
+              "succeeded",
+              22.84
+            ]
+          ]
+        },
+        {
+          "first": "timeout",
+          "order": 32,
+          "server_events": [
+            [
+              "server_up",
+              0.24
+            ],
+            [
+              "goal_request",
+              0.49
+            ],
+            [
+              "executing",
+              0.6
+            ],
+            [
+              "succeeded",
+              3.61
+            ],
+            [
+              "goal_request",
+              19.82
+            ],
+            [
+              "executing",
+              19.83
+            ],
+            [
+              "succeeded",
+              22.84
+            ]
+          ]
+        },
+        {
+          "first": "timeout",
+          "order": 33,
+          "server_events": [
+            [
+              "server_up",
+              0.23
+            ],
+            [
+              "goal_request",
+              0.49
+            ],
+            [
+              "executing",
+              0.59
+            ],
+            [
+              "succeeded",
+              3.61
+            ],
+            [
+              "goal_request",
+              19.82
+            ],
+            [
+              "executing",
+              19.83
+            ],
+            [
+              "succeeded",
+              22.84
+            ]
+          ]
+        },
+        {
+          "first": "timeout",
+          "order": 34,
+          "server_events": [
+            [
+              "server_up",
+              0.23
+            ],
+            [
+              "goal_request",
+              0.49
+            ],
+            [
+              "executing",
+              0.59
+            ],
+            [
+              "succeeded",
+              3.61
+            ],
+            [
+              "goal_request",
+              19.82
+            ],
+            [
+              "executing",
+              19.84
+            ],
+            [
+              "succeeded",
+              22.85
+            ]
+          ]
+        },
+        {
+          "first": "timeout",
+          "order": 35,
+          "server_events": [
+            [
+              "server_up",
+              0.23
+            ],
+            [
+              "goal_request",
+              0.48
+            ],
+            [
+              "executing",
+              0.59
+            ],
+            [
+              "succeeded",
+              3.6
+            ],
+            [
+              "goal_request",
+              19.82
+            ],
+            [
+              "executing",
+              19.83
+            ],
+            [
+              "succeeded",
+              22.84
+            ]
+          ]
+        },
+        {
+          "first": "timeout",
+          "order": 36,
+          "server_events": [
+            [
+              "server_up",
+              0.24
+            ],
+            [
+              "goal_request",
+              0.78
+            ],
+            [
+              "executing",
+              0.89
+            ],
+            [
+              "succeeded",
+              3.9
+            ],
+            [
+              "goal_request",
+              19.82
+            ],
+            [
+              "executing",
+              19.83
+            ],
+            [
+              "succeeded",
+              22.84
+            ]
+          ]
+        }
+      ],
+      "premise": "P2 after expiry: UNKNOWN; same id accepted again; two effects",
+      "trials": 20,
+      "valid": 6,
+      "verdict": "inconclusive"
+    },
+    "kill_after_effect": {
+      "agree": 17,
+      "agreement_lower95": 0.8049356770309104,
+      "disagree": 0,
+      "disagreeing_observations": [],
+      "invalid_first_send": 3,
+      "invalid_timelines": [
+        {
+          "first": "timeout",
+          "order": 41,
+          "server_events": [
+            [
+              "server_up",
+              0.23
+            ],
+            [
+              "goal_request",
+              0.82
+            ],
+            [
+              "executing",
+              0.93
+            ],
+            [
+              "succeeded",
+              3.94
+            ],
+            [
+              "server_up",
+              12.02
+            ],
+            [
+              "goal_request",
+              14.37
+            ],
+            [
+              "executing",
+              14.37
+            ],
+            [
+              "succeeded",
+              17.39
+            ]
+          ]
+        },
+        {
+          "first": "timeout",
+          "order": 42,
+          "server_events": [
+            [
+              "server_up",
+              0.24
+            ],
+            [
+              "goal_request",
+              0.81
+            ],
+            [
+              "executing",
+              0.92
+            ],
+            [
+              "succeeded",
+              3.93
+            ],
+            [
+              "server_up",
+              12.02
+            ],
+            [
+              "goal_request",
+              14.38
+            ],
+            [
+              "executing",
+              14.38
+            ],
+            [
+              "succeeded",
+              17.4
+            ]
+          ]
+        },
+        {
+          "first": "timeout",
+          "order": 43,
+          "server_events": [
+            [
+              "server_up",
+              0.24
+            ],
+            [
+              "goal_request",
+              0.6
+            ],
+            [
+              "executing",
+              0.71
+            ],
+            [
+              "succeeded",
+              3.72
+            ],
+            [
+              "server_up",
+              12.02
+            ],
+            [
+              "goal_request",
+              13.19
+            ],
+            [
+              "executing",
+              13.2
+            ],
+            [
+              "succeeded",
+              16.21
+            ]
+          ]
+        }
+      ],
+      "premise": "P3 after kill+restart: UNKNOWN; same id accepted again; two effects",
+      "trials": 20,
+      "valid": 17,
+      "verdict": "held"
+    },
+    "kill_after_effect_same_client": {
+      "agree": 20,
+      "agreement_lower95": 0.8315665290169136,
+      "disagree": 0,
+      "disagreeing_observations": [],
+      "invalid_first_send": 0,
+      "invalid_timelines": [],
+      "premise": "P5 same-client resend: client exception recorded; server executes it (two effects)",
+      "trials": 20,
+      "valid": 20,
+      "verdict": "held"
+    },
+    "kill_before_effect": {
+      "agree": 19,
+      "agreement_lower95": 0.7512672372279718,
+      "disagree": 1,
+      "disagreeing_observations": [
+        {
+          "client_exceptions": [],
+          "effects": 1,
+          "effects_at_kill": 0,
+          "first": "accepted",
+          "order": 79,
+          "resend_same_uuid": "accepted",
+          "resend_status": "SUCCEEDED",
+          "resend_via": "fresh_client",
+          "scenario": "kill_before_effect",
+          "seconds": 15.43,
+          "status_old_goal_after_restart": "timeout",
+          "trial": 18
+        }
+      ],
+      "invalid_first_send": 0,
+      "invalid_timelines": [],
+      "premise": "P4 kill before the effect: UNKNOWN; resend accepted; one effect",
+      "trials": 20,
+      "valid": 20,
+      "verdict": "contradicted in 1 valid trial(s)"
+    }
+  }
+}
