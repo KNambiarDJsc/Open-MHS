@@ -1,0 +1,13 @@
+{
+  "name": "normal",
+  "description": "SIMULATED. Normal operation: the instrument is testing and its latest measurement is fresh and flagged ok. No completed sessions are stored.",
+  "sample_age_s": 0,
+  "values": {
+    "instrument.state": "testing",
+    "telemetry.data_quality": "ok",
+    "telemetry.voltage": 3.712,
+    "telemetry.current": 1.5,
+    "telemetry.temperature": 24.6,
+    "session.count": 0
+  }
+}

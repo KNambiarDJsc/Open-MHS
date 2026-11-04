@@ -64,6 +64,16 @@ and the entry will say so under **Changed** or **Removed**.
 
 ### Added
 
+- **Battery equipment example** ([examples/battery-equipment-simulator](examples/battery-equipment-simulator/README.md)).
+  A simulated, read-only battery test instrument reached through the Modbus adapter: an
+  EXAMPLE-ONLY register profile, a standard-library Modbus TCP simulator that refuses every write,
+  deterministic fixtures (normal, session, stale, suspect, malformed, missing and out-of-order
+  samples), a scripted agent whose answers cite the readings they rest on, and tests that show
+  write and control requests denied and audited. Simulated only; it says nothing about any real
+  instrument.
+- **Modbus profiles: `connection.simulated`.** Optional, default `false`. Set it when the address is
+  a simulator you run yourself, so readings are recorded with `source: simulator` instead of
+  `source: device`. Existing profiles are unaffected.
 - **Sealed audit segments** ([RFC 0002](docs/rfcs/0002-storage-engine.md), milestones 3
   to 5). `openmhs audit segment` closes a range of the audit chain as a file (header,
   records, final receipts, index, SHA-256 footer) that `audit verify-segments DIR` verifies

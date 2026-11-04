@@ -43,6 +43,11 @@ pub struct Connection {
     /// How long to wait for any one reply.
     #[serde(default = "default_reply_timeout")]
     pub reply_timeout_ms: u64,
+    /// Label readings as coming from a **simulator** instead of a device. Set this when the
+    /// address is a simulator you run yourself (the built-in `--profile-sim` does it for you),
+    /// so simulated data is never recorded with `source: device`. Defaults to `false`.
+    #[serde(default)]
+    pub simulated: bool,
 }
 
 fn default_unit() -> u8 {
@@ -85,10 +90,15 @@ impl ModbusAdapter {
     /// An adapter for `profile`, at the profile's address.
     pub fn new(profile: Profile, clock: Arc<dyn Clock>) -> Self {
         let address = profile.connection.address.clone();
+        let source = if profile.connection.simulated {
+            Source::Simulator
+        } else {
+            Source::Device
+        };
         Self {
             profile,
             address,
-            source: Source::Device,
+            source,
             clock,
             conn: tokio::sync::Mutex::new(None),
         }
@@ -414,5 +424,25 @@ mod tests {
             err.contains("/mapping/door.closed: coils and discrete inputs are single bits"),
             "{err}"
         );
+    }
+
+    fn adapter_for(simulated: Option<bool>) -> ModbusAdapter {
+        let mut v: serde_json::Value =
+            serde_json::from_str(include_str!("../profiles/climate-chamber.json")).unwrap();
+        if let Some(flag) = simulated {
+            v["connection"]["simulated"] = serde_json::json!(flag);
+        }
+        ModbusAdapter::new(
+            load(&v.to_string()).unwrap(),
+            Arc::new(openmhs_types::SystemClock),
+        )
+    }
+
+    #[test]
+    fn readings_are_labelled_simulator_only_when_the_profile_says_so() {
+        // Absent or false: a device, as before. True: a simulator the user runs themselves.
+        assert_eq!(adapter_for(None).source, Source::Device);
+        assert_eq!(adapter_for(Some(false)).source, Source::Device);
+        assert_eq!(adapter_for(Some(true)).source, Source::Simulator);
     }
 }

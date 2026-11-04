@@ -1,0 +1,1507 @@
+{
+  "openmhs_profile": "0.1",
+  "protocol": "modbus-tcp",
+  "descriptor": {
+    "openmhs": "0.1",
+    "device": {
+      "id": "sim.battery-test-01",
+      "name": "SIMULATED battery test instrument (EXAMPLE-ONLY)",
+      "manufacturer": "OpenMHS example (SIMULATED)",
+      "model": "EXAMPLE-ONLY-BT1",
+      "description": "A simulated programmable battery test instrument for the OpenMHS battery equipment example. The register map is EXAMPLE-ONLY: it is not a standard and not any real product's. All values are SIMULATED."
+    },
+    "adapter": {
+      "id": "openmhs.modbus",
+      "version": "0.1.0",
+      "conformance": "L1"
+    },
+    "capabilities": [
+      {
+        "name": "instrument.simulated",
+        "kind": "property",
+        "description": "Always true: this instrument is a simulator (EXAMPLE-ONLY profile).",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "boolean"
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "instrument.state",
+        "kind": "property",
+        "description": "What the instrument is doing.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "enum",
+          "values": [
+            "idle",
+            "testing",
+            "fault"
+          ]
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "telemetry.data_quality",
+        "kind": "property",
+        "description": "The instrument's own judgement of its latest measurement.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "enum",
+          "values": [
+            "ok",
+            "suspect"
+          ]
+        },
+        "side_effect": "none",
+        "freshness": {
+          "max_age_ms": 5000
+        }
+      },
+      {
+        "name": "telemetry.voltage",
+        "kind": "property",
+        "description": "Measured terminal voltage.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_potential",
+          "unit": "V",
+          "range": {
+            "min": 0.0,
+            "max": 60.0
+          }
+        },
+        "side_effect": "none",
+        "freshness": {
+          "max_age_ms": 5000
+        }
+      },
+      {
+        "name": "telemetry.current",
+        "kind": "property",
+        "description": "Measured current. Positive is charging in this example profile.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_current",
+          "unit": "A",
+          "range": {
+            "min": -100.0,
+            "max": 100.0
+          }
+        },
+        "side_effect": "none",
+        "freshness": {
+          "max_age_ms": 5000
+        }
+      },
+      {
+        "name": "telemetry.temperature",
+        "kind": "property",
+        "description": "Measured surface temperature.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "temperature",
+          "unit": "Cel",
+          "range": {
+            "min": -40.0,
+            "max": 125.0
+          }
+        },
+        "side_effect": "none",
+        "freshness": {
+          "max_age_ms": 5000
+        }
+      },
+      {
+        "name": "telemetry.sample_time",
+        "kind": "property",
+        "description": "When the instrument last updated its measurement, as seconds since the Unix epoch.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 4000000000
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session.count",
+        "kind": "property",
+        "description": "How many completed test sessions the instrument keeps (0 to 2).",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 2
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.id",
+        "kind": "property",
+        "description": "Session identifier in slot 1 (slot 1 is the most recent). EXAMPLE-ONLY numeric code.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 65535
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.asset_id",
+        "kind": "property",
+        "description": "Identifier of the asset under test. EXAMPLE-ONLY numeric code.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 65535
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.procedure_version",
+        "kind": "property",
+        "description": "Version of the test procedure that ran.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 65535
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.status",
+        "kind": "property",
+        "description": "How the session ended.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "enum",
+          "values": [
+            "completed",
+            "aborted",
+            "error"
+          ]
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_count",
+        "kind": "property",
+        "description": "Samples the session recorded (this example exposes at most 4).",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 65535
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.start_time",
+        "kind": "property",
+        "description": "Session start, seconds since the Unix epoch.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 4000000000
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.end_time",
+        "kind": "property",
+        "description": "Session end, seconds since the Unix epoch.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 4000000000
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_1.time",
+        "kind": "property",
+        "description": "When the sample was taken (Unix seconds).",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 4000000000
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_1.voltage",
+        "kind": "property",
+        "description": "Sample voltage.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_potential",
+          "unit": "V",
+          "range": {
+            "min": 0.0,
+            "max": 60.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_1.current",
+        "kind": "property",
+        "description": "Sample current.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_current",
+          "unit": "A",
+          "range": {
+            "min": -100.0,
+            "max": 100.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_1.temperature",
+        "kind": "property",
+        "description": "Sample temperature.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "temperature",
+          "unit": "Cel",
+          "range": {
+            "min": -40.0,
+            "max": 125.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_1.valid",
+        "kind": "property",
+        "description": "Whether the instrument recorded this sample. 'missing' means there is no value.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "enum",
+          "values": [
+            "ok",
+            "missing",
+            "suspect"
+          ]
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_2.time",
+        "kind": "property",
+        "description": "When the sample was taken (Unix seconds).",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 4000000000
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_2.voltage",
+        "kind": "property",
+        "description": "Sample voltage.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_potential",
+          "unit": "V",
+          "range": {
+            "min": 0.0,
+            "max": 60.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_2.current",
+        "kind": "property",
+        "description": "Sample current.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_current",
+          "unit": "A",
+          "range": {
+            "min": -100.0,
+            "max": 100.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_2.temperature",
+        "kind": "property",
+        "description": "Sample temperature.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "temperature",
+          "unit": "Cel",
+          "range": {
+            "min": -40.0,
+            "max": 125.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_2.valid",
+        "kind": "property",
+        "description": "Whether the instrument recorded this sample. 'missing' means there is no value.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "enum",
+          "values": [
+            "ok",
+            "missing",
+            "suspect"
+          ]
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_3.time",
+        "kind": "property",
+        "description": "When the sample was taken (Unix seconds).",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 4000000000
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_3.voltage",
+        "kind": "property",
+        "description": "Sample voltage.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_potential",
+          "unit": "V",
+          "range": {
+            "min": 0.0,
+            "max": 60.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_3.current",
+        "kind": "property",
+        "description": "Sample current.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_current",
+          "unit": "A",
+          "range": {
+            "min": -100.0,
+            "max": 100.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_3.temperature",
+        "kind": "property",
+        "description": "Sample temperature.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "temperature",
+          "unit": "Cel",
+          "range": {
+            "min": -40.0,
+            "max": 125.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_3.valid",
+        "kind": "property",
+        "description": "Whether the instrument recorded this sample. 'missing' means there is no value.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "enum",
+          "values": [
+            "ok",
+            "missing",
+            "suspect"
+          ]
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_4.time",
+        "kind": "property",
+        "description": "When the sample was taken (Unix seconds).",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 4000000000
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_4.voltage",
+        "kind": "property",
+        "description": "Sample voltage.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_potential",
+          "unit": "V",
+          "range": {
+            "min": 0.0,
+            "max": 60.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_4.current",
+        "kind": "property",
+        "description": "Sample current.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_current",
+          "unit": "A",
+          "range": {
+            "min": -100.0,
+            "max": 100.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_4.temperature",
+        "kind": "property",
+        "description": "Sample temperature.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "temperature",
+          "unit": "Cel",
+          "range": {
+            "min": -40.0,
+            "max": 125.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_1.sample_4.valid",
+        "kind": "property",
+        "description": "Whether the instrument recorded this sample. 'missing' means there is no value.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "enum",
+          "values": [
+            "ok",
+            "missing",
+            "suspect"
+          ]
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.id",
+        "kind": "property",
+        "description": "Session identifier in slot 2 (slot 1 is the most recent). EXAMPLE-ONLY numeric code.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 65535
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.asset_id",
+        "kind": "property",
+        "description": "Identifier of the asset under test. EXAMPLE-ONLY numeric code.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 65535
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.procedure_version",
+        "kind": "property",
+        "description": "Version of the test procedure that ran.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 65535
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.status",
+        "kind": "property",
+        "description": "How the session ended.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "enum",
+          "values": [
+            "completed",
+            "aborted",
+            "error"
+          ]
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_count",
+        "kind": "property",
+        "description": "Samples the session recorded (this example exposes at most 4).",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 65535
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.start_time",
+        "kind": "property",
+        "description": "Session start, seconds since the Unix epoch.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 4000000000
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.end_time",
+        "kind": "property",
+        "description": "Session end, seconds since the Unix epoch.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 4000000000
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_1.time",
+        "kind": "property",
+        "description": "When the sample was taken (Unix seconds).",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 4000000000
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_1.voltage",
+        "kind": "property",
+        "description": "Sample voltage.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_potential",
+          "unit": "V",
+          "range": {
+            "min": 0.0,
+            "max": 60.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_1.current",
+        "kind": "property",
+        "description": "Sample current.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_current",
+          "unit": "A",
+          "range": {
+            "min": -100.0,
+            "max": 100.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_1.temperature",
+        "kind": "property",
+        "description": "Sample temperature.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "temperature",
+          "unit": "Cel",
+          "range": {
+            "min": -40.0,
+            "max": 125.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_1.valid",
+        "kind": "property",
+        "description": "Whether the instrument recorded this sample. 'missing' means there is no value.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "enum",
+          "values": [
+            "ok",
+            "missing",
+            "suspect"
+          ]
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_2.time",
+        "kind": "property",
+        "description": "When the sample was taken (Unix seconds).",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 4000000000
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_2.voltage",
+        "kind": "property",
+        "description": "Sample voltage.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_potential",
+          "unit": "V",
+          "range": {
+            "min": 0.0,
+            "max": 60.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_2.current",
+        "kind": "property",
+        "description": "Sample current.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_current",
+          "unit": "A",
+          "range": {
+            "min": -100.0,
+            "max": 100.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_2.temperature",
+        "kind": "property",
+        "description": "Sample temperature.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "temperature",
+          "unit": "Cel",
+          "range": {
+            "min": -40.0,
+            "max": 125.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_2.valid",
+        "kind": "property",
+        "description": "Whether the instrument recorded this sample. 'missing' means there is no value.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "enum",
+          "values": [
+            "ok",
+            "missing",
+            "suspect"
+          ]
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_3.time",
+        "kind": "property",
+        "description": "When the sample was taken (Unix seconds).",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 4000000000
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_3.voltage",
+        "kind": "property",
+        "description": "Sample voltage.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_potential",
+          "unit": "V",
+          "range": {
+            "min": 0.0,
+            "max": 60.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_3.current",
+        "kind": "property",
+        "description": "Sample current.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_current",
+          "unit": "A",
+          "range": {
+            "min": -100.0,
+            "max": 100.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_3.temperature",
+        "kind": "property",
+        "description": "Sample temperature.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "temperature",
+          "unit": "Cel",
+          "range": {
+            "min": -40.0,
+            "max": 125.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_3.valid",
+        "kind": "property",
+        "description": "Whether the instrument recorded this sample. 'missing' means there is no value.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "enum",
+          "values": [
+            "ok",
+            "missing",
+            "suspect"
+          ]
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_4.time",
+        "kind": "property",
+        "description": "When the sample was taken (Unix seconds).",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "integer",
+          "range": {
+            "min": 0,
+            "max": 4000000000
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_4.voltage",
+        "kind": "property",
+        "description": "Sample voltage.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_potential",
+          "unit": "V",
+          "range": {
+            "min": 0.0,
+            "max": 60.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_4.current",
+        "kind": "property",
+        "description": "Sample current.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_current",
+          "unit": "A",
+          "range": {
+            "min": -100.0,
+            "max": 100.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_4.temperature",
+        "kind": "property",
+        "description": "Sample temperature.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "temperature",
+          "unit": "Cel",
+          "range": {
+            "min": -40.0,
+            "max": 125.0
+          }
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "session_2.sample_4.valid",
+        "kind": "property",
+        "description": "Whether the instrument recorded this sample. 'missing' means there is no value.",
+        "operations": [
+          "read"
+        ],
+        "value": {
+          "type": "enum",
+          "values": [
+            "ok",
+            "missing",
+            "suspect"
+          ]
+        },
+        "side_effect": "none"
+      },
+      {
+        "name": "limit.voltage_max",
+        "kind": "property",
+        "description": "Upper voltage limit for a test. A control point: changing it affects a battery under test.",
+        "operations": [
+          "read",
+          "write"
+        ],
+        "value": {
+          "type": "number",
+          "quantity": "electric_potential",
+          "unit": "V",
+          "range": {
+            "min": 0.0,
+            "max": 60.0
+          }
+        },
+        "side_effect": "hazardous",
+        "idempotent": true,
+        "timing": {
+          "expected_ms": 50,
+          "timeout_ms": 2000
+        },
+        "verification": {
+          "mode": "readback",
+          "tolerance": {
+            "abs": 0.001
+          },
+          "timeout_ms": 2000
+        }
+      },
+      {
+        "name": "test.start",
+        "kind": "action",
+        "description": "Start the configured test. A control point.",
+        "operations": [
+          "invoke"
+        ],
+        "side_effect": "hazardous",
+        "idempotent": false,
+        "timing": {
+          "expected_ms": 50,
+          "timeout_ms": 2000
+        },
+        "verification": {
+          "mode": "none",
+          "reason": "EXAMPLE-ONLY: the simulated instrument reports no test state"
+        }
+      },
+      {
+        "name": "test.stop",
+        "kind": "action",
+        "description": "Stop the running test. A control point.",
+        "operations": [
+          "invoke"
+        ],
+        "side_effect": "reversible",
+        "idempotent": true,
+        "timing": {
+          "expected_ms": 50,
+          "timeout_ms": 2000
+        },
+        "verification": {
+          "mode": "none",
+          "reason": "EXAMPLE-ONLY: the simulated instrument reports no test state"
+        }
+      }
+    ]
+  },
+  "connection": {
+    "address": "127.0.0.1:15020",
+    "unit_id": 1,
+    "reply_timeout_ms": 1000,
+    "simulated": true
+  },
+  "mapping": {
+    "instrument.simulated": {
+      "table": "discrete_input",
+      "address": 0
+    },
+    "instrument.state": {
+      "table": "input",
+      "address": 0
+    },
+    "telemetry.data_quality": {
+      "table": "input",
+      "address": 1
+    },
+    "telemetry.voltage": {
+      "table": "input",
+      "address": 2,
+      "scale": 0.001
+    },
+    "telemetry.current": {
+      "table": "input",
+      "address": 3,
+      "type": "i16",
+      "scale": 0.01
+    },
+    "telemetry.temperature": {
+      "table": "input",
+      "address": 4,
+      "type": "i16",
+      "scale": 0.1
+    },
+    "telemetry.sample_time": {
+      "table": "input",
+      "address": 5,
+      "type": "u32"
+    },
+    "session.count": {
+      "table": "input",
+      "address": 7
+    },
+    "session_1.id": {
+      "table": "input",
+      "address": 10
+    },
+    "session_1.asset_id": {
+      "table": "input",
+      "address": 11
+    },
+    "session_1.procedure_version": {
+      "table": "input",
+      "address": 12
+    },
+    "session_1.status": {
+      "table": "input",
+      "address": 13
+    },
+    "session_1.sample_count": {
+      "table": "input",
+      "address": 14
+    },
+    "session_1.start_time": {
+      "table": "input",
+      "address": 15,
+      "type": "u32"
+    },
+    "session_1.end_time": {
+      "table": "input",
+      "address": 17,
+      "type": "u32"
+    },
+    "session_1.sample_1.time": {
+      "table": "input",
+      "address": 20,
+      "type": "u32"
+    },
+    "session_1.sample_1.voltage": {
+      "table": "input",
+      "address": 22,
+      "scale": 0.001
+    },
+    "session_1.sample_1.current": {
+      "table": "input",
+      "address": 23,
+      "type": "i16",
+      "scale": 0.01
+    },
+    "session_1.sample_1.temperature": {
+      "table": "input",
+      "address": 24,
+      "type": "i16",
+      "scale": 0.1
+    },
+    "session_1.sample_1.valid": {
+      "table": "input",
+      "address": 25
+    },
+    "session_1.sample_2.time": {
+      "table": "input",
+      "address": 26,
+      "type": "u32"
+    },
+    "session_1.sample_2.voltage": {
+      "table": "input",
+      "address": 28,
+      "scale": 0.001
+    },
+    "session_1.sample_2.current": {
+      "table": "input",
+      "address": 29,
+      "type": "i16",
+      "scale": 0.01
+    },
+    "session_1.sample_2.temperature": {
+      "table": "input",
+      "address": 30,
+      "type": "i16",
+      "scale": 0.1
+    },
+    "session_1.sample_2.valid": {
+      "table": "input",
+      "address": 31
+    },
+    "session_1.sample_3.time": {
+      "table": "input",
+      "address": 32,
+      "type": "u32"
+    },
+    "session_1.sample_3.voltage": {
+      "table": "input",
+      "address": 34,
+      "scale": 0.001
+    },
+    "session_1.sample_3.current": {
+      "table": "input",
+      "address": 35,
+      "type": "i16",
+      "scale": 0.01
+    },
+    "session_1.sample_3.temperature": {
+      "table": "input",
+      "address": 36,
+      "type": "i16",
+      "scale": 0.1
+    },
+    "session_1.sample_3.valid": {
+      "table": "input",
+      "address": 37
+    },
+    "session_1.sample_4.time": {
+      "table": "input",
+      "address": 38,
+      "type": "u32"
+    },
+    "session_1.sample_4.voltage": {
+      "table": "input",
+      "address": 40,
+      "scale": 0.001
+    },
+    "session_1.sample_4.current": {
+      "table": "input",
+      "address": 41,
+      "type": "i16",
+      "scale": 0.01
+    },
+    "session_1.sample_4.temperature": {
+      "table": "input",
+      "address": 42,
+      "type": "i16",
+      "scale": 0.1
+    },
+    "session_1.sample_4.valid": {
+      "table": "input",
+      "address": 43
+    },
+    "session_2.id": {
+      "table": "input",
+      "address": 50
+    },
+    "session_2.asset_id": {
+      "table": "input",
+      "address": 51
+    },
+    "session_2.procedure_version": {
+      "table": "input",
+      "address": 52
+    },
+    "session_2.status": {
+      "table": "input",
+      "address": 53
+    },
+    "session_2.sample_count": {
+      "table": "input",
+      "address": 54
+    },
+    "session_2.start_time": {
+      "table": "input",
+      "address": 55,
+      "type": "u32"
+    },
+    "session_2.end_time": {
+      "table": "input",
+      "address": 57,
+      "type": "u32"
+    },
+    "session_2.sample_1.time": {
+      "table": "input",
+      "address": 60,
+      "type": "u32"
+    },
+    "session_2.sample_1.voltage": {
+      "table": "input",
+      "address": 62,
+      "scale": 0.001
+    },
+    "session_2.sample_1.current": {
+      "table": "input",
+      "address": 63,
+      "type": "i16",
+      "scale": 0.01
+    },
+    "session_2.sample_1.temperature": {
+      "table": "input",
+      "address": 64,
+      "type": "i16",
+      "scale": 0.1
+    },
+    "session_2.sample_1.valid": {
+      "table": "input",
+      "address": 65
+    },
+    "session_2.sample_2.time": {
+      "table": "input",
+      "address": 66,
+      "type": "u32"
+    },
+    "session_2.sample_2.voltage": {
+      "table": "input",
+      "address": 68,
+      "scale": 0.001
+    },
+    "session_2.sample_2.current": {
+      "table": "input",
+      "address": 69,
+      "type": "i16",
+      "scale": 0.01
+    },
+    "session_2.sample_2.temperature": {
+      "table": "input",
+      "address": 70,
+      "type": "i16",
+      "scale": 0.1
+    },
+    "session_2.sample_2.valid": {
+      "table": "input",
+      "address": 71
+    },
+    "session_2.sample_3.time": {
+      "table": "input",
+      "address": 72,
+      "type": "u32"
+    },
+    "session_2.sample_3.voltage": {
+      "table": "input",
+      "address": 74,
+      "scale": 0.001
+    },
+    "session_2.sample_3.current": {
+      "table": "input",
+      "address": 75,
+      "type": "i16",
+      "scale": 0.01
+    },
+    "session_2.sample_3.temperature": {
+      "table": "input",
+      "address": 76,
+      "type": "i16",
+      "scale": 0.1
+    },
+    "session_2.sample_3.valid": {
+      "table": "input",
+      "address": 77
+    },
+    "session_2.sample_4.time": {
+      "table": "input",
+      "address": 78,
+      "type": "u32"
+    },
+    "session_2.sample_4.voltage": {
+      "table": "input",
+      "address": 80,
+      "scale": 0.001
+    },
+    "session_2.sample_4.current": {
+      "table": "input",
+      "address": 81,
+      "type": "i16",
+      "scale": 0.01
+    },
+    "session_2.sample_4.temperature": {
+      "table": "input",
+      "address": 82,
+      "type": "i16",
+      "scale": 0.1
+    },
+    "session_2.sample_4.valid": {
+      "table": "input",
+      "address": 83
+    },
+    "limit.voltage_max": {
+      "table": "holding",
+      "address": 0,
+      "scale": 0.001
+    },
+    "test.start": {
+      "table": "coil",
+      "address": 0,
+      "write": true
+    },
+    "test.stop": {
+      "table": "coil",
+      "address": 1,
+      "write": true
+    }
+  },
+  "simulator": {
+    "initial": {
+      "instrument.simulated": true,
+      "instrument.state": "idle",
+      "telemetry.data_quality": "ok",
+      "telemetry.voltage": {
+        "value": 3.7,
+        "unit": "V"
+      },
+      "telemetry.current": {
+        "value": 0.0,
+        "unit": "A"
+      },
+      "telemetry.temperature": {
+        "value": 23.5,
+        "unit": "Cel"
+      },
+      "telemetry.sample_time": 1767225600,
+      "session.count": 0,
+      "limit.voltage_max": {
+        "value": 4.2,
+        "unit": "V"
+      }
+    }
+  }
+}

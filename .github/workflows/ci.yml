@@ -48,6 +48,7 @@ jobs:
           --profile adapters/openmhs-mqtt/profiles/greenhouse-node.json
           --profile adapters/openmhs-scpi/profiles/bench-psu.json
           --profile adapters/openmhs-http/profiles/led-controller.json
+          --profile examples/battery-equipment-simulator/battery-test-instrument.profile.json
       - name: A Python adapter reaches its declared level through the adapter host
         run: >
           cargo run -p openmhs-cli --bin openmhs -- conformance
@@ -63,6 +64,10 @@ jobs:
       - run: pip install "jsonschema>=4.18" numpy
       - name: Python SDK, agent-loop examples, and CLI/MCP/SDK parity (invariant 10)
         run: python -m unittest discover -s python/tests -v
+      - name: Battery equipment example (simulated instrument, read-only agent, denied writes)
+        run: |
+          python examples/battery-equipment-simulator/build_profile.py --check
+          python -m unittest discover -s examples/battery-equipment-simulator -p "test_*.py" -v
       - name: What a governed MADSci step reports, and the rules for keeping evidence
         run: |
           python -m unittest discover -s research/lab-automation/05_madsci/tests -v

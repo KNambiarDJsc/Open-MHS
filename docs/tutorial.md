@@ -68,3 +68,5 @@ To use Claude Code or another MCP host, see [Connecting an AI agent](mcp.md).
 - [Simulators and fault injection](simulators.md) to break things on purpose
 - [Writing an adapter](adapters/README.md) to connect a new device
 - [The workcell plan](../examples/workcell/README.md) for multi-device coordination
+- [A read-only agent on simulated battery test equipment](../examples/battery-equipment-simulator/README.md),
+  through the Modbus adapter

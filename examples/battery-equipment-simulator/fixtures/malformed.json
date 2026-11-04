@@ -1,0 +1,15 @@
+{
+  "name": "malformed",
+  "description": "SIMULATED. The voltage register holds 0xFFFF, which scales to 65.535 V, outside the 0 to 60 V the profile declares. The adapter must refuse it as malformed instead of returning a number. Other values are normal.",
+  "sample_age_s": 0,
+  "values": {
+    "instrument.state": "testing",
+    "telemetry.data_quality": "ok",
+    "telemetry.current": 1.5,
+    "telemetry.temperature": 24.6,
+    "session.count": 0
+  },
+  "raw": {
+    "telemetry.voltage": [65535]
+  }
+}

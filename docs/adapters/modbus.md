@@ -16,6 +16,7 @@ capability, and how its raw value is scaled. The shared format is described in
 | `address` | required | `host:port`; Modbus TCP uses 502 |
 | `unit_id` | 1 | the unit identifier; behind a Modbus gateway, the downstream device |
 | `reply_timeout_ms` | 1000 | how long to wait for any one reply |
+| `simulated` | false | set it when the address is a simulator you run yourself: readings are then recorded with `source: simulator`, not `device`. `--profile-sim` does this for you. See [examples/battery-equipment-simulator](../../examples/battery-equipment-simulator/README.md) |
 
 ## Mapping
 

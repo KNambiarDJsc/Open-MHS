@@ -1,0 +1,13 @@
+{
+  "name": "suspect",
+  "description": "SIMULATED. The instrument flags its own latest measurement as suspect. The values are returned with that flag and are not corrected or hidden.",
+  "sample_age_s": 0,
+  "values": {
+    "instrument.state": "testing",
+    "telemetry.data_quality": "suspect",
+    "telemetry.voltage": 3.712,
+    "telemetry.current": 1.5,
+    "telemetry.temperature": 24.6,
+    "session.count": 0
+  }
+}

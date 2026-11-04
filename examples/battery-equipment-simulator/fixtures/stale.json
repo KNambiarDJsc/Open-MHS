@@ -1,0 +1,13 @@
+{
+  "name": "stale",
+  "description": "SIMULATED. The instrument answers, but its measurement was last updated 300 seconds ago. The values are old, not wrong, and must not be presented as current.",
+  "sample_age_s": 300,
+  "values": {
+    "instrument.state": "testing",
+    "telemetry.data_quality": "ok",
+    "telemetry.voltage": 3.712,
+    "telemetry.current": 1.5,
+    "telemetry.temperature": 24.6,
+    "session.count": 0
+  }
+}
