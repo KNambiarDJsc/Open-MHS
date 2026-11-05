@@ -8,8 +8,7 @@
     ],
     "env": {
       "ROS_DOMAIN_ID": "61",
-      "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
-      "ROS_LOG_DIR": "/tmp/openmhs-ros2-example-log"
+      "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST"
     },
     "protocol": ["0.1"]
   },

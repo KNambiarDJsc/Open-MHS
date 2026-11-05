@@ -111,8 +111,9 @@ def read_only_scopes() -> list[dict[str, Any]]:
 class SimProcess:
     """The simulated robot process: commands in, events out, tripwires kept across restarts."""
 
-    def __init__(self, env: dict[str, str]) -> None:
+    def __init__(self, env: dict[str, str], stderr_path: Path) -> None:
         self.env = env
+        self.stderr_path = stderr_path
         self.proc: subprocess.Popen[str] | None = None
         self.events: queue.Queue[dict[str, Any]] = queue.Queue()
         self.tripwires: list[str] = []
@@ -121,10 +122,11 @@ class SimProcess:
 
     def start(self, timeout: float = 30) -> None:
         self.events = queue.Queue()
-        self.proc = subprocess.Popen(
-            in_ros(["python3", "-u", str(HERE / "sim_robot.py")]), env=self.env,
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-            text=True, encoding="utf-8", errors="replace", bufsize=1)
+        with open(self.stderr_path, "ab") as stderr:
+            self.proc = subprocess.Popen(
+                in_ros(["python3", "-u", str(HERE / "sim_robot.py")]), env=self.env,
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=stderr,
+                text=True, encoding="utf-8", errors="replace", bufsize=1)
         threading.Thread(target=self._pump, args=(self.proc, self.events), daemon=True).start()
         self.last_ready = self.wait_for("ready", timeout)["_received"]
 
@@ -146,7 +148,7 @@ class SimProcess:
         while True:
             left = deadline - time.monotonic()
             if left <= 0:
-                raise TimeoutError(f"simulated robot: no {name} within {timeout} s")
+                raise TimeoutError(f"simulated robot: no {name} within {timeout} s. Its stderr: {self.stderr_tail()}")
             try:
                 event = self.events.get(timeout=left)
             except queue.Empty:
@@ -155,6 +157,12 @@ class SimProcess:
                 raise RuntimeError(event.get("message"))
             if event.get("event") == name and (ident is None or event.get("id") == ident):
                 return event
+
+    def stderr_tail(self, size: int = 1500) -> str:
+        try:
+            return self.stderr_path.read_text(encoding="utf-8", errors="replace")[-size:] or "(empty)"
+        except OSError:
+            return "(none)"
 
     def send(self, cmd: str, **fields: Any) -> float:
         """Send a command and wait until it has taken effect. Returns the monotonic time of the ack."""
@@ -203,13 +211,14 @@ class RobotLab:
         self.ros_env = {
             "ROS_DOMAIN_ID": self.domain,
             "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
-            "ROS_LOG_DIR": "/tmp/openmhs-ros2-example-log",
         }
-        self.env = {**os.environ, **self.ros_env}
         self._tmp = tempfile.TemporaryDirectory(prefix="openmhs-robot-")
+        # Its own log directory: a fixed one in /tmp stops the next user on this host from starting ROS 2.
+        self.ros_env["ROS_LOG_DIR"] = str(Path(self._tmp.name) / "ros-log")
+        self.env = {**os.environ, **self.ros_env}
         self.home = Path(self._tmp.name) / "home"
         self.home.mkdir()
-        self.sim = SimProcess(self.env)
+        self.sim = SimProcess(self.env, Path(self._tmp.name) / "sim_robot.stderr")
         self.proc: subprocess.Popen[bytes] | None = None
         self.gateway_log = Path(self._tmp.name) / "gateway.log"
         self._log_file: Any = None

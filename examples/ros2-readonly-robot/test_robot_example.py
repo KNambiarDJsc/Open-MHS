@@ -73,6 +73,28 @@ class ManifestTests(unittest.TestCase):
         self.assertTrue(all(g["operations"] == ["read"] for g in allows))
 
 
+class LabEnvironmentTests(unittest.TestCase):
+    def test_each_run_has_its_own_ros_log_directory(self):
+        """A fixed path in /tmp, left by one user, stopped ROS 2 starting for the next."""
+        first, second = rl.RobotLab(), rl.RobotLab()
+        try:
+            a, b = first.ros_env["ROS_LOG_DIR"], second.ros_env["ROS_LOG_DIR"]
+            self.assertNotEqual(a, b)
+            self.assertTrue(a.startswith(first._tmp.name), a)
+            self.assertNotIn("ROS_LOG_DIR", MANIFEST["runtime"]["env"])
+        finally:
+            first._tmp.cleanup()
+            second._tmp.cleanup()
+
+    def test_a_robot_that_does_not_start_says_why(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "stderr"
+            path.write_text("PermissionError: /tmp/some-log", encoding="utf-8")
+            sim = rl.SimProcess({}, path)
+            with self.assertRaisesRegex(TimeoutError, "PermissionError"):
+                sim.wait_for("ready", 0.01)
+
+
 class FakeTools:
     def __init__(self, replies: dict[str, Any]) -> None:
         self.replies = replies

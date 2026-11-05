@@ -197,6 +197,10 @@ refusal record: the code handles it, and no test does. The new CI step has not r
 
 ## Deviations from the plan
 
+- After the rerun at `5acdd25`, a check as an unprivileged user failed: every earlier run in this document was as root,
+  and the example used a fixed ROS log directory in `/tmp`, so a directory left by another user stopped the robot
+  starting, with only "no ready within 30 s" to say so. Each run now has its own, and the robot's stderr is in the error.
+  This touches no measured path. The final check below ran as an unprivileged user.
 - The run at `6a324f4` is the first with the audit check, and it failed. See "What happened" above.
 - Amendment 1 in the plan: after that run, an agent calling `tokens.create` was added to scenario F, and the agent's
   token in any record was added to scenario I. Condition 6 itself did not change.
@@ -204,6 +208,12 @@ refusal record: the code handles it, and no test does. The new CI step has not r
 - Clock steps gained timestamps, so slow cycles could be compared with them.
 - Scenario A originally counted a read with no value as a wrong value; it now counts it as a failed read. There were none.
 - `settle` allows up to 5 s for a held fault to show, to allow for a clock step. It was added before the first full run.
+
+## Running the tests as root
+
+`cargo test --workspace` on Linux as root has one failure, `a_read_only_journal_sends_nothing`, because root ignores
+read-only permissions. It fails the same way on `main` at `a5d8d94`, and passes as an unprivileged user. It is not caused
+by this work. Run the workspace tests as an ordinary user.
 
 ## Reproduce
 
