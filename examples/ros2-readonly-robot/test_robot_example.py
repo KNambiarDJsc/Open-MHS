@@ -300,6 +300,23 @@ class RosIntegrationTests(unittest.TestCase):
         self.assertTrue(plan.is_error, plan)
         self.assertEqual(self.lab.sim.tripwires[before:], [])
 
+    def test_known_gap_refusals_before_a_command_exists_leave_no_audit_record(self):
+        """Pins a gap RESULTS.md reports, so that closing it flips this test. Both are refused and neither
+        reaches ROS 2, but an audit reader cannot see that they were tried."""
+        assert self.lab.operator is not None
+        seq = self.lab.operator.audit_tail(1)[-1].seq
+        unknown = self.tools.call("submit_command", {"device": rl.DEVICE, "capability": "base.cmd_vel",
+                                                     "value": {"value": 1.0, "unit": "m/s"},
+                                                     "idempotency_key": "known-gap-unknown"})
+        plan = self.tools.call("submit_plan", {"plan": {"description": "an attempt", "steps": [
+            {"id": "s1", "request": {"target": {"device": rl.DEVICE, "capability": "joint.elbow.position"},
+                                     "operation": "write", "value": RAD}}]}})
+        self.assertTrue(unknown.is_error and plan.is_error)
+        time.sleep(0.2)
+        added = [e.kind for e in self.lab.operator.audit_tail(50)
+                 if e.seq > seq and e.kind != "device.availability"]
+        self.assertEqual(added, [])
+
     def test_the_adapter_offers_nothing_to_the_ros_graph(self):
         graph = self.lab.ros("graph", "openmhs_observer")
         self.assertTrue(graph["found"])

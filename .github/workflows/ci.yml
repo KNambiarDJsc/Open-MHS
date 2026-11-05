@@ -63,6 +63,8 @@ jobs:
       - run: pip install "jsonschema>=4.18" numpy
       - name: Python SDK, agent-loop examples, and CLI/MCP/SDK parity (invariant 10)
         run: python -m unittest discover -s python/tests -v
+      - name: Read-only robot example, the parts that need no ROS 2 (the ROS 2 group skips, with a reason)
+        run: python -m unittest discover -s examples/ros2-readonly-robot -p "test_*.py" -v
       - name: What a governed MADSci step reports, and the rules for keeping evidence
         run: |
           python -m unittest discover -s research/lab-automation/05_madsci/tests -v

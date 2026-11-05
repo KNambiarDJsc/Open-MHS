@@ -78,6 +78,8 @@ def main() -> int:
             for a in attempts:
                 print(f"  {a['capability']}: {a['state'] or 'refused'} {a['reasons']}; "
                       f"reached device: {a['reached_device']}")
+            print("  (base.cmd_vel is refused by the MCP server before a command exists, so it leaves no "
+                  "audit record: RESULTS.md)")
             with lab.mcp(lab.unscoped_agent_token()) as unscoped:
                 a = ReadOnlyAgent(unscoped).attempt_control("joint.elbow.position", {"value": 0.0, "unit": "rad"})
                 print(f"  a credential with no scope limit, so only policy decides: {a['state']} {a['reasons']}; "

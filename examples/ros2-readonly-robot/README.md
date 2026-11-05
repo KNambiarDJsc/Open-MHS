@@ -26,7 +26,7 @@ This is the existing ROS 2 adapter and the existing gateway. There is no second 
 - **Explicit failure.** Silence, death, NaN, out-of-range values, missing joints, array mismatches, and stamps
   going backwards each give a failure or a flag, and no invented value.
 - **Auditability.** Reads, failed reads, denied reads and denied commands are in a hash-chained log that
-  verifies, including offline.
+  verifies, including offline. Two kinds of early refusal are the exception (see "Known limits").
 
 ## What this does NOT demonstrate
 
@@ -64,6 +64,9 @@ python3 -m unittest discover -s examples/ros2-readonly-robot -p "test_*.py" -v
 # The evaluation, about 3 minutes
 python3 examples/ros2-readonly-robot/run_evaluation.py --cycles 20 --out /tmp/robot-eval
 ```
+
+The evaluation currently exits 1. That is one failure condition it was written to catch, and it is real: two
+kinds of refused attempt leave no audit record. See "Known limits" and [RESULTS.md](RESULTS.md).
 
 ROS 2 packages used: `ros-jazzy-ros-base` only. Set `OPENMHS_BIN` or `CARGO_TARGET_DIR` if the binary is elsewhere.
 
@@ -120,6 +123,10 @@ operator's approval, its own review, and ROS-level access control such as SROS 2
 
 ## Known limits
 
+- **Two refusals are not audited.** An MCP `submit_command` to a capability that does not exist is refused by the
+  MCP server, and a plan is refused when its lease is not allowed. Neither reaches ROS 2, and neither leaves an
+  audit record, so an audit reader cannot see the attempt. Closing this means a change to the core, which this
+  evaluation did not make. Commands that do reach the engine are audited, including every other denial here.
 - **Clocks.** Freshness needs the robot's clock and the gateway's to agree. `use_sim_time` is not supported.
 - **A clock stepping back by D blinds a topic for about D**, and a looping bag until the adapter restarts. This
   environment (WSL2) steps back about 1.7 s every 30 s, so it shows up in the results.

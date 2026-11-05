@@ -60,8 +60,7 @@ class ClockWatch:
     from the wall clock, so a step here explains an odd reading; recording them keeps that visible."""
 
     def __init__(self) -> None:
-        self.steps_ms: list[float] = []  # signed; only changes above 20 ms between samples
-        self.started = time.monotonic()
+        self.steps: list[dict[str, float]] = []  # signed; only changes above 20 ms between samples
         self._stop = threading.Event()
 
     def __enter__(self) -> ClockWatch:
@@ -73,7 +72,7 @@ class ClockWatch:
         while not self._stop.wait(0.1):
             now = time.time() - time.monotonic()
             if abs(now - last) > 0.02:
-                self.steps_ms.append(round((now - last) * 1000, 1))
+                self.steps.append({"t": round(time.monotonic(), 2), "ms": round((now - last) * 1000, 1)})
             last = now
 
     def __exit__(self, *exc: object) -> None:
@@ -198,7 +197,7 @@ def scenario_b_topic_stop(run: Run, lab: RobotLab) -> None:
             neighbours_lost += 1
         t1 = lab.sim.send("start", topic="/odom")
         recovery.append((lab.wait_readable("base.position.x") - t1) * 1000)
-        run.record("B", cycle=i, first_failure_ms=p["first_failure_ms"], error=p["error"],
+        run.record("B", t=round(time.monotonic(), 2), cycle=i, first_failure_ms=p["first_failure_ms"], error=p["error"],
                    last_usable_ms=p["last_usable_ms"], recovery_ms=recovery[-1])
     run.summary["scenarios"]["B"] = {"cycles": run.cycles, "errors": errors, "values_after_first_failure": leaked,
                                      "other_topic_affected": neighbours_lost}
@@ -255,7 +254,7 @@ def scenario_cd_kill_restart(run: Run, lab: RobotLab) -> None:
         for c in ("joint.elbow.position", "base.position.x"):
             value = lab.read_plain(client, c).get("value")
             wrong += value is not None and not same(value, EXPECTED[c])
-        run.record("CD", cycle=i, first_failure_ms=p["first_failure_ms"], error=p["error"],
+        run.record("CD", t=round(time.monotonic(), 2), cycle=i, first_failure_ms=p["first_failure_ms"], error=p["error"],
                    offline_ms=availability[-1] if offline_at else None,
                    from_ready_ms=from_ready[-1], from_start_ms=from_start[-1])
     run.summary["scenarios"]["C"] = {"cycles": run.cycles, "errors": errors, "values_after_first_failure": leaked,
@@ -317,13 +316,33 @@ def scenario_f_control(run: Run, lab: RobotLab) -> None:
     for a in self_granted:
         if not a["refused"] or a.get("dispatched"):
             run.fail(9, f"a self-granted operator was not refused: {a}")
-    # Plans are another way in.
+    # Two refusals happen before any command exists: a plan the agent could not lease for, and a command to a
+    # capability the MCP server cannot find. Each must still be refused, and condition 6 asks for a record.
+    def records_after(seq: int) -> list[str]:
+        return [e.kind for e in lab.operator.audit_tail(50) if e.seq > seq and e.kind != "device.availability"]
+
     with lab.mcp() as tools:
+        seq = lab.operator.audit_tail(1)[-1].seq
         plan = tools.call("submit_plan", {"plan": {"description": "an attempt", "steps": [
             {"id": "s1", "request": {"target": {"device": DEVICE, "capability": "joint.elbow.position"},
                                      "operation": "write", "value": quantity}}]}})
-    run.summary["scenarios"]["F"]["plan"] = {"is_error": plan.is_error, "text": (plan.text or "")[:200],
-                                             "structured": str(plan.structured)[:300]}
+        time.sleep(0.2)
+        plan_records = records_after(seq)
+        seq = lab.operator.audit_tail(1)[-1].seq
+        unknown = tools.call("submit_command", {"device": DEVICE, "capability": "base.cmd_vel",
+                                                "value": {"value": 1.0, "unit": "m/s"},
+                                                "idempotency_key": "unknown-capability"})
+        time.sleep(0.2)
+        unknown_records = records_after(seq)
+    run.summary["scenarios"]["F"]["plan"] = {"refused": plan.is_error, "text": (plan.text or "")[:200],
+                                             "audit_records_added": plan_records}
+    run.summary["scenarios"]["F"]["mcp_unknown_capability"] = {
+        "refused": unknown.is_error, "text": (unknown.text or "")[:200], "audit_records_added": unknown_records}
+    for what, result, records in (("plan", plan, plan_records), ("MCP unknown capability", unknown, unknown_records)):
+        if not result.is_error:
+            run.fail(9, f"{what} was not refused: {result.text}")
+        if not records:
+            run.fail(6, f"{what}: refused with no audit record")
     graph = lab.ros("graph", "openmhs_observer")
     run.summary["scenarios"]["F"]["graph_of_adapter_node"] = graph
     extras = (set(graph.get("publishers", [])) - {"/parameter_events"}) | set(graph.get("services", [])) | set(
@@ -643,7 +662,7 @@ def main() -> int:
         late_from_the_first_message(run)
         hostile_descriptor(run)
         scenario_processes(run)
-    run.summary["metrics"]["wall_clock_steps_ms"] = clock.steps_ms
+    run.summary["metrics"]["wall_clock_steps"] = clock.steps
     run.summary["duration_s"] = round(time.monotonic() - started, 1)
     (args.out / "summary.json").write_text(json.dumps(run.summary, indent=2, default=str) + "\n", encoding="utf-8")
     run.raw.close()

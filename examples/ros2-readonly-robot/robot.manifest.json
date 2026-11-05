@@ -3,8 +3,8 @@
   "adapter": { "id": "openmhs.py.ros2", "version": "0.1.0" },
   "runtime": {
     "command": [
-      "bash", "-c",
-      "source /opt/ros/jazzy/setup.bash && exec python3 -u '{manifest_dir}/../../adapters/python/ros2/ros2_adapter.py'"
+      "bash", "-c", "source /opt/ros/jazzy/setup.bash && exec python3 -u \"$1\"", "ros2-adapter",
+      "{manifest_dir}/../../adapters/python/ros2/ros2_adapter.py"
     ],
     "env": {
       "ROS_DOMAIN_ID": "61",
