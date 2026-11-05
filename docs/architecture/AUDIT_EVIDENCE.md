@@ -3,6 +3,8 @@
 Status: implemented for the local SQLite execution kernel. Existing journals remain
 readable. This work adds no database server, transport broker or cloud dependency.
 
+Requests refused before a command exists have their own record: see [REFUSAL_AUDIT.md](REFUSAL_AUDIT.md).
+
 ## Evidence written with a command
 
 Every new `command.created` and `command.transition` record includes:

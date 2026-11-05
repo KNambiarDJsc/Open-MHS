@@ -217,5 +217,13 @@ out, and the fixture's `die` and `stop_all` commands went with it.
 | Bounded waits | Every wait in the harness has a timeout. Each adapter call has `call_timeout_ms`. A read cannot wait on ROS 2, because it reads the newest message already held |
 | Process cleanup | Tested: the robot exits at end of input, the adapter when its stdin closes. No process needed force in the confirmatory run |
 | Child-process death | Tested: adapter SIGKILL (reads fail, host restarts it, reads recover, audit verifies), robot SIGKILL, gateway SIGKILL (adapter exits) |
-| Audit integrity | `audit verify`, and offline `verify-file`. **Gap:** two early refusals leave no record (RESULTS.md) |
+| Audit integrity | `audit verify`, and offline `verify-file`. Refused requests leave records since `5acdd25`, without values, reasons or the token ([REFUSAL_AUDIT.md](../../docs/architecture/REFUSAL_AUDIT.md)). At `6a324f4` two kinds did not; the evaluation found that |
 | Not covered | DDS itself is not secured here: anything on the domain can publish false state, and OpenMHS would report it with `source: simulator` or `device` as configured. Signed manifests are not used by this example (`--allow-unsigned-adapters`, development only). OpenMHS has not been security audited |
+
+## 7. What the evaluation found in OpenMHS
+
+The run at `6a324f4` failed its own condition 6, and that led to a change in the core, which this evaluation had set out
+to avoid. Section 1 answered "is a core change necessary?" with no. That was true of reading a robot, and it was the wrong
+question for the audit. The fix is at the gateway's boundary and in the clients, and this example has no part in it:
+[REFUSAL_AUDIT.md](../../docs/architecture/REFUSAL_AUDIT.md). The architecture review in section 5 still holds, except
+that a Rust crate has now changed.

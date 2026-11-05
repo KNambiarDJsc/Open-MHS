@@ -9,6 +9,16 @@ and the entry will say so under **Changed** or **Removed**.
 
 ### Fixed
 
+- **Refused requests leave evidence** ([REFUSAL_AUDIT.md](docs/architecture/REFUSAL_AUDIT.md)). A plan or lease refused,
+  a watch on an ungranted capability, acting on another caller's command, an approval without authority, an idempotency
+  conflict, and any operator-only method called by an agent all returned an error and recorded nothing. They now
+  leave `request.rejected`, with the method, the code, who, and normalized identifiers, never values or messages. MCP
+  `submit_command` and `openmhs exec` refused an unknown device or capability themselves, so the gateway never saw the
+  attempt. They now forward it, and it is denied and recorded like any command. Through MCP, that also means a scoped
+  credential gets `auth.scope.denied` rather than learning whether a capability exists, and the answer is a denied
+  receipt rather than a text error. The `request.rejected` record of a schema failure no longer keeps error messages,
+  which can quote the input. Found by the [read-only robot evaluation](examples/ros2-readonly-robot/RESULTS.md).
+
 - **ROS 2 adapter.** A value outside the descriptor's `range` was returned as `GOOD`, and is now
   `adapter.malformed_response`. An older message could replace a newer one; now it cannot, and stamps held
   behind become a failure that says so. A message with no stamp was given the time of the read rather than the

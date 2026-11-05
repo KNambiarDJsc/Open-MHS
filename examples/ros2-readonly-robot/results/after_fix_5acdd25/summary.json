@@ -1,0 +1,582 @@
+{
+  "metrics": {
+    "read_success_rate": "260/260",
+    "observation_age_ms": {
+      "n": 260,
+      "min": 4,
+      "median": 50.0,
+      "max": 450
+    },
+    "denied_reads": 4,
+    "stale_detection_ms": {
+      "n": 20,
+      "min": 444.7,
+      "median": 469.7,
+      "max": 516.3
+    },
+    "last_usable_after_stop_ms": {
+      "n": 20,
+      "min": 416.0,
+      "median": 439.1,
+      "max": 486.8
+    },
+    "topic_recovery_ms": {
+      "n": 20,
+      "min": 47.3,
+      "median": 80.0,
+      "max": 118.5
+    },
+    "disconnect_detection_ms": {
+      "n": 20,
+      "min": 456.4,
+      "median": 504.2,
+      "max": 516.2
+    },
+    "availability_change_ms": {
+      "n": 20,
+      "min": 767.9,
+      "median": 820.1,
+      "max": 843.1
+    },
+    "reconnect_from_ready_ms": {
+      "n": 20,
+      "min": 101.3,
+      "median": 118.7,
+      "max": 468.3
+    },
+    "reconnect_from_process_start_ms": {
+      "n": 20,
+      "min": 644.9,
+      "median": 708.0,
+      "max": 1091.6
+    },
+    "denied_commands": "12/12",
+    "commands_reaching_control_surfaces": 0,
+    "audit_verification": "audit log intact: 2786 records, hash chain verified",
+    "wall_clock_steps": []
+  },
+  "scenarios": {
+    "A": {
+      "attempts": 260,
+      "successes": 260,
+      "usable": 260,
+      "wrong_value": 0,
+      "wrong_source": 0,
+      "failed_reads": {}
+    },
+    "E": {
+      "diagnostics.driver.message": {
+        "state": "DENIED",
+        "error": "auth.scope.denied",
+        "value": null
+      },
+      "tf.base_link.x": {
+        "state": "DENIED",
+        "error": "auth.scope.denied",
+        "value": null
+      },
+      "cmd_vel.linear.x": {
+        "state": "DENIED",
+        "error": "auth.scope.denied",
+        "value": null
+      },
+      "another device": {
+        "state": "DENIED",
+        "error": "auth.scope.denied",
+        "value": null
+      }
+    },
+    "B": {
+      "cycles": 20,
+      "errors": {
+        "adapter.disconnected": 20
+      },
+      "values_after_first_failure": 0,
+      "other_topic_affected": 0
+    },
+    "C": {
+      "cycles": 20,
+      "errors": {
+        "adapter.disconnected": 20
+      },
+      "values_after_first_failure": 0,
+      "values_from_any_capability_when_all_silent": 0
+    },
+    "D": {
+      "cycles": 20,
+      "wrong_values_after_reconnect": 0,
+      "gateway_restarted": false
+    },
+    "G": {
+      "nan_joint": {
+        "capability": "joint.elbow.position",
+        "got": {
+          "error": "adapter.device_failure",
+          "message": "[adapter.device_failure] adapter: [adapter.device_failure] /joint_states.position[name=elbow]: the robot reports no value (nan)"
+        },
+        "as_expected": true,
+        "reads_until_expected": 1
+      },
+      "inf_odom": {
+        "capability": "base.position.x",
+        "got": {
+          "error": "adapter.device_failure",
+          "message": "[adapter.device_failure] adapter: [adapter.device_failure] /odom.pose.pose.position.x: the robot reports no value (inf)"
+        },
+        "as_expected": true,
+        "reads_until_expected": 1
+      },
+      "nan_battery_temperature": {
+        "capability": "battery.temperature",
+        "got": {
+          "error": "adapter.device_failure",
+          "message": "[adapter.device_failure] adapter: [adapter.device_failure] /battery_state.temperature: the robot reports no value (nan)"
+        },
+        "as_expected": true,
+        "reads_until_expected": 1
+      },
+      "range_joint": {
+        "capability": "joint.elbow.position",
+        "got": {
+          "error": "adapter.malformed_response",
+          "message": "[adapter.malformed_response] adapter: [adapter.malformed_response] /joint_states.position[name=elbow]: outside the declared range {'max': 6.3, 'min': -6.3} (got 1000.0)"
+        },
+        "as_expected": true,
+        "reads_until_expected": 1
+      },
+      "range_battery": {
+        "capability": "battery.charge",
+        "got": {
+          "error": "adapter.malformed_response",
+          "message": "[adapter.malformed_response] adapter: [adapter.malformed_response] /battery_state.percentage: outside the declared range {'max': 1, 'min': 0} (got 7.0)"
+        },
+        "as_expected": true,
+        "reads_until_expected": 1
+      },
+      "empty_positions": {
+        "capability": "joint.elbow.position",
+        "got": {
+          "error": "adapter.malformed_response",
+          "message": "[adapter.malformed_response] adapter: [adapter.malformed_response] /joint_states: no field position[name=elbow] (position has 0 entries and name has 3)"
+        },
+        "as_expected": true,
+        "reads_until_expected": 1
+      },
+      "mismatched_arrays": {
+        "capability": "joint.shoulder.position",
+        "got": {
+          "error": "adapter.malformed_response",
+          "message": "[adapter.malformed_response] adapter: [adapter.malformed_response] /joint_states: no field position[name=shoulder] (position has 2 entries and name has 3)"
+        },
+        "as_expected": true,
+        "reads_until_expected": 1
+      },
+      "missing_joint": {
+        "capability": "joint.elbow.position",
+        "got": {
+          "error": "adapter.malformed_response",
+          "message": "[adapter.malformed_response] adapter: [adapter.malformed_response] /joint_states: no field position[name=elbow] (0 entries of name are elbow)"
+        },
+        "as_expected": true,
+        "reads_until_expected": 1
+      },
+      "no_diag_status": {
+        "capability": "diagnostics.driver.level",
+        "got": {
+          "error": "adapter.malformed_response",
+          "message": "[adapter.malformed_response] adapter: [adapter.malformed_response] /diagnostics: no field status[name=driver].level (no entry of status has name=driver)"
+        },
+        "as_expected": true,
+        "reads_until_expected": 1
+      },
+      "reordered_joints": {
+        "capability": "joint.shoulder.position",
+        "got": {
+          "value": 0.5,
+          "unit": "rad",
+          "timestamp": "2026-11-05T11:46:50.922Z",
+          "seconds": 42410.922,
+          "age_ms": 19,
+          "usable": true,
+          "quality": "GOOD",
+          "source": "simulator"
+        },
+        "as_expected": true,
+        "reads_until_expected": 1
+      },
+      "diag_error": {
+        "capability": "diagnostics.driver.level",
+        "got": {
+          "value": 2,
+          "unit": null,
+          "timestamp": "2026-11-05T11:46:52.421Z",
+          "seconds": 42412.421,
+          "age_ms": 158,
+          "usable": true,
+          "quality": "GOOD",
+          "source": "simulator"
+        },
+        "as_expected": true,
+        "reads_until_expected": 1
+      }
+    },
+    "H": {
+      "late_stamp": {
+        "failed_after_ms": 474.64557600000035,
+        "last_usable_ms": 440.8340399999986,
+        "error": "adapter.malformed_response",
+        "during": {
+          "error": "adapter.malformed_response",
+          "message": "[adapter.malformed_response] adapter: [adapter.malformed_response] /joint_states: nothing acceptable for 525 ms; 10 messages stamped older than the newest one accepted"
+        },
+        "recovered_after_ms": 78.7,
+        "as_expected": true
+      },
+      "future_stamp": {
+        "got": {
+          "value": -1.2,
+          "unit": "rad",
+          "timestamp": "2026-11-05T12:46:54.322Z",
+          "seconds": 46014.322,
+          "age_ms": -3599943,
+          "usable": false,
+          "quality": "GOOD",
+          "source": "simulator"
+        },
+        "as_expected": true,
+        "usable_again_after_ms": 81.6
+      },
+      "zero_stamp": {
+        "while_publishing": {
+          "value": -1.2,
+          "unit": "rad",
+          "timestamp": "2026-11-05T11:46:54.77Z",
+          "seconds": 42414.77,
+          "age_ms": 29,
+          "usable": true,
+          "quality": "GOOD",
+          "source": "simulator"
+        },
+        "after_300_ms_of_silence": {
+          "value": -1.2,
+          "unit": "rad",
+          "timestamp": "2026-11-05T11:46:54.77Z",
+          "seconds": 42414.77,
+          "age_ms": 346,
+          "usable": true,
+          "quality": "GOOD",
+          "source": "simulator"
+        },
+        "failed_after_ms": 488.7492430000009,
+        "as_expected": true
+      },
+      "regress_small": {
+        "reads_with_value": 200,
+        "usable": 200,
+        "reads_with_no_value": 0,
+        "reads_going_back_in_time": 0,
+        "as_expected": true
+      },
+      "regress_step": {
+        "failed_after_ms": 498.20537499999773,
+        "error": "adapter.malformed_response",
+        "during": {
+          "error": "adapter.malformed_response",
+          "message": "[adapter.malformed_response] adapter: [adapter.malformed_response] /joint_states: nothing acceptable for 530 ms; 10 messages stamped older than the newest one accepted"
+        },
+        "recovered_after_ms": 191.4,
+        "as_expected": true
+      },
+      "late_from_the_first_message": {
+        "got": {
+          "value": -1.2,
+          "unit": "rad",
+          "timestamp": "2026-11-05T11:47:05.42Z",
+          "seconds": 42425.42,
+          "age_ms": 5013,
+          "usable": false,
+          "quality": "GOOD",
+          "source": "simulator"
+        },
+        "as_expected": true
+      }
+    },
+    "J": {
+      "grounding_problems": [],
+      "statements_normal": 11,
+      "statements_topic_stopped": 9
+    },
+    "F": {
+      "attempts": [
+        {
+          "credential": "scoped agent",
+          "capability": "joint.elbow.position",
+          "operation": "write",
+          "refused": true,
+          "state": "DENIED",
+          "code": "auth.scope.denied",
+          "dispatched": false
+        },
+        {
+          "credential": "scoped agent",
+          "capability": "joint.elbow.position",
+          "operation": "invoke",
+          "refused": true,
+          "state": "DENIED",
+          "code": "auth.scope.denied",
+          "dispatched": false
+        },
+        {
+          "credential": "scoped agent",
+          "capability": "base.cmd_vel",
+          "operation": "write",
+          "refused": true,
+          "state": "DENIED",
+          "code": "auth.scope.denied",
+          "dispatched": false
+        },
+        {
+          "credential": "scoped agent",
+          "capability": "joint.elbow.move",
+          "operation": "invoke",
+          "refused": true,
+          "state": "DENIED",
+          "code": "auth.scope.denied",
+          "dispatched": false
+        },
+        {
+          "credential": "unscoped agent (policy only)",
+          "capability": "joint.elbow.position",
+          "operation": "write",
+          "refused": true,
+          "state": "DENIED",
+          "code": "policy.denied.explicit",
+          "dispatched": false
+        },
+        {
+          "credential": "unscoped agent (policy only)",
+          "capability": "joint.elbow.position",
+          "operation": "invoke",
+          "refused": true,
+          "state": "DENIED",
+          "code": "policy.denied.explicit",
+          "dispatched": false
+        },
+        {
+          "credential": "unscoped agent (policy only)",
+          "capability": "base.cmd_vel",
+          "operation": "write",
+          "refused": true,
+          "state": "DENIED",
+          "code": "command.capability.unknown",
+          "dispatched": false
+        },
+        {
+          "credential": "unscoped agent (policy only)",
+          "capability": "joint.elbow.move",
+          "operation": "invoke",
+          "refused": true,
+          "state": "DENIED",
+          "code": "command.capability.unknown",
+          "dispatched": false
+        },
+        {
+          "credential": "operator",
+          "capability": "joint.elbow.position",
+          "operation": "write",
+          "refused": true,
+          "state": "DENIED",
+          "code": "policy.denied.no_grant",
+          "dispatched": false
+        },
+        {
+          "credential": "operator",
+          "capability": "joint.elbow.position",
+          "operation": "invoke",
+          "refused": true,
+          "state": "DENIED",
+          "code": "policy.denied.no_grant",
+          "dispatched": false
+        },
+        {
+          "credential": "operator",
+          "capability": "base.cmd_vel",
+          "operation": "write",
+          "refused": true,
+          "state": "DENIED",
+          "code": "command.capability.unknown",
+          "dispatched": false
+        },
+        {
+          "credential": "operator",
+          "capability": "joint.elbow.move",
+          "operation": "invoke",
+          "refused": true,
+          "state": "DENIED",
+          "code": "command.capability.unknown",
+          "dispatched": false
+        }
+      ],
+      "operator_with_a_grant_for_everything": [
+        {
+          "capability": "joint.elbow.position",
+          "operation": "write",
+          "refused": true,
+          "state": "DENIED",
+          "code": "command.operation.unsupported",
+          "dispatched": false
+        },
+        {
+          "capability": "joint.elbow.position",
+          "operation": "invoke",
+          "refused": true,
+          "state": "DENIED",
+          "code": "command.operation.unsupported",
+          "dispatched": false
+        }
+      ],
+      "agent_creating_a_token": {
+        "refused": true,
+        "code": "gateway.forbidden",
+        "audit_records_added": [
+          "request.rejected"
+        ]
+      },
+      "plan": {
+        "refused": true,
+        "text": "[lease.not_authorized] 'agent:robot-observer' cannot write or invoke anything on 'ros2.sim-robot-01', so it cannot lease it\nnext step: You may lease only devices you could operate. Leave the others ou",
+        "audit_records_added": [
+          "request.rejected"
+        ]
+      },
+      "mcp_unknown_capability": {
+        "refused": true,
+        "text": "{\"capability\":\"base.cmd_vel\",\"command_id\":\"01a1ab88-a4af-76ca-b0c4-5ec14706fa53\",\"confirmed\":false,\"device\":\"ros2.sim-robot-01\",\"next_steps\":[],\"outcome\":\"denied\",\"reached_device\":false,\"reasons\":[{\"c",
+        "audit_records_added": [
+          "command.created",
+          "command.transition",
+          "command.transition"
+        ]
+      },
+      "graph_of_adapter_node": {
+        "found": true,
+        "node": "openmhs_observer",
+        "publishers": [
+          "/parameter_events"
+        ],
+        "subscriptions": [
+          "/battery_state",
+          "/diagnostics",
+          "/joint_states",
+          "/odom"
+        ],
+        "services": [],
+        "service_clients": [],
+        "action_servers": [],
+        "action_clients": []
+      },
+      "positive_control": {
+        "reached": {
+          "/cmd_vel": true,
+          "/joint_trajectory": true,
+          "/robot/set_mode": true,
+          "/robot/run_task": true,
+          "parameter:max_speed": true
+        },
+        "counted": [
+          "/cmd_vel",
+          "/joint_trajectory",
+          "/robot/run_task",
+          "/robot/set_mode",
+          "parameter:max_speed"
+        ]
+      },
+      "descriptor_declaring_write": {
+        "gateway_started": false,
+        "message": "with 1: warning: --allow-unsigned-adapters: adapter manifests are NOT verified. Use this for development only.\nerror: /tmp/openmhs-robot-sdy7kkc8/robot.manifest.json: initialize failed: config: joint.shoulder.position: operations ['write'] are not supported; the ROS 2 adapter only observes (-32000)\n"
+      }
+    },
+    "I": {
+      "records_by_kind": {
+        "gateway.started": 1,
+        "device.registered": 1,
+        "gateway.recovered": 1,
+        "policy.updated": 15,
+        "grant.added": 15,
+        "token.created": 2,
+        "read": 2543,
+        "read.denied": 4,
+        "device.availability": 157,
+        "command.created": 15,
+        "command.transition": 30,
+        "request.rejected": 2
+      },
+      "reads_recorded_as_failed": 1125,
+      "denied_read_records": 4,
+      "denied_read_capabilities": [
+        "cmd_vel.linear.x",
+        "diagnostics.driver.message",
+        "output.voltage",
+        "tf.base_link.x"
+      ],
+      "denied_command_records": 15,
+      "rejected_requests": [
+        {
+          "method": "plans.submit",
+          "code": "lease.not_authorized",
+          "principal": "agent:robot-observer",
+          "target": {
+            "devices": [
+              "ros2.sim-robot-01"
+            ],
+            "steps": 1
+          }
+        },
+        {
+          "method": "tokens.create",
+          "code": "gateway.forbidden",
+          "principal": "agent:robot-observer",
+          "target": {
+            "principal": "agent:another",
+            "role": "agent"
+          }
+        }
+      ],
+      "agent_token_in_any_record": false,
+      "audit_verify": {
+        "exit": 0,
+        "output": "audit log intact: 2786 records, hash chain verified"
+      },
+      "export_exit": 0,
+      "verify_file": {
+        "exit": 0,
+        "output": "{\n  \"valid\": true,\n  \"complete\": true,\n  \"records\": 2786,\n  \"receipts\": 15,\n  \"unbound_commands\": [],\n  \"errors\": []\n}"
+      }
+    },
+    "processes": {
+      "adapter_kill": {
+        "first_failure_ms": 10.001969999990479,
+        "error": "adapter.disconnected",
+        "recovered_after_ms": 2791.6,
+        "audit_verify_exit": 0
+      },
+      "gateway_kill": {
+        "adapter_gone_after_ms": 152.5
+      },
+      "leftover_needing_force": []
+    }
+  },
+  "failures": [],
+  "environment": {
+    "commit": "5acdd25057d43783018a40af306dc68bcfb08995",
+    "uncommitted_changes": "",
+    "date_utc": "2026-11-05T11:44:52Z",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "python": "3.12.3",
+    "distribution": "Ubuntu 24.04.4 LTS",
+    "rmw": "rmw_fastrtps_cpp",
+    "ros_distro": "jazzy"
+  },
+  "cycles": 20,
+  "duration_s": 139.7
+}

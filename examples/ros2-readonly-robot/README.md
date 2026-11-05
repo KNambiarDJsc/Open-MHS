@@ -25,8 +25,9 @@ This is the existing ROS 2 adapter and the existing gateway. There is no second 
   gateway said `usable`; the agent adds no rule of its own.
 - **Explicit failure.** Silence, death, NaN, out-of-range values, missing joints, array mismatches, and stamps
   going backwards each give a failure or a flag, and no invented value.
-- **Auditability.** Reads, failed reads, denied reads and denied commands are in a hash-chained log that
-  verifies, including offline. Two kinds of early refusal are the exception (see "Known limits").
+- **Auditability.** Reads, failed reads, denied reads, denied commands and other refused requests are in a
+  hash-chained log that verifies, including offline. The record says who, what and why, and not the request's values.
+  What is deliberately not recorded is under "Known limits".
 
 ## What this does NOT demonstrate
 
@@ -65,8 +66,8 @@ python3 -m unittest discover -s examples/ros2-readonly-robot -p "test_*.py" -v
 python3 examples/ros2-readonly-robot/run_evaluation.py --cycles 20 --out /tmp/robot-eval
 ```
 
-The evaluation currently exits 1. That is one failure condition it was written to catch, and it is real: two
-kinds of refused attempt leave no audit record. See "Known limits" and [RESULTS.md](RESULTS.md).
+The evaluation exits 0 if none of its failure conditions is met. It did not always: its first run with the audit
+check failed, on a real gap, which was then fixed in OpenMHS. [RESULTS.md](RESULTS.md) has the record.
 
 ROS 2 packages used: `ros-jazzy-ros-base` only. Set `OPENMHS_BIN` or `CARGO_TARGET_DIR` if the binary is elsewhere.
 
@@ -96,7 +97,8 @@ Instructions in a prompt can be argued with. These cannot, because they hold wha
 4. **The adapter refuses a descriptor that declares one**, so the gateway will not start with it, and the manifest
    allows `read` only.
 5. **The credential and the policy also refuse**: `auth.scope.denied` for the scoped agent, `policy.denied.explicit`
-   for an agent with no scope limit.
+   for an agent with no scope limit. Each refusal is audited, and so is the agent trying to create itself a new
+   credential.
 
 The simulated robot hosts real control surfaces (`/cmd_vel`, `/joint_trajectory`, `/robot/set_mode`, an action
 server, and a parameter), each of which counts what reaches it. The count stays at zero through all of this. Then a
@@ -123,10 +125,9 @@ operator's approval, its own review, and ROS-level access control such as SROS 2
 
 ## Known limits
 
-- **Two refusals are not audited.** An MCP `submit_command` to a capability that does not exist is refused by the
-  MCP server, and a plan is refused when its lease is not allowed. Neither reaches ROS 2, and neither leaves an
-  audit record, so an audit reader cannot see the attempt. Closing this means a change to the core, which this
-  evaluation did not make. Commands that do reach the engine are audited, including every other denial here.
+- **Not every refused request is recorded, on purpose.** Unauthenticated requests, queries, advisory checks and
+  requests with no identifiable operation leave nothing, and near the journal's limit a refusal is not recorded
+  ([REFUSAL_AUDIT.md](../../docs/architecture/REFUSAL_AUDIT.md)).
 - **Clocks.** Freshness needs the robot's clock and the gateway's to agree. `use_sim_time` is not supported.
 - **A clock stepping back by D blinds a topic for about D**, and a looping bag until the adapter restarts. This
   environment (WSL2) steps back about 1.7 s every 30 s, so it shows up in the results.
@@ -150,7 +151,7 @@ operator's approval, its own review, and ROS-level access control such as SROS 2
 | [DESIGN.md](DESIGN.md) | The audit, external facts with sources, decisions, and what running it changed |
 | [EVALUATION.md](EVALUATION.md) | Hypotheses, scenarios, expected behaviour, failure conditions, metrics |
 | [RESULTS.md](RESULTS.md) | What was measured |
-| [DEMO_TRANSCRIPT.txt](DEMO_TRANSCRIPT.txt) | The demo's output from a clean checkout |
+| [DEMO_TRANSCRIPT.txt](DEMO_TRANSCRIPT.txt) | The demo's output from a clean checkout, at `5acdd25` |
 | `robot.manifest.json` | Capabilities, topics, and what the adapter may do |
 | `sim_robot.py` | The simulated robot: publishers, control surfaces, faults |
 | `robot_lab.py` | Starts the robot, gateway, grants and credential |
@@ -158,4 +159,4 @@ operator's approval, its own review, and ROS-level access control such as SROS 2
 | `agent.py` | The scripted agent and the grounding check |
 | `run_demo.py`, `run_evaluation.py` | The demo and the evaluation |
 | `test_robot_example.py` | The tests |
-| `results/` | Raw evaluation output and the baseline against the unchanged adapter |
+| `results/` | Raw output: `after_fix_5acdd25/`, `before_fix_6a324f4/` (the run that found the audit gap), `regression_tests/`, and the baseline against the unchanged adapter |

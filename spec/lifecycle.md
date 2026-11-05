@@ -110,7 +110,7 @@ Agents usually only need the coarse class:
 ## 3a. Validation order
 
 1. Command schema. Failure → error to the caller; no command is created (audited as
-   `request.rejected`).
+   `request.rejected`, without the input).
 2. Device and capability exist.
 3. Authorization. Denied requests cause **no device traffic at all**.
 4. Stateless checks: operation, types, units, ranges, parameters. Failures cause no

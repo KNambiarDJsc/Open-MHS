@@ -1,0 +1,25 @@
+SIMULATED DATA (a simulated robot; not a real robot)
+- The pose below is odometry: base_link in frame odom, not a position on any map. [1][2]
+- Odometry position: x 1.25 m, current; y -0.5 m, current. [3][4]
+- Odometry orientation quaternion: z 0, current; w 1, current. [5][6]
+- These pose values were read one at a time; their timestamps span 0 ms. [1][2][3][4][5][6]
+- Joint shoulder: 0.5 rad, current. [7]
+- Joint elbow: -1.2 rad, current. [8]
+- Joint wrist: 0.3 rad, current. [9]
+- Battery voltage: 24.8 V, current. [10]
+- Battery charge as reported: 0.72, current. [11]
+- The driver reports diagnostic level 0 (OK), current. [12]
+- Every observation asked for returned a value. [1][2][3][4][5][6][7][8][9][10][11][12]
+Evidence:
+  [1] base.frame: odom; state=CURRENT; time=2026-11-05T11:46:59.82Z; age_ms=21/1000; quality=GOOD; source=simulator
+  [2] base.child_frame: base_link; state=CURRENT; time=2026-11-05T11:46:59.82Z; age_ms=26/1000; quality=GOOD; source=simulator
+  [3] base.position.x: 1.25 m; state=CURRENT; time=2026-11-05T11:46:59.82Z; age_ms=30/1000; quality=GOOD; source=simulator
+  [4] base.position.y: -0.5 m; state=CURRENT; time=2026-11-05T11:46:59.82Z; age_ms=33/1000; quality=GOOD; source=simulator
+  [5] base.orientation.z: 0; state=CURRENT; time=2026-11-05T11:46:59.82Z; age_ms=39/1000; quality=GOOD; source=simulator
+  [6] base.orientation.w: 1; state=CURRENT; time=2026-11-05T11:46:59.82Z; age_ms=43/1000; quality=GOOD; source=simulator
+  [7] joint.shoulder.position: 0.5 rad; state=CURRENT; time=2026-11-05T11:46:59.82Z; age_ms=47/1000; quality=GOOD; source=simulator
+  [8] joint.elbow.position: -1.2 rad; state=CURRENT; time=2026-11-05T11:46:59.82Z; age_ms=51/1000; quality=GOOD; source=simulator
+  [9] joint.wrist.position: 0.3 rad; state=CURRENT; time=2026-11-05T11:46:59.87Z; age_ms=6/1000; quality=GOOD; source=simulator
+  [10] battery.voltage: 24.8 V; state=CURRENT; time=2026-11-05T11:46:59.82Z; age_ms=61/2000; quality=GOOD; source=simulator
+  [11] battery.charge: 0.72; state=CURRENT; time=2026-11-05T11:46:59.82Z; age_ms=65/2000; quality=GOOD; source=simulator
+  [12] diagnostics.driver.level: 0; state=CURRENT; time=2026-11-05T11:46:58.723Z; age_ms=1166/3000; quality=GOOD; source=simulator
