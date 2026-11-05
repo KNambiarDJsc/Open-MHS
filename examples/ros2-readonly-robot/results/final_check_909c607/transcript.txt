@@ -1,0 +1,29 @@
+no ROS_, OPENMHS_ or CARGO_TARGET_DIR in the environment
+909c607 examples: each robot run has its own ROS log directory
+as: researcher
+status: []
+openflexure in the clone: none
+--- cargo build -p openmhs-cli
+build exit 0
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 52.26s
+--- demo
+demo exit 0
+The demo behaved as described.
+--- tests
+tests exit 0
+Ran 48 tests in 41.834s
+
+OK
+--- evaluation
+evaluation exit 0
+failures: 0
+status after: []
+--- adapter tests, conformance
+/opt/ros/jazzy/setup.bash: line 8: AMENT_TRACE_SETUP_FILES: unbound variable
+conformance exit 0
+ros2.robot-01 (openmhs.py.ros2 0.1.0): reached L1, declared L1 -> PASS
+  29 pass, 0 fail, 0 untested, 6 not applicable, in 1670 ms
+--- cargo test --workspace
+workspace exit 0
+passed 611 failed 0 ignored 0
+leftover: 0

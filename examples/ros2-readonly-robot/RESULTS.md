@@ -17,6 +17,29 @@ uncommitted changes. Raw output is in [results/after_fix_5acdd25/](results/after
    ([REFUSAL_AUDIT.md](../../docs/architecture/REFUSAL_AUDIT.md)).
 5. **The evaluation was rerun.** It now exits 0: no failure condition was met.
 
+## Final check, as a new user
+
+A new unprivileged user on the same host, with its own Rust, a fresh copy of the branch at `909c607`, and no `ROS_`,
+`OPENMHS_` or `CARGO_TARGET_DIR` set, ran the README's commands exactly. A root-owned log directory from an older run was
+left in `/tmp` on purpose. Raw output is in [results/final_check_909c607/](results/final_check_909c607/).
+
+| Step | Result |
+|---|---|
+| `cargo build -p openmhs-cli` | Built |
+| `run_demo.py` | Exit 0 |
+| Example tests | 48 passed, with ResourceWarnings as errors |
+| `run_evaluation.py --cycles 20` | **Exit 0, no failures**, 133 s. 0 commands at control surfaces; positive control counted all 5; 2 `request.rejected`, 15 denied receipts; audit valid over 2770 records; no clock steps |
+| ROS 2 adapter tests | 16 passed |
+| Existing ROS 2 conformance | L1 reached, 29 pass, 0 fail |
+| `cargo test --workspace` on Linux | 611 passed, 0 failed |
+| Repository after all of it | No changed or stray files, and no processes left |
+
+The user could not read the Windows checkout directly, so its copy was cloned from there by root and handed over. Nothing
+else it needed came from outside the clone.
+
+The latencies below are from `5acdd25`. This run's differ by tens of milliseconds, which is about what two runs on this
+host differ by. Its widest stale detection was 544 ms, against 516 ms below, still under the 1000 ms bound.
+
 ## Outcome
 
 | Hypothesis | At `6a324f4` | At `5acdd25` |
@@ -165,8 +188,9 @@ From [results/baseline_unmodified_adapter/baseline.json](results/baseline_unmodi
    119 ms, the other topic is unaffected, and `missing_joint` needs 1. That fits the documented cost of the ordering rule,
    that a clock stepping back by D blinds a topic for about D. But the comparison is two runs, not a controlled test.
 3. **Unexplained: slow reconnects.** 3 of 20 cycles (0, 7 and 12) took 435 to 468 ms from `ready`, against about 115 ms for
-   the others. The earlier run had 2 of 20 the same way. With no clock steps in this run, the clock is ruled out for
-   these. Discovery is a guess; the cause is not established.
+   the others. The earlier run had 2 of 20 the same way, and the final check 6 of 20 (410 to 482 ms). It looks like two
+   modes, about 340 ms apart. With no clock steps in these runs, the clock is ruled out. Discovery is a guess; the cause
+   is not established. A reconnect still completed every time, with correct values.
 4. **The adapter restart varies.** Usable again at 2.8 s here, and at 1.8 s, 2.7 s and 4.1 s in other runs. One sample per
    run, not characterized.
 5. **The first version of the evaluation passed when it should not have.** The first full run (`97fd41f`) had zero
@@ -178,8 +202,8 @@ From [results/baseline_unmodified_adapter/baseline.json](results/baseline_unmodi
 | Kind | What | Result |
 |---|---|---|
 | Rust, regression | `crates/openmhs-gateway/tests/refusal_audit.rs` (22), `refusal.rs` unit tests (7), MCP (4), CLI (1) | Pass. Before the fix: 13 of the 21 first written, and all 5 MCP and CLI, failed. The other 8 pin what must not change, and passed before and after |
-| Rust, regression | `cargo test --workspace` on Windows | 610 passed, 0 failed |
-| Unit, no ROS 2 | 16 example tests: manifest contract, agent state mapping, grounding | Pass, on Windows (Python 3.13) and Linux |
+| Rust, regression | `cargo test --workspace` | 610 passed on Windows, 611 on Linux as an ordinary user, 0 failed |
+| Unit, no ROS 2 | 18 example tests: manifest contract, lab environment, agent state mapping, grounding | Pass, on Windows (Python 3.13) and Linux |
 | Unit, in ROS 2 | `adapters/python/ros2/test_ros2.py` | 16 pass |
 | Integration, simulated ROS 2 | 30 example tests: real gateway, real adapter, real DDS, simulated robot, `-W error::ResourceWarning` | Pass on a clean clone |
 | Evaluation, simulated ROS 2 | This document | 0 failures |
@@ -200,7 +224,7 @@ refusal record: the code handles it, and no test does. The new CI step has not r
 - After the rerun at `5acdd25`, a check as an unprivileged user failed: every earlier run in this document was as root,
   and the example used a fixed ROS log directory in `/tmp`, so a directory left by another user stopped the robot
   starting, with only "no ready within 30 s" to say so. Each run now has its own, and the robot's stderr is in the error.
-  This touches no measured path. The final check below ran as an unprivileged user.
+  This touches no measured path. The final check above ran as an unprivileged user.
 - The run at `6a324f4` is the first with the audit check, and it failed. See "What happened" above.
 - Amendment 1 in the plan: after that run, an agent calling `tokens.create` was added to scenario F, and the agent's
   token in any record was added to scenario I. Condition 6 itself did not change.

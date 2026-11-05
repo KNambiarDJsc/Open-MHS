@@ -1,7 +1,7 @@
 SIMULATED. No real robot is involved. This is not a safety system.
 
 === 1. A simulated robot and a gateway are up; the agent holds a read-only credential
-  ROS 2 domain 198, localhost discovery only, one clock for everything
+  ROS 2 domain 129, localhost discovery only, one clock for everything
   The adapter's node in the ROS graph: publishes ['/parameter_events']; services []; service clients []; action clients []
 
 === 2. The agent reads the robot
@@ -19,23 +19,23 @@ SIMULATED DATA (a simulated robot; not a real robot)
 - The driver reports diagnostic level 0 (OK), current. [12]
 - Every observation asked for returned a value. [1][2][3][4][5][6][7][8][9][10][11][12]
 Evidence:
-  [1] base.frame: odom; state=CURRENT; time=2026-11-05T11:44:44.547Z; age_ms=5/1000; quality=GOOD; source=simulator
-  [2] base.child_frame: base_link; state=CURRENT; time=2026-11-05T11:44:44.547Z; age_ms=11/1000; quality=GOOD; source=simulator
-  [3] base.position.x: 1.25 m; state=CURRENT; time=2026-11-05T11:44:44.547Z; age_ms=16/1000; quality=GOOD; source=simulator
-  [4] base.position.y: -0.5 m; state=CURRENT; time=2026-11-05T11:44:44.547Z; age_ms=20/1000; quality=GOOD; source=simulator
-  [5] base.orientation.z: 0; state=CURRENT; time=2026-11-05T11:44:44.547Z; age_ms=25/1000; quality=GOOD; source=simulator
-  [6] base.orientation.w: 1; state=CURRENT; time=2026-11-05T11:44:44.547Z; age_ms=30/1000; quality=GOOD; source=simulator
-  [7] joint.shoulder.position: 0.5 rad; state=CURRENT; time=2026-11-05T11:44:44.547Z; age_ms=34/1000; quality=GOOD; source=simulator
-  [8] joint.elbow.position: -1.2 rad; state=CURRENT; time=2026-11-05T11:44:44.547Z; age_ms=38/1000; quality=GOOD; source=simulator
-  [9] joint.wrist.position: 0.3 rad; state=CURRENT; time=2026-11-05T11:44:44.547Z; age_ms=43/1000; quality=GOOD; source=simulator
-  [10] battery.voltage: 24.8 V; state=CURRENT; time=2026-11-05T11:44:44.447Z; age_ms=147/2000; quality=GOOD; source=simulator
-  [11] battery.charge: 0.72; state=CURRENT; time=2026-11-05T11:44:44.447Z; age_ms=151/2000; quality=GOOD; source=simulator
-  [12] diagnostics.driver.level: 0; state=CURRENT; time=2026-11-05T11:44:44.35Z; age_ms=253/3000; quality=GOOD; source=simulator
+  [1] base.frame: odom; state=CURRENT; time=2026-11-05T12:08:44.257Z; age_ms=13/1000; quality=GOOD; source=simulator
+  [2] base.child_frame: base_link; state=CURRENT; time=2026-11-05T12:08:44.257Z; age_ms=32/1000; quality=GOOD; source=simulator
+  [3] base.position.x: 1.25 m; state=CURRENT; time=2026-11-05T12:08:44.257Z; age_ms=42/1000; quality=GOOD; source=simulator
+  [4] base.position.y: -0.5 m; state=CURRENT; time=2026-11-05T12:08:44.257Z; age_ms=55/1000; quality=GOOD; source=simulator
+  [5] base.orientation.z: 0; state=CURRENT; time=2026-11-05T12:08:44.257Z; age_ms=67/1000; quality=GOOD; source=simulator
+  [6] base.orientation.w: 1; state=CURRENT; time=2026-11-05T12:08:44.257Z; age_ms=77/1000; quality=GOOD; source=simulator
+  [7] joint.shoulder.position: 0.5 rad; state=CURRENT; time=2026-11-05T12:08:44.307Z; age_ms=41/1000; quality=GOOD; source=simulator
+  [8] joint.elbow.position: -1.2 rad; state=CURRENT; time=2026-11-05T12:08:44.307Z; age_ms=53/1000; quality=GOOD; source=simulator
+  [9] joint.wrist.position: 0.3 rad; state=CURRENT; time=2026-11-05T12:08:44.357Z; age_ms=20/1000; quality=GOOD; source=simulator
+  [10] battery.voltage: 24.8 V; state=CURRENT; time=2026-11-05T12:08:44.358Z; age_ms=31/2000; quality=GOOD; source=simulator
+  [11] battery.charge: 0.72; state=CURRENT; time=2026-11-05T12:08:44.358Z; age_ms=41/2000; quality=GOOD; source=simulator
+  [12] diagnostics.driver.level: 0; state=CURRENT; time=2026-11-05T12:08:44.259Z; age_ms=159/3000; quality=GOOD; source=simulator
   grounding check: passed
 
 === 3. One topic stops publishing (/odom)
   base.position.x: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
-  joint.elbow.position: -1.2 rad; state=CURRENT; time=2026-11-05T11:44:45.397Z; age_ms=30/1000; quality=GOOD; source=simulator
+  joint.elbow.position: -1.2 rad; state=CURRENT; time=2026-11-05T12:08:45.207Z; age_ms=53/1000; quality=GOOD; source=simulator
   The stopped topic has no value; the others are unaffected.
 
 === 4. A bad value: the elbow reports 1000 rad, outside the declared range
@@ -79,8 +79,8 @@ Evidence:
   grounding check: passed
 
 === 8. The node restarts
-  Readable again 0.7 s after the restart began.
-  joint.elbow.position: -1.2 rad; state=CURRENT; time=2026-11-05T11:44:49.294Z; age_ms=38/1000; quality=GOOD; source=simulator
+  Readable again 0.5 s after the restart began.
+  joint.elbow.position: -1.2 rad; state=CURRENT; time=2026-11-05T12:08:49.225Z; age_ms=43/1000; quality=GOOD; source=simulator
 
 === 9. Did anything reach a control surface on the robot?
   Commands that reached /cmd_vel, /joint_trajectory, /robot/set_mode, /robot/run_task, parameter:max_speed: 0
@@ -89,13 +89,13 @@ Evidence:
   counted on the robot: ['/cmd_vel', '/joint_trajectory', '/robot/run_task', '/robot/set_mode', 'parameter:max_speed']
 
 === 10. The audit log, and `openmhs audit verify`
-  read: 35
+  read: 37
   read.denied: 1
   request.rejected: 2
   command.created: 4
   command.transition: 8
-  reads recorded with a failure: 17
-  audit log intact: 91 records, hash chain verified
+  reads recorded with a failure: 19
+  audit log intact: 95 records, hash chain verified
 
   Device id throughout: ros2.sim-robot-01
 

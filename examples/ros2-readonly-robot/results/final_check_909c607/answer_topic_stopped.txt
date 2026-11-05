@@ -1,0 +1,23 @@
+SIMULATED DATA (a simulated robot; not a real robot)
+- Odometry position: x no value (UNAVAILABLE); y no value (UNAVAILABLE). [1][2]
+- Odometry orientation quaternion: z no value (UNAVAILABLE); w no value (UNAVAILABLE). [3][4]
+- Joint shoulder: 0.5 rad, current. [5]
+- Joint elbow: -1.2 rad, current. [6]
+- Joint wrist: 0.3 rad, current. [7]
+- Battery voltage: 24.8 V, current. [8]
+- Battery charge as reported: 0.72, current. [9]
+- The driver reports diagnostic level 0 (OK), current. [10]
+- No value is available for: base.child_frame, base.frame, base.orientation.w, base.orientation.z, base.position.x, base.position.y. [11][12][1][2][3][4]
+Evidence:
+  [1] base.position.x: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  [2] base.position.y: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  [3] base.orientation.z: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  [4] base.orientation.w: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  [5] joint.shoulder.position: 0.5 rad; state=CURRENT; time=2026-11-05T12:11:35.236Z; age_ms=28/1000; quality=GOOD; source=simulator
+  [6] joint.elbow.position: -1.2 rad; state=CURRENT; time=2026-11-05T12:11:35.236Z; age_ms=33/1000; quality=GOOD; source=simulator
+  [7] joint.wrist.position: 0.3 rad; state=CURRENT; time=2026-11-05T12:11:35.236Z; age_ms=38/1000; quality=GOOD; source=simulator
+  [8] battery.voltage: 24.8 V; state=CURRENT; time=2026-11-05T12:11:35.086Z; age_ms=193/2000; quality=GOOD; source=simulator
+  [9] battery.charge: 0.72; state=CURRENT; time=2026-11-05T12:11:35.086Z; age_ms=200/2000; quality=GOOD; source=simulator
+  [10] diagnostics.driver.level: 0; state=CURRENT; time=2026-11-05T12:11:34.986Z; age_ms=307/3000; quality=GOOD; source=simulator
+  [11] base.frame: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  [12] base.child_frame: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected

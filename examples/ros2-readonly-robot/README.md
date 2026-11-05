@@ -151,7 +151,7 @@ operator's approval, its own review, and ROS-level access control such as SROS 2
 | [DESIGN.md](DESIGN.md) | The audit, external facts with sources, decisions, and what running it changed |
 | [EVALUATION.md](EVALUATION.md) | Hypotheses, scenarios, expected behaviour, failure conditions, metrics |
 | [RESULTS.md](RESULTS.md) | What was measured |
-| [DEMO_TRANSCRIPT.txt](DEMO_TRANSCRIPT.txt) | The demo's output from a clean checkout, at `5acdd25` |
+| [DEMO_TRANSCRIPT.txt](DEMO_TRANSCRIPT.txt) | The demo's output from a clean checkout, as an ordinary user, at `909c607` |
 | `robot.manifest.json` | Capabilities, topics, and what the adapter may do |
 | `sim_robot.py` | The simulated robot: publishers, control surfaces, faults |
 | `robot_lab.py` | Starts the robot, gateway, grants and credential |
@@ -159,4 +159,4 @@ operator's approval, its own review, and ROS-level access control such as SROS 2
 | `agent.py` | The scripted agent and the grounding check |
 | `run_demo.py`, `run_evaluation.py` | The demo and the evaluation |
 | `test_robot_example.py` | The tests |
-| `results/` | Raw output: `after_fix_5acdd25/`, `before_fix_6a324f4/` (the run that found the audit gap), `regression_tests/`, and the baseline against the unchanged adapter |
+| `results/` | Raw output: `final_check_909c607/`, `after_fix_5acdd25/`, `before_fix_6a324f4/` (the run that found the audit gap), `regression_tests/`, and the baseline against the unchanged adapter |

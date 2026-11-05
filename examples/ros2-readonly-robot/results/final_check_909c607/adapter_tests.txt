@@ -1,0 +1,4 @@
+909c607 examples: each robot run has its own ROS log directory
+Ran 16 tests in 0.039s
+
+OK
