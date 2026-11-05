@@ -1,0 +1,1 @@
+6a324f4 examples: record refusals that leave no audit record; safer launch command

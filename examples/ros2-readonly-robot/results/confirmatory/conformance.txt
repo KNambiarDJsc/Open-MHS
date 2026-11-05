@@ -1,0 +1,11 @@
+Testing 1 simulator(s). The suite sends real commands and injects faults; this takes about 15 seconds.
+ros2.robot-01 (openmhs.py.ros2 0.1.0): reached L1, declared L1 -> PASS
+  fixture faults: link_down; counts deliveries: no
+  29 pass, 0 fail, 0 untested, 6 not applicable, in 1707 ms
+  L0 Discoverable    7 pass   0 fail   0 untested   0 n/a
+  L1 Observable     22 pass   0 fail   0 untested   1 n/a
+  L2 Controllable    0 pass   0 fail   0 untested   2 n/a
+  L3 Coordinated     0 pass   0 fail   0 untested   3 n/a
+
+A conformance level is not a safety certification.
+conformance exit 0

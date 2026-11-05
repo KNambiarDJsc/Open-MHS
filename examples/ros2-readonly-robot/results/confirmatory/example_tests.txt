@@ -1,0 +1,52 @@
+test_states_come_from_what_the_gateway_said (test_robot_example.AgentTests.test_states_come_from_what_the_gateway_said) ... ok
+test_the_agent_only_reads_and_attempts_through_the_gateway (test_robot_example.AgentTests.test_the_agent_only_reads_and_attempts_through_the_gateway) ... ok
+test_a_good_answer_passes (test_robot_example.GroundingTests.test_a_good_answer_passes) ... ok
+test_a_missing_observation_stays_missing_in_the_answer (test_robot_example.GroundingTests.test_a_missing_observation_stays_missing_in_the_answer) ... ok
+test_an_invented_number_fails (test_robot_example.GroundingTests.test_an_invented_number_fails) ... ok
+test_an_uncited_statement_fails (test_robot_example.GroundingTests.test_an_uncited_statement_fails) ... ok
+test_joint_and_diagnostic_words_are_not_mistaken_for_judgements (test_robot_example.GroundingTests.test_joint_and_diagnostic_words_are_not_mistaken_for_judgements) ... ok
+test_judgements_fail (test_robot_example.GroundingTests.test_judgements_fail) ... ok
+test_not_current_is_said (test_robot_example.GroundingTests.test_not_current_is_said) ... ok
+test_every_capability_states_a_freshness_limit (test_robot_example.ManifestTests.test_every_capability_states_a_freshness_limit) ... ok
+test_joints_are_addressed_by_name_not_position (test_robot_example.ManifestTests.test_joints_are_addressed_by_name_not_position) ... ok
+test_nothing_is_declared_but_reading (test_robot_example.ManifestTests.test_nothing_is_declared_but_reading) ... ok
+test_policy_denies_control_for_every_agent (test_robot_example.ManifestTests.test_policy_denies_control_for_every_agent) ... ok
+test_tf_is_not_mapped (test_robot_example.ManifestTests.test_tf_is_not_mapped) ... ok
+test_the_agent_gets_exact_names_and_not_the_free_text (test_robot_example.ManifestTests.test_the_agent_gets_exact_names_and_not_the_free_text) ... ok
+test_the_source_is_declared_simulated (test_robot_example.ManifestTests.test_the_source_is_declared_simulated) ... ok
+test_a_grant_cannot_create_an_operation_the_descriptor_does_not_declare (test_robot_example.RosIntegrationTests.test_a_grant_cannot_create_an_operation_the_descriptor_does_not_declare)
+Stronger than any instruction to the agent: the operator allows itself everything. ... ok
+test_a_plan_is_refused_too (test_robot_example.RosIntegrationTests.test_a_plan_is_refused_too) ... ok
+test_a_read_only_credential_cannot_exceed_its_scope (test_robot_example.RosIntegrationTests.test_a_read_only_credential_cannot_exceed_its_scope) ... ok
+test_a_reported_error_level_is_a_value_not_a_failure (test_robot_example.RosIntegrationTests.test_a_reported_error_level_is_a_value_not_a_failure) ... ok
+test_a_stamp_from_the_future_is_not_usable_and_does_not_poison_the_topic (test_robot_example.RosIntegrationTests.test_a_stamp_from_the_future_is_not_usable_and_does_not_poison_the_topic) ... ok
+test_a_stopped_topic_is_visible_and_others_are_not_affected (test_robot_example.RosIntegrationTests.test_a_stopped_topic_is_visible_and_others_are_not_affected) ... ok
+test_an_unset_stamp_means_arrival_not_the_time_of_the_read (test_robot_example.RosIntegrationTests.test_an_unset_stamp_means_arrival_not_the_time_of_the_read) ... ok
+test_control_cannot_reach_ros (test_robot_example.RosIntegrationTests.test_control_cannot_reach_ros) ... ok
+test_every_granted_capability_reads_with_its_provenance (test_robot_example.RosIntegrationTests.test_every_granted_capability_reads_with_its_provenance) ... ok
+test_invalid_data_is_not_silently_accepted (test_robot_example.RosIntegrationTests.test_invalid_data_is_not_silently_accepted) ... ok
+test_it_subscribes_only_to_what_is_declared (test_robot_example.RosIntegrationTests.test_it_subscribes_only_to_what_is_declared) ... ok
+test_joint_values_are_the_fixtures (test_robot_example.RosIntegrationTests.test_joint_values_are_the_fixtures) ... ok
+test_joints_follow_their_names_when_the_array_order_changes (test_robot_example.RosIntegrationTests.test_joints_follow_their_names_when_the_array_order_changes) ... ok
+test_known_gap_refusals_before_a_command_exists_leave_no_audit_record (test_robot_example.RosIntegrationTests.test_known_gap_refusals_before_a_command_exists_leave_no_audit_record)
+Pins a gap RESULTS.md reports, so that closing it flips this test. Both are refused and neither ... ok
+test_old_stamps_from_the_first_message_are_not_usable (test_robot_example.RosIntegrationTests.test_old_stamps_from_the_first_message_are_not_usable) ... ok
+test_scope_covers_other_devices (test_robot_example.RosIntegrationTests.test_scope_covers_other_devices) ... ok
+test_stale_data_is_not_presented_as_fresh (test_robot_example.RosIntegrationTests.test_stale_data_is_not_presented_as_fresh) ... ok
+test_stamps_held_behind_become_a_visible_failure_that_says_why (test_robot_example.RosIntegrationTests.test_stamps_held_behind_become_a_visible_failure_that_says_why) ... ok
+test_the_adapter_offers_nothing_to_the_ros_graph (test_robot_example.RosIntegrationTests.test_the_adapter_offers_nothing_to_the_ros_graph) ... ok
+test_the_answer_is_grounded_when_things_are_normal_and_when_they_are_not (test_robot_example.RosIntegrationTests.test_the_answer_is_grounded_when_things_are_normal_and_when_they_are_not) ... ok
+test_the_audit_records_reads_failures_and_denials_and_verifies (test_robot_example.RosIntegrationTests.test_the_audit_records_reads_failures_and_denials_and_verifies) ... ok
+test_the_credential_is_not_in_a_command_line_a_child_environment_or_a_log (test_robot_example.RosIntegrationTests.test_the_credential_is_not_in_a_command_line_a_child_environment_or_a_log) ... ok
+test_time_never_goes_backwards_in_what_is_returned (test_robot_example.RosIntegrationTests.test_time_never_goes_backwards_in_what_is_returned) ... ok
+test_a_descriptor_declaring_write_does_not_start (test_robot_example.RosProcessTests.test_a_descriptor_declaring_write_does_not_start) ... ok
+test_a_killed_adapter_is_restarted_and_recovers (test_robot_example.RosProcessTests.test_a_killed_adapter_is_restarted_and_recovers) ... ok
+test_node_death_is_visible_and_a_restart_recovers_without_restarting_the_gateway (test_robot_example.RosProcessTests.test_node_death_is_visible_and_a_restart_recovers_without_restarting_the_gateway) ... ok
+test_the_adapter_does_not_outlive_a_killed_gateway (test_robot_example.RosProcessTests.test_the_adapter_does_not_outlive_a_killed_gateway) ... ok
+test_the_tripwires_work (test_robot_example.RosProcessTests.test_the_tripwires_work)
+The positive control: without it, a count of zero could be a broken counter. ... ok
+
+----------------------------------------------------------------------
+Ran 44 tests in 42.047s
+
+OK

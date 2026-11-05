@@ -1,0 +1,100 @@
+SIMULATED. No real robot is involved. This is not a safety system.
+
+=== 1. A simulated robot and a gateway are up; the agent holds a read-only credential
+  ROS 2 domain 182, localhost discovery only, one clock for everything
+  The adapter's node in the ROS graph: publishes ['/parameter_events']; services []; service clients []; action clients []
+
+=== 2. The agent reads the robot
+  Q: Where is the robot, what are the joint positions, is the battery reading current, and is anything unavailable?
+SIMULATED DATA (a simulated robot; not a real robot)
+- The pose below is odometry: base_link in frame odom, not a position on any map. [1][2]
+- Odometry position: x 1.25 m, current; y -0.5 m, current. [3][4]
+- Odometry orientation quaternion: z 0, current; w 1, current. [5][6]
+- These pose values were read one at a time; their timestamps span 0 ms. [1][2][3][4][5][6]
+- Joint shoulder: 0.5 rad, current. [7]
+- Joint elbow: -1.2 rad, current. [8]
+- Joint wrist: 0.3 rad, current. [9]
+- Battery voltage: 24.8 V, current. [10]
+- Battery charge as reported: 0.72, current. [11]
+- The driver reports diagnostic level 0 (OK), current. [12]
+- Every observation asked for returned a value. [1][2][3][4][5][6][7][8][9][10][11][12]
+Evidence:
+  [1] base.frame: odom; state=CURRENT; time=2026-11-05T07:42:30.604Z; age_ms=59/1000; quality=GOOD; source=simulator
+  [2] base.child_frame: base_link; state=CURRENT; time=2026-11-05T07:42:30.604Z; age_ms=65/1000; quality=GOOD; source=simulator
+  [3] base.position.x: 1.25 m; state=CURRENT; time=2026-11-05T07:42:30.604Z; age_ms=69/1000; quality=GOOD; source=simulator
+  [4] base.position.y: -0.5 m; state=CURRENT; time=2026-11-05T07:42:30.604Z; age_ms=73/1000; quality=GOOD; source=simulator
+  [5] base.orientation.z: 0; state=CURRENT; time=2026-11-05T07:42:30.604Z; age_ms=78/1000; quality=GOOD; source=simulator
+  [6] base.orientation.w: 1; state=CURRENT; time=2026-11-05T07:42:30.604Z; age_ms=83/1000; quality=GOOD; source=simulator
+  [7] joint.shoulder.position: 0.5 rad; state=CURRENT; time=2026-11-05T07:42:30.653Z; age_ms=37/1000; quality=GOOD; source=simulator
+  [8] joint.elbow.position: -1.2 rad; state=CURRENT; time=2026-11-05T07:42:30.653Z; age_ms=41/1000; quality=GOOD; source=simulator
+  [9] joint.wrist.position: 0.3 rad; state=CURRENT; time=2026-11-05T07:42:30.653Z; age_ms=46/1000; quality=GOOD; source=simulator
+  [10] battery.voltage: 24.8 V; state=CURRENT; time=2026-11-05T07:42:30.605Z; age_ms=98/2000; quality=GOOD; source=simulator
+  [11] battery.charge: 0.72; state=CURRENT; time=2026-11-05T07:42:30.605Z; age_ms=103/2000; quality=GOOD; source=simulator
+  [12] diagnostics.driver.level: 0; state=CURRENT; time=2026-11-05T07:42:30.504Z; age_ms=207/3000; quality=GOOD; source=simulator
+  grounding check: passed
+
+=== 3. One topic stops publishing (/odom)
+  base.position.x: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  joint.elbow.position: -1.2 rad; state=CURRENT; time=2026-11-05T07:42:31.555Z; age_ms=43/1000; quality=GOOD; source=simulator
+  The stopped topic has no value; the others are unaffected.
+
+=== 4. A bad value: the elbow reports 1000 rad, outside the declared range
+  joint.elbow.position: no value (INVALID); state=INVALID; time=-; age_ms=-/-; quality=-; source=-; error=adapter.malformed_response
+
+=== 5. The agent reads something it was not granted (the driver's free-text message)
+  diagnostics.driver.message: no value (DENIED); state=DENIED; time=-; age_ms=-/-; quality=-; source=-; error=auth.scope.denied
+
+=== 6. The agent attempts control
+  joint.elbow.position: DENIED ['auth.scope.denied']; reached device: False
+  base.cmd_vel: refused ['command.capability.unknown']; reached device: None
+  (base.cmd_vel is refused by the MCP server before a command exists, so it leaves no audit record: RESULTS.md)
+  a credential with no scope limit, so only policy decides: DENIED ['policy.denied.explicit']; reached device: False
+  the operator, having granted itself everything: DENIED command.operation.unsupported; dispatched: False. The capability declares no write, so a grant cannot add one.
+
+=== 7. The robot's node crashes (SIGKILL)
+SIMULATED DATA (a simulated robot; not a real robot)
+- Odometry position: x no value (UNAVAILABLE); y no value (UNAVAILABLE). [1][2]
+- Odometry orientation quaternion: z no value (UNAVAILABLE); w no value (UNAVAILABLE). [3][4]
+- Joint shoulder: no value (UNAVAILABLE). [5]
+- Joint elbow: no value (UNAVAILABLE). [6]
+- Joint wrist: no value (UNAVAILABLE). [7]
+- Battery voltage: no value (UNAVAILABLE). [8]
+- Battery charge as reported: no value (UNAVAILABLE). [9]
+- Driver diagnostic level: no value (UNAVAILABLE). [10]
+- No value is available for: base.child_frame, base.frame, base.orientation.w, base.orientation.z, base.position.x, base.position.y, battery.charge, battery.voltage, diagnostics.driver.level, joint.elbow.position, joint.shoulder.position, joint.wrist.position. [11][12][1][2][3][4][5][6][7][8][9][10]
+Evidence:
+  [1] base.position.x: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  [2] base.position.y: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  [3] base.orientation.z: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  [4] base.orientation.w: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  [5] joint.shoulder.position: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  [6] joint.elbow.position: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  [7] joint.wrist.position: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  [8] battery.voltage: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  [9] battery.charge: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  [10] diagnostics.driver.level: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  [11] base.frame: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  [12] base.child_frame: no value (UNAVAILABLE); state=UNAVAILABLE; time=-; age_ms=-/-; quality=-; source=-; error=adapter.disconnected
+  grounding check: passed
+
+=== 8. The node restarts
+  Readable again 0.7 s after the restart began.
+  joint.elbow.position: -1.2 rad; state=CURRENT; time=2026-11-05T07:42:33.828Z; age_ms=44/1000; quality=GOOD; source=simulator
+
+=== 9. Did anything reach a control surface on the robot?
+  Commands that reached /cmd_vel, /joint_trajectory, /robot/set_mode, /robot/run_task, parameter:max_speed: 0
+  Positive control: a separate ROS node, not the agent, now pokes each one directly.
+  reached: {'/cmd_vel': True, '/joint_trajectory': True, '/robot/set_mode': True, '/robot/run_task': True, 'parameter:max_speed': True}
+  counted on the robot: ['/cmd_vel', '/joint_trajectory', '/robot/run_task', '/robot/set_mode', 'parameter:max_speed']
+
+=== 10. The audit log, and `openmhs audit verify`
+  read: 63
+  read.denied: 1
+  command.created: 3
+  command.transition: 6
+  reads recorded with a failure: 45
+  audit log intact: 114 records, hash chain verified
+
+  Device id throughout: ros2.sim-robot-01
+
+The demo behaved as described.

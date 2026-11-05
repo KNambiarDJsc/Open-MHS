@@ -1,4 +1,4 @@
-"""The demo, start to finish, in about a minute or two. Everything is simulated.
+"""The demo, start to finish, in about 15 seconds. Everything is simulated.
 
     python examples/ros2-readonly-robot/run_demo.py
 

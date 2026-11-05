@@ -187,3 +187,35 @@ visible. It is a limitation for anyone on a clock that steps; see the README.
 `command.schema`, which counted as "refused" and said nothing about permissions. `command_attempt` now raises on a
 malformed request, and the refusals carry the codes that matter: `auth.scope.denied`, `policy.denied.explicit`,
 `policy.denied.no_grant`, `command.operation.unsupported`.
+
+## 5. Architecture review, after it worked
+
+| Question | Answer |
+|---|---|
+| Could this have reused an existing component? | It does: the adapter, host, gateway, MCP server, SDK and audit. The one duplicate is the idea of a lexical grounding check, also in the battery example. That example is on another branch, and its check is tied to its own vocabulary, so about 30 lines are repeated rather than shared across examples. |
+| Did it modify core when an example-level solution was enough? | No Rust crate, spec or SDK file changed. The adapter changed because each fix is in the shared read path, and the baseline showed wrong data labelled good. |
+| Did it add a second permission mechanism? | No. Scopes, grants, descriptor and manifest are all existing. The tripwires are in the fixture, and are measurements. |
+| Did it duplicate freshness semantics? | No. The agent uses the gateway's `usable`, `age_ms` and `max_age_ms`. The adapter's ordering rule is new, but it decides which message is newest, not how old is too old. |
+| Did it weaken the single gateway? | No. Every client goes through it. `ros_probe.py` talks to ROS 2 directly, on purpose, because it checks OpenMHS from outside and is not on the agent's path. |
+| Did it imply remote deployment? | No. One host, localhost discovery. The README says so, and says DDS is not secured. |
+| Did it create a misleading provenance or quality claim? | Two to watch. `simulated_source` is a declaration, and an arrival time cannot be told from a measured time. Both are in the README's limits. `quality` stays `GOOD` on a reading that is not usable, so a reader must check `usable`; that is existing behaviour, and the agent does. |
+
+Simplified along the way: the launcher for a Windows gateway was removed once the clock measurement ruled that setup
+out, and the fixture's `die` and `stop_all` commands went with it.
+
+## 6. Security and trust review
+
+| Check | Finding |
+|---|---|
+| Credentials not logged | A test checks the agent token is absent from the gateway log |
+| Credentials on command lines | Absent, tested for the gateway and adapter. The MCP child gets it in its environment. Any process of the same OS user can read that, and the operator token in the gateway home: the existing single-user trust boundary |
+| Credentials reaching the adapter | Absent, tested: the host clears the adapter's environment |
+| No control path exposed | Source check, graph check, descriptor, manifest, scopes, policy, with tripwires and a positive control |
+| Unexpected publish, service or action | Graph check. One publisher, `/parameter_events`, from rclpy and unavoidable through its API; nothing here publishes on it |
+| Shell injection | `in_ros` quotes every argument. The manifest passes the adapter path as an argument, not inside a shell string. `bash -c` runs a fixed script. Agent input never reaches a shell or a path |
+| Topic access beyond what is declared | Subscriptions come from the manifest only, and the graph check confirms it. Field paths come from the manifest, never from the agent. `/tf` is published and unread |
+| Bounded waits | Every wait in the harness has a timeout. Each adapter call has `call_timeout_ms`. A read cannot wait on ROS 2, because it reads the newest message already held |
+| Process cleanup | Tested: the robot exits at end of input, the adapter when its stdin closes. No process needed force in the confirmatory run |
+| Child-process death | Tested: adapter SIGKILL (reads fail, host restarts it, reads recover, audit verifies), robot SIGKILL, gateway SIGKILL (adapter exits) |
+| Audit integrity | `audit verify`, and offline `verify-file`. **Gap:** two early refusals leave no record (RESULTS.md) |
+| Not covered | DDS itself is not secured here: anything on the domain can publish false state, and OpenMHS would report it with `source: simulator` or `device` as configured. Signed manifests are not used by this example (`--allow-unsigned-adapters`, development only). OpenMHS has not been security audited |

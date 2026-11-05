@@ -55,7 +55,7 @@ example does that itself.
 ```sh
 cargo build -p openmhs-cli
 
-# The demo, about 30 seconds. Sample output: DEMO_TRANSCRIPT.txt
+# The demo, about 15 seconds. Sample output: DEMO_TRANSCRIPT.txt
 python3 examples/ros2-readonly-robot/run_demo.py
 
 # The tests. The ROS 2 group is skipped, with a reason, if ROS 2 is not there
@@ -131,6 +131,8 @@ operator's approval, its own review, and ROS-level access control such as SROS 2
 - **A clock stepping back by D blinds a topic for about D**, and a looping bag until the adapter restarts. This
   environment (WSL2) steps back about 1.7 s every 30 s, so it shows up in the results.
 - **`simulated_source` is a declaration.** Nothing verifies it, so a mislabelled manifest gives false provenance.
+- **A timestamp does not say what kind it is.** A message with no stamp is given its arrival time, and a reader cannot
+  tell that from a time the robot measured.
 - **Reads are separate.** Pose components may come from different messages; the agent reports the spread of their
   stamps. For a moving robot this matters more than it does here, and this fixture does not move.
 - **DDS discovery and QoS mismatches** can look like silence. A reliable subscription to a best-effort publisher gets
