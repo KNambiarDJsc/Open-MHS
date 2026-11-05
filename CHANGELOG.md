@@ -9,6 +9,12 @@ and the entry will say so under **Changed** or **Removed**.
 
 ### Fixed
 
+- **ROS 2 adapter.** A value outside the descriptor's `range` was returned as `GOOD`, and is now
+  `adapter.malformed_response`. An older message could replace a newer one; now it cannot, and stamps held
+  behind become a failure that says so. A message with no stamp was given the time of the read rather than the
+  time it arrived. `byte` fields such as `DiagnosticStatus.level` could not be read as integers. The observer
+  node no longer starts parameter services or a log publisher. All were found by running the
+  [read-only robot example](examples/ros2-readonly-robot/DESIGN.md) against the unchanged adapter.
 - **Reconciliation could report the opposite of what happened after a newer write.** An idempotent
   write is allowed through while an earlier one is unresolved. Reconciling the earlier one then read
   the newer command's effect: an applied command came back `RECONCILED_NOT_APPLIED`, and one that
@@ -64,6 +70,13 @@ and the entry will say so under **Changed** or **Removed**.
 
 ### Added
 
+- **Read-only robot evaluation** ([examples/ros2-readonly-robot](examples/ros2-readonly-robot/README.md)). A
+  simulated ROS 2 robot in its own process, read through the existing ROS 2 adapter by a scripted agent with a
+  scoped credential. Faults, denied control, control-surface tripwires with a positive control, a plan, a
+  demo and measured results. Simulated only; no physical robot has been tested and this is not a safety system.
+- **ROS 2 adapter: selectors and `simulated_source`.** `position[name=elbow]` and `status[name=driver].level`
+  address an entry by name, because array position is not identity in these messages. `config.simulated_source`
+  labels readings from a simulator you run yourself; it is your word, and nothing checks it.
 - **Sealed audit segments** ([RFC 0002](docs/rfcs/0002-storage-engine.md), milestones 3
   to 5). `openmhs audit segment` closes a range of the audit chain as a file (header,
   records, final receipts, index, SHA-256 footer) that `audit verify-segments DIR` verifies

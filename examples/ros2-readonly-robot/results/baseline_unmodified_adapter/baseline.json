@@ -1,0 +1,71 @@
+{
+  "adapter_commit": "a5d8d94",
+  "graph_of_observer": {
+    "found": true,
+    "node": "openmhs_observer",
+    "publishers": [
+      "/parameter_events",
+      "/rosout"
+    ],
+    "subscriptions": [
+      "/battery_state",
+      "/diagnostics",
+      "/joint_states",
+      "/odom"
+    ],
+    "services": [
+      "/openmhs_observer/describe_parameters",
+      "/openmhs_observer/get_parameter_types",
+      "/openmhs_observer/get_parameters",
+      "/openmhs_observer/get_type_description",
+      "/openmhs_observer/list_parameters",
+      "/openmhs_observer/set_parameters",
+      "/openmhs_observer/set_parameters_atomically"
+    ],
+    "service_clients": [],
+    "action_servers": [],
+    "action_clients": []
+  },
+  "normal_shoulder": {
+    "value": "Quantity(value=0.5, unit='rad')",
+    "source": "device",
+    "quality": "GOOD",
+    "timestamp": "2026-11-05T07:14:16.566Z",
+    "age_ms": -365,
+    "usable": true
+  },
+  "normal_elbow": {
+    "value": "Quantity(value=-1.2, unit='rad')",
+    "source": "device",
+    "quality": "GOOD",
+    "timestamp": "2026-11-05T07:14:16.566Z",
+    "age_ms": -359,
+    "usable": true
+  },
+  "diagnostic_level": {
+    "error": "adapter.malformed_response",
+    "message": "[adapter.malformed_response] adapter: [adapter.malformed_response] /diagnostics.status.1.level: expected an integer (got b'\\x00')"
+  },
+  "reordered_joints_shoulder": {
+    "value": "Quantity(value=0.3, unit='rad')",
+    "source": "device",
+    "quality": "GOOD",
+    "timestamp": "2026-11-05T07:14:17.065Z",
+    "age_ms": -343,
+    "usable": true
+  },
+  "out_of_range_elbow": {
+    "value": "Quantity(value=1000.0, unit='rad')",
+    "source": "device",
+    "quality": "GOOD",
+    "timestamp": "2026-11-05T07:14:17.516Z",
+    "age_ms": -281,
+    "usable": true
+  },
+  "regress_small": {
+    "reads": 200,
+    "reads_going_back_in_time": 19,
+    "usable_among_them": 200
+  },
+  "leftover_processes_needing_force": []
+}

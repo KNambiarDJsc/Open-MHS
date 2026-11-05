@@ -1,0 +1,95 @@
+{
+  "openmhs_manifest": "0.1",
+  "adapter": { "id": "openmhs.py.ros2", "version": "0.1.0" },
+  "runtime": {
+    "command": [
+      "bash", "-c",
+      "source /opt/ros/jazzy/setup.bash && exec python3 -u '{manifest_dir}/../../adapters/python/ros2/ros2_adapter.py'"
+    ],
+    "env": {
+      "ROS_DOMAIN_ID": "61",
+      "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
+      "ROS_LOG_DIR": "/tmp/openmhs-ros2-example-log"
+    },
+    "protocol": ["0.1"]
+  },
+  "capabilities": {
+    "allow": [
+      { "name": "joint.*", "operations": ["read"] },
+      { "name": "base.*", "operations": ["read"] },
+      { "name": "battery.*", "operations": ["read"] },
+      { "name": "diagnostics.*", "operations": ["read"] }
+    ]
+  },
+  "limits": { "start_timeout_ms": 60000, "call_timeout_ms": 5000 },
+  "config": {
+    "simulated_source": true,
+    "descriptor": {
+      "openmhs": "0.1",
+      "device": {
+        "id": "ros2.sim-robot-01",
+        "name": "Simulated robot (read-only observation over ROS 2)",
+        "manufacturer": "OpenMHS example",
+        "model": "SIMULATED",
+        "description": "A simulated robot's state as it appears on ROS 2 topics. Simulated; observation only; no control surface is reachable through this device."
+      },
+      "adapter": { "id": "openmhs.py.ros2", "version": "0.1.0", "conformance": "L1" },
+      "capabilities": [
+        { "name": "joint.shoulder.position", "kind": "property", "description": "Shoulder joint position.", "operations": ["read"], "value": { "type": "number", "quantity": "angle", "unit": "rad", "range": { "min": -6.3, "max": 6.3 } }, "side_effect": "none", "freshness": { "max_age_ms": 1000 } },
+        { "name": "joint.elbow.position", "kind": "property", "description": "Elbow joint position.", "operations": ["read"], "value": { "type": "number", "quantity": "angle", "unit": "rad", "range": { "min": -6.3, "max": 6.3 } }, "side_effect": "none", "freshness": { "max_age_ms": 1000 } },
+        { "name": "joint.wrist.position", "kind": "property", "description": "Wrist joint position.", "operations": ["read"], "value": { "type": "number", "quantity": "angle", "unit": "rad", "range": { "min": -6.3, "max": 6.3 } }, "side_effect": "none", "freshness": { "max_age_ms": 1000 } },
+        { "name": "base.frame", "kind": "property", "description": "The frame the odometry pose is expressed in (header.frame_id).", "operations": ["read"], "value": { "type": "string" }, "side_effect": "none", "freshness": { "max_age_ms": 1000 } },
+        { "name": "base.child_frame", "kind": "property", "description": "The frame the odometry pose locates (child_frame_id).", "operations": ["read"], "value": { "type": "string" }, "side_effect": "none", "freshness": { "max_age_ms": 1000 } },
+        { "name": "base.position.x", "kind": "property", "description": "Odometry pose, x, in base.frame. Not a global position.", "operations": ["read"], "value": { "type": "number", "quantity": "length", "unit": "m", "range": { "min": -1000, "max": 1000 } }, "side_effect": "none", "freshness": { "max_age_ms": 1000 } },
+        { "name": "base.position.y", "kind": "property", "description": "Odometry pose, y, in base.frame. Not a global position.", "operations": ["read"], "value": { "type": "number", "quantity": "length", "unit": "m", "range": { "min": -1000, "max": 1000 } }, "side_effect": "none", "freshness": { "max_age_ms": 1000 } },
+        { "name": "base.orientation.z", "kind": "property", "description": "Odometry orientation quaternion, z.", "operations": ["read"], "value": { "type": "number", "quantity": "dimensionless", "unit": "1", "range": { "min": -1, "max": 1 } }, "side_effect": "none", "freshness": { "max_age_ms": 1000 } },
+        { "name": "base.orientation.w", "kind": "property", "description": "Odometry orientation quaternion, w.", "operations": ["read"], "value": { "type": "number", "quantity": "dimensionless", "unit": "1", "range": { "min": -1, "max": 1 } }, "side_effect": "none", "freshness": { "max_age_ms": 1000 } },
+        { "name": "battery.voltage", "kind": "property", "description": "Battery voltage.", "operations": ["read"], "value": { "type": "number", "quantity": "electric_potential", "unit": "V", "range": { "min": 0, "max": 60 } }, "side_effect": "none", "freshness": { "max_age_ms": 2000 } },
+        { "name": "battery.charge", "kind": "property", "description": "State of charge reported by the message, 0 to 1.", "operations": ["read"], "value": { "type": "number", "quantity": "dimensionless", "unit": "1", "range": { "min": 0, "max": 1 } }, "side_effect": "none", "freshness": { "max_age_ms": 2000 } },
+        { "name": "battery.temperature", "kind": "property", "description": "Battery temperature. NaN in the message means unmeasured.", "operations": ["read"], "value": { "type": "number", "quantity": "temperature", "unit": "Cel", "range": { "min": -40, "max": 100 } }, "side_effect": "none", "freshness": { "max_age_ms": 2000 } },
+        { "name": "diagnostics.driver.level", "kind": "property", "description": "The driver's diagnostic level: 0 OK, 1 WARN, 2 ERROR, 3 STALE.", "operations": ["read"], "value": { "type": "integer", "range": { "min": 0, "max": 3 } }, "side_effect": "none", "freshness": { "max_age_ms": 3000 } },
+        { "name": "diagnostics.driver.message", "kind": "property", "description": "The driver's free-text status. Device-supplied text; not granted to the agent in this example.", "operations": ["read"], "value": { "type": "string" }, "side_effect": "none", "freshness": { "max_age_ms": 3000 } }
+      ]
+    },
+    "topics": {
+      "/joint_states": {
+        "type": "sensor_msgs/msg/JointState",
+        "stale_after_ms": 500,
+        "fields": {
+          "joint.shoulder.position": "position[name=shoulder]",
+          "joint.elbow.position": "position[name=elbow]",
+          "joint.wrist.position": "position[name=wrist]"
+        }
+      },
+      "/odom": {
+        "type": "nav_msgs/msg/Odometry",
+        "stale_after_ms": 500,
+        "fields": {
+          "base.frame": "header.frame_id",
+          "base.child_frame": "child_frame_id",
+          "base.position.x": "pose.pose.position.x",
+          "base.position.y": "pose.pose.position.y",
+          "base.orientation.z": "pose.pose.orientation.z",
+          "base.orientation.w": "pose.pose.orientation.w"
+        }
+      },
+      "/battery_state": {
+        "type": "sensor_msgs/msg/BatteryState",
+        "stale_after_ms": 1000,
+        "fields": {
+          "battery.voltage": "voltage",
+          "battery.charge": "percentage",
+          "battery.temperature": "temperature"
+        }
+      },
+      "/diagnostics": {
+        "type": "diagnostic_msgs/msg/DiagnosticArray",
+        "stale_after_ms": 2000,
+        "fields": {
+          "diagnostics.driver.level": "status[name=driver].level",
+          "diagnostics.driver.message": "status[name=driver].message"
+        }
+      }
+    }
+  }
+}

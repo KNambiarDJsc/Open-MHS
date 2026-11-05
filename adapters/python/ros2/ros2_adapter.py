@@ -22,6 +22,7 @@ import asyncio
 import importlib
 import math
 import os
+import re
 import sys
 import threading
 import time
@@ -37,6 +38,7 @@ for candidate in (HERE.parents[2] / "python", Path("/openmhs/python")):
 import rclpy  # noqa: E402
 from rclpy.executors import SingleThreadedExecutor  # noqa: E402
 from rclpy.node import Node  # noqa: E402
+from rclpy.parameter import Parameter  # noqa: E402
 from rclpy.qos import QoSPresetProfiles  # noqa: E402
 
 from openmhs.adapter import Adapter, AdapterError, reading, run  # noqa: E402
@@ -45,6 +47,14 @@ READ_ONLY = {"read", "subscribe"}
 
 #: How long ``connect`` waits for the first message on every topic.
 FIRST_MESSAGE_S = 3.0
+
+#: A stamp further ahead of this host than this is not trusted as the topic's newest time. It is the
+#: gateway's own allowance for a reading from the future (MAX_FUTURE_SKEW_MS).
+FUTURE_TOLERANCE_NS = 1_000_000_000
+
+#: ``position[name=elbow]``: the entry of a list that is called ``elbow``, not the one at some position.
+SELECTOR = re.compile(r"([A-Za-z_]\w*)\[([A-Za-z_]\w*)=([^\]]+)\]")
+PATH_PART = re.compile(r"\d+|[A-Za-z_]\w*")
 
 
 class ConfigError(Exception):
@@ -62,39 +72,88 @@ def message_type(name: str):
         raise ConfigError(f"message type {name!r} is not installed: {e}") from e
 
 
+def select(parent, name: str, key: str, wanted: str):
+    """The one entry of list ``parent.name`` identified by ``key``. Position is not identity in these
+    messages, so zero matches, several matches, or arrays of different lengths are refused, not guessed.
+
+    Works for a list of messages (``status[name=driver]``) and for parallel arrays, where ``key`` is a
+    sibling list (``position[name=elbow]`` in ``sensor_msgs/JointState``)."""
+    items = getattr(parent, name)
+    if len(items) > 0 and hasattr(items[0], key):
+        hits = [item for item in items if getattr(item, key) == wanted]
+        if len(hits) != 1:
+            raise LookupError(f"{len(hits)} entries of {name} have {key}={wanted}")
+        return hits[0]
+    if not hasattr(parent, key):
+        raise LookupError(f"no entry of {name} has {key}={wanted}")
+    keys = list(getattr(parent, key))
+    hits = [i for i, k in enumerate(keys) if k == wanted]
+    if len(hits) != 1:
+        raise LookupError(f"{len(hits)} entries of {key} are {wanted}")
+    if len(items) != len(keys):
+        raise LookupError(f"{name} has {len(items)} entries and {key} has {len(keys)}")
+    return items[hits[0]]
+
+
 def field(msg, path: str):
     value = msg
     for part in path.split("."):
-        value = value[int(part)] if part.isdigit() else getattr(value, part)
+        selector = SELECTOR.fullmatch(part)
+        if selector:
+            value = select(value, *selector.groups())
+        elif part.isdigit():
+            value = value[int(part)]
+        else:
+            value = getattr(value, part)
+    # rclpy gives a ROS `byte` field as bytes of length one.
+    if isinstance(value, bytes) and len(value) == 1:
+        return value[0]
     return value
 
 
-def stamp(msg) -> str | None:
+def stamp_ns(msg) -> int | None:
+    """The message's ``header.stamp`` in nanoseconds, or None if it has no header or an unset stamp."""
     header = getattr(msg, "header", None)
     if header is None:
         return None
     s = header.stamp
     if s.sec == 0 and s.nanosec == 0:
         return None
-    dt = datetime.fromtimestamp(s.sec + s.nanosec / 1e9, tz=timezone.utc)
+    return s.sec * 1_000_000_000 + s.nanosec
+
+
+def iso_time(ns: int) -> str:
+    dt = datetime.fromtimestamp(ns / 1e9, tz=timezone.utc)
     return dt.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+
+def stamp(msg) -> str | None:
+    ns = stamp_ns(msg)
+    return None if ns is None else iso_time(ns)
 
 
 def convert(value, spec: dict, where: str):
     def bad(why):
         return AdapterError("malformed_response", f"{where}: {why} (got {value!r})")
 
+    def in_range():
+        limits = spec.get("range") or {}
+        if ("min" in limits and value < limits["min"]) or ("max" in limits and value > limits["max"]):
+            raise bad(f"outside the declared range {limits}")
+
     kind = spec.get("type")
     if kind == "number":
         if isinstance(value, bool) or not isinstance(value, (int, float)):
             raise bad("expected a number")
         if not math.isfinite(value):
-            # sensor_msgs uses NaN for "not measured".
-            raise AdapterError("device_failure", f"{where}: the robot reports no value (NaN)")
+            # sensor_msgs uses NaN for "not measured". Infinity is no measurement either.
+            raise AdapterError("device_failure", f"{where}: the robot reports no value ({value})")
+        in_range()
         return {"value": float(value), "unit": spec["unit"]} if "unit" in spec else float(value)
     if kind == "integer":
         if isinstance(value, bool) or not isinstance(value, int):
             raise bad("expected an integer")
+        in_range()
         return value
     if kind == "boolean":
         if not isinstance(value, bool):
@@ -111,13 +170,15 @@ def convert(value, spec: dict, where: str):
 
 class Settings:
     def __init__(self, config: dict):
-        unknown = set(config) - {"descriptor", "topics", "simulate"}
+        unknown = set(config) - {"descriptor", "topics", "simulate", "simulated_source"}
         if unknown:
             raise ConfigError(f"unknown config keys {sorted(unknown)}")
         self.descriptor = config.get("descriptor")
         if not isinstance(self.descriptor, dict):
             raise ConfigError("config.descriptor must be the device descriptor")
         self.simulate = bool(config.get("simulate", False))
+        # The operator's word that the topics come from a simulator they run. Nothing checks it.
+        self.simulated_source = bool(config.get("simulated_source", False))
         caps = {c.get("name"): c for c in self.descriptor.get("capabilities", [])}
         for cap in caps.values():
             ops = set(cap.get("operations", []))
@@ -149,6 +210,9 @@ class Settings:
             for cap, path in t.get("fields", {}).items():
                 if cap not in caps:
                     raise ConfigError(f"topics.{topic}.fields.{cap}: no such capability in the descriptor")
+                for part in path.split("."):
+                    if not (SELECTOR.fullmatch(part) or PATH_PART.fullmatch(part)):
+                        raise ConfigError(f"topics.{topic}.fields.{cap}: bad path part {part!r}")
                 self.fields[cap] = (topic, path)
         for cap in caps.values():
             if cap.get("kind") == "property" and "read" in cap.get("operations", []) and cap["name"] not in self.fields:
@@ -161,10 +225,19 @@ class Observer:
     def __init__(self, settings: Settings):
         self.settings = settings
         self.latest: dict = {}
+        self.newest_stamp: dict = {}  # topic -> the highest trusted stamp accepted, in ns
+        self.older: dict = {}  # topic -> messages refused since the last accepted one
         self.lock = threading.Lock()
         self.context = rclpy.Context()
         rclpy.init(context=self.context, domain_id=domain_id())
-        self.node = Node("openmhs_observer", context=self.context)
+        # An observer offers nothing to the graph: no parameter services, no log topic, no type service.
+        self.node = Node(
+            "openmhs_observer",
+            context=self.context,
+            enable_rosout=False,
+            start_parameter_services=False,
+            parameter_overrides=[Parameter("start_type_description_service", value=False)],
+        )
         for topic, t in settings.topics.items():
             profile = QoSPresetProfiles.SENSOR_DATA.value if t["qos"] == "sensor_data" else QoSPresetProfiles.SYSTEM_DEFAULT.value
             self.node.create_subscription(t["type"], topic, self._keep(topic), profile)
@@ -175,8 +248,19 @@ class Observer:
 
     def _keep(self, topic):
         def callback(msg):
+            ns = stamp_ns(msg)
+            now = time.time_ns()
             with self.lock:
-                self.latest[topic] = (msg, time.monotonic())
+                # An older message never replaces a newer one (late delivery, a second publisher, a
+                # clock that stepped back). A stamp from the future is kept, for the gateway to refuse
+                # as fresh, but cannot raise the mark, or one bad stamp would hide everything after it.
+                if ns is not None and ns < self.newest_stamp.get(topic, 0):
+                    self.older[topic] = self.older.get(topic, 0) + 1
+                    return
+                if ns is not None and ns <= now + FUTURE_TOLERANCE_NS:
+                    self.newest_stamp[topic] = ns
+                self.older[topic] = 0
+                self.latest[topic] = (msg, time.monotonic(), now)
 
         return callback
 
@@ -189,6 +273,10 @@ class Observer:
     def newest(self, topic):
         with self.lock:
             return self.latest.get(topic)
+
+    def refused(self, topic) -> int:
+        with self.lock:
+            return self.older.get(topic, 0)
 
     def close(self):
         self.executor.shutdown(timeout_sec=1)
@@ -243,13 +331,21 @@ class Ros2Adapter(Adapter):
         newest = self.observer.newest(topic)
         if newest is None:
             raise AdapterError("disconnected", f"no message on {topic} yet")
-        msg, received = newest
+        msg, received, received_wall = newest
         age_ms = (time.monotonic() - received) * 1000
         if age_ms > t["stale_after_ms"]:
+            refused = self.observer.refused(topic)
+            if refused:
+                # Messages are arriving, so this is not silence: the stamps are going backwards.
+                raise AdapterError(
+                    "malformed_response",
+                    f"{topic}: nothing acceptable for {age_ms:.0f} ms; {refused} messages stamped "
+                    "older than the newest one accepted",
+                )
             raise AdapterError(
                 "disconnected", f"nothing on {topic} for {age_ms:.0f} ms (stale_after_ms {t['stale_after_ms']})"
             )
-        return msg
+        return msg, received_wall
 
     async def health(self):
         if self.observer is None:
@@ -272,13 +368,18 @@ class Ros2Adapter(Adapter):
         if capability not in s.fields or cap is None or "read" not in cap.get("operations", []):
             raise AdapterError("unsupported", f"no readable capability {capability!r}")
         topic, path = s.fields[capability]
-        msg = self._fresh(topic)
+        msg, received_wall = self._fresh(topic)
         try:
             raw = field(msg, path)
-        except (AttributeError, IndexError, ValueError) as e:
+        except (AttributeError, LookupError, ValueError) as e:
             raise AdapterError("malformed_response", f"{topic}: no field {path} ({e})") from e
         value = convert(raw, cap["value"], f"{topic}.{path}")
-        return reading(value, timestamp=stamp(msg), source="simulator" if s.simulate else "device")
+        return reading(
+            value,
+            # With no stamp, when the message arrived: never the time of this read.
+            timestamp=stamp(msg) or iso_time(received_wall),
+            source="simulator" if s.simulate or s.simulated_source else "device",
+        )
 
     async def execute(self, command, progress):
         raise AdapterError("unsupported", "the ROS 2 adapter only observes")

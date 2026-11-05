@@ -8,7 +8,9 @@ Jazzy**, and runs in the pinned `ros:jazzy-ros-base` container image.
 ## What it does not do
 
 - **It does not move the robot.** It publishes nothing, calls no services and sends no
-  action goals. A descriptor that declares `write` or `invoke` is refused.
+  action goals. A descriptor that declares `write` or `invoke` is refused. The observer node starts without
+  parameter services or a log publisher. rclpy still gives it a `/parameter_events` publisher, on which it
+  publishes nothing of its own.
 - **It is not in any control loop.** No OpenMHS request, and no LLM, sits between a ROS
   controller and its actuators. Real-time control stays in `ros2_control` and the
   robot's own safety controllers. The adapter claims and releases no controller
@@ -37,6 +39,9 @@ The image is pinned by digest:
 `ros@sha256:066420e07f60aa18262f2479981def87ebcfcec42eefb0c0c57c4a46098348ca` is
 `ros:jazzy-ros-base` as built on 2026-10-02 (from docker-library/repo-info). The newest
 build of that tag was under two weeks old when this was pinned, so it was not used.
+
+[The read-only robot example](../../examples/ros2-readonly-robot/README.md) runs this adapter against a
+simulated robot in a separate process, with faults, denied control and measured results.
 
 ## Configure a real robot
 
@@ -73,12 +78,22 @@ build of that tag was under two weeks old when this was pinned, so it was not us
   `ROS_SECURITY_*` in `runtime.env`; that setup is not tested by OpenMHS yet.
 - `type` is `<package>/msg/<Type>`; the package must be installed in the image
   (`ros-base` has the common message packages; build your own image for others).
-- `fields` maps a capability to a dotted path into the message; numbers index arrays.
+- `fields` maps a capability to a dotted path into the message. A number indexes an array; prefer a
+  selector where the entry has a name, because array position is not identity in these messages.
+  `position[name=elbow]` finds `elbow` in the sibling array `name` (`sensor_msgs/JointState`);
+  `status[name=driver].level` finds the entry of `status` whose `name` is `driver`. No match, several
+  matches, or parallel arrays of different lengths are `adapter.malformed_response`, never a guess. A
+  selector value cannot contain `.` or `]`.
+- `config.simulated_source: true` records readings as `source: simulator`, for a simulator you run
+  yourself. It is your word, and nothing checks it. Without it readings are `source: device`.
 - `qos`: `sensor_data` (best effort, the default) or `system_default` (reliable).
 
 ## Readings
 
-- A `read` returns the newest message's field. Its timestamp is the message's
+- A `read` returns the newest message's field, where newest goes by stamp. A message stamped older
+  than the newest accepted one does not replace it; if nothing else arrives for `stale_after_ms`, reads
+  fail `adapter.malformed_response` and say so. A clock stepping back by D therefore blinds a topic for
+  about D, and a looping bag until the adapter restarts. Its timestamp is the message's
   `header.stamp` when it has a non-zero one, else when the adapter received it. Stamps
   must be wall-clock time (no `use_sim_time`), and the robot's clock synchronized with the
   gateway's (NTP or PTP); the gateway checks `freshness.max_age_ms` against the stamp and
@@ -89,7 +104,12 @@ build of that tag was under two weeks old when this was pinned, so it was not us
   periods above the topic's publish rate.
 - `connect` waits up to 3 s for a first message on every topic (DDS discovery takes a
   moment). Topics still silent after that show up in `health`.
-- NaN (the `sensor_msgs` convention for "not measured") is `adapter.device_failure`.
+- NaN (the `sensor_msgs` convention for "not measured") and infinity are `adapter.device_failure`.
+- A number outside the descriptor's `range` is `adapter.malformed_response`.
+- A `byte` field (`DiagnosticStatus.level`) reads as an integer.
+- Values are scalars, read one at a time, so several capabilities from one topic may come from different
+  messages. Compare their timestamps. TF has no safe flat form and should not be mapped; see
+  [the read-only robot example](../../examples/ros2-readonly-robot/DESIGN.md).
 - Health: healthy when every topic is fresh, degraded when some are stale, disconnected
   when all are.
 - There is no subscription stream to the gateway yet (the adapter contract has none);
