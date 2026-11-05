@@ -163,7 +163,7 @@ The principal of a command always comes from the token, never from the request b
 | `read.denied` | A refused read: unknown device or capability, no grant, or not readable |
 | `procedure.proposed`, `procedure.added`, `procedure.approved`, `procedure.removed`, `procedure.run` | Procedure changes (version, `sha256`, who) and runs (with the plan id) ([procedures.md](procedures.md)) |
 | `watch.created`, `watch.ended` | A watch was created (principal, credential, capability, interval, expiry) or ended (`expired`, cancelled, replaced, no longer allowed, credential revoked, gateway stopping). Its samples are not recorded one by one; they reach only callers allowed to subscribe ([ADR-0023](../docs/adr/0023-state-fabric.md)) |
-| `request.rejected` | A command request that failed schema validation, before it became a command |
+| `request.rejected` | A request from an authenticated caller that asked to act and was refused, where no other record says so: no command came to exist, or this request did not create one. `method`, stable `code`, `principal`, `credential_id`, and normalized identifiers in `target`; never values, reasons or error messages. A command denied after schema validation is `command.transition` to `DENIED`, not this ([REFUSAL_AUDIT.md](../docs/architecture/REFUSAL_AUDIT.md)) |
 | `command.preflight` | A preflight check and its decision |
 | `command.created`, `command.transition` | A command and every state change, including approvals (`APPROVED`, with the approver) |
 | `sim.fault` | A fault injected into a simulator |

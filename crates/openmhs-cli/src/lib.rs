@@ -2509,21 +2509,28 @@ async fn approve(client: &Client, json: bool, command_id: &str) -> Result<u8, Cl
 }
 
 /// Build a command request. Writes for properties, invokes for actions, decided from the
-/// device descriptor.
+/// device descriptor. This only chooses: a device or capability it cannot find goes to the
+/// gateway, which refuses and records it (docs/architecture/REFUSAL_AUDIT.md).
 async fn build_request(client: &Client, a: &ExecArgs) -> Result<serde_json::Value, String> {
-    let descriptor = client
-        .describe(&a.device)
-        .await
-        .map_err(|e| e.to_string())?;
+    let descriptor = match client.describe(&a.device).await {
+        Ok(d) => Some(d),
+        Err(e) if e.code() == Some("command.device.unknown") => None,
+        Err(e) => return Err(e.to_string()),
+    };
     let kind = descriptor
-        .capability(&a.capability)
-        .map(|c| c.kind)
-        .ok_or_else(|| format!("'{}' has no capability '{}'", a.device, a.capability))?;
+        .as_ref()
+        .and_then(|d| d.capability(&a.capability))
+        .map(|c| c.kind);
+    let invoke = match kind {
+        Some(CapabilityKind::Action) => true,
+        None => a.value.is_none(),
+        Some(_) => false,
+    };
     let mut req = serde_json::json!({
         "target": { "device": a.device, "capability": a.capability },
     });
-    match kind {
-        CapabilityKind::Action => {
+    match invoke {
+        true => {
             req["operation"] = "invoke".into();
             if a.value.is_some() {
                 return Err("actions take --param, not --value".into());
@@ -2537,7 +2544,7 @@ async fn build_request(client: &Client, a: &ExecArgs) -> Result<serde_json::Valu
                 req["params"] = params.into();
             }
         }
-        _ => {
+        false => {
             req["operation"] = "write".into();
             let raw = a
                 .value

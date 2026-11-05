@@ -300,22 +300,55 @@ class RosIntegrationTests(unittest.TestCase):
         self.assertTrue(plan.is_error, plan)
         self.assertEqual(self.lab.sim.tripwires[before:], [])
 
-    def test_known_gap_refusals_before_a_command_exists_leave_no_audit_record(self):
-        """Pins a gap RESULTS.md reports, so that closing it flips this test. Both are refused and neither
-        reaches ROS 2, but an audit reader cannot see that they were tried."""
+    def added_records(self, seq: int) -> list[Any]:
+        assert self.lab.operator is not None
+        return [e for e in self.lab.operator.audit_tail(50)
+                if e.seq > seq and e.kind != "device.availability"]
+
+    def test_a_command_to_a_capability_that_does_not_exist_leaves_evidence(self):
+        """This evaluation found this refusal unrecorded at 6a324f4. The MCP server now forwards it, so
+        the gateway refuses and records it: a command, denied, with the scope code."""
         assert self.lab.operator is not None
         seq = self.lab.operator.audit_tail(1)[-1].seq
+        before = len(self.lab.sim.tripwires)
         unknown = self.tools.call("submit_command", {"device": rl.DEVICE, "capability": "base.cmd_vel",
                                                      "value": {"value": 1.0, "unit": "m/s"},
-                                                     "idempotency_key": "known-gap-unknown"})
+                                                     "idempotency_key": f"unknown-{time.monotonic_ns()}"})
+        self.assertTrue(unknown.is_error)
+        self.assertIn("auth.scope.denied", unknown.text)
+        time.sleep(0.2)
+        added = self.added_records(seq)
+        self.assertEqual([e.kind for e in added if e.kind == "command.created"], ["command.created"])
+        self.assertTrue(any(e.kind == "command.transition" and "DENIED" in json.dumps(e.data) for e in added))
+        self.assertEqual(self.lab.sim.tripwires[before:], [])
+
+    def test_a_refused_plan_leaves_evidence_of_who_and_why(self):
+        """Also found unrecorded at 6a324f4. No command or plan came to exist, so it is request.rejected."""
+        assert self.lab.operator is not None
+        seq = self.lab.operator.audit_tail(1)[-1].seq
         plan = self.tools.call("submit_plan", {"plan": {"description": "an attempt", "steps": [
             {"id": "s1", "request": {"target": {"device": rl.DEVICE, "capability": "joint.elbow.position"},
                                      "operation": "write", "value": RAD}}]}})
-        self.assertTrue(unknown.is_error and plan.is_error)
+        self.assertTrue(plan.is_error)
         time.sleep(0.2)
-        added = [e.kind for e in self.lab.operator.audit_tail(50)
-                 if e.seq > seq and e.kind != "device.availability"]
-        self.assertEqual(added, [])
+        records = [e for e in self.added_records(seq) if e.kind == "request.rejected"]
+        self.assertEqual(len(records), 1)
+        data = records[0].data
+        self.assertEqual((data["method"], data["code"], data["principal"]),
+                         ("plans.submit", "lease.not_authorized", rl.AGENT))
+        self.assertEqual(data["target"]["devices"], [rl.DEVICE])
+        self.assertNotIn("an attempt", json.dumps(data))
+        self.assertNotIn(self.lab.agent_token, json.dumps(data))
+
+    def test_reaching_for_operator_authority_leaves_evidence(self):
+        assert self.lab.operator is not None
+        seq = self.lab.operator.audit_tail(1)[-1].seq
+        with self.assertRaises(Exception) as caught:
+            self.client.create_token("agent:another", any_scope=True)
+        self.assertEqual(getattr(caught.exception, "code", None), "gateway.forbidden")
+        records = [e for e in self.added_records(seq) if e.kind == "request.rejected"]
+        self.assertEqual([(e.data["method"], e.data["code"]) for e in records],
+                         [("tokens.create", "gateway.forbidden")])
 
     def test_the_adapter_offers_nothing_to_the_ros_graph(self):
         graph = self.lab.ros("graph", "openmhs_observer")

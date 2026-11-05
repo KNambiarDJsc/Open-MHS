@@ -12,6 +12,7 @@
 //! | `gateway.json` | Runtime file: URL and operator token of the running gateway |
 //! | `gateway.lock` | Held while a gateway runs; one gateway per home |
 
+mod refusal;
 mod server;
 pub mod store;
 

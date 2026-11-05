@@ -3,6 +3,19 @@
 Committed before the confirmatory run. Anything changed after that is listed under Deviations in
 `RESULTS.md`.
 
+## Amendment 1, after the first results
+
+The run at `6a324f4` met failure condition 6: two refused attempts left no audit record. That result stands
+([results/before_fix_6a324f4/](results/before_fix_6a324f4/)). The gap was then fixed in the gateway and the clients
+([REFUSAL_AUDIT.md](../../docs/architecture/REFUSAL_AUDIT.md)), and this evaluation was rerun. Fixed before the rerun:
+
+- Condition 6 is unchanged, and it now has to pass for the two original attempts. For the plan it is `request.rejected`;
+  for the unknown capability it is a command with a `DENIED` transition, since the fix made a real command of it.
+- New in scenario F: an agent calling `tokens.create`, refused and recorded. The fix found this class while looking for
+  adjacent gaps; it had not been in the plan.
+- New in scenario I: the agent's token must appear in no audit record.
+- Everything else is as it was, including the cycle count and the other failure conditions.
+
 ## Question
 
 Can an AI or software agent inspect selected robot state through OpenMHS using explicit read-only

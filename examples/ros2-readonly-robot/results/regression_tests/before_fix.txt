@@ -1,0 +1,50 @@
+Regression tests run on the code as it was at cff79bb, before the fix.
+Gateway:
+error: test failed, to rerun pass `-p openmhs-gateway --test refusal_audit`
+test a_command_to_an_unknown_capability_has_a_lifecycle_not_a_rejection ... ok
+test a_denied_command_is_not_recorded_twice ... ok
+test a_refused_approval_request_is_recorded ... FAILED
+test a_refused_plan_leaves_a_record_with_who_and_why ... FAILED
+test a_refused_read_has_its_own_record_and_no_other ... ok
+test a_refused_watch_is_recorded ... FAILED
+test a_schema_failure_is_recorded_once_without_quoting_the_input ... FAILED
+test a_successful_command_records_what_it_always_did ... ok
+test acting_on_someone_elses_command_is_recorded ... FAILED
+test adding_a_grant_as_an_agent_is_recorded_without_the_grant ... FAILED
+test an_idempotency_conflict_is_recorded ... FAILED
+test an_identifier_that_is_not_one_is_dropped_and_says_so ... FAILED
+test each_attempt_is_its_own_record_and_the_chain_verifies ... FAILED
+test exporting_evidence_as_an_agent_is_recorded ... FAILED
+test lease_refusals_are_recorded ... FAILED
+test no_identifiable_operation_writes_nothing ... ok
+test no_secret_or_free_text_reaches_the_record ... ok
+test operator_only_methods_called_by_an_agent_are_recorded ... FAILED
+test params_that_do_not_decode_are_recorded_without_the_decoder_message ... FAILED
+test queries_and_advisory_checks_are_not_refusals_to_record ... ok
+test result: FAILED. 8 passed; 13 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.75s
+test unauthenticated_requests_write_nothing ... ok
+thread 'a_refused_approval_request_is_recorded' panicked at crates\openmhs-gateway\tests\refusal_audit.rs:150:5:
+thread 'a_refused_plan_leaves_a_record_with_who_and_why' panicked at crates\openmhs-gateway\tests\refusal_audit.rs:150:5:
+thread 'a_refused_watch_is_recorded' panicked at crates\openmhs-gateway\tests\refusal_audit.rs:150:5:
+thread 'a_schema_failure_is_recorded_once_without_quoting_the_input' panicked at crates\openmhs-gateway\tests\refusal_audit.rs:241:5:
+thread 'acting_on_someone_elses_command_is_recorded' panicked at crates\openmhs-gateway\tests\refusal_audit.rs:150:5:
+thread 'adding_a_grant_as_an_agent_is_recorded_without_the_grant' panicked at crates\openmhs-gateway\tests\refusal_audit.rs:150:5:
+thread 'an_idempotency_conflict_is_recorded' panicked at crates\openmhs-gateway\tests\refusal_audit.rs:150:5:
+thread 'an_identifier_that_is_not_one_is_dropped_and_says_so' panicked at crates\openmhs-gateway\tests\refusal_audit.rs:150:5:
+thread 'each_attempt_is_its_own_record_and_the_chain_verifies' panicked at crates\openmhs-gateway\tests\refusal_audit.rs:448:5:
+thread 'exporting_evidence_as_an_agent_is_recorded' panicked at crates\openmhs-gateway\tests\refusal_audit.rs:150:5:
+thread 'lease_refusals_are_recorded' panicked at crates\openmhs-gateway\tests\refusal_audit.rs:150:5:
+thread 'operator_only_methods_called_by_an_agent_are_recorded' panicked at crates\openmhs-gateway\tests\refusal_audit.rs:150:5:
+thread 'params_that_do_not_decode_are_recorded_without_the_decoder_message' panicked at crates\openmhs-gateway\tests\refusal_audit.rs:150:5:
+
+MCP:
+test a_refused_plan_through_mcp_is_recorded ... FAILED
+test a_command_to_an_unknown_device_reaches_the_gateway_and_is_recorded ... FAILED
+test a_command_to_an_unknown_capability_reaches_the_gateway_and_is_recorded ... FAILED
+test a_scoped_credential_is_not_told_whether_a_capability_exists ... FAILED
+test result: FAILED. 0 passed; 4 failed; 0 ignored; 0 measured; 18 filtered out; finished in 0.18s
+error: test failed, to rerun pass `-p openmhs-mcp --test mcp`
+---CLI
+test exec_on_an_unknown_capability_or_device_reaches_the_gateway ... FAILED
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 29 filtered out; finished in 0.33s
+error: test failed, to rerun pass `-p openmhs-cli --test cli`

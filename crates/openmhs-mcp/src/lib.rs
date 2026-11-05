@@ -425,20 +425,21 @@ impl OpenMhsServer {
         value: Option<Value>,
         params: Option<Map<String, Value>>,
     ) -> Result<Value, CallToolResult> {
-        let descriptor = self
-            .client
-            .describe(device)
-            .await
-            .map_err(|e| client_error(&e))?;
-        let cap = descriptor.capability(capability).ok_or_else(|| {
-            text_error(format!(
-                "[command.capability.unknown] '{device}' has no capability '{capability}'. \
-                 Use describe_device to see what it offers."
-            ))
-        })?;
+        // This server is a client of the gateway. It looks at the descriptor to choose between a write
+        // and an invoke, not to decide anything: what it cannot place goes to the gateway, which refuses
+        // and records it (docs/architecture/REFUSAL_AUDIT.md).
+        let descriptor = match self.client.describe(device).await {
+            Ok(d) => Some(d),
+            Err(e) if e.code() == Some("command.device.unknown") => None,
+            Err(e) => return Err(client_error(&e)),
+        };
+        let kind = descriptor
+            .as_ref()
+            .and_then(|d| d.capability(capability))
+            .map(|c| c.kind);
         let mut req = json!({ "target": { "device": device, "capability": capability } });
-        match cap.kind {
-            CapabilityKind::Action => {
+        match kind {
+            Some(CapabilityKind::Action) => {
                 if value.is_some() {
                     return Err(text_error(format!(
                         "'{capability}' is an action: pass `params`, not `value`."
@@ -449,7 +450,7 @@ impl OpenMhsServer {
                     req["params"] = Value::Object(p);
                 }
             }
-            CapabilityKind::Property => {
+            Some(CapabilityKind::Property) => {
                 let Some(v) = value else {
                     return Err(text_error(format!(
                         "'{capability}' is a property: pass the new `value`, e.g. \
@@ -464,10 +465,17 @@ impl OpenMhsServer {
                 req["operation"] = "write".into();
                 req["value"] = v;
             }
-            CapabilityKind::Event => {
-                return Err(text_error(format!(
-                    "'{capability}' is an event; it cannot be commanded."
-                )));
+            Some(CapabilityKind::Event) | None => {
+                match value {
+                    Some(v) => {
+                        req["operation"] = "write".into();
+                        req["value"] = v;
+                    }
+                    None => req["operation"] = "invoke".into(),
+                }
+                if let Some(p) = params.filter(|p| !p.is_empty()) {
+                    req["params"] = Value::Object(p);
+                }
             }
         }
         Ok(req)

@@ -498,6 +498,11 @@ impl Engine {
 
     /// `Some` once the journal is within its reserve of its limit: the refusal for work
     /// that is not critical. If the size cannot be read, nothing non-critical runs.
+    /// Whether only the journal's reserve is left (ADR-0021), so nothing non-critical should write.
+    pub fn journal_in_reserve(&self) -> bool {
+        self.storage_refusal().is_some()
+    }
+
     fn storage_refusal(&self) -> Option<ErrorObject> {
         let limits = (*lock(&self.inner.storage))?;
         match self.inner.journal.size_bytes() {
@@ -965,19 +970,33 @@ impl Engine {
         let now = self.now();
         let principal = caller.principal();
         let issues = schema::validate(Schema::Command, request);
-        if !issues.is_empty() {
-            let errors: Vec<ErrorObject> = issues.into_iter().map(Into::into).collect();
-            self.inner.journal.append_audit(
-                now,
-                "request.rejected",
-                principal,
-                &serde_json::json!({ "errors": errors, "credential_id": caller.credential_id() }),
-            )?;
-            return Err(EngineError::InvalidRequest(errors));
-        }
-        let req: CommandRequest = serde_json::from_value(request.clone()).map_err(|e| {
-            EngineError::InvalidRequest(vec![ErrorObject::new("command.schema", e.to_string())])
-        })?;
+        let parsed = if issues.is_empty() {
+            serde_json::from_value::<CommandRequest>(request.clone())
+                .map_err(|e| vec![ErrorObject::new("command.schema", e.to_string())])
+        } else {
+            Err(issues.into_iter().map(Into::into).collect())
+        };
+        let req = match parsed {
+            Ok(req) => req,
+            Err(errors) => {
+                // Codes and pointers only: a schema message can quote the rejected input.
+                let brief: Vec<_> = errors
+                    .iter()
+                    .map(|e: &ErrorObject| serde_json::json!({ "code": e.code, "pointer": e.pointer }))
+                    .collect();
+                self.inner.journal.append_audit(
+                    now,
+                    "request.rejected",
+                    principal,
+                    &serde_json::json!({
+                        "method": "commands.submit", "code": "command.schema",
+                        "principal": principal, "credential_id": caller.credential_id(),
+                        "errors": brief,
+                    }),
+                )?;
+                return Err(EngineError::InvalidRequest(errors));
+            }
+        };
         if req.operation == RequestOperation::Read {
             return Err(EngineError::NotACommand);
         }

@@ -82,6 +82,9 @@ the README links here.
 - **The adapter host has no OS sandbox.** Permission manifests are declared and checked,
   not enforced by the operating system. Signed manifests say who vouches for an adapter,
   not that it is safe.
+- **Some refused requests leave no record.** Unauthenticated requests, queries, advisory checks and requests
+  with no identifiable operation are not recorded, and near the journal's limit refusals are not either
+  ([REFUSAL_AUDIT.md](architecture/REFUSAL_AUDIT.md)).
 - **Not security audited.** See the [threat model](security/M8_THREAT_MODEL.md) and
   [SECURITY.md](../SECURITY.md).
 - **Local use.** The API is for a gateway on the same machine; exposing it beyond

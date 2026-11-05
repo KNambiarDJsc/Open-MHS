@@ -334,6 +334,21 @@ def scenario_f_control(run: Run, lab: RobotLab) -> None:
                                                 "idempotency_key": "unknown-capability"})
         time.sleep(0.2)
         unknown_records = records_after(seq)
+    # Reaching for operator authority, which no scenario in the original plan tried.
+    seq = lab.operator.audit_tail(1)[-1].seq
+    try:
+        lab.agent_client().create_token("agent:another", any_scope=True)
+        privileged = {"refused": False}
+    except Exception as e:  # noqa: BLE001 - the refusal is what is being observed
+        privileged = {"refused": True, "code": getattr(e, "code", type(e).__name__)}
+    time.sleep(0.2)
+    privileged_records = records_after(seq)
+    privileged["audit_records_added"] = privileged_records
+    run.summary["scenarios"]["F"]["agent_creating_a_token"] = privileged
+    if not privileged["refused"]:
+        run.fail(9, "an agent created a token")
+    if not privileged_records:
+        run.fail(6, "an agent creating a token: refused with no audit record")
     run.summary["scenarios"]["F"]["plan"] = {"refused": plan.is_error, "text": (plan.text or "")[:200],
                                              "audit_records_added": plan_records}
     run.summary["scenarios"]["F"]["mcp_unknown_capability"] = {
@@ -520,11 +535,15 @@ def scenario_i_audit(run: Run, lab: RobotLab) -> None:
     failed_reads = sum(1 for e in entries if e["kind"] == "read" and "error" in e["data"])
     denied_reads = [e["data"] for e in entries if e["kind"] == "read.denied"]
     denied_commands = [e for e in entries if e["kind"] == "command.transition" and "DENIED" in json.dumps(e["data"])]
+    rejected = [e["data"] for e in entries if e["kind"] == "request.rejected"]
+    secret_in_a_record = any(lab.agent_token in json.dumps(e["data"]) for e in entries)
     run.summary["scenarios"]["I"] = {
         "records_by_kind": kinds, "reads_recorded_as_failed": failed_reads,
         "denied_read_records": len(denied_reads),
         "denied_read_capabilities": sorted({str(d.get("capability")) for d in denied_reads}),
         "denied_command_records": len(denied_commands),
+        "rejected_requests": [{k: d.get(k) for k in ("method", "code", "principal", "target")} for d in rejected],
+        "agent_token_in_any_record": secret_in_a_record,
         "audit_verify": {"exit": verify.returncode, "output": verify.stdout.strip()},
         "export_exit": export.returncode,
         "verify_file": {"exit": offline.returncode, "output": offline.stdout.strip()[:400]},
@@ -532,6 +551,8 @@ def scenario_i_audit(run: Run, lab: RobotLab) -> None:
     run.summary["metrics"]["audit_verification"] = verify.stdout.strip()
     if verify.returncode or offline.returncode or export.returncode:
         run.fail(6, f"audit verification failed: {verify.stdout} {offline.stdout} {offline.stderr}")
+    if secret_in_a_record:
+        run.fail(6, "the agent's token is in the audit log")
     if UNGRANTED not in {str(d.get("capability")) for d in denied_reads}:
         run.fail(6, "the ungranted read has no audit record")
 

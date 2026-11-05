@@ -136,6 +136,33 @@ impl Shared {
         }
     }
 
+    /// Leave the record of a refusal (docs/architecture/REFUSAL_AUDIT.md). The request stays refused
+    /// whatever happens here. Once only the journal's reserve is left, nothing is written, so a
+    /// refused caller cannot spend what is kept for commands already running.
+    fn record_refusal(&self, session: &Session, name: &str, code: &str, target: &Value) {
+        if self.engine.journal_in_reserve() {
+            tracing::warn!(method = name, code, principal = %session.principal,
+                "refused request not recorded: only the journal's reserve is left");
+            return;
+        }
+        let data = crate::refusal::data(
+            name,
+            code,
+            &session.principal,
+            session.caller.credential_id(),
+            target,
+        );
+        if let Err(e) = self.engine.journal().append_audit(
+            self.clock.now(),
+            "request.rejected",
+            &session.principal,
+            &data,
+        ) {
+            tracing::error!(method = name, code, principal = %session.principal, error = %e,
+                "could not record a refused request");
+        }
+    }
+
     fn audit(&self, kind: &str, subject: &str, data: Value) -> Result<(), RpcError> {
         self.engine
             .journal()
@@ -318,7 +345,7 @@ async fn handle(State(shared): State<Arc<Shared>>, headers: HeaderMap, body: Byt
         return export_evidence(shared, &session, request.id).await;
     }
     let result = if request.jsonrpc == "2.0" {
-        dispatch(&shared, &session, &request.method, request.params).await
+        dispatch_and_record(shared, session, request.method, request.params).await
     } else {
         Err(rpc_error(
             rpc_code::INVALID_REQUEST,
@@ -326,6 +353,45 @@ async fn handle(State(shared): State<Arc<Shared>>, headers: HeaderMap, body: Byt
         ))
     };
     axum::Json(reply(request.id, result)).into_response()
+}
+
+/// `dispatch`, leaving a record if it refuses. A request that acts runs in its own task, so a client
+/// that disconnects cannot take the record of its refusal with it.
+async fn dispatch_and_record(
+    shared: Arc<Shared>,
+    session: Session,
+    name: String,
+    params: Value,
+) -> Result<Value, RpcError> {
+    let target = crate::refusal::target(&name, &params);
+    let acts = crate::refusal::acts(&name);
+    let work = async move {
+        let result = dispatch(&shared, &session, &name, params).await;
+        if let Err(e) = &result {
+            let code = refusal_code(e);
+            if crate::refusal::recorded(&name, code) {
+                shared.record_refusal(&session, &name, code, &target);
+            }
+        }
+        result
+    };
+    if acts {
+        match tokio::spawn(work).await {
+            Ok(result) => result,
+            Err(e) => Err(gateway_error("gateway.internal", e.to_string(), vec![])),
+        }
+    } else {
+        work.await
+    }
+}
+
+/// The stable code of a refusal. Never the message: that can quote what the caller sent.
+fn refusal_code(e: &RpcError) -> &str {
+    match (&e.data, e.code) {
+        (Some(data), _) => &data.code,
+        (None, rpc_code::INVALID_PARAMS) => "rpc.invalid_params",
+        (None, _) => "rpc.error",
+    }
 }
 
 fn params<T: DeserializeOwned>(v: Value) -> Result<T, RpcError> {
@@ -357,6 +423,8 @@ const EXPORT_CHUNK: usize = 64 * 1024;
 /// response; a failure after it ends the body early, which no client can parse as a result.
 async fn export_evidence(shared: Arc<Shared>, session: &Session, id: Value) -> Response {
     if session.role != Role::Operator {
+        let code = "gateway.forbidden";
+        shared.record_refusal(session, method::AUDIT_EXPORT, code, &json!({}));
         return axum::Json(reply(id, Err(forbidden("exporting audit evidence")))).into_response();
     }
     let (tx, mut rx) = tokio::sync::mpsc::channel(4);

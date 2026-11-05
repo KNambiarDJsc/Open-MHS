@@ -78,8 +78,6 @@ def main() -> int:
             for a in attempts:
                 print(f"  {a['capability']}: {a['state'] or 'refused'} {a['reasons']}; "
                       f"reached device: {a['reached_device']}")
-            print("  (base.cmd_vel is refused by the MCP server before a command exists, so it leaves no "
-                  "audit record: RESULTS.md)")
             with lab.mcp(lab.unscoped_agent_token()) as unscoped:
                 a = ReadOnlyAgent(unscoped).attempt_control("joint.elbow.position", {"value": 0.0, "unit": "rad"})
                 print(f"  a credential with no scope limit, so only policy decides: {a['state']} {a['reasons']}; "
@@ -91,6 +89,16 @@ def main() -> int:
             a = command_attempt(lab.operator, "joint.elbow.position", "write", {"value": 0.0, "unit": "rad"})
             print(f"  the operator, having granted itself everything: {a['state'] or 'refused'} {a['code']}; "
                   f"dispatched: {a.get('dispatched')}. The capability declares no write, so a grant cannot add one.")
+
+            plan = tools.call("submit_plan", {"plan": {"description": "an attempt", "steps": [
+                {"id": "s1", "request": {"target": {"device": DEVICE, "capability": "joint.elbow.position"},
+                                         "operation": "write", "value": {"value": 0.0, "unit": "rad"}}}]}})
+            print(f"  a plan containing a write: refused, {(plan.text or '').split(']')[0].lstrip('[')}")
+            try:
+                lab.agent_client().create_token("agent:another", any_scope=True)
+                failures.append("the agent created a token")
+            except Exception as e:  # noqa: BLE001 - the refusal is what is being shown
+                print(f"  creating itself a new credential: refused, {getattr(e, 'code', e)}")
 
             step(7, "The robot's node crashes (SIGKILL)")
             lab.sim.kill()
@@ -126,7 +134,7 @@ def main() -> int:
         kinds: dict[str, int] = {}
         for e in entries:
             kinds[e.kind] = kinds.get(e.kind, 0) + 1
-        for kind in ("read", "read.denied", "command.created", "command.transition"):
+        for kind in ("read", "read.denied", "request.rejected", "command.created", "command.transition"):
             print(f"  {kind}: {kinds.get(kind, 0)}")
         failed_reads = [e for e in entries if e.kind == "read" and "error" in e.data]
         print(f"  reads recorded with a failure: {len(failed_reads)}")

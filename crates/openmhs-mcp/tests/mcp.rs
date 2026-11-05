@@ -1063,3 +1063,140 @@ async fn a_model_proposes_a_procedure_and_runs_it_once_a_person_approves() {
     client.cancel().await.unwrap();
     lab_.gw.shutdown().await.unwrap();
 }
+
+// A client must not refuse on the gateway's behalf, or the attempt leaves no evidence
+// (docs/architecture/REFUSAL_AUDIT.md).
+
+async fn audit_kinds(lab: &Lab) -> Vec<(String, Value)> {
+    let operator = Client::new(&lab.gw.url, &lab.gw.operator_token).unwrap();
+    operator
+        .audit_tail(Some(500))
+        .await
+        .unwrap()
+        .into_iter()
+        .map(|e| (e.kind, e.data))
+        .collect()
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_command_to_an_unknown_capability_reaches_the_gateway_and_is_recorded() {
+    let lab = lab(psu_grants()).await;
+    let client = connect(&lab.gw.url, &lab.agent_token, false).await;
+    let r = call(
+        &client,
+        "submit_command",
+        json!({ "device": PSU, "capability": "base.cmd_vel", "value": { "value": 1.0, "unit": "m/s" } }),
+    )
+    .await;
+    assert!(is_error(&r), "{}", text(&r));
+    assert!(
+        text(&r).contains("command.capability.unknown"),
+        "{}",
+        text(&r)
+    );
+    let records = audit_kinds(&lab).await;
+    assert_eq!(
+        records
+            .iter()
+            .filter(|(k, _)| k == "command.created")
+            .count(),
+        1,
+        "{records:#?}"
+    );
+    assert!(
+        records
+            .iter()
+            .any(|(k, d)| k == "command.transition" && d.to_string().contains("DENIED"))
+    );
+    client.cancel().await.unwrap();
+    lab.gw.shutdown().await.unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_command_to_an_unknown_device_reaches_the_gateway_and_is_recorded() {
+    let lab = lab(psu_grants()).await;
+    let client = connect(&lab.gw.url, &lab.agent_token, false).await;
+    let r = call(
+        &client,
+        "submit_command",
+        json!({ "device": "sim.nope", "capability": "x.y", "params": {} }),
+    )
+    .await;
+    assert!(is_error(&r), "{}", text(&r));
+    assert!(text(&r).contains("command.device.unknown"), "{}", text(&r));
+    let records = audit_kinds(&lab).await;
+    assert_eq!(
+        records
+            .iter()
+            .filter(|(k, _)| k == "command.created")
+            .count(),
+        1,
+        "{records:#?}"
+    );
+    client.cancel().await.unwrap();
+    lab.gw.shutdown().await.unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_refused_plan_through_mcp_is_recorded() {
+    let lab = lab(vec![grant(
+        "read-all",
+        "*",
+        "*",
+        &[Operation::Read],
+        Effect::Allow,
+    )])
+    .await;
+    let client = connect(&lab.gw.url, &lab.agent_token, false).await;
+    let r = call(
+        &client,
+        "submit_plan",
+        json!({ "plan": { "description": "an attempt", "steps": [
+            { "id": "s1", "request": write_req(1.0) }
+        ]}}),
+    )
+    .await;
+    assert!(is_error(&r), "{}", text(&r));
+    assert!(text(&r).contains("lease.not_authorized"), "{}", text(&r));
+    let records = audit_kinds(&lab).await;
+    let found: Vec<_> = records
+        .iter()
+        .filter(|(k, _)| k == "request.rejected")
+        .collect();
+    assert_eq!(found.len(), 1, "{records:#?}");
+    assert_eq!(found[0].1["method"], "plans.submit");
+    assert_eq!(found[0].1["code"], "lease.not_authorized");
+    assert_eq!(found[0].1["principal"], "agent:mcp");
+    client.cancel().await.unwrap();
+    lab.gw.shutdown().await.unwrap();
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_scoped_credential_is_not_told_whether_a_capability_exists() {
+    let lab = lab(psu_grants()).await;
+    let operator = Client::new(&lab.gw.url, &lab.gw.operator_token).unwrap();
+    let token = operator
+        .create_token(CreateTokenParams::scoped(
+            "agent:scoped",
+            Role::Agent,
+            vec![Scope {
+                device: PSU.into(),
+                capability: "power.output.voltage.measured".into(),
+                operations: vec![Operation::Read],
+            }],
+        ))
+        .await
+        .unwrap()
+        .token;
+    let client = connect(&lab.gw.url, &token, false).await;
+    let r = call(
+        &client,
+        "submit_command",
+        json!({ "device": PSU, "capability": "base.cmd_vel", "value": { "value": 1.0, "unit": "m/s" } }),
+    )
+    .await;
+    assert!(is_error(&r), "{}", text(&r));
+    assert!(text(&r).contains("auth.scope.denied"), "{}", text(&r));
+    client.cancel().await.unwrap();
+    lab.gw.shutdown().await.unwrap();
+}

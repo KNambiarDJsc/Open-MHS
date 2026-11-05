@@ -1344,3 +1344,24 @@ fn discover_mqtt_lists_the_topics_a_broker_carries() {
     );
     drop(rt);
 }
+
+/// The CLI is a client: it must not refuse on the gateway's behalf, or the attempt leaves no
+/// evidence (docs/architecture/REFUSAL_AUDIT.md).
+#[test]
+fn exec_on_an_unknown_capability_or_device_reaches_the_gateway() {
+    let gw = Gateway::start();
+    let agent = gw.agent_token();
+    for (device, capability) in [(PSU, "base.cmd_vel"), ("sim.nope", "x.y")] {
+        let (code, r) = gw.cli(Some(&agent), &["exec", device, capability, "--value", "1V"]);
+        assert_eq!(code, DENIED, "{device} {capability}: {r}");
+        assert_eq!(r["state"], "DENIED", "{r}");
+    }
+    let (_, audit) = gw.op(&["audit", "tail", "--limit", "100"]);
+    let created = audit
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|e| e["kind"] == "command.created")
+        .count();
+    assert_eq!(created, 2, "{audit}");
+}
