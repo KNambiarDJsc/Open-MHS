@@ -18,6 +18,19 @@ Each record keeps the message's own `header.stamp` as its source time. When a me
 is zero, it gets no source time, unless the mapping says `"time": "log_time"` for that topic, which uses the
 recorder's receipt time and says so in the clock domain (`<domain>/recorder`). The recorder's receipt time is always
 kept as `time.ingest`. Frames come from `header.frame_id`. Missing fields are skipped and counted, never filled.
+
+`"time": "clock"` is for unstamped messages in a simulation bag (an action's status topic, for one). The recorder's
+receipt time is placed on the simulation clock midway between the two `/clock` messages the same recorder received
+just before and just after it. The record says so (`<domain>/recorder`) and carries an uncertainty: half the
+simulation time between those two `/clock` messages, plus `clock.receipt_allowance_ms` from the mapping, which states
+how late the recorder may receive a message after it was sent. With no `/clock` message on both sides, there is no
+source time.
+
+Messages that hold a list (`tf2_msgs/TFMessage`, `action_msgs/GoalStatusArray`) are read element by element with
+`"each": "<list field>"`, kept only where `"where": {field: value}` holds, and an element's own header is used if it
+has one. `"enum"` names integer values; `"ref_fields"` copies element fields into `refs` (a UUID byte array becomes
+its canonical text); `"changes_only": true` keeps an element only when its value differs from the last kept value
+with the same refs, so a status array republished unchanged does not repeat a transition.
 """
 
 from __future__ import annotations
@@ -88,13 +101,53 @@ def field(msg: Any, path: str) -> Any:
     return v
 
 
-def stamp_ns(msg: Any) -> int | None:
-    header = getattr(msg, "header", None)
+def stamp_ns(header: Any) -> int | None:
     if header is None:
         return None
     s = header.stamp
     ns = int(s.sec) * 1_000_000_000 + int(s.nanosec)
     return ns or None
+
+
+def ref_text(raw: Any) -> str | None:
+    """A ref value as text: a 16-byte UUID array in canonical form, a string or integer as itself."""
+    if isinstance(raw, str):
+        return raw
+    if isinstance(raw, bool):
+        return None
+    if isinstance(raw, int):
+        return str(raw)
+    try:
+        b = bytes(raw)
+    except (TypeError, ValueError):
+        return None
+    if len(b) != 16:
+        return None
+    h = b.hex()
+    return f"{h[:8]}-{h[8:12]}-{h[12:16]}-{h[16:20]}-{h[20:]}"
+
+
+class ClockMap:
+    """Receipt time to simulation time, from the `/clock` messages the same recorder received."""
+
+    def __init__(self, paths: list[Path]):
+        import bisect
+
+        self._bisect = bisect
+        pairs = sorted((log_ns, int(msg.clock.sec) * 1_000_000_000 + int(msg.clock.nanosec))
+                       for _, _, log_ns, msg in messages(paths, {"/clock"}))
+        self.log = [p[0] for p in pairs]
+        self.sim = [p[1] for p in pairs]
+
+    def at(self, log_ns: int) -> tuple[int, float] | None:
+        """(simulation ns, half-gap ms), or None without a /clock message on both sides."""
+        i = self._bisect.bisect_right(self.log, log_ns)
+        if i == 0 or i >= len(self.log):
+            return None
+        before, after = self.sim[i - 1], self.sim[i]
+        if after < before:
+            return None  # the simulation clock went back (a reset): no honest placement
+        return (before + after) // 2, (after - before) / 2 / 1e6
 
 
 def rfc3339(ns: int) -> str:
@@ -115,6 +168,76 @@ def value_of(raw: Any, unit: str | None) -> Any:
     return None
 
 
+def _record(m: dict[str, Any], topic: str, n: int, idx: int | None, log_ns: int, msg: Any, el: Any, domain: str,
+            clock: dict[str, Any], clock_map: ClockMap | None, source: dict[str, Any], provenance: str | None,
+            counts: Counter) -> dict[str, Any] | None:
+    """One evidence record from one message (or one element of a list in it), or None with the reason counted."""
+    sig = m["signal"]
+    try:
+        for k, want in m.get("where", {}).items():
+            if field(el, k) != want:
+                return None
+        raw = field(el, m["field"])
+        refs = dict(m.get("refs", {}))
+        for k, path in m.get("ref_fields", {}).items():
+            text = ref_text(field(el, path))
+            if text is None:
+                counts[f"{sig}: ref not readable"] += 1
+                return None
+            refs[k] = text
+    except (AttributeError, IndexError, ValueError):
+        counts[f"{sig}: field missing"] += 1
+        return None
+    if "enum" in m:
+        name = m["enum"].get(str(raw))
+        if name is None:
+            counts[f"{sig}: value not in enum"] += 1
+            return None
+        raw = name
+    value = value_of(raw, m.get("unit"))
+    if value is None:
+        counts[f"{sig}: not a finite value"] += 1
+        return None
+
+    header = getattr(el, "header", None) or getattr(msg, "header", None)
+    mode = m.get("time")
+    uncertainty = clock.get("uncertainty_ms")
+    if mode == "log_time":
+        src_ns, clock_domain = log_ns, f"{domain}/recorder"
+    elif mode == "clock":
+        placed = clock_map.at(log_ns) if clock_map else None
+        clock_domain = f"{domain}/recorder"
+        if placed is None:
+            src_ns, uncertainty = None, None
+        else:
+            src_ns = placed[0]
+            uncertainty = round(placed[1] + float(clock["receipt_allowance_ms"]), 3)
+    else:
+        src_ns, clock_domain = stamp_ns(header), domain
+    if src_ns is None:
+        counts[f"{sig}: no source stamp"] += 1
+    time: dict[str, Any] = {"ingest": rfc3339(log_ns), "clock_domain": clock_domain}
+    if src_ns is not None:
+        time["source"] = rfc3339(src_ns)
+        if uncertainty is not None:
+            time["uncertainty_ms"] = uncertainty
+    rec: dict[str, Any] = {
+        "id": f"{topic}#{n}{'' if idx is None else f'.{idx}'}:{sig}",
+        "signal": sig,
+        "value": value,
+        "source": {k: v for k, v in {"system": source.get("system", "ros2"), "device": m.get("device"),
+                                     "kind": m["kind"], "provenance": provenance}.items() if v is not None},
+        "time": time,
+        "_src_ns": src_ns,
+    }
+    frame = m.get("frame") or (getattr(header, "frame_id", "") if header is not None else "")
+    if frame:
+        rec["frame"] = frame
+    if refs:
+        rec["refs"] = refs
+    return rec
+
+
 def convert(path: Path, mapping: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     paths = bag_files(path)
     info = inspect(path)
@@ -133,12 +256,23 @@ def convert(path: Path, mapping: dict[str, Any]) -> tuple[list[dict[str, Any]], 
     for m in mapping["mappings"]:
         if m["topic"] not in info["topics"]:
             raise SystemExit(f"mapping names {m['topic']}, which is not in the bag (topics: {sorted(info['topics'])})")
+        if m.get("time") not in (None, "log_time", "clock"):
+            raise SystemExit(f"mapping for {m['topic']}: time must be log_time, clock, or absent (header.stamp)")
         by_topic[m["topic"]].append(m)
+
+    clock_map = None
+    if any(m.get("time") == "clock" for ms in by_topic.values() for m in ms):
+        if not domain.startswith("sim:") or "/clock" not in info["topics"]:
+            raise SystemExit("time 'clock' needs a simulation bag: a recorded /clock and a 'sim:' clock domain")
+        if clock.get("receipt_allowance_ms") is None:
+            raise SystemExit("time 'clock' needs clock.receipt_allowance_ms: how late the recorder may receive a message")
+        clock_map = ClockMap(paths)
 
     window = mapping.get("time_range_ns")
     records: list[dict[str, Any]] = []
     counts: Counter = Counter()
     last_kept: dict[str, int] = {}
+    last_value: dict[tuple, Any] = {}
     seq: Counter = Counter()
     for topic, mtype, log_ns, msg in messages(paths, set(by_topic)):
         seq[topic] += 1
@@ -146,48 +280,33 @@ def convert(path: Path, mapping: dict[str, Any]) -> tuple[list[dict[str, Any]], 
             continue
         for m in by_topic[topic]:
             sig = m["signal"]
-            uses_log_time = m.get("time") == "log_time"
-            src_ns = log_ns if uses_log_time else stamp_ns(msg)
-            if m.get("every_ms") and src_ns is not None:
-                if src_ns - last_kept.get(sig, -(10**30)) < m["every_ms"] * 1_000_000:
-                    counts[f"{sig}: decimated"] += 1
+            if m.get("each"):
+                try:
+                    elements = list(enumerate(field(msg, m["each"])))
+                except (AttributeError, IndexError, ValueError):
+                    counts[f"{sig}: field missing"] += 1
                     continue
-            try:
-                raw = field(msg, m["field"])
-            except (AttributeError, IndexError, ValueError):
-                counts[f"{sig}: field missing"] += 1
-                continue
-            value = value_of(raw, m.get("unit"))
-            if value is None:
-                counts[f"{sig}: not a finite value"] += 1
-                continue
-            if src_ns is None:
-                counts[f"{sig}: no source stamp"] += 1
-            time: dict[str, Any] = {"ingest": rfc3339(log_ns),
-                                    "clock_domain": f"{domain}/recorder" if uses_log_time else domain}
-            if src_ns is not None:
-                time["source"] = rfc3339(src_ns)
-            if clock.get("uncertainty_ms") is not None:
-                time["uncertainty_ms"] = clock["uncertainty_ms"]
-            rec: dict[str, Any] = {
-                "id": f"{topic}#{seq[topic]}:{sig}",
-                "signal": sig,
-                "value": value,
-                "source": {k: v for k, v in {"system": source.get("system", "ros2"), "device": m.get("device"),
-                                             "kind": m["kind"], "provenance": provenance}.items() if v is not None},
-                "time": time,
-                "refs": dict(m.get("refs", {})),
-            }
-            header = getattr(msg, "header", None)
-            frame = m.get("frame") or (getattr(header, "frame_id", "") if header is not None else "")
-            if frame:
-                rec["frame"] = frame
-            if not rec["refs"]:
-                del rec["refs"]
-            records.append(rec)
-            if src_ns is not None:
-                last_kept[sig] = src_ns
-            counts[f"{sig}: records"] += 1
+            else:
+                elements = [(None, msg)]
+            for idx, el in elements:
+                rec = _record(m, topic, seq[topic], idx, log_ns, msg, el, domain, clock, clock_map, source, provenance,
+                              counts)
+                if rec is None:
+                    continue
+                if m.get("changes_only"):
+                    key = (sig, tuple(sorted(rec.get("refs", {}).items())))
+                    if key in last_value and last_value[key] == rec["value"]:
+                        counts[f"{sig}: unchanged"] += 1
+                        continue
+                    last_value[key] = rec["value"]
+                src_ns = rec.pop("_src_ns")
+                if m.get("every_ms") and src_ns is not None:
+                    if src_ns - last_kept.get(sig, -(10**30)) < m["every_ms"] * 1_000_000:
+                        counts[f"{sig}: decimated"] += 1
+                        continue
+                    last_kept[sig] = src_ns
+                records.append(rec)
+                counts[f"{sig}: records"] += 1
     records.sort(key=lambda r: r["id"])
     meta = {
         "bag": [p.name for p in paths],

@@ -1,0 +1,46 @@
+{
+  "source": {
+    "system": "ros2-bag",
+    "dataset": "openamr-upperbody-sw in Gazebo (gz sim, ROS 2 Jazzy), recorded by gazebo/run_experiment.sh",
+    "provenance": "simulator",
+    "note": "SIMULATION. The 'independent' evidence is the physics engine's own link pose, which is independent of the controllers' state and the odometry plugin, but not of the simulator."
+  },
+  "clock": {
+    "domain": "sim:gazebo-openamr",
+    "uncertainty_ms": 0,
+    "receipt_allowance_ms": 50,
+    "note": "Stamped messages (/odom, /gz/dynamic_pose, joint states) carry the simulator's own time, so their uncertainty on that clock is zero. The action status topic has no stamp: it is placed on the simulation clock from the recorder's receipt time and the recorded /clock (ros2_evidence.py, time 'clock'). ASSUMPTION: the recorder receives a status message no more than 50 ms of simulation time after it was published."
+  },
+  "mappings": [
+    {"topic": "/lift_controller/follow_joint_trajectory/_action/status", "signal": "lift.action.status",
+     "each": "status_list", "field": "status",
+     "enum": {"0": "UNKNOWN", "1": "ACCEPTED", "2": "EXECUTING", "3": "CANCELING", "4": "SUCCEEDED", "5": "CANCELED", "6": "ABORTED"},
+     "ref_fields": {"attempt": "goal_info.goal_id.uuid"}, "changes_only": true, "time": "clock",
+     "kind": "controller", "device": "lift_controller"},
+    {"topic": "/gz/dynamic_pose", "signal": "lift_carriage.z", "each": "transforms",
+     "where": {"child_frame_id": "lift_carriage_link"}, "field": "transform.translation.z", "unit": "m",
+     "kind": "independent_sensor", "device": "gz-physics"},
+    {"topic": "/gz/dynamic_pose", "signal": "base.x", "each": "transforms",
+     "where": {"child_frame_id": "openamrobot"}, "field": "transform.translation.x", "unit": "m",
+     "kind": "independent_sensor", "device": "gz-physics"},
+    {"topic": "/gz/dynamic_pose", "signal": "base.y", "each": "transforms",
+     "where": {"child_frame_id": "openamrobot"}, "field": "transform.translation.y", "unit": "m",
+     "kind": "independent_sensor", "device": "gz-physics"},
+    {"topic": "/gz/dynamic_pose", "signal": "base.qz", "each": "transforms",
+     "where": {"child_frame_id": "openamrobot"}, "field": "transform.rotation.z",
+     "kind": "independent_sensor", "device": "gz-physics"},
+    {"topic": "/gz/dynamic_pose", "signal": "base.qw", "each": "transforms",
+     "where": {"child_frame_id": "openamrobot"}, "field": "transform.rotation.w",
+     "kind": "independent_sensor", "device": "gz-physics"},
+    {"topic": "/odom", "signal": "odom.x", "field": "pose.pose.position.x", "unit": "m",
+     "kind": "controller", "device": "diff_drive_odometry"},
+    {"topic": "/odom", "signal": "odom.y", "field": "pose.pose.position.y", "unit": "m",
+     "kind": "controller", "device": "diff_drive_odometry"},
+    {"topic": "/odom", "signal": "odom.qz", "field": "pose.pose.orientation.z",
+     "kind": "controller", "device": "diff_drive_odometry"},
+    {"topic": "/odom", "signal": "odom.qw", "field": "pose.pose.orientation.w",
+     "kind": "controller", "device": "diff_drive_odometry"},
+    {"topic": "/arm/joint_states", "signal": "lift_joint.position", "where": {"name.0": "lift_joint"},
+     "field": "position.0", "unit": "m", "kind": "device_state", "device": "joint_state_broadcaster"}
+  ]
+}

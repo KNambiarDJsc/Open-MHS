@@ -175,5 +175,168 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(meta_a["bag_sha256"], meta_b["bag_sha256"])
 
 
+TIME = """================================================================================
+MSG: builtin_interfaces/Time
+int32 sec
+uint32 nanosec"""
+
+STATUS_ARRAY = """action_msgs/GoalStatus[] status_list
+================================================================================
+MSG: action_msgs/GoalStatus
+action_msgs/GoalInfo goal_info
+int8 status
+================================================================================
+MSG: action_msgs/GoalInfo
+unique_identifier_msgs/UUID goal_id
+builtin_interfaces/Time stamp
+================================================================================
+MSG: unique_identifier_msgs/UUID
+uint8[16] uuid
+""" + TIME
+
+TF = """geometry_msgs/TransformStamped[] transforms
+================================================================================
+MSG: geometry_msgs/TransformStamped
+std_msgs/Header header
+string child_frame_id
+geometry_msgs/Transform transform
+================================================================================
+MSG: std_msgs/Header
+builtin_interfaces/Time stamp
+string frame_id
+================================================================================
+MSG: geometry_msgs/Transform
+geometry_msgs/Vector3 translation
+geometry_msgs/Quaternion rotation
+================================================================================
+MSG: geometry_msgs/Vector3
+float64 x
+float64 y
+float64 z
+================================================================================
+MSG: geometry_msgs/Quaternion
+float64 x
+float64 y
+float64 z
+float64 w
+""" + TIME
+
+G1, G2 = list(range(16)), [255] * 16
+G1_TEXT = "00010203-0405-0607-0809-0a0b0c0d0e0f"
+
+
+def status(*goals: tuple[list[int], int]) -> dict:
+    return {"status_list": [{"goal_info": {"goal_id": {"uuid": g}, "stamp": {"sec": 0, "nanosec": 0}}, "status": s}
+                            for g, s in goals]}
+
+
+def transform(sec: int, nanosec: int, parent: str, child: str, z: float) -> dict:
+    return {"header": {"stamp": {"sec": sec, "nanosec": nanosec}, "frame_id": parent}, "child_frame_id": child,
+            "transform": {"translation": {"x": 0.0, "y": 0.0, "z": z},
+                          "rotation": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}}}
+
+
+def write_sim_bag(path: Path, clock_back: bool = False) -> None:
+    """A simulation bag: /clock every 100 ms of receipt time and 10 ms of simulation time, an action status topic
+    (no header) and a pose list."""
+    base = 1_000_000_000_000_000_000
+    with open(path, "wb") as f:
+        w = Writer(f)
+        c = w.register_msgdef("rosgraph_msgs/msg/Clock", CLOCK)
+        s = w.register_msgdef("action_msgs/msg/GoalStatusArray", STATUS_ARRAY)
+        t = w.register_msgdef("tf2_msgs/msg/TFMessage", TF)
+        w.write_message("/status", s, status((G1, 1)), log_time=base - 50_000_000, publish_time=base)
+        for k in range(5):
+            sim_ns = 10_000_000_000 + k * 10_000_000
+            if clock_back and k == 3:
+                sim_ns = 9_000_000_000
+            w.write_message("/clock", c, {"clock": {"sec": sim_ns // 10**9, "nanosec": sim_ns % 10**9}},
+                            log_time=base + k * 100_000_000, publish_time=base)
+        for k, goals in enumerate([[(G1, 2)], [(G1, 2)], [(G1, 4), (G2, 1)]]):
+            log = base + 50_000_000 + k * 100_000_000
+            w.write_message("/status", s, status(*goals), log_time=log, publish_time=log)
+        w.write_message("/gz/dynamic_pose", t, {"transforms": [
+            transform(10, 5_000_000, "gz:world", "openamrobot", 0.002),
+            transform(10, 5_000_000, "gz:openamrobot", "lift_carriage_link", 0.834)]}, log_time=base, publish_time=base)
+        w.finish()
+
+
+SIM_MAPPING = {
+    "source": {"system": "test", "provenance": "simulator"},
+    "clock": {"domain": "sim:test", "uncertainty_ms": 0, "receipt_allowance_ms": 20},
+    "mappings": [
+        {"topic": "/status", "signal": "lift.action.status", "each": "status_list", "field": "status",
+         "enum": {"1": "ACCEPTED", "2": "EXECUTING", "4": "SUCCEEDED"}, "ref_fields": {"attempt": "goal_info.goal_id.uuid"},
+         "changes_only": True, "time": "clock", "kind": "controller", "device": "lift_controller"},
+        {"topic": "/gz/dynamic_pose", "signal": "carriage.z", "each": "transforms",
+         "where": {"child_frame_id": "lift_carriage_link"}, "field": "transform.translation.z", "unit": "m",
+         "kind": "independent_sensor", "device": "gz-physics"},
+    ],
+}
+
+
+class SimulationBagTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.bag = Path(self.tmp.name) / "sim.mcap"
+        write_sim_bag(self.bag)
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def convert(self, mapping=None):
+        return bridge.convert(self.bag, json.loads(json.dumps(mapping or SIM_MAPPING)))
+
+    def statuses(self, records):
+        return [(r["refs"]["attempt"], r["value"]) for r in records if r["signal"] == "lift.action.status"]
+
+    def test_an_action_status_array_becomes_one_record_per_transition(self):
+        records, meta = self.convert()
+        got = sorted(self.statuses(records))
+        self.assertEqual(got, sorted([(G1_TEXT, "ACCEPTED"), (G1_TEXT, "EXECUTING"), (G1_TEXT, "SUCCEEDED"),
+                                      ("ffffffff-ffff-ffff-ffff-ffffffffffff", "ACCEPTED")]))
+        self.assertEqual(meta["counts"]["lift.action.status: unchanged"], 1, "the repeated EXECUTING")
+
+    def test_an_unstamped_message_is_placed_between_clock_messages_with_an_uncertainty(self):
+        records, _ = self.convert()
+        done = next(r for r in records if r.get("value") == "SUCCEEDED")
+        # received midway between /clock 10.020 s and 10.030 s
+        self.assertEqual(done["time"]["source"], "1970-01-01T00:00:10.025Z")
+        self.assertEqual(done["time"]["uncertainty_ms"], 25.0, "half of 10 ms, plus the 20 ms allowance")
+        self.assertEqual(done["time"]["clock_domain"], "sim:test/recorder")
+
+    def test_without_a_clock_message_before_it_there_is_no_source_time(self):
+        records, meta = self.convert()
+        first = next(r for r in records if r.get("value") == "ACCEPTED" and r["refs"]["attempt"] == G1_TEXT)
+        self.assertNotIn("source", first["time"])
+        self.assertNotIn("uncertainty_ms", first["time"])
+        self.assertEqual(meta["counts"]["lift.action.status: no source stamp"], 1)
+
+    def test_a_clock_that_goes_back_gives_no_placement(self):
+        write_sim_bag(self.bag, clock_back=True)
+        records, _ = self.convert()
+        succeeded = next(r for r in records if r.get("value") == "SUCCEEDED")
+        self.assertNotIn("source", succeeded["time"], "between /clock 10.020 s and 9.000 s nothing is honest")
+
+    def test_one_element_of_a_pose_list_is_selected_with_its_own_header(self):
+        records, _ = self.convert()
+        z = [r for r in records if r["signal"] == "carriage.z"]
+        self.assertEqual(len(z), 1, "the model's own entry is not the carriage")
+        self.assertEqual(z[0]["frame"], "gz:openamrobot")
+        self.assertEqual(z[0]["value"], {"value": 0.834, "unit": "m"})
+        self.assertEqual(z[0]["time"], {"source": "1970-01-01T00:00:10.005Z", "ingest": z[0]["time"]["ingest"],
+                                        "clock_domain": "sim:test", "uncertainty_ms": 0})
+
+    def test_clock_placement_needs_a_simulation_bag_and_a_stated_allowance(self):
+        m = json.loads(json.dumps(SIM_MAPPING))
+        del m["clock"]["receipt_allowance_ms"]
+        with self.assertRaisesRegex(SystemExit, "receipt_allowance_ms"):
+            self.convert(m)
+        m = json.loads(json.dumps(SIM_MAPPING))
+        m["clock"]["domain"] = "host"
+        with self.assertRaises(SystemExit):
+            self.convert(m)
+
+
 if __name__ == "__main__":
     unittest.main()
