@@ -1,0 +1,27 @@
+pick_place/action_aborted_but_object_in_tray | expected SATISFIED  | verifier SATISFIED
+pick_place/camera_calibration_expired | expected UNKNOWN calibration.expired | verifier UNKNOWN calibration.expired evidence.rejected
+pick_place/camera_has_no_pose | expected UNKNOWN evidence.missing | verifier UNKNOWN evidence.missing
+pick_place/camera_is_a_simulator | expected SATISFIED  | verifier SATISFIED
+pick_place/camera_pose_before_the_action_ended | expected UNKNOWN evidence.outside_window | verifier UNKNOWN evidence.outside_window evidence.rejected
+pick_place/dropped_outside_the_tray | expected VIOLATED condition.false | verifier VIOLATED condition.false
+pick_place/gripper_still_closed | expected VIOLATED condition.false | verifier VIOLATED condition.false
+pick_place/never_grasped | expected VIOLATED condition.false | verifier VIOLATED condition.false
+pick_place/placed | expected SATISFIED  | verifier SATISFIED
+pick_place/wrong_object | expected VIOLATED condition.false | verifier VIOLATED condition.false
+psu/all_agree | expected SATISFIED  | verifier SATISFIED
+psu/command_unknown_outcome_but_voltage_is_there | expected SATISFIED  | verifier SATISFIED
+psu/dmm_before_command | expected UNKNOWN evidence.outside_window | verifier UNKNOWN evidence.outside_window evidence.rejected
+psu/dmm_calibration_expired | expected UNKNOWN calibration.expired | verifier UNKNOWN calibration.expired evidence.rejected
+psu/dmm_calibration_missing | expected UNKNOWN calibration.missing | verifier UNKNOWN calibration.missing evidence.rejected
+psu/dmm_clock_uncertainty_too_large | expected UNKNOWN time.uncertainty | verifier UNKNOWN evidence.rejected time.uncertainty
+psu/dmm_for_another_attempt | expected UNKNOWN evidence.identity_mismatch | verifier UNKNOWN evidence.identity_mismatch evidence.rejected
+psu/dmm_in_a_unit_with_no_conversion | expected UNKNOWN evidence.unit | verifier UNKNOWN evidence.unit
+psu/dmm_in_millivolts | expected SATISFIED  | verifier SATISFIED
+psu/dmm_other_clock_no_uncertainty | expected UNKNOWN time.clock_domain | verifier UNKNOWN evidence.rejected time.clock_domain
+psu/dmm_quality_uncertain | expected UNKNOWN evidence.quality | verifier UNKNOWN evidence.quality evidence.rejected
+psu/dmm_readings_disagree | expected UNKNOWN evidence.conflict | verifier UNKNOWN evidence.conflict
+psu/dmm_reads_zero | expected VIOLATED condition.false | verifier VIOLATED condition.false
+psu/dmm_straddles_window_edge | expected UNKNOWN time.ambiguous | verifier UNKNOWN evidence.rejected time.ambiguous
+psu/dmm_too_late | expected UNKNOWN evidence.outside_window | verifier UNKNOWN evidence.outside_window evidence.rejected
+psu/no_command_record | expected UNKNOWN timing.anchor_missing | verifier UNKNOWN timing.anchor_missing
+psu/readback_high | expected VIOLATED condition.false | verifier VIOLATED condition.false

@@ -31,6 +31,7 @@ openmhs-http.workspace = true
 openmhs-mcp.workspace = true
 openmhs-modbus.workspace = true
 openmhs-mqtt.workspace = true
+openmhs-outcome.workspace = true
 openmhs-policy.workspace = true
 openmhs-profile.workspace = true
 openmhs-scpi.workspace = true

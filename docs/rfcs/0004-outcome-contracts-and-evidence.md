@@ -98,11 +98,11 @@ Records from OpenMHS itself come from an audit export (`openmhs audit export`): 
 ```json
 {
   "contract": "psu-setpoint", "version": "0.1",
-  "binding": { "attempt": "attempt-7" },
+  "binding": { "correlation": "attempt-7" },
   "timing": { "anchor": "command", "default_window_ms": [0, 2000], "max_clock_uncertainty_ms": 50 },
   "evidence": {
     "command":  { "signal": "command:power.output.voltage.setpoint", "kind": "controller" },
-    "readback": { "signal": "power.output.voltage.measured", "kind": "device_state" },
+    "readback": { "signal": "power.output.voltage.measured", "kind": "device_state", "bound": false },
     "dmm":      { "signal": "output.voltage", "kind": "independent_sensor", "calibration": ["dc-voltage"] }
   },
   "conditions": [
@@ -115,7 +115,8 @@ Records from OpenMHS itself come from an audit export (`openmhs audit export`): 
 - `evidence` names each item the contract needs: its signal, its source kind, optionally a device, a window, and
   required calibrations.
 - `binding` lists `refs` every record must carry with these values. A record with a different value, or none,
-  is not evidence for this attempt.
+  is not evidence for this attempt. An item with `"bound": false` is exempt: a device's own reading does not know
+  which attempt it belongs to, so its device and window identify it instead.
 - `timing.anchor` names the item whose time defines the window. Every other item must fall within
   `window_ms` (or `default_window_ms`) of it: `[0, 2000]` is "within two seconds after". A precondition is just
   an item with a window before the anchor.
@@ -129,11 +130,13 @@ Records from OpenMHS itself come from an audit export (`openmhs audit export`): 
 For each evidence item, the verifier takes every record with the item's signal and kind (and device, if given),
 and discards one when, in this order:
 
-1. its `refs` do not carry the contract's `binding` (`evidence.identity_mismatch`, `evidence.identity_unbound`);
+1. the item is bound and its `refs` do not carry the contract's `binding` (`evidence.identity_mismatch`,
+   `evidence.identity_unbound`);
 2. its quality is not `GOOD` (`evidence.quality`);
 3. it has no source time and a window applies (`time.missing`);
-4. its clock uncertainty is unknown or too large, or its clock domain differs from the anchor's with no stated
-   uncertainty (`time.uncertainty`, `time.clock_domain`);
+4. its clock uncertainty is stated and larger than `max_clock_uncertainty_ms` (`time.uncertainty`), or its clock
+   domain differs from the anchor's and either clock's uncertainty is unknown (`time.clock_domain`). On the same
+   clock, two readings are compared directly, and their absolute uncertainty does not matter;
 5. its time, widened by the uncertainty of both clocks, is not wholly inside the window
    (`evidence.outside_window`, or `time.ambiguous` if it straddles an edge);
 6. a required calibration has no record for its device, or is not valid at the record's time
@@ -144,7 +147,7 @@ every other item is undetermined (`timing.anchor_missing`).
 
 Each condition is then evaluated on **every** surviving record for its item. If they all hold, it is true; if
 none does, it is false; if they disagree, it is undetermined (`evidence.conflict`). No surviving record: undetermined
-(`evidence.missing`). A unit that cannot be converted, or a value of the wrong type: undetermined (`evidence.unit`,
+(`evidence.missing` if none arrived, `evidence.rejected` if some arrived and every one failed a rule). A unit that cannot be converted, or a value of the wrong type: undetermined (`evidence.unit`,
 `evidence.type`).
 
 The verdict:

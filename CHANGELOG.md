@@ -80,6 +80,13 @@ and the entry will say so under **Changed** or **Removed**.
 
 ### Added
 
+- **Outcome verification, v0** ([RFC 0004](docs/rfcs/0004-outcome-contracts-and-evidence.md),
+  [research/outcome-verifier](research/outcome-verifier/README.md)). `openmhs outcome verify` checks evidence records,
+  from OpenMHS's audit export or any other system, against an outcome contract, and answers `SATISFIED`, `VIOLATED` or
+  `UNKNOWN` with reasons: identity, time window, clock uncertainty, quality, calibration validity, units, and agreement
+  between readings. Deterministic, offline, outside the control path. `openmhs outcome from-audit` turns an export into
+  records. Tested on a 27-case fault corpus and the virtual lab only; no physical device yet.
+
 - **Read-only robot evaluation** ([examples/ros2-readonly-robot](examples/ros2-readonly-robot/README.md)). A
   simulated ROS 2 robot in its own process, read through the existing ROS 2 adapter by a scripted agent with a
   scoped credential. Faults, denied control, control-surface tripwires with a positive control, a plan, a

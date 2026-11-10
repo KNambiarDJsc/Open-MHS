@@ -1,0 +1,61 @@
+{
+  "binding": {
+    "correlation": "attempt-7"
+  },
+  "conditions": [
+    {
+      "evidence": "readback",
+      "max": {
+        "unit": "V",
+        "value": 2.05
+      },
+      "min": {
+        "unit": "V",
+        "value": 1.95
+      },
+      "name": "device reads back 2 V",
+      "op": "between"
+    },
+    {
+      "evidence": "dmm",
+      "max": {
+        "unit": "V",
+        "value": 2.05
+      },
+      "min": {
+        "unit": "V",
+        "value": 1.95
+      },
+      "name": "the DMM measures 2 V",
+      "op": "between"
+    }
+  ],
+  "contract": "psu-setpoint",
+  "evidence": {
+    "command": {
+      "kind": "controller",
+      "signal": "command:power.output.voltage.setpoint"
+    },
+    "dmm": {
+      "calibration": [
+        "dc-voltage"
+      ],
+      "kind": "independent_sensor",
+      "signal": "output.voltage"
+    },
+    "readback": {
+      "bound": false,
+      "kind": "device_state",
+      "signal": "power.output.voltage.measured"
+    }
+  },
+  "timing": {
+    "anchor": "command",
+    "default_window_ms": [
+      0,
+      2000
+    ],
+    "max_clock_uncertainty_ms": 50
+  },
+  "version": "0.1"
+}

@@ -1,0 +1,71 @@
+{
+  "conditions": [
+    {
+      "evidence": "output",
+      "index": 0,
+      "name": "the output measures 2 V",
+      "observed": [
+        {
+          "unit": "V",
+          "value": 0.0
+        },
+        {
+          "unit": "V",
+          "value": 0.0
+        }
+      ],
+      "op": "between",
+      "reason": {
+        "code": "condition.false",
+        "detail": "Between does not hold on audit-23, audit-24",
+        "item": "output"
+      },
+      "records": [
+        "audit-23",
+        "audit-24"
+      ],
+      "result": "FALSE"
+    }
+  ],
+  "contract": {
+    "name": "psu-output-2v",
+    "sha256": "6103c92aaabc8cb8c1f21d5ab67a57c820bdea4ffba1a4c7fe5c0d6890797d05",
+    "version": "0.1"
+  },
+  "evidence": {
+    "records": 4,
+    "sha256": "152278e0d91bae39964eac8bf5e24c45fc16aed55d642e54825dc6e1606c52ac"
+  },
+  "items": {
+    "command": {
+      "accepted": [
+        "command-01a1c5b4-0d7e-7634-9df4-bab2b88bb73d"
+      ],
+      "anchor": true,
+      "provenance": [
+        "unstated"
+      ],
+      "rejected": []
+    },
+    "output": {
+      "accepted": [
+        "audit-23",
+        "audit-24"
+      ],
+      "anchor": false,
+      "provenance": [
+        "simulator"
+      ],
+      "rejected": []
+    }
+  },
+  "reasons": [
+    {
+      "code": "condition.false",
+      "detail": "Between does not hold on audit-23, audit-24",
+      "item": "output"
+    }
+  ],
+  "verdict": "VIOLATED",
+  "verifier": "openmhs-outcome 0.1.0"
+}

@@ -1,6 +1,6 @@
 # `openmhs` command line
 
-All commands except `serve`, `demo`, `conformance`, `profile new`, `profile check`, `adapter check`, `adapter new`, `audit verify-file` and `audit verify-segments` are clients of a running gateway. They find it
+All commands except `serve`, `demo`, `conformance`, `profile new`, `profile check`, `adapter check`, `adapter new`, `audit verify-file`, `audit verify-segments` and `outcome` are clients of a running gateway. They find it
 through the runtime file in the gateway home: `--home`, else `$OPENMHS_HOME`, else the
 per-user local data directory.
 
@@ -74,6 +74,8 @@ openmhs read sim.thermo-01 temperature.ambient
 | `audit verify-segments DIR [--checkpoint FILE]` | Verify a directory of segment files offline: each file, that they follow on from one another, and that a retained checkpoint lies in them. Exits 3 if not |
 | `audit export --out FILE [--checkpoint-out FILE]` | Export all audit/receipt evidence from one snapshot (operator). Creates new files and refuses overwrites. Streamed to the file as the gateway reads it, then read back to check it is one whole bundle; a failed export leaves no file |
 | `audit verify-file FILE [--checkpoint FILE]` | Verify exported evidence offline, reading the file as a stream, with optional independently retained checkpoint. Exits 3 on invalid evidence or legacy receipts with incomplete digest coverage ([details](architecture/AUDIT_EVIDENCE.md)) |
+| `outcome verify --contract FILE [--evidence FILE]… [--audit EXPORT]…` | Check evidence records against an outcome contract, offline: `SATISFIED` (exit 0), `VIOLATED` (3) or `UNKNOWN` (4), with the reasons. Evidence can be JSONL from any system or an `audit export`. Deterministic; never contacts a gateway or device ([RFC 0004](rfcs/0004-outcome-contracts-and-evidence.md)) |
+| `outcome from-audit EXPORT` | Print an audit export as evidence records, one per line; what could not become a record is said on stderr |
 | `sim fault <device> <fault>` / `sim faults` | Fault injection (operator, `serve --sim` only) |
 | `conformance [--device ID]… [--profile FILE]… [--adapter-manifest FILE]… [--report-dir DIR] [--seed N]` | Run the conformance suite against the built-in simulators, protocol profiles' simulators, or out-of-process adapters started in fixture mode (their manifests must point at a simulator, never a real device); no gateway needed. Exit 0 when each reaches its declared level ([spec/conformance.md](../spec/conformance.md)) |
 | `adapter check FILE…` | Validate adapter permission manifests; starts nothing. Exit 0 when all are valid |

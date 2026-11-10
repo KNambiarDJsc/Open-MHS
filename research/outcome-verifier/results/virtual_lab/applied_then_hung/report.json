@@ -1,0 +1,60 @@
+{
+  "conditions": [
+    {
+      "evidence": "output",
+      "index": 0,
+      "name": "the output measures 2 V",
+      "observed": [
+        {
+          "unit": "V",
+          "value": 1.9993563410560078
+        },
+        {
+          "unit": "V",
+          "value": 2.00112902339168
+        }
+      ],
+      "op": "between",
+      "records": [
+        "audit-24",
+        "audit-25"
+      ],
+      "result": "TRUE"
+    }
+  ],
+  "contract": {
+    "name": "psu-output-2v",
+    "sha256": "341ccf1401ef33ea20bd55a16215035d6883d113fed858499bca4f1c16c7cd4c",
+    "version": "0.1"
+  },
+  "evidence": {
+    "records": 4,
+    "sha256": "629c15309c6f4c4ffc918c382790642e1e1f3d75ffd6b3ef79b80ead5b6ad55d"
+  },
+  "items": {
+    "command": {
+      "accepted": [
+        "command-01a1c5b4-2460-72b7-a55a-1dda88a7d904"
+      ],
+      "anchor": true,
+      "provenance": [
+        "unstated"
+      ],
+      "rejected": []
+    },
+    "output": {
+      "accepted": [
+        "audit-24",
+        "audit-25"
+      ],
+      "anchor": false,
+      "provenance": [
+        "simulator"
+      ],
+      "rejected": []
+    }
+  },
+  "reasons": [],
+  "verdict": "SATISFIED",
+  "verifier": "openmhs-outcome 0.1.0"
+}

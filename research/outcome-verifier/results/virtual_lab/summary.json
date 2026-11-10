@@ -1,0 +1,166 @@
+[
+  {
+    "case": "output_on",
+    "fault": null,
+    "output_enabled": true,
+    "receipt_state": "VERIFIED",
+    "predicted_receipt_state": "VERIFIED",
+    "verdict": "SATISFIED",
+    "predicted_verdict": "SATISFIED",
+    "exit": 0,
+    "reasons": [],
+    "observed_output": [
+      [
+        {
+          "unit": "V",
+          "value": 1.9993563410560078
+        },
+        {
+          "unit": "V",
+          "value": 2.00112902339168
+        }
+      ]
+    ],
+    "stderr": ""
+  },
+  {
+    "case": "output_off",
+    "fault": null,
+    "output_enabled": false,
+    "receipt_state": "VERIFIED",
+    "predicted_receipt_state": "VERIFIED",
+    "verdict": "VIOLATED",
+    "predicted_verdict": "VIOLATED",
+    "exit": 3,
+    "reasons": [
+      "condition.false"
+    ],
+    "observed_output": [
+      [
+        {
+          "unit": "V",
+          "value": 0.0
+        },
+        {
+          "unit": "V",
+          "value": 0.0
+        }
+      ]
+    ],
+    "stderr": ""
+  },
+  {
+    "case": "setpoint_readback_offset",
+    "fault": "readback-offset=0.3",
+    "output_enabled": true,
+    "receipt_state": "VERIFICATION_FAILED",
+    "predicted_receipt_state": "FAILED",
+    "verdict": "SATISFIED",
+    "predicted_verdict": "SATISFIED",
+    "exit": 0,
+    "reasons": [],
+    "observed_output": [
+      [
+        {
+          "unit": "V",
+          "value": 1.9993563410560078
+        },
+        {
+          "unit": "V",
+          "value": 2.00112902339168
+        }
+      ]
+    ],
+    "stderr": ""
+  },
+  {
+    "case": "readings_stale_5s",
+    "fault": "stale=5000",
+    "output_enabled": true,
+    "receipt_state": "DENIED",
+    "predicted_receipt_state": "not VERIFIED",
+    "verdict": "UNKNOWN",
+    "predicted_verdict": "UNKNOWN",
+    "exit": 4,
+    "reasons": [
+      "evidence.outside_window",
+      "evidence.rejected"
+    ],
+    "observed_output": [
+      []
+    ],
+    "stderr": ""
+  },
+  {
+    "case": "readings_bad_quality",
+    "fault": "bad-quality",
+    "output_enabled": true,
+    "receipt_state": "DENIED",
+    "predicted_receipt_state": "not VERIFIED",
+    "verdict": "UNKNOWN",
+    "predicted_verdict": "UNKNOWN",
+    "exit": 4,
+    "reasons": [
+      "evidence.quality",
+      "evidence.rejected"
+    ],
+    "observed_output": [
+      []
+    ],
+    "stderr": ""
+  },
+  {
+    "case": "applied_then_hung",
+    "fault": "apply-then-hang",
+    "output_enabled": true,
+    "receipt_state": "UNKNOWN_OUTCOME",
+    "predicted_receipt_state": "UNKNOWN_OUTCOME",
+    "verdict": "SATISFIED",
+    "predicted_verdict": "SATISFIED",
+    "exit": 0,
+    "reasons": [],
+    "observed_output": [
+      [
+        {
+          "unit": "V",
+          "value": 1.9993563410560078
+        },
+        {
+          "unit": "V",
+          "value": 2.00112902339168
+        }
+      ]
+    ],
+    "stderr": ""
+  },
+  {
+    "case": "with_a_simulated_dmm",
+    "fault": null,
+    "output_enabled": true,
+    "receipt_state": "VERIFIED",
+    "predicted_receipt_state": "VERIFIED",
+    "verdict": "SATISFIED",
+    "predicted_verdict": "SATISFIED",
+    "exit": 0,
+    "reasons": [],
+    "observed_output": [
+      [
+        {
+          "unit": "V",
+          "value": 1.9993563410560078
+        },
+        {
+          "unit": "V",
+          "value": 2.00112902339168
+        }
+      ],
+      [
+        {
+          "unit": "V",
+          "value": 1.999
+        }
+      ]
+    ],
+    "stderr": ""
+  }
+]

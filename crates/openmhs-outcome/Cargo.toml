@@ -1,0 +1,19 @@
+[package]
+name = "openmhs-outcome"
+description = "Outcome contracts, evidence records and deterministic verdicts (RFC 0004). Offline; outside the control path."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+publish = false
+
+[dependencies]
+openmhs-types.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+
+[lints]
+workspace = true

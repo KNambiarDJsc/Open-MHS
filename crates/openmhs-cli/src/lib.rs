@@ -7,6 +7,7 @@ mod bench;
 mod demo;
 mod discover;
 mod evidence;
+mod outcome;
 mod output;
 mod profiles;
 pub mod scaffold;
@@ -153,6 +154,12 @@ enum Cmd {
     Audit {
         #[command(subcommand)]
         command: AuditCmd,
+    },
+    /// Check a declared physical outcome against evidence, offline (RFC 0004). Exits 0 SATISFIED,
+    /// 3 VIOLATED, 4 UNKNOWN.
+    Outcome {
+        #[command(subcommand)]
+        command: OutcomeCmd,
     },
     /// Fault injection for simulated devices (operator, `serve --sim` only).
     Sim {
@@ -861,6 +868,24 @@ enum AuditCmd {
         #[arg(long)]
         limit: Option<usize>,
     },
+}
+
+#[derive(Subcommand)]
+enum OutcomeCmd {
+    /// Check evidence against an outcome contract. Never contacts a gateway or a device.
+    Verify {
+        /// The outcome contract (JSON).
+        #[arg(long)]
+        contract: PathBuf,
+        /// Evidence records, one JSON object per line. Repeatable.
+        #[arg(long = "evidence")]
+        evidence: Vec<PathBuf>,
+        /// An `openmhs audit export` bundle, read as evidence. Repeatable.
+        #[arg(long = "audit")]
+        audit: Vec<PathBuf>,
+    },
+    /// Print an audit export as evidence records, one per line.
+    FromAudit { bundle: PathBuf },
 }
 
 #[derive(Subcommand)]
@@ -1845,6 +1870,16 @@ async fn run(cli: Cli) -> u8 {
         } => {
             return evidence::verify_segments(cli.json, &dir, checkpoint.as_deref());
         }
+        Cmd::Outcome { command } => {
+            return match command {
+                OutcomeCmd::Verify {
+                    contract,
+                    evidence,
+                    audit,
+                } => outcome::verify_cmd(cli.json, &contract, &evidence, &audit),
+                OutcomeCmd::FromAudit { bundle } => outcome::from_audit_cmd(&bundle),
+            };
+        }
         Cmd::Serve(args) => return serve(home, args).await,
         Cmd::Demo(args) => return demo::run(args.keep).await,
         Cmd::Discover {
@@ -1985,6 +2020,7 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
         | Cmd::Conformance(_)
         | Cmd::Profile { .. }
         | Cmd::Adapter { .. }
+        | Cmd::Outcome { .. }
         | Cmd::Trust { .. } => {
             unreachable!("handled before connecting")
         }

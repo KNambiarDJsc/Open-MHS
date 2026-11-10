@@ -1590,6 +1590,7 @@ dependencies = [
  "openmhs-mcp",
  "openmhs-modbus",
  "openmhs-mqtt",
+ "openmhs-outcome",
  "openmhs-policy",
  "openmhs-profile",
  "openmhs-scpi",
@@ -1753,6 +1754,17 @@ dependencies = [
  "tempfile",
  "tokio",
  "tokio-rustls",
+]
+
+[[package]]
+name = "openmhs-outcome"
+version = "0.1.0"
+dependencies = [
+ "openmhs-types",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
 ]
 
 [[package]]

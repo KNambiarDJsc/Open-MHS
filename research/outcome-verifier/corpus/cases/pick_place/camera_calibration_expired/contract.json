@@ -1,0 +1,90 @@
+{
+  "binding": {
+    "task": "place-104"
+  },
+  "conditions": [
+    {
+      "evidence": "object",
+      "name": "the object is the sample",
+      "op": "eq",
+      "value": "sample_104"
+    },
+    {
+      "evidence": "x",
+      "max": {
+        "unit": "m",
+        "value": 0.6
+      },
+      "min": {
+        "unit": "m",
+        "value": 0.4
+      },
+      "name": "x inside the tray",
+      "op": "between"
+    },
+    {
+      "evidence": "y",
+      "max": {
+        "unit": "m",
+        "value": 0.1
+      },
+      "min": {
+        "unit": "m",
+        "value": -0.1
+      },
+      "name": "y inside the tray",
+      "op": "between"
+    },
+    {
+      "evidence": "gripper",
+      "name": "the gripper let go",
+      "op": "eq",
+      "value": false
+    }
+  ],
+  "contract": "place-sample-in-tray",
+  "evidence": {
+    "action": {
+      "kind": "controller",
+      "signal": "action:/arm/place"
+    },
+    "gripper": {
+      "bound": false,
+      "kind": "device_state",
+      "signal": "gripper.object_detected"
+    },
+    "object": {
+      "bound": false,
+      "device": "overhead-cam",
+      "kind": "independent_sensor",
+      "signal": "object.id"
+    },
+    "x": {
+      "bound": false,
+      "calibration": [
+        "camera-extrinsics"
+      ],
+      "device": "overhead-cam",
+      "kind": "independent_sensor",
+      "signal": "object.position.x"
+    },
+    "y": {
+      "bound": false,
+      "calibration": [
+        "camera-extrinsics"
+      ],
+      "device": "overhead-cam",
+      "kind": "independent_sensor",
+      "signal": "object.position.y"
+    }
+  },
+  "timing": {
+    "anchor": "action",
+    "default_window_ms": [
+      0,
+      1500
+    ],
+    "max_clock_uncertainty_ms": 20
+  },
+  "version": "0.1"
+}

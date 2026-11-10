@@ -1,0 +1,86 @@
+{
+  "conditions": [
+    {
+      "evidence": "output",
+      "index": 0,
+      "name": "the output measures 2 V",
+      "observed": [
+        {
+          "unit": "V",
+          "value": 1.9993563410560078
+        },
+        {
+          "unit": "V",
+          "value": 2.00112902339168
+        }
+      ],
+      "op": "between",
+      "records": [
+        "audit-23",
+        "audit-24"
+      ],
+      "result": "TRUE"
+    },
+    {
+      "evidence": "dmm",
+      "index": 1,
+      "name": "the DMM measures 2 V",
+      "observed": [
+        {
+          "unit": "V",
+          "value": 1.999
+        }
+      ],
+      "op": "between",
+      "records": [
+        "dmm-1"
+      ],
+      "result": "TRUE"
+    }
+  ],
+  "contract": {
+    "name": "psu-output-2v",
+    "sha256": "2784b7170d962dd4f7300006531ddc79761871bee80949970cb86b90a962d7ca",
+    "version": "0.1"
+  },
+  "evidence": {
+    "records": 6,
+    "sha256": "c0ffbd9d967a632b44662788d3a92fea907636e6933ca5c8b74269f7b663286a"
+  },
+  "items": {
+    "command": {
+      "accepted": [
+        "command-01a1c5b4-33a6-72de-a356-2805872a0891"
+      ],
+      "anchor": true,
+      "provenance": [
+        "unstated"
+      ],
+      "rejected": []
+    },
+    "dmm": {
+      "accepted": [
+        "dmm-1"
+      ],
+      "anchor": false,
+      "provenance": [
+        "simulator"
+      ],
+      "rejected": []
+    },
+    "output": {
+      "accepted": [
+        "audit-23",
+        "audit-24"
+      ],
+      "anchor": false,
+      "provenance": [
+        "simulator"
+      ],
+      "rejected": []
+    }
+  },
+  "reasons": [],
+  "verdict": "SATISFIED",
+  "verifier": "openmhs-outcome 0.1.0"
+}

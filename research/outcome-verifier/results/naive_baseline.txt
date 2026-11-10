@@ -1,0 +1,30 @@
+cases 27; the script agrees with the expected verdict in 12
+false SATISFIED (12): pick_place/camera_calibration_expired, pick_place/camera_pose_before_the_action_ended, psu/dmm_before_command, psu/dmm_calibration_expired, psu/dmm_calibration_missing, psu/dmm_clock_uncertainty_too_large, psu/dmm_for_another_attempt, psu/dmm_other_clock_no_uncertainty, psu/dmm_quality_uncertain, psu/dmm_straddles_window_edge, psu/dmm_too_late, psu/no_command_record
+VIOLATED where the evidence could not establish it (3): pick_place/camera_has_no_pose, psu/dmm_in_a_unit_with_no_conversion, psu/dmm_readings_disagree
+  pick_place/action_aborted_but_object_in_tray            expected SATISFIED  script SATISFIED
+  pick_place/camera_calibration_expired                   expected UNKNOWN    script SATISFIED
+  pick_place/camera_has_no_pose                           expected UNKNOWN    script VIOLATED
+  pick_place/camera_is_a_simulator                        expected SATISFIED  script SATISFIED
+  pick_place/camera_pose_before_the_action_ended          expected UNKNOWN    script SATISFIED
+  pick_place/dropped_outside_the_tray                     expected VIOLATED   script VIOLATED
+  pick_place/gripper_still_closed                         expected VIOLATED   script VIOLATED
+  pick_place/never_grasped                                expected VIOLATED   script VIOLATED
+  pick_place/placed                                       expected SATISFIED  script SATISFIED
+  pick_place/wrong_object                                 expected VIOLATED   script VIOLATED
+  psu/all_agree                                           expected SATISFIED  script SATISFIED
+  psu/command_unknown_outcome_but_voltage_is_there        expected SATISFIED  script SATISFIED
+  psu/dmm_before_command                                  expected UNKNOWN    script SATISFIED
+  psu/dmm_calibration_expired                             expected UNKNOWN    script SATISFIED
+  psu/dmm_calibration_missing                             expected UNKNOWN    script SATISFIED
+  psu/dmm_clock_uncertainty_too_large                     expected UNKNOWN    script SATISFIED
+  psu/dmm_for_another_attempt                             expected UNKNOWN    script SATISFIED
+  psu/dmm_in_a_unit_with_no_conversion                    expected UNKNOWN    script VIOLATED
+  psu/dmm_in_millivolts                                   expected SATISFIED  script SATISFIED
+  psu/dmm_other_clock_no_uncertainty                      expected UNKNOWN    script SATISFIED
+  psu/dmm_quality_uncertain                               expected UNKNOWN    script SATISFIED
+  psu/dmm_readings_disagree                               expected UNKNOWN    script VIOLATED
+  psu/dmm_reads_zero                                      expected VIOLATED   script VIOLATED
+  psu/dmm_straddles_window_edge                           expected UNKNOWN    script SATISFIED
+  psu/dmm_too_late                                        expected UNKNOWN    script SATISFIED
+  psu/no_command_record                                   expected UNKNOWN    script SATISFIED
+  psu/readback_high                                       expected VIOLATED   script VIOLATED

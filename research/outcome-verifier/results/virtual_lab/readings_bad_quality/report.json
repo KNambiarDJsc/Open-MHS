@@ -1,0 +1,79 @@
+{
+  "conditions": [
+    {
+      "evidence": "output",
+      "index": 0,
+      "name": "the output measures 2 V",
+      "observed": [],
+      "op": "between",
+      "reason": {
+        "code": "evidence.rejected",
+        "detail": "2 record(s) considered, none passed the rules: see items.output",
+        "item": "output"
+      },
+      "records": [],
+      "result": "UNDETERMINED"
+    }
+  ],
+  "contract": {
+    "name": "psu-output-2v",
+    "sha256": "ae3c2b959a21e327ba8f9fe6456aff544a8e720baa03c40abd59917f8d964d10",
+    "version": "0.1"
+  },
+  "evidence": {
+    "records": 4,
+    "sha256": "4b4ced8b3afdef27b97d59ef3a08cbd392a126061112efb608d75053a7fe6c2b"
+  },
+  "items": {
+    "command": {
+      "accepted": [
+        "command-01a1c5b4-20ba-73dd-a638-05c4616a5308"
+      ],
+      "anchor": true,
+      "provenance": [
+        "unstated"
+      ],
+      "rejected": []
+    },
+    "output": {
+      "accepted": [],
+      "anchor": false,
+      "provenance": [],
+      "rejected": [
+        {
+          "code": "evidence.quality",
+          "detail": "quality is Bad, only GOOD counts",
+          "item": "output",
+          "record": "audit-20"
+        },
+        {
+          "code": "evidence.quality",
+          "detail": "quality is Bad, only GOOD counts",
+          "item": "output",
+          "record": "audit-21"
+        }
+      ]
+    }
+  },
+  "reasons": [
+    {
+      "code": "evidence.quality",
+      "detail": "quality is Bad, only GOOD counts",
+      "item": "output",
+      "record": "audit-20"
+    },
+    {
+      "code": "evidence.quality",
+      "detail": "quality is Bad, only GOOD counts",
+      "item": "output",
+      "record": "audit-21"
+    },
+    {
+      "code": "evidence.rejected",
+      "detail": "2 record(s) considered, none passed the rules: see items.output",
+      "item": "output"
+    }
+  ],
+  "verdict": "UNKNOWN",
+  "verifier": "openmhs-outcome 0.1.0"
+}

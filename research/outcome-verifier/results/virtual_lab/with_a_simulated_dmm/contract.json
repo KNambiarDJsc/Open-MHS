@@ -1,0 +1,62 @@
+{
+  "contract": "psu-output-2v",
+  "version": "0.1",
+  "binding": {
+    "correlation": "attempt-with_a_simulated_dmm"
+  },
+  "timing": {
+    "anchor": "command",
+    "default_window_ms": [
+      0,
+      3000
+    ]
+  },
+  "evidence": {
+    "command": {
+      "signal": "command:power.output.voltage.setpoint",
+      "kind": "controller",
+      "device": "sim.psu-01"
+    },
+    "output": {
+      "signal": "power.output.voltage.measured",
+      "kind": "device_state",
+      "device": "sim.psu-01",
+      "bound": false
+    },
+    "dmm": {
+      "signal": "output.voltage",
+      "kind": "independent_sensor",
+      "calibration": [
+        "dc-voltage"
+      ]
+    }
+  },
+  "conditions": [
+    {
+      "name": "the output measures 2 V",
+      "evidence": "output",
+      "op": "between",
+      "min": {
+        "value": 1.95,
+        "unit": "V"
+      },
+      "max": {
+        "value": 2.05,
+        "unit": "V"
+      }
+    },
+    {
+      "name": "the DMM measures 2 V",
+      "evidence": "dmm",
+      "op": "between",
+      "min": {
+        "value": 1.95,
+        "unit": "V"
+      },
+      "max": {
+        "value": 2.05,
+        "unit": "V"
+      }
+    }
+  ]
+}
