@@ -68,11 +68,49 @@ def sha256_of(paths: list[Path]) -> str:
     return h.hexdigest()
 
 
+# rosbag2 (Jazzy, 2026-11-10) recorded the hidden action status topic with an empty schema: the type name, no
+# definition. These standard definitions are used only then, and every use is listed in the conversion's metadata.
+SUPPLIED_DEFINITIONS = {
+    "action_msgs/msg/GoalStatusArray": """action_msgs/GoalStatus[] status_list
+================================================================================
+MSG: action_msgs/GoalStatus
+action_msgs/GoalInfo goal_info
+int8 status
+================================================================================
+MSG: action_msgs/GoalInfo
+unique_identifier_msgs/UUID goal_id
+builtin_interfaces/Time stamp
+================================================================================
+MSG: unique_identifier_msgs/UUID
+uint8[16] uuid
+================================================================================
+MSG: builtin_interfaces/Time
+int32 sec
+uint32 nanosec""",
+}
+
+
+class _Decoders(DecoderFactory):
+    """The ROS 2 MCAP decoder, plus SUPPLIED_DEFINITIONS for a schema the bag recorded empty."""
+
+    supplied: set[str] = set()
+
+    def decoder_for(self, message_encoding: str, schema: Any) -> Any:
+        if schema is not None and not schema.data and message_encoding == "cdr":
+            if schema.name not in SUPPLIED_DEFINITIONS:
+                raise SystemExit(f"the bag has no message definition for {schema.name}, and the bridge supplies none")
+            from mcap_ros2._dynamic import generate_dynamic
+
+            _Decoders.supplied.add(schema.name)
+            return generate_dynamic(schema.name, SUPPLIED_DEFINITIONS[schema.name])[schema.name]
+        return super().decoder_for(message_encoding, schema)
+
+
 def messages(paths: list[Path], topics: set[str] | None) -> Iterator[tuple[str, str, int, Any]]:
     """(topic, type, log_time_ns, decoded message), in log-time order within each file."""
     for p in paths:
         with open(p, "rb") as f:
-            reader = make_reader(f, decoder_factories=[DecoderFactory()])
+            reader = make_reader(f, decoder_factories=[_Decoders()])
             for schema, channel, message, decoded in reader.iter_decoded_messages(topics=topics, log_time_order=True):
                 yield channel.topic, schema.name if schema else "?", message.log_time, decoded
 
@@ -91,6 +129,8 @@ def inspect(path: Path) -> dict[str, Any]:
             schema = summary.schemas.get(ch.schema_id)
             out["topics"][ch.topic] = {"type": schema.name if schema else "?",
                                        "messages": stats.channel_message_counts.get(cid, 0)}
+            if schema is not None and not schema.data:
+                out["topics"][ch.topic]["definition"] = "missing from the bag"
     return out
 
 
@@ -239,6 +279,7 @@ def _record(m: dict[str, Any], topic: str, n: int, idx: int | None, log_ns: int,
 
 
 def convert(path: Path, mapping: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    _Decoders.supplied = set()
     paths = bag_files(path)
     info = inspect(path)
     source = mapping.get("source", {})
@@ -315,6 +356,7 @@ def convert(path: Path, mapping: dict[str, Any]) -> tuple[list[dict[str, Any]], 
         "clock": clock,
         "topics_used": {t: info["topics"][t] for t in sorted(by_topic)},
         "counts": dict(sorted(counts.items())),
+        "definitions_supplied_by_bridge": sorted(_Decoders.supplied),
     }
     return records, meta
 

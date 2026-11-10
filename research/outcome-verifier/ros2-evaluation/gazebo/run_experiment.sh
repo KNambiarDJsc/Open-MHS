@@ -24,14 +24,24 @@ setsid nohup ros2 launch openamrobot_upperbody_bringup moveit.launch.py sim:=gaz
   physics_engine:="$ENGINE" </dev/null >"$OUT/stack.log" 2>&1 &
 STACK=$!
 
+# Background jobs of a non-interactive script start with SIGINT ignored, so every stop here is SIGTERM (which ROS 2
+# and rosbag2 treat as a clean shutdown), then SIGKILL if a process is still there.
+stop() {
+  local pid=$1 i
+  kill -TERM "$pid" 2>/dev/null || return 0
+  for i in $(seq 1 30); do kill -0 "$pid" 2>/dev/null || return 0; sleep 1; done
+  kill -KILL "$pid" 2>/dev/null
+}
 cleanup() {
-  [ -n "${REC:-}" ] && kill -INT "$REC" 2>/dev/null && wait "$REC" 2>/dev/null
-  [ -n "${REPUB:-}" ] && kill -INT "$REPUB" 2>/dev/null
-  [ -n "${RAW:-}" ] && kill -INT "$RAW" 2>/dev/null
-  kill -INT -- -"$STACK" 2>/dev/null; sleep 5; kill -KILL -- -"$STACK" 2>/dev/null
-  for p in "gz sim" move_group ros2_control_node robot_state_publisher parameter_bridge joint_state_publisher; do
+  [ -n "${REC:-}" ] && stop "$REC"
+  [ -n "${REPUB:-}" ] && stop "$REPUB"
+  [ -n "${RAW:-}" ] && stop "$RAW"
+  kill -TERM -- -"$STACK" 2>/dev/null; sleep 5; kill -KILL -- -"$STACK" 2>/dev/null
+  for p in "gz sim" "gz topic" move_group ros2_control_node robot_state_publisher parameter_bridge \
+           joint_state_publisher gz_pose_republisher; do
     pkill -KILL -f "$p" 2>/dev/null
   done
+  if pgrep -f "gz sim|move_group|ros2 bag record|gz_pose_republisher" >/dev/null; then echo "LEFTOVER processes" >&2; fi
 }
 trap cleanup EXIT
 

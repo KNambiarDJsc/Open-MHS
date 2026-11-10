@@ -327,6 +327,13 @@ def inject(fault: str, c: dict, records: list[dict], offset: tuple, base_cal: di
 
 # ---------------------------------------------------------------- run
 
+def _spread(xs: list) -> dict | None:
+    xs = sorted(x for x in xs if x is not None)
+    if not xs:
+        return None
+    return {"min": xs[0], "median": statistics.median(xs), "max": xs[-1], "n": len(xs)}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", type=Path, required=True)
@@ -348,7 +355,7 @@ def main() -> int:
     summary: dict = {"run": args.run.name, "carriage_offset_m": offset, "odom_calibration": base_stats,
                      "lift_goals_sent": sum(1 for i in intent if i.get("kind") == "lift"),
                      "lift_results": {str(i["task"]): i.get("result_status") for i in intent if i.get("kind") == "lift"},
-                     "status_uncertainty_ms": sorted({r["record"]["time"].get("uncertainty_ms") for r in lc})}
+                     "status_uncertainty_ms": _spread([c["record"]["time"].get("uncertainty_ms") for c in lc])}
 
     rows = []
     for c in lc + bc:

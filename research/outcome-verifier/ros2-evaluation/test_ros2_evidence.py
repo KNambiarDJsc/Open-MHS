@@ -327,6 +327,41 @@ class SimulationBagTests(unittest.TestCase):
         self.assertEqual(z[0]["time"], {"source": "1970-01-01T00:00:10.005Z", "ingest": z[0]["time"]["ingest"],
                                         "clock_domain": "sim:test", "uncertainty_ms": 0})
 
+    def _bag_with_an_empty_schema(self, type_name: str) -> None:
+        """As rosbag2 recorded the hidden action status topic: a schema with the type name and no definition."""
+        from mcap.writer import Writer as RawWriter
+        from mcap_ros2._dynamic import serialize_dynamic
+
+        encode = serialize_dynamic("action_msgs/msg/GoalStatusArray", STATUS_ARRAY)["action_msgs/msg/GoalStatusArray"]
+        base = 1_000_000_000_000_000_000
+        with open(self.bag, "wb") as f:
+            w = RawWriter(f)
+            w.start("ros2")
+            c = w.register_channel("/clock", "cdr", w.register_schema("rosgraph_msgs/msg/Clock", "ros2msg", CLOCK.encode()))
+            clock_enc = serialize_dynamic("rosgraph_msgs/msg/Clock", CLOCK)["rosgraph_msgs/msg/Clock"]
+            s = w.register_channel("/status", "cdr", w.register_schema(type_name, "", b""))
+            w.add_message(c, log_time=base, data=clock_enc({"clock": {"sec": 10, "nanosec": 0}}), publish_time=base)
+            w.add_message(s, log_time=base + 1, data=encode(status((G1, 4))), publish_time=base + 1)
+            w.add_message(c, log_time=base + 2, data=clock_enc({"clock": {"sec": 10, "nanosec": 1_000_000}}),
+                          publish_time=base + 2)
+            w.finish()
+
+    def test_an_empty_action_status_schema_is_decoded_with_a_supplied_definition_and_says_so(self):
+        self._bag_with_an_empty_schema("action_msgs/msg/GoalStatusArray")
+        self.assertEqual(bridge.inspect(self.bag)["topics"]["/status"]["definition"], "missing from the bag")
+        m = json.loads(json.dumps(SIM_MAPPING))
+        m["mappings"] = m["mappings"][:1]
+        records, meta = self.convert(m)
+        self.assertEqual(self.statuses(records), [(G1_TEXT, "SUCCEEDED")])
+        self.assertEqual(meta["definitions_supplied_by_bridge"], ["action_msgs/msg/GoalStatusArray"])
+
+    def test_an_empty_schema_the_bridge_has_no_definition_for_is_refused(self):
+        self._bag_with_an_empty_schema("some_pkg/msg/Unknown")
+        m = json.loads(json.dumps(SIM_MAPPING))
+        m["mappings"] = m["mappings"][:1]
+        with self.assertRaisesRegex(SystemExit, "no message definition"):
+            self.convert(m)
+
     def test_clock_placement_needs_a_simulation_bag_and_a_stated_allowance(self):
         m = json.loads(json.dumps(SIM_MAPPING))
         del m["clock"]["receipt_allowance_ms"]
