@@ -260,3 +260,47 @@ fn an_audit_export_becomes_evidence_without_inventing_values() {
     );
     assert!(audit::records_from_bundle(&json!({ "audit": [] })).is_err());
 }
+
+#[test]
+fn a_record_in_another_frame_is_not_evidence_and_is_never_transformed() {
+    let mut c = base();
+    c["evidence"]["s"]["frame"] = json!("map");
+    let mut in_odom = rec("s1", "s", "device_state", json!(1), T1);
+    in_odom["frame"] = json!("odom");
+    let mut no_frame = rec("s2", "s", "device_state", json!(1), T1);
+    no_frame.as_object_mut().unwrap().remove("frame");
+    let anchor = rec("a1", "act", "controller", json!("OK"), T0);
+    let report = verify(
+        &contract(c.clone()),
+        &records(&[anchor.clone(), in_odom, no_frame]),
+    )
+    .unwrap();
+    assert_eq!(report.verdict, Verdict::Unknown);
+    let codes: Vec<&str> = report.items["s"]
+        .rejected
+        .iter()
+        .map(|r| r.code.as_str())
+        .collect();
+    assert_eq!(codes, ["evidence.frame", "evidence.frame"]);
+    let mut in_map = rec("s3", "s", "device_state", json!(1), T1);
+    in_map["frame"] = json!("map");
+    let report = verify(&contract(c), &records(&[anchor, in_map])).unwrap();
+    assert_eq!(report.verdict, Verdict::Satisfied);
+}
+
+#[test]
+fn when_the_anchor_is_discarded_the_report_says_why() {
+    let mut c = base();
+    c["evidence"]["a"]["calibration"] = json!(["cal"]);
+    let mut anchor = rec("a1", "act", "controller", json!("OK"), T1);
+    anchor["source"]["device"] = json!("d");
+    let cal = json!({ "id": "c1", "signal": "calibration", "value": "cal",
+        "source": { "kind": "calibration", "device": "d" },
+        "calibration": { "name": "cal", "applies_to": "d", "valid_from": "2026-01-01T00:00:00Z", "valid_until": T0 } });
+    let r = records(&[anchor, cal, rec("s1", "s", "device_state", json!(1), T1)]);
+    let report = verify(&contract(c), &r).unwrap();
+    assert_eq!(report.verdict, Verdict::Unknown);
+    let codes: Vec<&str> = report.reasons.iter().map(|r| r.code.as_str()).collect();
+    assert!(codes.contains(&"timing.anchor_missing"), "{codes:?}");
+    assert!(codes.contains(&"calibration.expired"), "{codes:?}");
+}

@@ -1,0 +1,2529 @@
+{
+  "conditions": [
+    {
+      "evidence": "x",
+      "index": 0,
+      "name": "x within 3 m",
+      "observed": [],
+      "op": "between",
+      "reason": {
+        "code": "evidence.rejected",
+        "detail": "102 record(s) considered, none passed the rules: see items.x",
+        "item": "x"
+      },
+      "records": [],
+      "result": "UNDETERMINED"
+    },
+    {
+      "evidence": "y",
+      "index": 1,
+      "name": "y within 3 m",
+      "observed": [],
+      "op": "between",
+      "reason": {
+        "code": "evidence.rejected",
+        "detail": "102 record(s) considered, none passed the rules: see items.y",
+        "item": "y"
+      },
+      "records": [],
+      "result": "UNDETERMINED"
+    }
+  ],
+  "contract": {
+    "name": "arrived-at-believed-position",
+    "sha256": "4e6a4e28a6dbfddfc0829a3d8c337c77a6047ad61cf6332f29fca828a9269ce8",
+    "version": "0.1"
+  },
+  "evidence": {
+    "records": 206,
+    "sha256": "534153d911a8ef7f1cea249b13fbade3066fd80593df03684046dcf5a7b3e1f7"
+  },
+  "items": {
+    "claim": {
+      "accepted": [
+        "claim-145"
+      ],
+      "anchor": true,
+      "provenance": [
+        "device"
+      ],
+      "rejected": []
+    },
+    "x": {
+      "accepted": [],
+      "anchor": false,
+      "provenance": [],
+      "rejected": [
+        {
+          "code": "evidence.outside_window",
+          "detail": "-2000 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14102:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1991 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14103:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1981 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14104:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1971 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14105:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1961 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14106:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1951 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14107:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1941 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14108:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1931 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14109:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1921 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14110:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1911 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14111:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1901 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14112:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1891 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14113:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1881 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14114:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1870 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14115:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1860 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14116:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1850 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14117:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1840 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14118:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1830 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14119:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1820 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14120:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1810 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14121:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1800 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14122:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1790 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14123:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1780 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14124:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1770 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14125:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1760 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14126:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1750 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14127:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1741 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14128:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1731 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14129:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1721 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14130:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1711 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14131:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1701 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14132:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1691 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14133:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1681 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14134:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1671 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14135:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1661 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14136:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1651 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14137:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1641 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14138:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1631 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14139:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1620 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14140:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1610 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14141:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1600 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14142:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1590 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14143:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1580 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14144:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1570 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14145:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1560 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14146:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1550 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14147:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1540 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14148:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1530 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14149:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1520 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14150:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1510 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14151:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1500 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14152:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1491 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14153:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1481 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14154:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1471 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14155:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1461 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14156:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1451 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14157:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1441 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14158:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1431 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14159:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1421 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14160:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1411 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14161:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1401 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14162:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1391 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14163:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1381 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14164:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1370 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14165:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1360 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14166:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1350 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14167:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1340 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14168:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1330 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14169:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1320 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14170:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1310 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14171:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1300 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14172:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1290 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14173:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1280 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14174:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1270 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14175:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1260 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14176:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1250 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14177:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1241 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14178:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1231 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14179:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1221 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14180:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1211 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14181:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1201 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14182:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1191 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14183:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1181 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14184:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1171 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14185:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1161 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14186:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1151 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14187:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1141 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14188:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1131 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14189:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1120 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14190:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1110 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14191:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1100 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14192:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1090 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14193:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1080 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14194:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1070 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14195:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1060 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14196:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1050 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14197:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1040 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14198:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1030 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14199:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1020 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14200:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1010 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14201:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1000 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14202:base.x"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1000 ms from the anchor, the window is [-50, 50] ms",
+          "item": "x",
+          "record": "/ground_truth#14203:base.x"
+        }
+      ]
+    },
+    "y": {
+      "accepted": [],
+      "anchor": false,
+      "provenance": [],
+      "rejected": [
+        {
+          "code": "evidence.outside_window",
+          "detail": "-2000 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14102:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1991 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14103:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1981 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14104:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1971 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14105:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1961 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14106:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1951 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14107:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1941 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14108:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1931 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14109:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1921 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14110:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1911 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14111:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1901 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14112:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1891 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14113:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1881 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14114:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1870 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14115:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1860 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14116:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1850 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14117:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1840 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14118:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1830 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14119:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1820 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14120:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1810 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14121:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1800 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14122:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1790 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14123:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1780 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14124:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1770 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14125:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1760 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14126:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1750 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14127:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1741 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14128:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1731 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14129:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1721 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14130:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1711 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14131:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1701 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14132:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1691 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14133:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1681 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14134:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1671 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14135:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1661 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14136:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1651 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14137:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1641 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14138:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1631 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14139:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1620 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14140:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1610 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14141:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1600 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14142:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1590 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14143:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1580 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14144:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1570 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14145:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1560 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14146:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1550 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14147:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1540 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14148:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1530 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14149:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1520 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14150:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1510 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14151:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1500 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14152:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1491 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14153:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1481 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14154:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1471 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14155:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1461 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14156:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1451 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14157:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1441 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14158:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1431 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14159:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1421 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14160:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1411 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14161:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1401 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14162:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1391 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14163:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1381 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14164:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1370 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14165:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1360 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14166:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1350 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14167:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1340 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14168:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1330 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14169:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1320 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14170:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1310 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14171:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1300 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14172:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1290 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14173:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1280 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14174:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1270 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14175:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1260 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14176:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1250 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14177:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1241 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14178:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1231 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14179:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1221 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14180:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1211 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14181:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1201 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14182:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1191 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14183:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1181 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14184:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1171 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14185:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1161 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14186:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1151 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14187:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1141 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14188:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1131 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14189:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1120 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14190:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1110 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14191:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1100 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14192:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1090 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14193:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1080 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14194:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1070 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14195:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1060 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14196:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1050 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14197:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1040 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14198:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1030 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14199:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1020 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14200:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1010 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14201:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1000 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14202:base.y"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1000 ms from the anchor, the window is [-50, 50] ms",
+          "item": "y",
+          "record": "/ground_truth#14203:base.y"
+        }
+      ]
+    }
+  },
+  "reasons": [
+    {
+      "code": "evidence.outside_window",
+      "detail": "-2000 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14102:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1991 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14103:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1981 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14104:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1971 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14105:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1961 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14106:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1951 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14107:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1941 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14108:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1931 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14109:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1921 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14110:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1911 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14111:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1901 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14112:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1891 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14113:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1881 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14114:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1870 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14115:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1860 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14116:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1850 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14117:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1840 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14118:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1830 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14119:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1820 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14120:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1810 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14121:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1800 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14122:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1790 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14123:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1780 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14124:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1770 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14125:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1760 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14126:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1750 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14127:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1741 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14128:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1731 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14129:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1721 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14130:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1711 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14131:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1701 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14132:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1691 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14133:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1681 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14134:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1671 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14135:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1661 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14136:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1651 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14137:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1641 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14138:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1631 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14139:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1620 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14140:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1610 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14141:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1600 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14142:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1590 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14143:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1580 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14144:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1570 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14145:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1560 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14146:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1550 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14147:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1540 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14148:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1530 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14149:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1520 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14150:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1510 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14151:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1500 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14152:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1491 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14153:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1481 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14154:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1471 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14155:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1461 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14156:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1451 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14157:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1441 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14158:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1431 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14159:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1421 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14160:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1411 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14161:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1401 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14162:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1391 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14163:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1381 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14164:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1370 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14165:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1360 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14166:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1350 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14167:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1340 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14168:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1330 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14169:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1320 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14170:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1310 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14171:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1300 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14172:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1290 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14173:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1280 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14174:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1270 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14175:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1260 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14176:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1250 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14177:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1241 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14178:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1231 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14179:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1221 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14180:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1211 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14181:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1201 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14182:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1191 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14183:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1181 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14184:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1171 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14185:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1161 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14186:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1151 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14187:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1141 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14188:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1131 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14189:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1120 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14190:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1110 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14191:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1100 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14192:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1090 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14193:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1080 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14194:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1070 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14195:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1060 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14196:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1050 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14197:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1040 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14198:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1030 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14199:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1020 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14200:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1010 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14201:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1000 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14202:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "1000 ms from the anchor, the window is [-50, 50] ms",
+      "item": "x",
+      "record": "/ground_truth#14203:base.x"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-2000 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14102:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1991 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14103:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1981 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14104:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1971 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14105:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1961 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14106:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1951 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14107:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1941 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14108:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1931 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14109:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1921 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14110:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1911 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14111:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1901 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14112:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1891 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14113:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1881 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14114:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1870 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14115:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1860 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14116:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1850 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14117:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1840 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14118:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1830 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14119:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1820 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14120:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1810 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14121:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1800 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14122:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1790 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14123:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1780 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14124:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1770 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14125:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1760 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14126:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1750 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14127:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1741 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14128:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1731 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14129:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1721 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14130:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1711 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14131:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1701 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14132:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1691 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14133:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1681 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14134:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1671 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14135:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1661 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14136:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1651 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14137:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1641 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14138:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1631 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14139:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1620 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14140:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1610 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14141:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1600 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14142:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1590 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14143:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1580 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14144:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1570 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14145:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1560 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14146:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1550 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14147:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1540 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14148:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1530 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14149:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1520 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14150:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1510 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14151:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1500 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14152:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1491 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14153:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1481 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14154:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1471 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14155:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1461 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14156:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1451 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14157:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1441 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14158:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1431 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14159:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1421 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14160:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1411 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14161:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1401 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14162:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1391 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14163:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1381 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14164:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1370 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14165:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1360 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14166:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1350 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14167:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1340 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14168:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1330 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14169:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1320 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14170:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1310 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14171:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1300 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14172:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1290 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14173:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1280 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14174:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1270 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14175:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1260 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14176:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1250 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14177:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1241 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14178:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1231 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14179:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1221 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14180:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1211 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14181:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1201 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14182:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1191 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14183:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1181 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14184:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1171 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14185:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1161 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14186:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1151 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14187:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1141 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14188:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1131 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14189:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1120 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14190:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1110 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14191:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1100 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14192:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1090 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14193:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1080 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14194:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1070 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14195:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1060 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14196:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1050 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14197:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1040 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14198:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1030 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14199:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1020 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14200:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1010 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14201:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1000 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14202:base.y"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "1000 ms from the anchor, the window is [-50, 50] ms",
+      "item": "y",
+      "record": "/ground_truth#14203:base.y"
+    },
+    {
+      "code": "evidence.rejected",
+      "detail": "102 record(s) considered, none passed the rules: see items.x",
+      "item": "x"
+    },
+    {
+      "code": "evidence.rejected",
+      "detail": "102 record(s) considered, none passed the rules: see items.y",
+      "item": "y"
+    }
+  ],
+  "verdict": "UNKNOWN",
+  "verifier": "openmhs-outcome 0.1.0"
+}

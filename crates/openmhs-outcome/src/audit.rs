@@ -108,6 +108,7 @@ pub fn records_from_bundle(bundle: &Value) -> Result<(Vec<Record>, Vec<String>),
             refs: Default::default(),
             relations: vec![],
             calibration: None,
+            frame: None,
         });
     }
 
@@ -165,6 +166,7 @@ pub fn records_from_bundle(bundle: &Value) -> Result<(Vec<Record>, Vec<String>),
             refs,
             relations: vec![],
             calibration: None,
+            frame: None,
         });
     }
     out.sort_by(|a, b| a.id.cmp(&b.id));

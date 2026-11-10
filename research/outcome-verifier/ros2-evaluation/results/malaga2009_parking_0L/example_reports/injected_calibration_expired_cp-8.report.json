@@ -1,0 +1,93 @@
+{
+  "conditions": [
+    {
+      "evidence": "x",
+      "index": 0,
+      "name": "x within 3 m",
+      "observed": [],
+      "op": "between",
+      "reason": {
+        "code": "timing.anchor_missing",
+        "detail": "no window, so no evidence for this item could be accepted",
+        "item": "x"
+      },
+      "records": [],
+      "result": "UNDETERMINED"
+    },
+    {
+      "evidence": "y",
+      "index": 1,
+      "name": "y within 3 m",
+      "observed": [],
+      "op": "between",
+      "reason": {
+        "code": "timing.anchor_missing",
+        "detail": "no window, so no evidence for this item could be accepted",
+        "item": "y"
+      },
+      "records": [],
+      "result": "UNDETERMINED"
+    }
+  ],
+  "contract": {
+    "name": "arrived-at-believed-position",
+    "sha256": "275cb408ca8bd2a72b471299618f0053f37ae5e2b4f9bd89ffec5fecd98fcaf8",
+    "version": "0.1"
+  },
+  "evidence": {
+    "records": 804,
+    "sha256": "f50095085ccbab174ea7a09384838370fa194d1d63ae6c1b169459a2bce6f448"
+  },
+  "items": {
+    "claim": {
+      "accepted": [],
+      "anchor": true,
+      "provenance": [],
+      "rejected": [
+        {
+          "code": "calibration.expired",
+          "detail": "calibration 'gps-offset' for 'gps_normal' had expired at the reading",
+          "item": "claim",
+          "record": "claim-8"
+        }
+      ]
+    },
+    "x": {
+      "accepted": [],
+      "anchor": false,
+      "provenance": [],
+      "rejected": []
+    },
+    "y": {
+      "accepted": [],
+      "anchor": false,
+      "provenance": [],
+      "rejected": []
+    }
+  },
+  "reasons": [
+    {
+      "code": "calibration.expired",
+      "detail": "calibration 'gps-offset' for 'gps_normal' had expired at the reading",
+      "item": "claim",
+      "record": "claim-8"
+    },
+    {
+      "code": "timing.anchor_missing",
+      "detail": "no record survived the rules, so no window can be placed",
+      "item": "claim"
+    },
+    {
+      "code": "timing.anchor_missing",
+      "detail": "no window, so no evidence for this item could be accepted",
+      "item": "x"
+    },
+    {
+      "code": "timing.anchor_missing",
+      "detail": "no window, so no evidence for this item could be accepted",
+      "item": "y"
+    }
+  ],
+  "verdict": "UNKNOWN",
+  "verifier": "openmhs-outcome 0.1.0"
+}

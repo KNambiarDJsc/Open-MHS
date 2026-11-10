@@ -78,6 +78,7 @@ error rather than silently ignored.
 | `time.uncertainty_ms` | How far that clock may be from true. Missing means unknown, not zero |
 | `quality` | `GOOD`, `UNCERTAIN` or `BAD`, as in OpenMHS readings. Only `GOOD` counts |
 | `refs` | Identifiers that tie the record to an attempt, a command, or an id in another system |
+| `frame` | The coordinate frame the value is in (a ROS `header.frame_id`), when it has one. Added after v0, for ROS 2 data |
 | `relations` | Causal links, named after W3C PROV: `used`, `wasGeneratedBy`, `wasDerivedFrom`, `wasInformedBy`. Kept in the report; not interpreted in v0 |
 
 A **calibration** record is a record with `source.kind: calibration`, naming what it applies to and when:
@@ -132,17 +133,19 @@ and discards one when, in this order:
 
 1. the item is bound and its `refs` do not carry the contract's `binding` (`evidence.identity_mismatch`,
    `evidence.identity_unbound`);
-2. its quality is not `GOOD` (`evidence.quality`);
-3. it has no source time and a window applies (`time.missing`);
-4. its clock uncertainty is stated and larger than `max_clock_uncertainty_ms` (`time.uncertainty`), or its clock
+2. the item names a `frame` and the record is in another frame, or in none (`evidence.frame`). Nothing is
+   transformed on the verifier's behalf: a value in the wrong frame is not evidence;
+3. its quality is not `GOOD` (`evidence.quality`);
+4. it has no source time and a window applies (`time.missing`);
+5. its clock uncertainty is stated and larger than `max_clock_uncertainty_ms` (`time.uncertainty`), or its clock
    domain differs from the anchor's and either clock's uncertainty is unknown (`time.clock_domain`). On the same
    clock, two readings are compared directly, and their absolute uncertainty does not matter;
-5. its time, widened by the uncertainty of both clocks, is not wholly inside the window
+6. its time, widened by the uncertainty of both clocks, is not wholly inside the window
    (`evidence.outside_window`, or `time.ambiguous` if it straddles an edge);
-6. a required calibration has no record for its device, or is not valid at the record's time
+7. a required calibration has no record for its device, or is not valid at the record's time
    (`calibration.missing`, `calibration.expired`, `calibration.not_yet_valid`).
 
-The anchor itself passes rules 1 to 4 and 6. If no record survives for the anchor, the window is undefined and
+The anchor itself passes rules 1 to 5 and 7. If no record survives for the anchor, the window is undefined and
 every other item is undetermined (`timing.anchor_missing`).
 
 Each condition is then evaluated on **every** surviving record for its item. If they all hold, it is true; if

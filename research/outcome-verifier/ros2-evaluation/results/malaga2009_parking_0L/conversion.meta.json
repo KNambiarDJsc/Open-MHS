@@ -1,0 +1,41 @@
+{
+  "bag": [
+    "malaga2009_parking_0L.mcap"
+  ],
+  "bag_sha256": "10cc646dcacb0f8ec4b127b8b22890cdf9d5d9f1bb81a1a2d21dbd910fc2d5e7",
+  "clock": {
+    "domain": "malaga2009-logger",
+    "note": "ASSUMPTION: every sensor was stamped by the vehicle's one logging host. The dataset README says only that timestamps are the original ones (UTC); it does not say how they were synchronised. No uncertainty is stated, so none is claimed."
+  },
+  "counts": {
+    "base.x: records": 23306,
+    "base.y: records": 23306,
+    "gps_normal.latitude: records": 257,
+    "gps_normal.longitude: records": 257,
+    "gps_rtk_rear.latitude: records": 256,
+    "gps_rtk_rear.longitude: records": 256
+  },
+  "source": {
+    "dataset": "Malaga 2009 Robotic Dataset Collection, parking_0L (ROS 2 MCAP, converted in 2026 from the 2008 rawlog with rawlog2rosbag)",
+    "doi": "10.5281/zenodo.24021075",
+    "license": "CC BY 4.0",
+    "md5_published": "308bb33977ffb12f76303158e1072b38",
+    "provenance": "device",
+    "system": "ros2-bag",
+    "url": "https://zenodo.org/records/24021075/files/malaga2009_parking_0L.mcap"
+  },
+  "topics_used": {
+    "/gps_normal/fix": {
+      "messages": 257,
+      "type": "sensor_msgs/msg/NavSatFix"
+    },
+    "/gps_rtk_rear/fix": {
+      "messages": 256,
+      "type": "sensor_msgs/msg/NavSatFix"
+    },
+    "/ground_truth": {
+      "messages": 23306,
+      "type": "nav_msgs/msg/Odometry"
+    }
+  }
+}

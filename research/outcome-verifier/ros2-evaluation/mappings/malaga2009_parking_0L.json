@@ -1,0 +1,29 @@
+{
+  "source": {
+    "system": "ros2-bag",
+    "dataset": "Malaga 2009 Robotic Dataset Collection, parking_0L (ROS 2 MCAP, converted in 2026 from the 2008 rawlog with rawlog2rosbag)",
+    "url": "https://zenodo.org/records/24021075/files/malaga2009_parking_0L.mcap",
+    "doi": "10.5281/zenodo.24021075",
+    "license": "CC BY 4.0",
+    "md5_published": "308bb33977ffb12f76303158e1072b38",
+    "provenance": "device"
+  },
+  "clock": {
+    "domain": "malaga2009-logger",
+    "note": "ASSUMPTION: every sensor was stamped by the vehicle's one logging host. The dataset README says only that timestamps are the original ones (UTC); it does not say how they were synchronised. No uncertainty is stated, so none is claimed."
+  },
+  "mappings": [
+    {"topic": "/ground_truth", "signal": "base.x", "field": "pose.pose.position.x", "unit": "m",
+     "kind": "independent_sensor", "device": "rtk-ground-truth"},
+    {"topic": "/ground_truth", "signal": "base.y", "field": "pose.pose.position.y", "unit": "m",
+     "kind": "independent_sensor", "device": "rtk-ground-truth"},
+    {"topic": "/gps_normal/fix", "signal": "gps_normal.latitude", "field": "latitude", "unit": "deg",
+     "kind": "device_state", "device": "gps_normal"},
+    {"topic": "/gps_normal/fix", "signal": "gps_normal.longitude", "field": "longitude", "unit": "deg",
+     "kind": "device_state", "device": "gps_normal"},
+    {"topic": "/gps_rtk_rear/fix", "signal": "gps_rtk_rear.latitude", "field": "latitude", "unit": "deg",
+     "kind": "independent_sensor", "device": "gps_rtk_rear"},
+    {"topic": "/gps_rtk_rear/fix", "signal": "gps_rtk_rear.longitude", "field": "longitude", "unit": "deg",
+     "kind": "independent_sensor", "device": "gps_rtk_rear"}
+  ]
+}

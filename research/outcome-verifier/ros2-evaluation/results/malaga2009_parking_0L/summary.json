@@ -1,0 +1,18 @@
+{
+ "alignment": {
+  "pairs": 239,
+  "median_m": 0.009,
+  "max_m": 0.042
+ },
+ "calibration": {
+  "offset_east_m": 259.688,
+  "offset_north_m": -19.286,
+  "fixes_used": 7
+ },
+ "determinism_checked": 21,
+ "determinism_identical": true,
+ "selection_checked": 9,
+ "selection_same_verdict": true,
+ "claims": 249,
+ "verify_seconds_median": 0.09
+}

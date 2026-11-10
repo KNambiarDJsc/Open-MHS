@@ -1,0 +1,2690 @@
+[
+ {
+  "k": 8,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 8,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 8,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 8,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 8,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 8,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 8,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 8,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 9,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 9,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 9,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 9,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 9,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 9,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 9,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 9,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 10,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 10,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 10,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 10,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 10,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 10,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 10,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 10,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 11,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 11,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 11,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 11,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 11,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 11,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 11,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 11,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 12,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 12,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 12,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 12,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 12,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 12,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 12,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 12,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 13,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 13,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 13,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 13,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 13,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 13,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 13,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 13,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 14,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 14,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 14,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 14,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 14,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 14,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 14,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 14,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 15,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 15,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 15,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 15,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 15,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 15,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 15,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 15,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 16,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 16,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 16,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 16,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 16,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 16,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 16,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 16,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 17,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 17,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 17,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 17,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 17,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 17,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 17,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 17,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "ARRIVED",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 18,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 18,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 18,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": false,
+  "script_false_satisfied": true,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 18,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 18,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 18,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false",
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 18,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 18,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "SATISFIED",
+  "script_matches_label": false,
+  "script_false_satisfied": true,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 40,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 40,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 40,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 40,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 40,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 40,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false",
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 40,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 40,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 62,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 62,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 62,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 62,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 62,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 62,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false",
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 62,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 62,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 84,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 84,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 84,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 84,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 84,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 84,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false",
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 84,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 84,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 106,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 106,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 106,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 106,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 106,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 106,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false",
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 106,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 106,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 128,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 128,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 128,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 128,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 128,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 128,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false",
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 128,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 128,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 167,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 167,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 167,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 167,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 167,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 167,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 167,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 167,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 189,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 189,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 189,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 189,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 189,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 189,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false",
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 189,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 189,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 211,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 211,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 211,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 211,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 211,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 211,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false",
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 211,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 211,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 233,
+  "fault": "wrong_frame",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 233,
+  "fault": "reference_gap",
+  "kind": "availability",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "script": "NO_DATA",
+  "script_matches_label": false,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 233,
+  "fault": "other_clock",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 233,
+  "fault": "calibration_expired",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "calibration.expired",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 233,
+  "fault": "other_attempt",
+  "kind": "metadata",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 233,
+  "fault": "conflicting_reference",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false",
+   "evidence.conflict",
+   "evidence.outside_window"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 233,
+  "fault": "reordered",
+  "kind": "none",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "k": 233,
+  "fault": "wrong_frame_offset",
+  "kind": "values",
+  "injected": true,
+  "label": "NOT_ARRIVED",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.frame",
+   "evidence.rejected"
+  ],
+  "script": "VIOLATED",
+  "script_matches_label": true,
+  "script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ }
+]

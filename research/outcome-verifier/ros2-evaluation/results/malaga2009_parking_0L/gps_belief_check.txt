@@ -1,0 +1,12 @@
+lag 0.0 s  n=239  best constant offset ( 260.67,  -43.06) m  residual median  5.89 m  p90 15.48 m
+lag 0.5 s  n=233  best constant offset ( 260.73,  -42.81) m  residual median  5.32 m  p90 14.64 m
+lag 1.0 s  n=238  best constant offset ( 260.78,  -42.39) m  residual median  5.29 m  p90 15.38 m
+lag 2.0 s  n=237  best constant offset ( 260.88,  -41.72) m  residual median  6.32 m  p90 15.28 m
+lag 3.0 s  n=236  best constant offset ( 260.98,  -41.06) m  residual median  7.49 m  p90 15.37 m
+lag 5.0 s  n=234  best constant offset ( 261.16,  -39.74) m  residual median  9.84 m  p90 18.04 m
+sample   0: raw offset east   259.73 m  north   -19.34 m
+sample  40: raw offset east   260.04 m  north   -35.42 m
+sample  80: raw offset east   257.98 m  north   -47.83 m
+sample 120: raw offset east   258.56 m  north   -44.28 m
+sample 160: raw offset east   264.56 m  north   -47.56 m
+sample 200: raw offset east   262.84 m  north   -49.12 m

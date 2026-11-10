@@ -124,6 +124,9 @@ pub struct Record {
     pub relations: Vec<Relation>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub calibration: Option<CalibrationInfo>,
+    /// The coordinate frame the value is expressed in (a ROS `header.frame_id`), when it has one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub frame: Option<String>,
 }
 
 // ---------------------------------------------------------------- contracts
@@ -172,6 +175,10 @@ pub struct Item {
     /// know which attempt they belong to; their window and device identify them instead.
     #[serde(default = "yes")]
     pub bound: bool,
+    /// The coordinate frame records must be expressed in. A record in another frame, or in none, is not
+    /// evidence for this item: nothing is transformed on the verifier's behalf.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub frame: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -471,6 +478,19 @@ impl Ctx<'_> {
                     Some(_) => {}
                 }
             }
+        }
+        if let Some(want) = &item.frame
+            && r.frame.as_deref() != Some(want.as_str())
+        {
+            return Fate::Rejected(reason(
+                "evidence.frame",
+                name,
+                Some(&r.id),
+                format!(
+                    "expressed in frame '{}', the contract needs '{want}'",
+                    r.frame.as_deref().unwrap_or("none")
+                ),
+            ));
         }
         if r.quality != Quality::Good {
             return Fate::Rejected(reason(
@@ -863,6 +883,9 @@ pub fn verify(contract: &Contract, records: &[Record]) -> Result<Report, InputEr
                 )
             };
             verdict_reasons.push(why);
+            // Why the anchor's records were discarded is what makes this actionable: an expired calibration,
+            // another attempt's id. Found on real data, where "no anchor" alone hid the cause.
+            verdict_reasons.extend(report.rejected.iter().cloned());
         }
         report.accepted = kept.iter().map(|r| r.id.clone()).collect();
         report.provenance = provenance(&kept);
