@@ -1,0 +1,54 @@
+{
+  "bag": [
+    "bag_0.mcap"
+  ],
+  "bag_sha256": "55bb7464b8f6e747bf0d843c41764aa596406b6bbd69cedaadd08302be8d88bb",
+  "clock": {
+    "domain": "sim:gazebo-openamr",
+    "note": "Stamped messages (/odom, /gz/dynamic_pose, joint states) carry the simulator's own time, so their uncertainty on that clock is zero. The action status topic has no stamp: it is placed on the simulation clock from the recorder's receipt time and the recorded /clock (ros2_evidence.py, time 'clock'). ASSUMPTION: the recorder receives a status message no more than 50 ms of simulation time after it was published.",
+    "receipt_allowance_ms": 50,
+    "uncertainty_ms": 0
+  },
+  "counts": {
+    "base.qw: records": 10080,
+    "base.qz: records": 10080,
+    "base.x: records": 10080,
+    "base.y: records": 10080,
+    "lift.action.status: records": 20,
+    "lift.action.status: unchanged": 14,
+    "lift_carriage.z: records": 10080,
+    "lift_joint.position: records": 12029,
+    "odom.qw: records": 5995,
+    "odom.qz: records": 5995,
+    "odom.x: records": 5995,
+    "odom.y: records": 5995
+  },
+  "definitions_supplied_by_bridge": [
+    "action_msgs/msg/GoalStatusArray"
+  ],
+  "source": {
+    "dataset": "openamr-upperbody-sw in Gazebo (gz sim, ROS 2 Jazzy), recorded by gazebo/run_experiment.sh",
+    "note": "SIMULATION. The 'independent' evidence is the physics engine's own link pose, which is independent of the controllers' state and the odometry plugin, but not of the simulator.",
+    "provenance": "simulator",
+    "system": "ros2-bag"
+  },
+  "topics_used": {
+    "/arm/joint_states": {
+      "messages": 12029,
+      "type": "sensor_msgs/msg/JointState"
+    },
+    "/gz/dynamic_pose": {
+      "messages": 10080,
+      "type": "tf2_msgs/msg/TFMessage"
+    },
+    "/lift_controller/follow_joint_trajectory/_action/status": {
+      "definition": "missing from the bag",
+      "messages": 20,
+      "type": "action_msgs/msg/GoalStatusArray"
+    },
+    "/odom": {
+      "messages": 5995,
+      "type": "nav_msgs/msg/Odometry"
+    }
+  }
+}

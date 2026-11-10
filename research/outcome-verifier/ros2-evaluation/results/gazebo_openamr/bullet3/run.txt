@@ -1,0 +1,5 @@
+engine gz-physics-bullet-featherstone-plugin
+wall_start 2026-11-10T16:48:45Z
+ready 1 after 6 s
+driver exit 0
+wall_end 2026-11-10T16:53:04Z

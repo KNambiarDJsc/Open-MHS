@@ -1,0 +1,2076 @@
+{
+  "conditions": [
+    {
+      "evidence": "z",
+      "index": 0,
+      "name": "carriage within 10 mm of the target",
+      "observed": [
+        {
+          "unit": "m",
+          "value": 0.8340052389546978
+        },
+        {
+          "unit": "m",
+          "value": 0.8340052389546978
+        },
+        {
+          "unit": "m",
+          "value": 0.8340052389546978
+        },
+        {
+          "unit": "m",
+          "value": 0.8340052389546978
+        },
+        {
+          "unit": "m",
+          "value": 0.8340052389546978
+        },
+        {
+          "unit": "m",
+          "value": 0.8340052389546978
+        },
+        {
+          "unit": "m",
+          "value": 0.8340052389546978
+        },
+        {
+          "unit": "m",
+          "value": 0.8340052389546978
+        }
+      ],
+      "op": "between",
+      "reason": {
+        "code": "condition.false",
+        "detail": "Between does not hold on /gz/dynamic_pose#611.4:lift_carriage.z, /gz/dynamic_pose#612.4:lift_carriage.z, /gz/dynamic_pose#613.4:lift_carriage.z, /gz/dynamic_pose#614.4:lift_carriage.z, /gz/dynamic_pose#615.4:lift_carriage.z, /gz/dynamic_pose#616.4:lift_carriage.z, /gz/dynamic_pose#617.4:lift_carriage.z, /gz/dynamic_pose#618.4:lift_carriage.z",
+        "item": "z"
+      },
+      "records": [
+        "/gz/dynamic_pose#611.4:lift_carriage.z",
+        "/gz/dynamic_pose#612.4:lift_carriage.z",
+        "/gz/dynamic_pose#613.4:lift_carriage.z",
+        "/gz/dynamic_pose#614.4:lift_carriage.z",
+        "/gz/dynamic_pose#615.4:lift_carriage.z",
+        "/gz/dynamic_pose#616.4:lift_carriage.z",
+        "/gz/dynamic_pose#617.4:lift_carriage.z",
+        "/gz/dynamic_pose#618.4:lift_carriage.z"
+      ],
+      "result": "FALSE"
+    }
+  ],
+  "contract": {
+    "name": "lift-at-target-when-succeeded",
+    "sha256": "0244fc536dce36a54499fb173ca1768e54f86c0ee9b16dc0cda50a52f6b1f9f4",
+    "version": "0.1"
+  },
+  "evidence": {
+    "records": 738,
+    "sha256": "2dd39572792fa3fd3abbc55149759863cb41148494f85ef705011bf456ea0385"
+  },
+  "items": {
+    "claim": {
+      "accepted": [
+        "claim-L01"
+      ],
+      "anchor": true,
+      "provenance": [
+        "simulator"
+      ],
+      "rejected": []
+    },
+    "z": {
+      "accepted": [
+        "/gz/dynamic_pose#611.4:lift_carriage.z",
+        "/gz/dynamic_pose#612.4:lift_carriage.z",
+        "/gz/dynamic_pose#613.4:lift_carriage.z",
+        "/gz/dynamic_pose#614.4:lift_carriage.z",
+        "/gz/dynamic_pose#615.4:lift_carriage.z",
+        "/gz/dynamic_pose#616.4:lift_carriage.z",
+        "/gz/dynamic_pose#617.4:lift_carriage.z",
+        "/gz/dynamic_pose#618.4:lift_carriage.z"
+      ],
+      "anchor": false,
+      "provenance": [
+        "simulator"
+      ],
+      "rejected": [
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1990 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#440.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1984 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#441.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1971 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#442.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1958 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#443.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1944 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#444.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1932 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#445.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1924 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#446.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1910 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#447.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1896 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#448.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1884 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#449.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1871 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#450.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1856 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#451.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1844 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#452.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1830 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#453.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1816 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#454.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1802 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#455.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1789 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#456.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1784 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#457.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1770 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#458.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1764 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#459.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1750 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#460.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1735 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#461.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1720 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#462.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1706 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#463.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1692 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#464.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1687 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#465.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1684 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#466.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1671 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#467.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1657 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#468.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1643 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#469.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1629 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#470.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1615 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#471.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1600 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#472.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1585 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#473.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1584 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#474.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1571 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#475.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1558 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#476.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1545 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#477.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1532 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#478.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1521 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#479.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1506 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#480.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1504 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#481.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1491 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#482.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1484 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#483.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1470 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#484.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1456 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#485.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1442 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#486.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1431 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#487.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1424 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#488.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1410 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#489.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1395 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#490.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1384 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#491.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1370 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#492.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1356 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#493.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1344 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#494.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1330 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#495.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1316 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#496.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1302 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#497.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1288 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#498.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1284 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#499.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1271 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#500.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1264 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#501.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1251 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#502.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1237 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#503.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1222 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#504.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1208 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#505.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1194 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#506.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1189 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#507.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1184 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#508.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1172 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#509.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1158 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#510.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1144 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#511.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1130 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#512.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1116 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#513.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1104 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#514.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1091 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#515.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1084 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#516.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1073 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#517.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1060 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#518.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1047 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#519.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1034 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#520.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1023 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#521.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1010 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#522.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1004 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#523.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-992 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#524.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-984 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#525.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-972 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#526.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-958 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#527.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-944 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#528.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-936 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#529.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-924 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#530.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-911 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#531.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-897 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#532.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-884 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#533.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-870 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#534.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-857 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#535.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-844 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#536.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-831 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#537.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-817 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#538.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-803 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#539.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-789 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#540.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-784 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#541.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-770 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#542.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-764 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#543.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-751 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#544.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-737 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#545.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-723 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#546.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-709 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#547.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-694 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#548.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-691 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#549.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-684 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#550.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-671 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#551.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-657 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#552.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-642 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#553.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-629 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#554.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-615 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#555.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-604 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#556.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-591 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#557.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-584 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#558.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-573 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#559.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-560 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#560.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-546 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#561.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-532 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#562.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-524 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#563.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-510 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#564.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-495 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#565.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-484 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#566.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-470 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#567.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-455 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#568.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-442 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#569.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-427 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#570.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-424 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#571.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-410 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#572.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-395 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#573.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-384 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#574.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-372 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#575.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-359 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#576.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-345 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#577.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-344 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#578.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-331 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#579.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-317 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#580.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-302 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#581.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-289 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#582.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-284 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#583.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-271 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#584.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-264 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#585.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-250 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#586.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-237 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#587.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-222 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#588.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-208 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#589.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-193 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#590.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-184 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#591.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-170 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#592.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-156 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#593.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-142 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#594.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-128 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#595.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-115 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#596.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-104 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#597.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-90 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#598.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-84 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#599.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-72 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#600.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-60 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#601.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "-50 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#602.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "-38 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#603.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "-24 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#604.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "-11 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#605.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "2 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#606.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "15 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#607.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "16 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#608.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "29 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#609.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "43 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#610.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "152 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#619.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "156 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#620.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "170 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#621.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "184 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#622.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "199 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#623.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "213 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#624.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "216 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#625.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "226 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#626.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "236 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#627.4:lift_carriage.z"
+        },
+        {
+          "code": "time.ambiguous",
+          "detail": "250 ms from the anchor ± 50.5 ms straddles the window [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#628.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "264 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#629.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "279 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#630.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "294 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#631.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "305 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#632.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "316 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#633.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "330 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#634.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "344 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#635.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "359 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#636.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "373 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#637.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "387 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#638.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "396 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#639.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "410 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#640.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "416 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#641.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "430 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#642.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "444 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#643.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "456 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#644.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "468 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#645.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "476 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#646.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "489 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#647.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "503 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#648.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "516 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#649.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "530 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#650.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "545 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#651.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "556 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#652.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "570 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#653.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "585 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#654.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "600 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#655.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "615 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#656.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "616 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#657.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "630 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#658.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "637 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#659.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "652 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#660.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "656 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#661.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "670 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#662.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "685 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#663.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "700 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#664.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "714 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#665.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "716 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#666.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "725 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#667.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "736 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#668.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "750 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#669.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "765 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#670.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "780 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#671.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "795 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#672.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "803 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#673.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "816 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#674.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "830 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#675.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "845 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#676.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "860 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#677.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "874 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#678.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "888 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#679.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "896 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#680.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "909 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#681.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "916 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#682.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "930 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#683.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "944 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#684.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "959 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#685.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "972 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#686.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "976 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#687.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "990 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#688.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1005 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#689.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1016 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#690.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1030 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#691.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1044 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#692.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1056 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#693.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1070 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#694.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1085 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#695.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1100 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#696.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1114 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#697.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1116 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#698.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1130 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#699.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1136 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#700.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1150 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#701.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1164 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#702.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1179 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#703.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1193 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#704.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1208 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#705.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1216 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#706.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1222 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#707.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1236 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#708.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1250 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#709.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1265 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#710.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1280 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#711.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1295 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#712.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1301 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#713.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1316 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#714.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1330 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#715.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1344 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#716.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1359 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#717.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1374 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#718.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1386 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#719.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1396 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#720.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1410 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#721.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1416 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#722.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1430 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#723.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1444 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#724.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1456 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#725.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1465 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#726.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1475 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#727.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1476 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#728.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1488 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#729.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1502 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#730.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1514 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#731.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1516 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#732.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1529 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#733.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1542 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#734.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1554 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#735.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1556 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#736.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1566 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#737.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1576 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#738.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1586 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#739.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1595 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#740.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1604 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#741.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1612 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#742.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1616 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#743.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1628 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#744.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1636 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#745.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1649 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#746.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1663 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#747.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1677 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#748.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1690 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#749.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1704 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#750.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1716 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#751.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1730 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#752.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1736 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#753.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1749 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#754.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1763 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#755.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1776 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#756.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1788 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#757.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1799 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#758.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1812 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#759.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1816 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#760.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1829 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#761.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1843 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#762.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1857 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#763.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1870 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#764.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1882 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#765.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1896 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#766.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1909 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#767.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1916 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#768.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1926 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#769.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1939 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#770.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1950 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#771.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1963 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#772.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1974 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#773.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1976 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#774.4:lift_carriage.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1989 ms from the anchor, the window is [0, 200] ms",
+          "item": "z",
+          "record": "/gz/dynamic_pose#775.4:lift_carriage.z"
+        }
+      ]
+    }
+  },
+  "reasons": [
+    {
+      "code": "condition.false",
+      "detail": "Between does not hold on /gz/dynamic_pose#611.4:lift_carriage.z, /gz/dynamic_pose#612.4:lift_carriage.z, /gz/dynamic_pose#613.4:lift_carriage.z, /gz/dynamic_pose#614.4:lift_carriage.z, /gz/dynamic_pose#615.4:lift_carriage.z, /gz/dynamic_pose#616.4:lift_carriage.z, /gz/dynamic_pose#617.4:lift_carriage.z, /gz/dynamic_pose#618.4:lift_carriage.z",
+      "item": "z"
+    }
+  ],
+  "verdict": "VIOLATED",
+  "verifier": "openmhs-outcome 0.1.0"
+}

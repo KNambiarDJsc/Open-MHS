@@ -1,0 +1,79 @@
+{
+  "conditions": [
+    {
+      "evidence": "x",
+      "index": 0,
+      "name": "x within 50 mm",
+      "observed": [],
+      "op": "between",
+      "reason": {
+        "code": "evidence.missing",
+        "detail": "no record with this signal and source kind",
+        "item": "x"
+      },
+      "records": [],
+      "result": "UNDETERMINED"
+    },
+    {
+      "evidence": "y",
+      "index": 1,
+      "name": "y within 50 mm",
+      "observed": [],
+      "op": "between",
+      "reason": {
+        "code": "evidence.missing",
+        "detail": "no record with this signal and source kind",
+        "item": "y"
+      },
+      "records": [],
+      "result": "UNDETERMINED"
+    }
+  ],
+  "contract": {
+    "name": "base-where-odometry-says",
+    "sha256": "8aeefa53fec4b58b92850e849b2ad26f0fe37411573ce30f69ec4d3edf383ab1",
+    "version": "0.1"
+  },
+  "evidence": {
+    "records": 1208,
+    "sha256": "3d41dad953fcdfed2b35f195c1ca45d0923900547a6d21a8ec18e573ea20ecd2"
+  },
+  "items": {
+    "claim": {
+      "accepted": [
+        "claim-O0111"
+      ],
+      "anchor": true,
+      "provenance": [
+        "simulator"
+      ],
+      "rejected": []
+    },
+    "x": {
+      "accepted": [],
+      "anchor": false,
+      "provenance": [],
+      "rejected": []
+    },
+    "y": {
+      "accepted": [],
+      "anchor": false,
+      "provenance": [],
+      "rejected": []
+    }
+  },
+  "reasons": [
+    {
+      "code": "evidence.missing",
+      "detail": "no record with this signal and source kind",
+      "item": "x"
+    },
+    {
+      "code": "evidence.missing",
+      "detail": "no record with this signal and source kind",
+      "item": "y"
+    }
+  ],
+  "verdict": "UNKNOWN",
+  "verifier": "openmhs-outcome 0.1.0"
+}

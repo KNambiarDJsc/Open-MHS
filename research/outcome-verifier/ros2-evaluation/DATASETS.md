@@ -34,7 +34,7 @@ TurtleBot3, turtlesim, Webots, Isaac Sim (no NVIDIA GPU; the GPU is Intel UHD 63
 
 | Option | Install | Runs here | Native status available | Natural failure known | New evidence |
 |---|---|---|---|---|---|
-| openamr-upperbody-sw, Gazebo + ros2_control | Installed | When WSL can start | Yes: `follow_joint_trajectory` action status | Yes: earlier sessions saw a lift goal `SUCCEEDED` while the joint stayed at 0 (DART), and `/odom` over-reporting true base travel 5.7× (Bullet) | **High**: native status against the simulator's own physics pose |
+| openamr-upperbody-sw, Gazebo + ros2_control | Installed | **Yes, used**: see RESULTS_GAZEBO.md | Yes: `follow_joint_trajectory` action status | Yes: earlier sessions saw a lift goal `SUCCEEDED` while the joint stayed at 0 (DART), and `/odom` over-reporting true base travel 5.7× (Bullet) | **High**: native status against the simulator's own physics pose |
 | TurtleBot3 + Nav2 + Gazebo | Hundreds of MB of packages | When WSL can start | Yes: `navigate_to_pose` status | Not known | High, but needs approval to install |
 | MoveIt 2 Panda / UR | Partly installed | When WSL can start | Yes | Not known | Medium |
 | Webots | Not installed, large | Unknown | Depends | Not known | Medium |
@@ -42,4 +42,4 @@ TurtleBot3, turtlesim, Webots, Isaac Sim (no NVIDIA GPU; the GPU is Intel UHD 63
 | Bag replay without a simulator | Done here | **Yes, on Windows** | Only what the bag recorded | Yes, in the data | Done: see RESULTS.md |
 
 On 2026-11-10 WSL failed to start (`Wsl/Service/E_UNEXPECTED`) and logged three kernel panics while C: had 256 to 646 MB
-free. That is why the bag replay ran first.
+free. That is why the bag replay ran first. Once C: had space again, WSL started and the Gazebo experiment ran.

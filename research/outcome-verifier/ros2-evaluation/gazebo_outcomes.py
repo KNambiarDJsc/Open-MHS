@@ -327,6 +327,26 @@ def inject(fault: str, c: dict, records: list[dict], offset: tuple, base_cal: di
 
 # ---------------------------------------------------------------- run
 
+def drive_segments(sig: dict, intent: list[dict], raw: dict) -> list[dict]:
+    """Descriptive, not a verdict: how far each drive moved the robot by odometry and by Gazebo (raw), from its start
+    to 2.5 s after the command stopped."""
+    ox = [(t_of(r), v_of(r)) for r in sig["odom.x"]]
+    oy = {r["time"]["source"]: v_of(r) for r in sig["odom.y"]}
+    odom = [(t, x, oy[rfc(t)]) for t, x in ox if rfc(t) in oy]
+    out = []
+    for i in intent:
+        if i.get("kind") != "base":
+            continue
+        a0, a1 = nearest(odom, i["start_sim"], 0.1), nearest(odom, i["stop_sim"] + 2.5, 0.1)
+        g0, g1 = nearest(raw["base"], i["start_sim"], 0.1), nearest(raw["base"], i["stop_sim"] + 2.5, 0.1)
+        row = {"task": i["task"], "vx": i["vx"], "wz": i["wz"], "duration_s": i["duration_s"]}
+        if None not in (a0, a1, g0, g1):
+            row["odom_travel_m"] = round(math.hypot(a1[1] - a0[1], a1[2] - a0[2]), 4)
+            row["gazebo_travel_m"] = round(math.hypot(g1[1] - g0[1], g1[2] - g0[2]), 4)
+        out.append(row)
+    return out
+
+
 def _spread(xs: list) -> dict | None:
     xs = sorted(x for x in xs if x is not None)
     if not xs:
@@ -340,6 +360,7 @@ def main() -> int:
     ap.add_argument("--evidence", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--faults", action="store_true")
+    ap.add_argument("--urdf", type=Path, help="the URDF to take the carriage offset from (default RUN/urdf.xml)")
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     work = args.out / "work"
@@ -348,14 +369,15 @@ def main() -> int:
     sig = load_evidence(args.evidence)
     intent = [json.loads(line) for line in (args.run / "intent.jsonl").read_text(encoding="utf-8").splitlines()]
     t_end = max(t_of(r) for rs in sig.values() for r in rs if t_of(r) is not None)
-    offset = carriage_offset(args.run / "urdf.xml")
+    offset = carriage_offset(args.urdf or args.run / "urdf.xml")
     raw = raw_gz(args.run / "gz_raw.jsonl")
     lc, lift_cal = lift_claims(sig, intent, offset, t_end)
     bc, base_cal, base_stats = base_claims(sig, t_end)
-    summary: dict = {"run": args.run.name, "carriage_offset_m": offset, "odom_calibration": base_stats,
+    summary: dict = {"run": args.run.name, "carriage_offset_m": offset, "urdf": str(args.urdf or "run's own"), "odom_calibration": base_stats,
                      "lift_goals_sent": sum(1 for i in intent if i.get("kind") == "lift"),
                      "lift_results": {str(i["task"]): i.get("result_status") for i in intent if i.get("kind") == "lift"},
-                     "status_uncertainty_ms": _spread([c["record"]["time"].get("uncertainty_ms") for c in lc])}
+                     "status_uncertainty_ms": _spread([c["record"]["time"].get("uncertainty_ms") for c in lc]),
+                     "drive_segments": drive_segments(sig, intent, raw)}
 
     rows = []
     for c in lc + bc:

@@ -1,0 +1,2088 @@
+[
+ {
+  "id": "L01",
+  "kind": "lift",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L01",
+  "kind": "lift",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L01",
+  "kind": "lift",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L01",
+  "kind": "lift",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L01",
+  "kind": "lift",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L01",
+  "kind": "lift",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L02",
+  "kind": "lift",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L02",
+  "kind": "lift",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L02",
+  "kind": "lift",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L02",
+  "kind": "lift",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L02",
+  "kind": "lift",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L02",
+  "kind": "lift",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L03",
+  "kind": "lift",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L03",
+  "kind": "lift",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L03",
+  "kind": "lift",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L03",
+  "kind": "lift",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L03",
+  "kind": "lift",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L03",
+  "kind": "lift",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L04",
+  "kind": "lift",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L04",
+  "kind": "lift",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L04",
+  "kind": "lift",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L04",
+  "kind": "lift",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L04",
+  "kind": "lift",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L04",
+  "kind": "lift",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L05",
+  "kind": "lift",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L05",
+  "kind": "lift",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L05",
+  "kind": "lift",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L05",
+  "kind": "lift",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L05",
+  "kind": "lift",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L05",
+  "kind": "lift",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L06",
+  "kind": "lift",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L06",
+  "kind": "lift",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L06",
+  "kind": "lift",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L06",
+  "kind": "lift",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L06",
+  "kind": "lift",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L06",
+  "kind": "lift",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L07",
+  "kind": "lift",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L07",
+  "kind": "lift",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L07",
+  "kind": "lift",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L07",
+  "kind": "lift",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L07",
+  "kind": "lift",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L07",
+  "kind": "lift",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L08",
+  "kind": "lift",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L08",
+  "kind": "lift",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L08",
+  "kind": "lift",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L08",
+  "kind": "lift",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L08",
+  "kind": "lift",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L08",
+  "kind": "lift",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L09",
+  "kind": "lift",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L09",
+  "kind": "lift",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L09",
+  "kind": "lift",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L09",
+  "kind": "lift",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L09",
+  "kind": "lift",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L09",
+  "kind": "lift",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L10",
+  "kind": "lift",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L10",
+  "kind": "lift",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L10",
+  "kind": "lift",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L10",
+  "kind": "lift",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L10",
+  "kind": "lift",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "L10",
+  "kind": "lift",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0109",
+  "kind": "base",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0109",
+  "kind": "base",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0109",
+  "kind": "base",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0109",
+  "kind": "base",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0109",
+  "kind": "base",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0109",
+  "kind": "base",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "AT_TARGET",
+  "clean_verifier": "SATISFIED",
+  "verifier": "SATISFIED",
+  "reasons": [],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0111",
+  "kind": "base",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": true,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0111",
+  "kind": "base",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0111",
+  "kind": "base",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0111",
+  "kind": "base",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0111",
+  "kind": "base",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0111",
+  "kind": "base",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0113",
+  "kind": "base",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": true,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0113",
+  "kind": "base",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0113",
+  "kind": "base",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0113",
+  "kind": "base",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0113",
+  "kind": "base",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0113",
+  "kind": "base",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0115",
+  "kind": "base",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": true,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0115",
+  "kind": "base",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0115",
+  "kind": "base",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0115",
+  "kind": "base",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0115",
+  "kind": "base",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0115",
+  "kind": "base",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0117",
+  "kind": "base",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": true,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0117",
+  "kind": "base",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0117",
+  "kind": "base",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0117",
+  "kind": "base",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0117",
+  "kind": "base",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0117",
+  "kind": "base",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0119",
+  "kind": "base",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": true,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0119",
+  "kind": "base",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0119",
+  "kind": "base",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0119",
+  "kind": "base",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0119",
+  "kind": "base",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0119",
+  "kind": "base",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0121",
+  "kind": "base",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": true,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0121",
+  "kind": "base",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0121",
+  "kind": "base",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0121",
+  "kind": "base",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0121",
+  "kind": "base",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0121",
+  "kind": "base",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0123",
+  "kind": "base",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": true,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0123",
+  "kind": "base",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0123",
+  "kind": "base",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0123",
+  "kind": "base",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0123",
+  "kind": "base",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0123",
+  "kind": "base",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0125",
+  "kind": "base",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": true,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0125",
+  "kind": "base",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0125",
+  "kind": "base",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0125",
+  "kind": "base",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0125",
+  "kind": "base",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0125",
+  "kind": "base",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0127",
+  "kind": "base",
+  "fault": "self_confirming",
+  "fault_kind": "source",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.missing"
+  ],
+  "gt_script": "SATISFIED",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": true,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0127",
+  "kind": "base",
+  "fault": "other_clock",
+  "fault_kind": "values",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.rejected",
+   "time.clock_domain"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0127",
+  "kind": "base",
+  "fault": "reference_gap",
+  "fault_kind": "availability",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.outside_window",
+   "evidence.rejected"
+  ],
+  "gt_script": "NO_DATA",
+  "gt_script_matches_label": false,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0127",
+  "kind": "base",
+  "fault": "other_attempt",
+  "fault_kind": "metadata",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "UNKNOWN",
+  "reasons": [
+   "evidence.identity_mismatch",
+   "timing.anchor_missing"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0127",
+  "kind": "base",
+  "fault": "frozen_reference",
+  "fault_kind": "values, undetectable by design",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ },
+ {
+  "id": "O0127",
+  "kind": "base",
+  "fault": "reordered",
+  "fault_kind": "nothing",
+  "injected": true,
+  "label": "NOT_AT_TARGET",
+  "clean_verifier": "VIOLATED",
+  "verifier": "VIOLATED",
+  "reasons": [
+   "condition.false"
+  ],
+  "gt_script": "VIOLATED",
+  "gt_script_matches_label": true,
+  "gt_script_false_satisfied": false,
+  "verifier_false_satisfied": false
+ }
+]
