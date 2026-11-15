@@ -11,7 +11,7 @@ publish = false
 [dependencies]
 openmhs-api.workspace = true
 openmhs-types.workspace = true
-rmcp = { version = "~3.5.1", default-features = false, features = ["server", "macros", "schemars", "transport-io"] }
+rmcp = { version = "~3.7", default-features = false, features = ["server", "macros", "schemars", "transport-io"] }
 schemars = "1"
 serde.workspace = true
 serde_json.workspace = true
@@ -24,6 +24,6 @@ workspace = true
 [dev-dependencies]
 openmhs-gateway.workspace = true
 openmhs-policy.workspace = true
-rmcp = { version = "~3.5.1", default-features = false, features = ["client", "server", "macros", "schemars", "transport-io"] }
+rmcp = { version = "~3.7", default-features = false, features = ["client", "server", "macros", "schemars", "transport-io"] }
 tempfile.workspace = true
 tokio = { workspace = true, features = ["io-util"] }
