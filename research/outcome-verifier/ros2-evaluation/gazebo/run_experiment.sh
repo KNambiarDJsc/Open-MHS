@@ -73,7 +73,8 @@ ros2 bag record -s mcap --include-hidden-topics -o "$OUT/bag" \
 REC=$!
 sleep 5
 
-timeout 1200 python3 "$HERE/task_driver.py" --intent "$OUT/intent.jsonl" > "$OUT/driver.log" 2>&1
+# DRIVER_ARGS: optional task-client settings, e.g. "--goal-tolerance 0.01 --release tol-0.01"
+timeout 1200 python3 "$HERE/task_driver.py" --intent "$OUT/intent.jsonl" ${DRIVER_ARGS:-} > "$OUT/driver.log" 2>&1
 echo "driver exit $?" | tee -a "$OUT/run.txt"
 sleep 2
 date -u +"wall_end %Y-%m-%dT%H:%M:%SZ" >> "$OUT/run.txt"

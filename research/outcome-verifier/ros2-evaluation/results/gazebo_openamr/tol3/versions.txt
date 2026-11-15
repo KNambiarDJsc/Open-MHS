@@ -1,0 +1,7 @@
+openamr-upperbody-sw aefd2e453fbf21b99193d91c662db2ae37b45036
+ros-jazzy-gz-ros2-control 1.2.20-1noble.20261006.040504
+ros-jazzy-joint-trajectory-controller 4.42.1-1noble.20260924.190511
+ros-jazzy-moveit-ros-move-group 2.12.4-1noble.20260915.202214
+ros-jazzy-rosbag2 0.26.11-1noble.20261006.034645
+ros-jazzy-rosbag2-storage-mcap 0.26.11-1noble.20260911.143733
+6.6.87.2-microsoft-standard-WSL2

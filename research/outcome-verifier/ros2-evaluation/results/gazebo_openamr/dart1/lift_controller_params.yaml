@@ -1,0 +1,58 @@
+/lift_controller:
+  ros__parameters:
+    action_monitor_rate: 20.0
+    allow_integration_in_goal_trajectories: false
+    allow_nonzero_velocity_at_trajectory_end: false
+    allow_partial_joints_goal: false
+    cmd_timeout: 0.0
+    command_interfaces:
+    - position
+    command_joints: []
+    constraints:
+      decelerate_on_cancel: false
+      goal_time: 0.0
+      lift_joint:
+        goal: 0.0
+        max_deceleration_on_cancel: 0.0
+        trajectory: 0.0
+      stopped_velocity_tolerance: 0.01
+    gains:
+      lift_joint:
+        antiwindup_strategy: legacy
+        d: 0.0
+        error_deadband: 0.0
+        ff_velocity_scale: 0.0
+        i: 0.0
+        i_clamp: .inf
+        i_clamp_max: .inf
+        i_clamp_min: -.inf
+        p: 0.0
+        tracking_time_constant: 0.0
+        u_clamp_max: .inf
+        u_clamp_min: -.inf
+    interpolate_from_desired_state: false
+    interpolation_method: splines
+    is_async: false
+    joints:
+    - lift_joint
+    open_loop_control: false
+    qos_overrides:
+      /clock:
+        subscription:
+          depth: 1
+          durability: volatile
+          history: keep_last
+          reliability: best_effort
+    set_last_command_interface_value_as_state_on_activation: true
+    speed_scaling:
+      command_interface: ''
+      initial_scaling_factor: 1.0
+      state_interface: ''
+    start_type_description_service: true
+    state_interfaces:
+    - position
+    - velocity
+    thread_priority: -100
+    update_rate: 100
+    use_sim_time: true
+

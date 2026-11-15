@@ -21,6 +21,7 @@ import time
 import rclpy
 from builtin_interfaces.msg import Duration
 from control_msgs.action import FollowJointTrajectory
+from control_msgs.msg import JointTolerance
 from geometry_msgs.msg import Twist
 from rclpy.action import ActionClient
 from rclpy.executors import MultiThreadedExecutor
@@ -42,6 +43,9 @@ def uuid_text(raw) -> str:
 
 
 class Driver(Node):
+    goal_tolerance: float | None = None
+    goal_time_tolerance: float | None = None
+
     def __init__(self) -> None:
         super().__init__("outcome_task_driver", parameter_overrides=[Parameter("use_sim_time", value=True)])
         self.lift = ActionClient(self, FollowJointTrajectory, "/lift_controller/follow_joint_trajectory")
@@ -70,6 +74,13 @@ class Driver(Node):
         p.positions = [target]
         p.time_from_start = Duration(sec=int(duration), nanosec=int(round((duration % 1) * 1e9)))
         goal.trajectory.points = [p]
+        # Optional per-goal tolerances (a different "release" of the task client). Without them the controller's own
+        # constraints apply, which for this stack are zero: no position check at all.
+        if self.goal_tolerance is not None:
+            goal.goal_tolerance = [JointTolerance(name="lift_joint", position=self.goal_tolerance)]
+        if self.goal_time_tolerance is not None:
+            t = self.goal_time_tolerance
+            goal.goal_time_tolerance = Duration(sec=int(t), nanosec=int(round((t % 1) * 1e9)))
         rec = {"task": tid, "kind": "lift", "target_m": target, "duration_s": duration, "sent_sim": self.sim_now()}
         handle = self.wait_future(self.lift.send_goal_async(goal), 30.0)
         if handle is None or not handle.accepted:
@@ -103,9 +114,20 @@ class Driver(Node):
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--intent", required=True)
+    ap.add_argument("--goal-tolerance", type=float, default=None, help="per-goal lift_joint position tolerance, m")
+    ap.add_argument("--goal-time-tolerance", type=float, default=None, help="per-goal goal_time_tolerance, s")
+    ap.add_argument("--release", default=None, help="label for this task-client configuration")
     args, ros_args = ap.parse_known_args()
+    import os
+
+    with open(os.path.join(os.path.dirname(os.path.abspath(args.intent)), "driver_config.json"), "w",
+              encoding="utf-8") as f:
+        json.dump({"goal_tolerance_m": args.goal_tolerance, "goal_time_tolerance_s": args.goal_time_tolerance,
+                   "release": args.release}, f, sort_keys=True)
     rclpy.init(args=ros_args)
     node = Driver()
+    node.goal_tolerance = args.goal_tolerance
+    node.goal_time_tolerance = args.goal_time_tolerance
     ex = MultiThreadedExecutor()
     ex.add_node(node)
     threading.Thread(target=ex.spin, daemon=True).start()

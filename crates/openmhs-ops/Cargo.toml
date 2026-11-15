@@ -1,0 +1,25 @@
+[package]
+name = "openmhs-ops"
+description = "Deployment intelligence store: idempotent event ingestion, task attempts, incidents and release comparisons (RFC 0005). Observation only; never in a robot's control path."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+
+[dependencies]
+openmhs-events.workspace = true
+rusqlite.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+tempfile.workspace = true
+
+[lints]
+workspace = true

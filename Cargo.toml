@@ -13,6 +13,8 @@ members = [
     "crates/openmhs-conformance",
     "crates/openmhs-host",
     "crates/openmhs-outcome",
+    "crates/openmhs-events",
+    "crates/openmhs-ops",
     "templates/adapter",
     "adapters/openmhs-profile",
     "adapters/openmhs-scpi",
@@ -42,6 +44,8 @@ openmhs-gateway = { path = "crates/openmhs-gateway" }
 openmhs-host = { path = "crates/openmhs-host" }
 openmhs-mcp = { path = "crates/openmhs-mcp" }
 openmhs-outcome = { path = "crates/openmhs-outcome" }
+openmhs-events = { path = "crates/openmhs-events" }
+openmhs-ops = { path = "crates/openmhs-ops" }
 openmhs-engine = { path = "crates/openmhs-engine", version = "0.1.0" }
 openmhs-policy = { path = "crates/openmhs-policy", version = "0.1.0" }
 openmhs-profile = { path = "adapters/openmhs-profile" }

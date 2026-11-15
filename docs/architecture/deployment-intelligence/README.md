@@ -1,7 +1,22 @@
 # Open-MHS as deployment intelligence: audit and proposed architecture
 
-- **Status:** proposed, for review. Phases 0 (discovery) and 1 (architecture) only. No code was changed.
+- **Status:** reviewed 2026-11-15; Phase 2 (first slice) under way on this branch.
 - **Date:** 2026-11-15, against `main` at `d05c699`.
+
+## Decisions taken in review (2026-11-15)
+
+| Question | Decision |
+|---|---|
+| First users | **Mobile manipulation, humanoid robot labs and university fleets.** They run learned policies, judge them on small numbers of trials, and feed interventions back into training |
+| Direction | Build release comparison and outcome provenance **together** in the first slice, not incident timelines alone. For these users the most valuable question is "did the new policy, checkpoint or setting actually do better, and who says so?" |
+| Demo installs | Approved: LeRobot with PyTorch (Demo 2) and Nav2 (a Demo 1 variant). Nav2 is deprioritized: navigation-only failures matter less to the chosen users than manipulation and policy evaluation |
+| CI advisories | Fix now (`rmcp ~3.7`, `rusqlite 0.41`) |
+| Push | Push the design branch |
+| Gateway | Not answered; treated as frozen but supported (ADR-0026) |
+
+What changes because of the users: small samples are the norm, so `insufficient_evidence` and per-trial clustering
+warnings matter more than scale; episodes, interventions and checkpoint lineage (Horizon B) move ahead of fleet
+operations features; Demo 2 (policy recovery and checkpoint comparison) becomes the lead demo once it can be installed.
 
 ## Recommendation in one paragraph
 
@@ -71,6 +86,7 @@ the next 90 days as a test of whether anyone outside the project wants this, wit
 | H, I. Roadmap and issue breakdown | [07-roadmap-and-issues.md](07-roadmap-and-issues.md) |
 | J. First vertical slice, demos | [08-vertical-slice-and-demos.md](08-vertical-slice-and-demos.md) |
 | Critical review, product and business | [09-critical-review.md](09-critical-review.md) |
+| First slice: what was built and measured | [10-first-slice-results.md](10-first-slice-results.md) |
 
 ## Tests run with this audit (2026-11-15, Windows 11)
 

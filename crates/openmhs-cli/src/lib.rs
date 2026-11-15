@@ -7,6 +7,7 @@ mod bench;
 mod demo;
 mod discover;
 mod evidence;
+mod ops;
 mod outcome;
 mod output;
 mod profiles;
@@ -160,6 +161,20 @@ enum Cmd {
     Outcome {
         #[command(subcommand)]
         command: OutcomeCmd,
+    },
+    /// Deployment intelligence over recorded robot events (RFC 0005): incidents, timelines, release comparisons.
+    /// Works on a local store file; never contacts a gateway or a robot.
+    Ops {
+        /// The store file (created if missing).
+        #[arg(
+            long,
+            global = true,
+            env = "OPENMHS_OPS_STORE",
+            default_value = "ops.sqlite"
+        )]
+        store: PathBuf,
+        #[command(subcommand)]
+        command: OpsCmd,
     },
     /// Fault injection for simulated devices (operator, `serve --sim` only).
     Sim {
@@ -886,6 +901,52 @@ enum OutcomeCmd {
     },
     /// Print an audit export as evidence records, one per line.
     FromAudit { bundle: PathBuf },
+}
+
+#[derive(Subcommand)]
+enum OpsCmd {
+    /// Ingest events, manifests and artifact references (JSON Lines or a JSON array; `-` for stdin), then rebuild.
+    Ingest {
+        files: Vec<PathBuf>,
+        /// Do not rebuild incidents and task attempts afterwards.
+        #[arg(long)]
+        no_rebuild: bool,
+    },
+    /// Rebuild task attempts, rollouts and incidents from the stored events.
+    Rebuild,
+    /// Count what the store holds.
+    Status,
+    /// List incidents, newest first.
+    Incidents {
+        #[arg(long)]
+        robot: Option<String>,
+        #[arg(long = "task-type")]
+        task_type: Option<String>,
+        #[arg(long, default_value_t = 50)]
+        limit: usize,
+    },
+    /// One incident: timeline with the basis of every event, deployment, what changed, evidence.
+    Show { incident: String },
+    /// Compare failure rates of one task type between two releases (labels or manifest digests).
+    Compare {
+        #[arg(long = "task-type")]
+        task_type: String,
+        /// Baseline release.
+        #[arg(long)]
+        a: String,
+        /// Candidate release.
+        #[arg(long)]
+        b: String,
+        /// Use RFC 0004 verified outcomes instead of what the executing system reported.
+        #[arg(long)]
+        verified: bool,
+        /// Pool all sites instead of stratifying by site.
+        #[arg(long)]
+        no_strata: bool,
+        /// Smallest change in failure rate (a fraction) that counts as a regression or an improvement.
+        #[arg(long, default_value_t = 0.01)]
+        margin: f64,
+    },
 }
 
 #[derive(Subcommand)]
@@ -1880,6 +1941,32 @@ async fn run(cli: Cli) -> u8 {
                 OutcomeCmd::FromAudit { bundle } => outcome::from_audit_cmd(&bundle),
             };
         }
+        Cmd::Ops { store, command } => {
+            let json = cli.json;
+            return match command {
+                OpsCmd::Ingest { files, no_rebuild } => {
+                    ops::ingest(json, &store, &files, !no_rebuild)
+                }
+                OpsCmd::Rebuild => ops::rebuild(json, &store),
+                OpsCmd::Status => ops::status(json, &store),
+                OpsCmd::Incidents {
+                    robot,
+                    task_type,
+                    limit,
+                } => ops::incidents(json, &store, robot.as_deref(), task_type.as_deref(), limit),
+                OpsCmd::Show { incident } => ops::show(json, &store, &incident),
+                OpsCmd::Compare {
+                    task_type,
+                    a,
+                    b,
+                    verified,
+                    no_strata,
+                    margin,
+                } => ops::compare(
+                    json, &store, &task_type, &a, &b, verified, no_strata, margin,
+                ),
+            };
+        }
         Cmd::Serve(args) => return serve(home, args).await,
         Cmd::Demo(args) => return demo::run(args.keep).await,
         Cmd::Discover {
@@ -2021,6 +2108,7 @@ async fn client_command(client: &Client, json: bool, cmd: Cmd) -> Result<u8, Cli
         | Cmd::Profile { .. }
         | Cmd::Adapter { .. }
         | Cmd::Outcome { .. }
+        | Cmd::Ops { .. }
         | Cmd::Trust { .. } => {
             unreachable!("handled before connecting")
         }

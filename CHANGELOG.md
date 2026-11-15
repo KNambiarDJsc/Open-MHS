@@ -7,6 +7,21 @@ and the entry will say so under **Changed** or **Removed**.
 
 ## [Unreleased]
 
+### Added
+
+- **Deployment intelligence, first slice** ([RFC 0005](docs/rfcs/0005-deployment-events.md), ADR-0026 to ADR-0034,
+  [results](docs/architecture/deployment-intelligence/10-first-slice-results.md)). Observation only. New crates
+  `openmhs-events` (event envelope, deployment manifests, artifact references, canonical JSON and digests) and
+  `openmhs-ops` (a local store with checksummed migrations, idempotent ingestion that keeps conflicts, task attempts,
+  incidents whose every event says why it belongs, and release comparisons with intervals and an
+  `insufficient_evidence` answer). CLI `openmhs ops ingest | rebuild | status | incidents | show | compare`. Python
+  importer `openmhs.importers.openamr_gazebo`. Simulation only so far.
+
+### Security
+
+- `rmcp` 3.5.1 → 3.7.0 (RUSTSEC-2026-0457, -0461, -0462) and `rusqlite` 0.40 → 0.41, bundling SQLite 3.54
+  (RUSTSEC-2026-0459). The affected `rmcp` features were not enabled.
+
 ### Fixed
 
 - **Refused requests leave evidence** ([REFUSAL_AUDIT.md](docs/architecture/REFUSAL_AUDIT.md)). A plan or lease refused,

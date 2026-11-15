@@ -1584,12 +1584,14 @@ dependencies = [
  "openmhs-adapter",
  "openmhs-api",
  "openmhs-conformance",
+ "openmhs-events",
  "openmhs-gateway",
  "openmhs-host",
  "openmhs-http",
  "openmhs-mcp",
  "openmhs-modbus",
  "openmhs-mqtt",
+ "openmhs-ops",
  "openmhs-outcome",
  "openmhs-policy",
  "openmhs-profile",
@@ -1638,6 +1640,17 @@ dependencies = [
  "tokio",
  "tracing",
  "uuid",
+]
+
+[[package]]
+name = "openmhs-events"
+version = "0.1.0"
+dependencies = [
+ "proptest",
+ "serde",
+ "serde_json",
+ "sha2",
+ "time",
 ]
 
 [[package]]
@@ -1754,6 +1767,20 @@ dependencies = [
  "tempfile",
  "tokio",
  "tokio-rustls",
+]
+
+[[package]]
+name = "openmhs-ops"
+version = "0.1.0"
+dependencies = [
+ "openmhs-events",
+ "proptest",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+ "thiserror",
 ]
 
 [[package]]

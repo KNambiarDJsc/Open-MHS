@@ -1,0 +1,661 @@
+//! Reads: incident lists and timelines, and release comparisons (ADR-0032). Every answer names what it is based on.
+
+use std::collections::{BTreeMap, BTreeSet};
+
+use openmhs_events::{ComponentChange, Manifest, diff};
+use rusqlite::{OptionalExtension, params};
+use serde::Serialize;
+use serde_json::Value;
+
+use crate::derive::{RULES_VERSION, WINDOW_AFTER_NS, WINDOW_BEFORE_NS};
+use crate::stats::{StratumCounts, mantel_haenszel_rd, newcombe, wilson};
+use crate::{OpsError, Store};
+
+#[derive(Debug, Clone, Serialize)]
+pub struct IncidentSummary {
+    pub incident_id: String,
+    pub robot: String,
+    pub site: Option<String>,
+    pub task_id: String,
+    pub task_type: String,
+    pub opened_ns: Option<i64>,
+    pub triggers: Vec<String>,
+    pub fingerprint: String,
+    pub reported: Option<String>,
+    pub verified: Option<String>,
+    pub manifest: Option<String>,
+    pub release: Option<String>,
+    pub members: i64,
+    pub status: String,
+    pub owner: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct Member {
+    pub event_id: String,
+    pub kind: String,
+    pub observed_ns: Option<i64>,
+    pub uncertainty_ms: Option<f64>,
+    pub clock_domain: String,
+    pub basis: String,
+    pub detail: String,
+    pub reported: Option<String>,
+    pub verified: Option<String>,
+    pub goal_id: Option<String>,
+    pub action_id: Option<String>,
+    pub code: Option<String>,
+    pub provenance: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ArtifactLink {
+    pub artifact_id: String,
+    pub uri: String,
+    pub media_type: Option<String>,
+    pub start_ns: Option<i64>,
+    pub end_ns: Option<i64>,
+    /// The part of the artifact that covers the incident's window.
+    pub window: (i64, i64),
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct LastSuccess {
+    pub task_id: String,
+    pub started_ns: Option<i64>,
+    pub manifest: Option<String>,
+    pub changes: Vec<ComponentChange>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct IncidentDetail {
+    pub summary: IncidentSummary,
+    pub members: Vec<Member>,
+    pub manifest: Option<Value>,
+    /// The last attempt of the same task type on the same robot that reported success and was not verified
+    /// violated, and what differs between its manifest and this incident's.
+    pub since_last_success: Option<LastSuccess>,
+    pub artifacts: Vec<ArtifactLink>,
+    pub similar: Vec<String>,
+    pub rules_version: &'static str,
+}
+
+fn summary_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<IncidentSummary> {
+    let triggers: String = r.get(9)?;
+    Ok(IncidentSummary {
+        incident_id: r.get(0)?,
+        robot: r.get(1)?,
+        site: r.get(2)?,
+        task_id: r.get(3)?,
+        task_type: r.get(4)?,
+        opened_ns: r.get(5)?,
+        fingerprint: r.get(6)?,
+        reported: r.get(7)?,
+        verified: r.get(8)?,
+        triggers: serde_json::from_str(&triggers).unwrap_or_default(),
+        manifest: r.get(10)?,
+        release: r.get(11)?,
+        members: r.get(12)?,
+        status: r
+            .get::<_, Option<String>>(13)?
+            .unwrap_or_else(|| "open".into()),
+        owner: r.get(14)?,
+    })
+}
+
+const SUMMARY_SQL: &str = "SELECT i.incident_id, i.robot, i.site, i.task_id, i.task_type, i.opened_ns, i.fingerprint,
+        i.reported, i.verified, i.triggers, i.manifest, m.release,
+        (SELECT COUNT(*) FROM incident_members im WHERE im.tenant = i.tenant AND im.incident_id = i.incident_id),
+        s.status, s.owner
+    FROM incidents i
+    LEFT JOIN manifests m ON m.digest = i.manifest
+    LEFT JOIN incident_state s ON s.tenant = i.tenant AND s.incident_id = i.incident_id";
+
+impl Store {
+    pub fn incidents(
+        &self,
+        robot: Option<&str>,
+        task_type: Option<&str>,
+        limit: usize,
+    ) -> Result<Vec<IncidentSummary>, OpsError> {
+        let sql = format!(
+            "{SUMMARY_SQL} WHERE (?1 IS NULL OR i.robot = ?1) AND (?2 IS NULL OR i.task_type = ?2)
+             ORDER BY i.opened_ns DESC, i.incident_id LIMIT ?3"
+        );
+        let mut stmt = self.conn.prepare(&sql)?;
+        let rows = stmt
+            .query_map(params![robot, task_type, limit as i64], summary_row)?
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(rows)
+    }
+
+    pub fn incident(&self, incident_id: &str) -> Result<Option<IncidentDetail>, OpsError> {
+        let sql = format!("{SUMMARY_SQL} WHERE i.incident_id = ?1");
+        let Some(summary) = self
+            .conn
+            .query_row(&sql, [incident_id], summary_row)
+            .optional()?
+        else {
+            return Ok(None);
+        };
+        let tenant: String = self.conn.query_row(
+            "SELECT tenant FROM incidents WHERE incident_id = ?1",
+            [incident_id],
+            |r| r.get(0),
+        )?;
+
+        let mut stmt = self.conn.prepare(
+            "SELECT e.event_id, e.type, e.observed_ns, e.uncertainty_ms, e.clock_domain, m.basis, m.detail,
+                    e.reported, e.verified, e.goal_id, e.action_id, e.code, e.provenance, e.seq
+             FROM incident_members m JOIN events e ON e.tenant = m.tenant AND e.event_id = m.event_id
+             WHERE m.tenant = ?1 AND m.incident_id = ?2
+             ORDER BY e.observed_ns IS NULL, e.observed_ns, e.seq, e.event_id",
+        )?;
+        let members = stmt
+            .query_map(params![tenant, incident_id], |r| {
+                Ok(Member {
+                    event_id: r.get(0)?,
+                    kind: r.get(1)?,
+                    observed_ns: r.get(2)?,
+                    uncertainty_ms: r.get(3)?,
+                    clock_domain: r.get(4)?,
+                    basis: r.get(5)?,
+                    detail: r.get(6)?,
+                    reported: r.get(7)?,
+                    verified: r.get(8)?,
+                    goal_id: r.get(9)?,
+                    action_id: r.get(10)?,
+                    code: r.get(11)?,
+                    provenance: r.get(12)?,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let manifest_body: Option<String> = match &summary.manifest {
+            Some(d) => self
+                .conn
+                .query_row("SELECT body FROM manifests WHERE digest = ?1", [d], |r| {
+                    r.get(0)
+                })
+                .optional()?,
+            None => None,
+        };
+        let manifest = manifest_body
+            .as_deref()
+            .and_then(|b| serde_json::from_str(b).ok());
+
+        let since_last_success = self.last_success(&tenant, &summary, manifest_body.as_deref())?;
+
+        let mut artifacts = Vec::new();
+        if let Some(open) = summary.opened_ns {
+            let close: Option<i64> = self.conn.query_row(
+                "SELECT closed_ns FROM incidents WHERE incident_id = ?1",
+                [incident_id],
+                |r| r.get(0),
+            )?;
+            let lo = open - WINDOW_BEFORE_NS;
+            let hi = close.unwrap_or(open) + WINDOW_AFTER_NS;
+            let mut stmt = self.conn.prepare(
+                "SELECT artifact_id, uri, media_type, start_ns, end_ns FROM artifacts
+                 WHERE tenant = ?1 AND (robot IS NULL OR robot = ?2)
+                   AND (start_ns IS NULL OR start_ns <= ?4) AND (end_ns IS NULL OR end_ns >= ?3)
+                 ORDER BY artifact_id",
+            )?;
+            artifacts = stmt
+                .query_map(params![tenant, summary.robot, lo, hi], |r| {
+                    let start: Option<i64> = r.get(3)?;
+                    let end: Option<i64> = r.get(4)?;
+                    Ok(ArtifactLink {
+                        artifact_id: r.get(0)?,
+                        uri: r.get(1)?,
+                        media_type: r.get(2)?,
+                        start_ns: start,
+                        end_ns: end,
+                        window: (
+                            start.map_or(lo, |s| s.max(lo)),
+                            end.map_or(hi, |e| e.min(hi)),
+                        ),
+                    })
+                })?
+                .collect::<Result<Vec<_>, _>>()?;
+        }
+
+        let mut stmt = self.conn.prepare(
+            "SELECT incident_id FROM incidents WHERE tenant = ?1 AND fingerprint = ?2 AND incident_id <> ?3
+             ORDER BY opened_ns DESC, incident_id LIMIT 20",
+        )?;
+        let similar = stmt
+            .query_map(params![tenant, summary.fingerprint, incident_id], |r| {
+                r.get(0)
+            })?
+            .collect::<Result<Vec<String>, _>>()?;
+
+        Ok(Some(IncidentDetail {
+            summary,
+            members,
+            manifest,
+            since_last_success,
+            artifacts,
+            similar,
+            rules_version: RULES_VERSION,
+        }))
+    }
+
+    fn last_success(
+        &self,
+        tenant: &str,
+        s: &IncidentSummary,
+        manifest_body: Option<&str>,
+    ) -> Result<Option<LastSuccess>, OpsError> {
+        let Some(opened) = s.opened_ns else {
+            return Ok(None);
+        };
+        let row: Option<(String, Option<i64>, Option<String>)> = self
+            .conn
+            .query_row(
+                "SELECT task_id, started_ns, manifest FROM task_attempts
+                 WHERE tenant = ?1 AND robot = ?2 AND task_type = ?3 AND started_ns < ?4
+                   AND reported = 'succeeded' AND (verified IS NULL OR verified <> 'violated')
+                 ORDER BY started_ns DESC LIMIT 1",
+                params![tenant, s.robot, s.task_type, opened],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+            )
+            .optional()?;
+        let Some((task_id, started_ns, manifest)) = row else {
+            return Ok(None);
+        };
+        let before: Option<String> = match &manifest {
+            Some(d) => self
+                .conn
+                .query_row("SELECT body FROM manifests WHERE digest = ?1", [d], |r| {
+                    r.get(0)
+                })
+                .optional()?,
+            None => None,
+        };
+        let parse = |b: &str| {
+            serde_json::from_str::<Value>(b)
+                .ok()
+                .and_then(|v| Manifest::parse(&v).ok())
+        };
+        let changes = match (
+            before.as_deref().and_then(parse),
+            manifest_body.and_then(parse),
+        ) {
+            (Some(b), Some(a)) => diff(&b, &a),
+            _ => Vec::new(),
+        };
+        Ok(Some(LastSuccess {
+            task_id,
+            started_ns,
+            manifest,
+            changes,
+        }))
+    }
+}
+
+// ------------------------------------------------------------------------------------------ release comparison
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum OutcomeKind {
+    /// What the executing system said.
+    Reported,
+    /// RFC 0004 verdicts. Attempts without one count as unknown.
+    Verified,
+}
+
+#[derive(Debug, Clone)]
+pub struct CompareSpec {
+    pub task_type: String,
+    /// A release label (`labels.release`), a manifest digest, or a digest prefix of at least 8 hex digits.
+    pub a: String,
+    pub b: String,
+    pub outcome: OutcomeKind,
+    /// Stratify by site (default); a stratum present in only one arm is reported, not pooled.
+    pub by_site: bool,
+    /// Smallest change in failure rate, as a fraction, that counts as a regression or an improvement.
+    pub margin: f64,
+    /// Minimum attempts with a known outcome per arm before any verdict other than `insufficient_evidence`.
+    pub min_known: u64,
+    /// Minimum failures across both arms.
+    pub min_failures: u64,
+}
+
+impl CompareSpec {
+    pub fn new(task_type: &str, a: &str, b: &str, outcome: OutcomeKind) -> Self {
+        Self {
+            task_type: task_type.into(),
+            a: a.into(),
+            b: b.into(),
+            outcome,
+            by_site: true,
+            margin: 0.01,
+            min_known: 30,
+            min_failures: 5,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct Arm {
+    pub selector: String,
+    pub manifests: Vec<String>,
+    pub attempts: u64,
+    pub succeeded: u64,
+    pub failed: u64,
+    pub unknown: u64,
+    pub excluded: BTreeMap<String, u64>,
+    /// failed / (succeeded + failed).
+    pub rate: Option<f64>,
+    pub ci95: Option<(f64, f64)>,
+    /// The rate with every unknown counted as a success, then as a failure.
+    pub unknown_bounds: Option<(f64, f64)>,
+    pub sites: BTreeMap<String, u64>,
+    pub incidents: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct Stratum {
+    pub site: String,
+    pub a: (u64, u64),
+    pub b: (u64, u64),
+    pub difference: Option<(f64, f64, f64)>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Verdict {
+    /// b's failure rate is higher than a's by more than the margin, with 95 % confidence.
+    Regression,
+    /// b's failure rate is lower by more than the margin.
+    Improvement,
+    /// The interval lies within ± margin.
+    NoChange,
+    InsufficientEvidence,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct Comparison {
+    pub task_type: String,
+    pub outcome: OutcomeKind,
+    pub a: Arm,
+    pub b: Arm,
+    /// b − a in failure rate: (estimate, low, high).
+    pub difference: Option<(f64, f64, f64)>,
+    pub difference_method: &'static str,
+    /// The difference with unknowns counted against b and for a, then the reverse.
+    pub unknown_bounds: Option<(f64, f64)>,
+    pub strata: Vec<Stratum>,
+    pub verdict: Verdict,
+    pub reasons: Vec<String>,
+    pub warnings: Vec<String>,
+    pub rules_version: &'static str,
+}
+
+/// Per site: (failures, attempts with a known outcome).
+type SiteCounts = BTreeMap<String, (u64, u64)>;
+
+impl Store {
+    fn resolve(&self, selector: &str) -> Result<Vec<String>, OpsError> {
+        let mut stmt = self
+            .conn
+            .prepare("SELECT digest, release FROM manifests ORDER BY digest")?;
+        let rows: Vec<(String, Option<String>)> = stmt
+            .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))?
+            .collect::<Result<_, _>>()?;
+        let hex = selector.strip_prefix("sha256:").unwrap_or(selector);
+        let by_release: Vec<String> = rows
+            .iter()
+            .filter(|(_, rel)| rel.as_deref() == Some(selector))
+            .map(|(d, _)| d.clone())
+            .collect();
+        if !by_release.is_empty() {
+            return Ok(by_release);
+        }
+        if hex.len() >= 8 && hex.bytes().all(|b| b.is_ascii_hexdigit()) {
+            let want = format!("sha256:{}", hex.to_ascii_lowercase());
+            return Ok(rows
+                .into_iter()
+                .filter(|(d, _)| d.starts_with(&want))
+                .map(|(d, _)| d)
+                .collect());
+        }
+        Ok(Vec::new())
+    }
+
+    fn arm(&self, spec: &CompareSpec, selector: &str) -> Result<(Arm, SiteCounts), OpsError> {
+        let manifests = self.resolve(selector)?;
+        let mut arm = Arm {
+            selector: selector.into(),
+            manifests: manifests.clone(),
+            ..Default::default()
+        };
+        let mut by_site: BTreeMap<String, (u64, u64)> = BTreeMap::new();
+        for digest in &manifests {
+            let mut stmt = self.conn.prepare(
+                "SELECT site, reported, verified FROM task_attempts WHERE task_type = ?1 AND manifest = ?2",
+            )?;
+            let rows: Vec<(Option<String>, Option<String>, Option<String>)> = stmt
+                .query_map(params![spec.task_type, digest], |r| {
+                    Ok((r.get(0)?, r.get(1)?, r.get(2)?))
+                })?
+                .collect::<Result<_, _>>()?;
+            for (site, reported, verified) in rows {
+                arm.attempts += 1;
+                let site = site.unwrap_or_else(|| "(no site)".into());
+                *arm.sites.entry(site.clone()).or_default() += 1;
+                let class = match spec.outcome {
+                    OutcomeKind::Reported => match reported.as_deref() {
+                        Some("succeeded") => "success",
+                        Some("failed" | "aborted" | "timeout") => "failure",
+                        Some("canceled") => "excluded:canceled",
+                        _ => "unknown",
+                    },
+                    OutcomeKind::Verified => match verified.as_deref() {
+                        Some("satisfied") => "success",
+                        Some("violated") => "failure",
+                        _ => "unknown",
+                    },
+                };
+                match class {
+                    "success" => {
+                        arm.succeeded += 1;
+                        by_site.entry(site).or_default().1 += 1;
+                    }
+                    "failure" => {
+                        arm.failed += 1;
+                        let e = by_site.entry(site).or_default();
+                        e.0 += 1;
+                        e.1 += 1;
+                    }
+                    "unknown" => arm.unknown += 1,
+                    other => {
+                        *arm.excluded
+                            .entry(other.trim_start_matches("excluded:").to_owned())
+                            .or_default() += 1;
+                    }
+                }
+            }
+            let mut stmt = self.conn.prepare(
+                "SELECT incident_id FROM incidents WHERE task_type = ?1 AND manifest = ?2
+                 ORDER BY opened_ns DESC, incident_id LIMIT 5",
+            )?;
+            arm.incidents.extend(
+                stmt.query_map(params![spec.task_type, digest], |r| r.get::<_, String>(0))?
+                    .collect::<Result<Vec<_>, _>>()?,
+            );
+        }
+        let known = arm.succeeded + arm.failed;
+        if known > 0 {
+            arm.rate = Some(arm.failed as f64 / known as f64);
+            arm.ci95 = wilson(arm.failed, known);
+        }
+        let all = known + arm.unknown;
+        if all > 0 {
+            arm.unknown_bounds = Some((
+                arm.failed as f64 / all as f64,
+                (arm.failed + arm.unknown) as f64 / all as f64,
+            ));
+        }
+        Ok((arm, by_site))
+    }
+
+    pub fn compare(&self, spec: &CompareSpec) -> Result<Comparison, OpsError> {
+        let (a, sites_a) = self.arm(spec, &spec.a)?;
+        let (b, sites_b) = self.arm(spec, &spec.b)?;
+        let mut warnings = Vec::new();
+        let mut reasons = Vec::new();
+        for arm in [&a, &b] {
+            if arm.manifests.is_empty() {
+                warnings.push(format!(
+                    "{:?} matches no manifest (a release label, or a digest prefix)",
+                    arm.selector
+                ));
+            }
+            if arm.attempts > 0 && arm.unknown * 2 > arm.attempts {
+                warnings.push(format!(
+                    "{}: {} of {} attempts have no known {:?} outcome",
+                    arm.selector, arm.unknown, arm.attempts, spec.outcome
+                ));
+            }
+        }
+        let overlap: BTreeSet<&String> = a
+            .manifests
+            .iter()
+            .filter(|m| b.manifests.contains(m))
+            .collect();
+        if !overlap.is_empty() {
+            warnings.push("the two selectors share manifests: the arms are not separate".into());
+        }
+        let no_manifest: i64 = self.conn.query_row(
+            "SELECT COUNT(*) FROM task_attempts WHERE task_type = ?1 AND manifest IS NULL",
+            [&spec.task_type],
+            |r| r.get(0),
+        )?;
+        if no_manifest > 0 {
+            warnings.push(format!(
+                "{no_manifest} attempts of this task type have no known manifest and are left out"
+            ));
+        }
+
+        let (ka, na) = (a.failed, a.failed + a.succeeded);
+        let (kb, nb) = (b.failed, b.failed + b.succeeded);
+        let plain = newcombe(ka, na, kb, nb);
+
+        let mut strata = Vec::new();
+        let mut counts = Vec::new();
+        let sites: BTreeSet<&String> = sites_a.keys().chain(sites_b.keys()).collect();
+        for site in &sites {
+            let sa = sites_a.get(*site).copied().unwrap_or_default();
+            let sb = sites_b.get(*site).copied().unwrap_or_default();
+            if sa.1 == 0 || sb.1 == 0 {
+                warnings.push(format!(
+                    "site {site} appears only in {}: not comparable within the site",
+                    if sa.1 == 0 { "b" } else { "a" }
+                ));
+            } else {
+                counts.push(StratumCounts {
+                    k_a: sa.0,
+                    n_a: sa.1,
+                    k_b: sb.0,
+                    n_b: sb.1,
+                });
+            }
+            strata.push(Stratum {
+                site: (*site).clone(),
+                a: sa,
+                b: sb,
+                difference: newcombe(sa.0, sa.1, sb.0, sb.1),
+            });
+        }
+        let stratified = spec.by_site && sites.len() > 1;
+        let (difference, method) = if stratified {
+            (mantel_haenszel_rd(&counts), "mantel_haenszel_by_site")
+        } else {
+            (plain, "newcombe")
+        };
+        if stratified
+            && let (Some(p), Some(s)) = (plain, difference)
+            && (p.0 - s.0).abs() > spec.margin
+        {
+            warnings.push(format!(
+                "pooled and site-stratified differences disagree ({:+.3} vs {:+.3}): the site mix differs between arms",
+                p.0, s.0
+            ));
+        }
+
+        let unknown_bounds = {
+            let (all_a, all_b) = (na + a.unknown, nb + b.unknown);
+            (all_a > 0 && all_b > 0).then(|| {
+                let lo = kb as f64 / all_b as f64 - (ka + a.unknown) as f64 / all_a as f64;
+                let hi = (kb + b.unknown) as f64 / all_b as f64 - ka as f64 / all_a as f64;
+                (lo, hi)
+            })
+        };
+
+        let verdict = if na < spec.min_known || nb < spec.min_known {
+            reasons.push(format!(
+                "fewer than {} attempts with a known outcome in an arm (a {na}, b {nb})",
+                spec.min_known
+            ));
+            Verdict::InsufficientEvidence
+        } else if ka + kb < spec.min_failures {
+            reasons.push(format!(
+                "fewer than {} failures in both arms together ({})",
+                spec.min_failures,
+                ka + kb
+            ));
+            Verdict::InsufficientEvidence
+        } else {
+            match difference {
+                None => {
+                    reasons.push("no stratum has both arms".into());
+                    Verdict::InsufficientEvidence
+                }
+                Some((_, lo, _)) if lo > spec.margin => {
+                    reasons.push(format!(
+                        "the whole 95 % interval is above +{:.3}",
+                        spec.margin
+                    ));
+                    Verdict::Regression
+                }
+                Some((_, _, hi)) if hi < -spec.margin => {
+                    reasons.push(format!(
+                        "the whole 95 % interval is below -{:.3}",
+                        spec.margin
+                    ));
+                    Verdict::Improvement
+                }
+                Some((_, lo, hi)) if lo >= -spec.margin && hi <= spec.margin => {
+                    reasons.push(format!(
+                        "the whole 95 % interval is within ±{:.3}",
+                        spec.margin
+                    ));
+                    Verdict::NoChange
+                }
+                Some(_) => {
+                    reasons.push(format!(
+                        "the 95 % interval spans both no change and ±{:.3}",
+                        spec.margin
+                    ));
+                    Verdict::InsufficientEvidence
+                }
+            }
+        };
+
+        Ok(Comparison {
+            task_type: spec.task_type.clone(),
+            outcome: spec.outcome,
+            a,
+            b,
+            difference,
+            difference_method: method,
+            unknown_bounds,
+            strata,
+            verdict,
+            reasons,
+            warnings,
+            rules_version: RULES_VERSION,
+        })
+    }
+}

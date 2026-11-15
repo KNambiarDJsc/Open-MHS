@@ -1,0 +1,78 @@
+{
+ "run": "tol2",
+ "carriage_offset_m": [
+  0.06,
+  0.0,
+  0.8340000000000001
+ ],
+ "urdf": "run's own",
+ "odom_calibration": {
+  "odom_first_stamp": "1970-01-01T00:00:05.180Z",
+  "gz_sample_gap_ms": 5.0,
+  "yaw_offset_rad": -5e-06,
+  "tx_m": 3.4e-05,
+  "ty_m": -4.4e-05
+ },
+ "lift_goals_sent": 10,
+ "lift_results": {
+  "L01": 4,
+  "L02": 4,
+  "L03": 4,
+  "L04": 4,
+  "L05": 4,
+  "L06": 4,
+  "L07": 4,
+  "L08": 4,
+  "L09": 4,
+  "L10": 4
+ },
+ "status_uncertainty_ms": {
+  "min": 50.5,
+  "median": 50.5,
+  "max": 50.5,
+  "n": 10
+ },
+ "drive_segments": [
+  {
+   "task": "B01",
+   "vx": 0.2,
+   "wz": 0.0,
+   "duration_s": 3.0,
+   "odom_travel_m": 0.6065,
+   "gazebo_travel_m": 0.1125
+  },
+  {
+   "task": "B02",
+   "vx": 0.0,
+   "wz": 0.5,
+   "duration_s": 2.0,
+   "odom_travel_m": 0.0002,
+   "gazebo_travel_m": 0.001
+  },
+  {
+   "task": "B03",
+   "vx": 0.2,
+   "wz": 0.0,
+   "duration_s": 3.0,
+   "odom_travel_m": 0.609,
+   "gazebo_travel_m": 0.1079
+  },
+  {
+   "task": "B04",
+   "vx": -0.1,
+   "wz": 0.0,
+   "duration_s": 2.0,
+   "odom_travel_m": 0.2013,
+   "gazebo_travel_m": 0.0005
+  }
+ ],
+ "determinism_checked": 13,
+ "determinism_identical": true,
+ "selection_checked": 4,
+ "selection_same_verdict": true,
+ "claims": {
+  "lift": 10,
+  "base": 130
+ },
+ "verify_seconds_median": 0.156
+}

@@ -144,6 +144,10 @@ A manifest describes *what* runs; a rollout says *where and since when*.
 
 - The manifest's identity is the SHA-256 of its canonical JSON (sorted keys, no insignificant whitespace). Two
   identical manifests are one record. Model revisions must be immutable (a commit or digest, not a tag).
+- Producers in other languages compute the same digest only if they write numbers the same way. Prefer strings and
+  integers in manifests; a float must be written in its shortest round-trip form (`0.01`, `0.0`). The store recomputes
+  every digest; an event that references a digest the store does not hold is attributed by rollout or excluded, never
+  guessed. The slice's acceptance test checks Python-written references against Rust-computed digests.
 - `deployment.applied` events (robot, manifest digest, time) build **rollout intervals** per robot. An event without
   `deployment.manifest` inherits the interval covering its time, with `basis: rollout_interval` and the interval's
   uncertainty. Two overlapping intervals for one robot are a recorded conflict, not a silent choice.
@@ -187,7 +191,7 @@ CREATE TABLE events (
   observed_ns INTEGER, clock_domain TEXT NOT NULL, uncertainty_ms REAL, ingested_ns INTEGER NOT NULL,
   site TEXT, robot TEXT NOT NULL, task_id TEXT, episode_id TEXT, action_id TEXT, goal_id TEXT, trace_id TEXT,
   manifest TEXT, manifest_basis TEXT,            -- 'event' | 'rollout_interval' | NULL
-  reported TEXT, verified TEXT, severity TEXT, category TEXT, code TEXT,
+  reported TEXT, verified TEXT, severity TEXT, category TEXT, code TEXT, component TEXT,
   provenance TEXT NOT NULL, content_hash TEXT NOT NULL, body TEXT NOT NULL,   -- canonical JSON
   PRIMARY KEY (tenant, event_id)
 ) WITHOUT ROWID;
@@ -210,7 +214,10 @@ CREATE TABLE task_attempts (tenant TEXT, task_id TEXT, robot TEXT, task_type TEX
   started_ns INTEGER, ended_ns INTEGER, reported TEXT, verified TEXT, interventions INTEGER,
   rules_version TEXT NOT NULL, PRIMARY KEY (tenant, task_id, robot, started_ns));
 CREATE TABLE incidents (tenant TEXT, incident_id TEXT, rules_version TEXT NOT NULL, fingerprint TEXT,
-  robot TEXT, opened_ns INTEGER, closed_ns INTEGER, status TEXT, owner TEXT, title TEXT,
+  robot TEXT, task_id TEXT, task_type TEXT, opened_ns INTEGER, closed_ns INTEGER, triggers TEXT,
+  reported TEXT, verified TEXT, manifest TEXT, PRIMARY KEY (tenant, incident_id));
+-- Human state, never rebuilt:
+CREATE TABLE incident_state (tenant TEXT, incident_id TEXT, owner TEXT, status TEXT, updated_ns INTEGER,
   PRIMARY KEY (tenant, incident_id));
 CREATE TABLE incident_members (tenant TEXT, incident_id TEXT, event_id TEXT, basis TEXT NOT NULL,
   detail TEXT, PRIMARY KEY (tenant, incident_id, event_id));
@@ -219,7 +226,10 @@ CREATE TABLE annotations (tenant TEXT, annotation_id TEXT, target TEXT NOT NULL,
   PRIMARY KEY (tenant, annotation_id));
 ```
 
-- Incident ids are stable across rebuilds: a hash of (tenant, rules version, fingerprint, first member event id).
+- Incident ids are stable across rebuilds: a hash of (tenant, rules version, robot, task id). The implemented schema is
+  `crates/openmhs-ops/src/migrations/0001_init.sql`; it is authoritative where this sketch differs.
+- Window joins (rules `corr-1`) compare times only on the task's own clock domain, and skip an event whose
+  `attributes.component` differs from the task's when both are given.
   Human state (owner, status, annotations) is keyed by incident id and survives a rebuild; if a rebuild no longer
   produces an incident that has human state, it is kept as `orphaned` and shown, never deleted.
 - Retention (defaults, configurable): events 180 days, derived tables rebuilt as needed, annotations and incidents
