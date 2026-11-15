@@ -1,6 +1,6 @@
 # ADR-0029: Storage: SQLite first, PostgreSQL and object storage on measured triggers
 
-- Status: Proposed
+- Status: Accepted (reviewed 2026-11-15/16)
 - Date: 2026-11-15
 - Builds on: [ADR-0021](0021-journal-quota-and-reserve.md), [RFC 0002](../rfcs/0002-storage-engine.md),
   [DISTRIBUTED_MIGRATION_PLAN.md](../architecture/DISTRIBUTED_MIGRATION_PLAN.md)

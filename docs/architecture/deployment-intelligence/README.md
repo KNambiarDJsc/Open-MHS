@@ -1,6 +1,6 @@
 # Open-MHS as deployment intelligence: audit and proposed architecture
 
-- **Status:** reviewed 2026-11-15; Phase 2 (first slice) under way on this branch.
+- **Status:** reviewed and accepted 2026-11-15/16; first slice merged to `main`.
 - **Date:** 2026-11-15, against `main` at `d05c699`.
 
 ## Decisions taken in review (2026-11-15)
@@ -12,7 +12,7 @@
 | Demo installs | Approved: LeRobot with PyTorch (Demo 2) and Nav2 (a Demo 1 variant). Nav2 is deprioritized: navigation-only failures matter less to the chosen users than manipulation and policy evaluation |
 | CI advisories | Fix now (`rmcp ~3.7`, `rusqlite 0.41`) |
 | Push | Push the design branch |
-| Gateway | Not answered; treated as frozen but supported (ADR-0026) |
+| Gateway | **Not deprecated: a supported extension** for governed execution (2026-11-16, ADR-0026) |
 
 What changes because of the users: small samples are the norm, so `insufficient_evidence` and per-trial clustering
 warnings matter more than scale; episodes, interventions and checkpoint lineage (Horizon B) move ahead of fleet
@@ -23,7 +23,7 @@ operations features; Demo 2 (policy recovery and checkpoint comparison) becomes 
 Build a small, open, local-first layer that turns recordings, task events and deployment manifests into
 **incidents with explained evidence** and **release comparisons with honest statistics**, beside the robot and never
 in its control path. Start from files teams already have (MCAP recordings, CI deployment data), not from a new edge
-agent. Keep the existing gateway as a frozen, supported product and one event source. Reuse the repository's best
+agent. Keep the existing gateway as a supported, opt-in extension for governed execution, and one event source. Reuse the repository's best
 asset, its explicit treatment of uncertainty, as the outcome model: reported, verified and unknown outcomes are never
 merged. Integrate with Foxglove, Roboto, InOrbit/OpenRobOps, `ros2_medkit` and LeRobot instead of rebuilding them. Treat
 the next 90 days as a test of whether anyone outside the project wants this, with explicit kill and narrow criteria.
@@ -45,7 +45,7 @@ the next 90 days as a test of whether anyone outside the project wants this, wit
 
 | Decision | Choice | Question for the reviewer |
 |---|---|---|
-| [ADR-0026](../../adr/0026-deployment-intelligence-beside-execution.md) | Observation-only layer; gateway frozen and kept as one source | Agree to freeze gateway feature work? |
+| [ADR-0026](../../adr/0026-deployment-intelligence-beside-execution.md) | Observation-only layer; gateway a supported extension and one source | Decided: extension, not deprecated |
 | [ADR-0027](../../adr/0027-import-first.md) | Import first, SDK spool second, collector only on demand | Accept that there is no edge agent in the first 90 days? |
 | [ADR-0028](../../adr/0028-event-envelope.md), [RFC 0005](../../rfcs/0005-deployment-events.md) | Small envelope, namespaced extensions, typed relations, content-addressed manifests | Is the field set right? Anything missing for your target users? |
 | [ADR-0029](../../adr/0029-ops-storage.md) | SQLite → PostgreSQL + Parquet → column store, on stated triggers | Agree on the triggers? |
@@ -66,7 +66,7 @@ the next 90 days as a test of whether anyone outside the project wants this, wit
 
 1. Which first users: mobile manipulation startups, warehouse AMR fleets, lab automation, or university fleets? The
    schema works for all; the demos and outreach should pick one.
-2. Is the gateway's future "frozen and supported" or "deprecated"? This changes what the README promises.
+2. ~~Gateway: frozen or deprecated?~~ Decided 2026-11-16: a supported extension.
 3. Approval needed for Demo 2 (LeRobot + PyTorch, several GB) and for a Nav2 variant of Demo 1 (Nav2 + TurtleBot3
    packages in WSL).
 4. Should the strategy documents of the earlier directions be marked superseded now, or after this review?

@@ -84,7 +84,7 @@ outcome statistics first.
 | Column store, queue | **Defer** to Stage 3 triggers | ADR-0029 |
 | Embedding similarity, causal inference | **Defer** / **Reject** for the core | Overclaiming risk (ADR-0030) |
 | World-model first-class types | **Defer** | Representations unstable |
-| Robot control, safety gateway in the robot path | **Reject** for this product | ADR-0026 |
+| Robot control inside the observation layer | **Reject** | ADR-0026. Governed execution stays the gateway's opt-in extension, never a dependency |
 | Training framework, dataset storage | **Reject** | LeRobot and others own it |
 | A universal robotics ontology | **Reject** | ADR-0028 |
 

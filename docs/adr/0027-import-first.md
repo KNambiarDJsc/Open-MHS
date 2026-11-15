@@ -1,6 +1,6 @@
 # ADR-0027: Import first; an edge agent only when importing is not enough
 
-- Status: Proposed
+- Status: Accepted (reviewed 2026-11-15/16)
 - Date: 2026-11-15
 - Builds on: [ADR-0026](0026-deployment-intelligence-beside-execution.md)
 

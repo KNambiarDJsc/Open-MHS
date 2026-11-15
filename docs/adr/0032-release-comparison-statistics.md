@@ -1,6 +1,6 @@
 # ADR-0032: Release comparisons use exposure denominators and intervals, and may answer "insufficient evidence"
 
-- Status: Proposed
+- Status: Accepted (reviewed 2026-11-15/16)
 - Date: 2026-11-15
 
 ## Decision

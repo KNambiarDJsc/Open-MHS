@@ -1,6 +1,6 @@
 # ADR-0028: A small versioned event envelope; relationships, not one trace; no universal ontology
 
-- Status: Proposed
+- Status: Accepted (reviewed 2026-11-15/16)
 - Date: 2026-11-15
 - Specification: [RFC 0005](../rfcs/0005-deployment-events.md)
 

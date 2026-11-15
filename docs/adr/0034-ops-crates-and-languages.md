@@ -1,6 +1,6 @@
 # ADR-0034: Two new Rust crates and a Python importer; no services directory until Stage 2
 
-- Status: Proposed
+- Status: Accepted (reviewed 2026-11-15/16)
 - Date: 2026-11-15
 - Builds on: [ADR-0008](0008-languages.md)
 

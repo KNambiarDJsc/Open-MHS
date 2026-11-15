@@ -1,6 +1,6 @@
 # ADR-0033: An outcome says who says so: reported, verified, or unknown, never merged
 
-- Status: Proposed
+- Status: Accepted (reviewed 2026-11-15/16)
 - Date: 2026-11-15
 - Builds on: [ADR-0002](0002-command-lifecycle.md), [RFC 0004](../rfcs/0004-outcome-contracts-and-evidence.md)
 

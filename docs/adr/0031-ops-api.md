@@ -1,6 +1,6 @@
 # ADR-0031: Ops API: HTTP and JSON with idempotent batch ingestion; OTLP and gRPC later
 
-- Status: Proposed
+- Status: Accepted (reviewed 2026-11-15/16)
 - Date: 2026-11-15
 - Refines for the new layer: [ADR-0005](0005-local-api-transport.md), [ADR-0011](0011-gateway-api-and-roles.md)
 
