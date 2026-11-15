@@ -27,6 +27,15 @@
 | [0023](0023-state-fabric.md) | State fabric: bounded event stream, watches, and the `subscribe` operation | Accepted |
 | [0024](0024-conditional-steps.md) | Conditional plan steps (`when`); parallel steps deferred | Accepted |
 | [0025](0025-parallel-steps.md) | Parallel plan steps: opt-in, disjoint claims, settled before the plan reacts | Accepted |
+| [0026](0026-deployment-intelligence-beside-execution.md) | Deployment intelligence beside execution; the gateway is one optional source | Proposed |
+| [0027](0027-import-first.md) | Import first; an edge agent only when importing is not enough | Proposed |
+| [0028](0028-event-envelope.md) | A small versioned event envelope; relationships, not one trace; no universal ontology | Proposed |
+| [0029](0029-ops-storage.md) | Storage: SQLite first, PostgreSQL and object storage on measured triggers | Proposed |
+| [0030](0030-correlation-not-causation.md) | Correlation is deterministic and says why; it never asserts cause | Proposed |
+| [0031](0031-ops-api.md) | Ops API: HTTP and JSON with idempotent batch ingestion; OTLP and gRPC later | Proposed |
+| [0032](0032-release-comparison-statistics.md) | Release comparisons: exposure denominators, intervals, "insufficient evidence" | Proposed |
+| [0033](0033-outcome-provenance.md) | Outcomes say who says so: reported, verified, unknown, never merged | Proposed |
+| [0034](0034-ops-crates-and-languages.md) | Two new Rust crates and a Python importer; no services directory until Stage 2 | Proposed |
 
 Format: Context → Decision → Alternatives considered → Consequences. Supersede an
 ADR with a new one rather than rewriting history.
