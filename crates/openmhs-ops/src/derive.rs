@@ -46,6 +46,7 @@ struct TaskAgg {
     member_ids: Vec<String>,
     clock_domain: Option<String>,
     component: Option<String>,
+    scenario: Option<String>,
 }
 
 struct Attempt {
@@ -66,6 +67,7 @@ struct Attempt {
     member_ids: Vec<String>,
     clock_domain: Option<String>,
     component: Option<String>,
+    scenario_id: Option<String>,
 }
 
 fn aggregate_verdicts(verdicts: &[String]) -> Option<String> {
@@ -112,11 +114,13 @@ impl Store {
         for a in &attempts {
             tx.execute(
                 "INSERT INTO task_attempts (tenant, robot, task_id, task_type, site, manifest, manifest_basis,
-                     started_ns, ended_ns, reported, verified, interventions, close_reason, rules_version)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
+                     started_ns, ended_ns, reported, verified, interventions, close_reason, rules_version,
+                     scenario_id)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)",
                 params![
                     a.tenant, a.robot, a.task_id, a.task_type, a.site, a.manifest, a.manifest_basis, a.started_ns,
-                    a.ended_ns, a.reported, a.verified, a.interventions as i64, a.close_reason, RULES_VERSION
+                    a.ended_ns, a.reported, a.verified, a.interventions as i64, a.close_reason, RULES_VERSION,
+                    a.scenario_id
                 ],
             )?;
             incident(&tx, a, &mut report)?;
@@ -190,13 +194,14 @@ type EventRow = (
     String,
     String,
     Option<String>,
+    Option<String>,
 );
 
 fn task_attempts(tx: &Transaction<'_>) -> Result<Vec<Attempt>, OpsError> {
     let mut aggs: BTreeMap<(String, String, String), TaskAgg> = BTreeMap::new();
     let mut stmt = tx.prepare(
         "SELECT tenant, robot, task_id, type, observed_ns, task_type, site, manifest, reported, verified, goal_id,
-                event_id, clock_domain, component
+                event_id, clock_domain, component, scenario_id
          FROM events WHERE task_id IS NOT NULL ORDER BY tenant, robot, task_id, observed_ns, event_id",
     )?;
     let rows: Vec<EventRow> = stmt
@@ -216,6 +221,7 @@ fn task_attempts(tx: &Transaction<'_>) -> Result<Vec<Attempt>, OpsError> {
                 r.get(11)?,
                 r.get(12)?,
                 r.get(13)?,
+                r.get(14)?,
             ))
         })?
         .collect::<Result<_, _>>()?;
@@ -234,9 +240,13 @@ fn task_attempts(tx: &Transaction<'_>) -> Result<Vec<Attempt>, OpsError> {
         event_id,
         domain,
         component,
+        scenario,
     ) in rows
     {
         let agg = aggs.entry((tenant, robot, task_id)).or_default();
+        if agg.scenario.is_none() {
+            agg.scenario = scenario;
+        }
         if kind == "task.started" || agg.clock_domain.is_none() {
             agg.clock_domain = Some(domain);
         }
@@ -353,6 +363,7 @@ fn task_attempts(tx: &Transaction<'_>) -> Result<Vec<Attempt>, OpsError> {
             member_ids: agg.member_ids,
             clock_domain: agg.clock_domain,
             component: agg.component,
+            scenario_id: agg.scenario,
             tenant,
             robot,
             task_id,

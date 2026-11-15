@@ -45,6 +45,8 @@ pub struct Member {
     pub action_id: Option<String>,
     pub code: Option<String>,
     pub provenance: String,
+    /// Events whose time, widened by both uncertainties, overlaps this one's: their order is not known.
+    pub concurrent_with: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -166,9 +168,12 @@ impl Store {
                     action_id: r.get(10)?,
                     code: r.get(11)?,
                     provenance: r.get(12)?,
+                    concurrent_with: Vec::new(),
                 })
             })?
             .collect::<Result<Vec<_>, _>>()?;
+        let mut members = members;
+        mark_concurrent(&mut members);
 
         let manifest_body: Option<String> = match &summary.manifest {
             Some(d) => self
@@ -293,6 +298,33 @@ impl Store {
     }
 }
 
+/// Two events are concurrent when their times, each widened by its own uncertainty, overlap and they share a clock
+/// domain, or when they are on different clocks without stated uncertainties on both (their order cannot be known).
+fn mark_concurrent(members: &mut [Member]) {
+    let n = members.len();
+    for i in 0..n {
+        for j in 0..n {
+            if i == j {
+                continue;
+            }
+            let (a, b) = (&members[i], &members[j]);
+            let (Some(ta), Some(tb)) = (a.observed_ns, b.observed_ns) else {
+                continue;
+            };
+            let unc = |m: &Member| m.uncertainty_ms.map(|u| (u * 1e6) as i64);
+            let overlap = match (a.clock_domain == b.clock_domain, unc(a), unc(b)) {
+                (true, ua, ub) => (ta - tb).abs() <= ua.unwrap_or(0) + ub.unwrap_or(0),
+                (false, Some(ua), Some(ub)) => (ta - tb).abs() <= ua + ub,
+                (false, _, _) => true,
+            };
+            if overlap {
+                let id = members[j].event_id.clone();
+                members[i].concurrent_with.push(id);
+            }
+        }
+    }
+}
+
 // ------------------------------------------------------------------------------------------ release comparison
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -319,6 +351,8 @@ pub struct CompareSpec {
     pub min_known: u64,
     /// Minimum failures across both arms.
     pub min_failures: u64,
+    /// Count scenarios, not attempts, when attempts repeat a scenario (`subject.scenario_id`). Default on.
+    pub by_scenario: bool,
 }
 
 impl CompareSpec {
@@ -332,6 +366,7 @@ impl CompareSpec {
             margin: 0.01,
             min_known: 30,
             min_failures: 5,
+            by_scenario: true,
         }
     }
 }
@@ -340,7 +375,14 @@ impl CompareSpec {
 pub struct Arm {
     pub selector: String,
     pub manifests: Vec<String>,
+    /// Task attempts in this arm, and their outcomes counted per attempt: (succeeded, failed, unknown).
     pub attempts: u64,
+    pub attempt_outcomes: (u64, u64, u64),
+    /// Distinct scenario ids among the attempts (0 when none carry one).
+    pub scenarios: u64,
+    /// What `succeeded`, `failed` and `unknown` count: `attempt`, or `scenario` when attempts repeat scenarios
+    /// (each scenario judged by the majority of its attempts; a tie is unknown).
+    pub unit: &'static str,
     pub succeeded: u64,
     pub failed: u64,
     pub unknown: u64,
@@ -352,6 +394,17 @@ pub struct Arm {
     pub unknown_bounds: Option<(f64, f64)>,
     pub sites: BTreeMap<String, u64>,
     pub incidents: Vec<String>,
+    /// Seconds from task start to task end over attempts with both: (median, 90th percentile, n).
+    pub duration_s: Option<(f64, f64, u64)>,
+}
+
+/// One attempt as read for a comparison.
+struct Row {
+    site: String,
+    class: &'static str,
+    unit_key: String,
+    scenario: Option<String>,
+    duration_ns: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -423,27 +476,43 @@ impl Store {
         Ok(Vec::new())
     }
 
-    fn arm(&self, spec: &CompareSpec, selector: &str) -> Result<(Arm, SiteCounts), OpsError> {
+    fn rows(&self, spec: &CompareSpec, selector: &str) -> Result<(Arm, Vec<Row>), OpsError> {
         let manifests = self.resolve(selector)?;
         let mut arm = Arm {
             selector: selector.into(),
             manifests: manifests.clone(),
+            unit: "attempt",
             ..Default::default()
         };
-        let mut by_site: BTreeMap<String, (u64, u64)> = BTreeMap::new();
+        let mut rows = Vec::new();
         for digest in &manifests {
             let mut stmt = self.conn.prepare(
-                "SELECT site, reported, verified FROM task_attempts WHERE task_type = ?1 AND manifest = ?2",
+                "SELECT site, reported, verified, scenario_id, task_id, started_ns, ended_ns FROM task_attempts
+                 WHERE task_type = ?1 AND manifest = ?2 ORDER BY task_id",
             )?;
-            let rows: Vec<(Option<String>, Option<String>, Option<String>)> = stmt
+            type Raw = (
+                Option<String>,
+                Option<String>,
+                Option<String>,
+                Option<String>,
+                String,
+                Option<i64>,
+                Option<i64>,
+            );
+            let raw: Vec<Raw> = stmt
                 .query_map(params![spec.task_type, digest], |r| {
-                    Ok((r.get(0)?, r.get(1)?, r.get(2)?))
+                    Ok((
+                        r.get(0)?,
+                        r.get(1)?,
+                        r.get(2)?,
+                        r.get(3)?,
+                        r.get(4)?,
+                        r.get(5)?,
+                        r.get(6)?,
+                    ))
                 })?
                 .collect::<Result<_, _>>()?;
-            for (site, reported, verified) in rows {
-                arm.attempts += 1;
-                let site = site.unwrap_or_else(|| "(no site)".into());
-                *arm.sites.entry(site.clone()).or_default() += 1;
+            for (site, reported, verified, scenario, task_id, started, ended) in raw {
                 let class = match spec.outcome {
                     OutcomeKind::Reported => match reported.as_deref() {
                         Some("succeeded") => "success",
@@ -457,24 +526,18 @@ impl Store {
                         _ => "unknown",
                     },
                 };
-                match class {
-                    "success" => {
-                        arm.succeeded += 1;
-                        by_site.entry(site).or_default().1 += 1;
-                    }
-                    "failure" => {
-                        arm.failed += 1;
-                        let e = by_site.entry(site).or_default();
-                        e.0 += 1;
-                        e.1 += 1;
-                    }
-                    "unknown" => arm.unknown += 1,
-                    other => {
-                        *arm.excluded
-                            .entry(other.trim_start_matches("excluded:").to_owned())
-                            .or_default() += 1;
-                    }
-                }
+                rows.push(Row {
+                    site: site.unwrap_or_else(|| "(no site)".into()),
+                    class,
+                    unit_key: scenario
+                        .clone()
+                        .unwrap_or_else(|| format!("task:{task_id}")),
+                    scenario,
+                    duration_ns: match (started, ended) {
+                        (Some(s), Some(e)) if e >= s => Some(e - s),
+                        _ => None,
+                    },
+                });
             }
             let mut stmt = self.conn.prepare(
                 "SELECT incident_id FROM incidents WHERE task_type = ?1 AND manifest = ?2
@@ -484,6 +547,78 @@ impl Store {
                 stmt.query_map(params![spec.task_type, digest], |r| r.get::<_, String>(0))?
                     .collect::<Result<Vec<_>, _>>()?,
             );
+        }
+        Ok((arm, rows))
+    }
+
+    /// Count an arm per attempt, or per scenario (majority of its attempts; a tie is unknown).
+    fn tally(arm: &mut Arm, rows: &[Row], by_scenario: bool) -> SiteCounts {
+        let mut by_site: SiteCounts = BTreeMap::new();
+        let mut durations: Vec<i64> = Vec::new();
+        // unit key -> (site, successes, failures, unknowns)
+        let mut units: BTreeMap<&str, (String, u64, u64, u64)> = BTreeMap::new();
+        let mut scenarios: BTreeSet<&str> = BTreeSet::new();
+        for r in rows {
+            arm.attempts += 1;
+            *arm.sites.entry(r.site.clone()).or_default() += 1;
+            if let Some(d) = r.duration_ns {
+                durations.push(d);
+            }
+            if let Some(sc) = &r.scenario {
+                scenarios.insert(sc);
+            }
+            match r.class {
+                "success" => arm.attempt_outcomes.0 += 1,
+                "failure" => arm.attempt_outcomes.1 += 1,
+                "unknown" => arm.attempt_outcomes.2 += 1,
+                other => {
+                    *arm.excluded
+                        .entry(other.trim_start_matches("excluded:").to_owned())
+                        .or_default() += 1;
+                    continue;
+                }
+            }
+            if by_scenario {
+                let unit = units
+                    .entry(r.unit_key.as_str())
+                    .or_insert_with(|| (r.site.clone(), 0, 0, 0));
+                match r.class {
+                    "success" => unit.1 += 1,
+                    "failure" => unit.2 += 1,
+                    _ => unit.3 += 1,
+                }
+            } else {
+                let e = by_site.entry(r.site.clone()).or_default();
+                match r.class {
+                    "success" => {
+                        arm.succeeded += 1;
+                        e.1 += 1;
+                    }
+                    "failure" => {
+                        arm.failed += 1;
+                        e.0 += 1;
+                        e.1 += 1;
+                    }
+                    _ => arm.unknown += 1,
+                }
+            }
+        }
+        arm.scenarios = scenarios.len() as u64;
+        if by_scenario {
+            arm.unit = "scenario";
+            for (site, ok, failed, unknown) in units.into_values() {
+                let e = by_site.entry(site).or_default();
+                if failed > ok + unknown {
+                    arm.failed += 1;
+                    e.0 += 1;
+                    e.1 += 1;
+                } else if ok > failed + unknown {
+                    arm.succeeded += 1;
+                    e.1 += 1;
+                } else {
+                    arm.unknown += 1;
+                }
+            }
         }
         let known = arm.succeeded + arm.failed;
         if known > 0 {
@@ -497,14 +632,39 @@ impl Store {
                 (arm.failed + arm.unknown) as f64 / all as f64,
             ));
         }
-        Ok((arm, by_site))
+        if !durations.is_empty() {
+            durations.sort_unstable();
+            let at = |q: f64| {
+                let i = ((durations.len() - 1) as f64 * q).round() as usize;
+                durations[i] as f64 / 1e9
+            };
+            arm.duration_s = Some((at(0.5), at(0.9), durations.len() as u64));
+        }
+        by_site
     }
 
     pub fn compare(&self, spec: &CompareSpec) -> Result<Comparison, OpsError> {
-        let (a, sites_a) = self.arm(spec, &spec.a)?;
-        let (b, sites_b) = self.arm(spec, &spec.b)?;
+        let (mut a, rows_a) = self.rows(spec, &spec.a)?;
+        let (mut b, rows_b) = self.rows(spec, &spec.b)?;
         let mut warnings = Vec::new();
         let mut reasons = Vec::new();
+        // Replicates of one scenario are not independent trials. Count scenarios in both arms if either repeats one.
+        let repeats = |rows: &[Row]| {
+            let keys: BTreeSet<&str> = rows.iter().map(|r| r.unit_key.as_str()).collect();
+            rows.iter().any(|r| r.scenario.is_some()) && keys.len() < rows.len()
+        };
+        let by_scenario = spec.by_scenario && (repeats(&rows_a) || repeats(&rows_b));
+        let sites_a = Self::tally(&mut a, &rows_a, by_scenario);
+        let sites_b = Self::tally(&mut b, &rows_b, by_scenario);
+        if by_scenario {
+            warnings.push(format!(
+                "attempts repeat scenarios: counted per scenario ({} in a from {} attempts, {} in b from {} attempts), each judged by the majority of its attempts",
+                a.succeeded + a.failed + a.unknown,
+                a.attempts,
+                b.succeeded + b.failed + b.unknown,
+                b.attempts
+            ));
+        }
         for arm in [&a, &b] {
             if arm.manifests.is_empty() {
                 warnings.push(format!(
@@ -595,8 +755,8 @@ impl Store {
 
         let verdict = if na < spec.min_known || nb < spec.min_known {
             reasons.push(format!(
-                "fewer than {} attempts with a known outcome in an arm (a {na}, b {nb})",
-                spec.min_known
+                "fewer than {} {}s with a known outcome in an arm (a {na}, b {nb})",
+                spec.min_known, a.unit
             ));
             Verdict::InsufficientEvidence
         } else if ka + kb < spec.min_failures {

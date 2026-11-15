@@ -12,14 +12,19 @@
 3. Outcomes are counted in four bins: succeeded, failed, unknown, excluded (with a reason). The headline rate is
    failed / (attempts − unknown). Unknowns are **reported and bounded**, never dropped: the comparison also shows the
    rate with unknowns counted as successes and as failures.
-4. Every rate carries a **Wilson 95 % interval**; a difference between two releases carries a **Newcombe interval**.
+4. **The unit of independence is the scenario, not the attempt.** When attempts carry a `scenario_id` and some scenario
+   is attempted more than once, comparisons count scenarios (each judged by the majority of its attempts; a tie is
+   unknown), say so in a warning, and apply the sample-size rules to scenarios. `--per-attempt` gives the other count
+   and labels it. Without scenario ids the tool cannot tell replicates from independent trials and says nothing: this
+   is a known limit.
+5. Every rate carries a **Wilson 95 % interval**; a difference between two releases carries a **Newcombe interval**.
    A Beta-Binomial posterior probability of regression may be shown alongside, labelled as such.
-5. A result is `insufficient_evidence` when either arm has fewer than 30 attempts or fewer than 5 expected failures,
+6. A result is `insufficient_evidence` when either arm has fewer than 30 attempts or fewer than 5 expected failures,
    or the interval of the difference spans both "no change" and the configured regression margin.
-6. Comparisons are **stratified** by site and task type by default (Cochran-Mantel-Haenszel pooled estimate when
+7. Comparisons are **stratified** by site and task type by default (Cochran-Mantel-Haenszel pooled estimate when
    strata are compatible), and report the strata mix, because a rollout that reached the easy site first is the most
    common confounder.
-7. A continuously refreshed comparison is labelled as such; automated "regression" flags use a pre-declared margin and
+8. A continuously refreshed comparison is labelled as such; automated "regression" flags use a pre-declared margin and
    minimum sample, and say that repeated looks inflate false alarms (always-valid methods are deferred).
 
 ## Alternatives considered

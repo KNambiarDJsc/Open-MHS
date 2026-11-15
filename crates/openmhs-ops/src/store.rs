@@ -11,7 +11,10 @@ use crate::OpsError;
 
 /// (version, SQL). Never edit a released migration: add a new one. The checksum of each applied migration is kept
 /// and checked at open, so an edited migration is noticed instead of silently diverging.
-const MIGRATIONS: &[(i64, &str)] = &[(1, include_str!("migrations/0001_init.sql"))];
+const MIGRATIONS: &[(i64, &str)] = &[
+    (1, include_str!("migrations/0001_init.sql")),
+    (2, include_str!("migrations/0002_scenarios.sql")),
+];
 
 pub struct Store {
     pub(crate) conn: Connection,
@@ -208,14 +211,14 @@ fn ingest_one(
                         "INSERT INTO events (tenant, event_id, type, source_id, boot_id, seq, observed_ns,
                              clock_domain, uncertainty_ms, ingested_ns, site, robot, task_id, task_type, episode_id,
                              action_id, goal_id, trace_id, manifest, reported, verified, severity, category, code,
-                             component, provenance, content_hash, body)
+                             component, provenance, content_hash, body, scenario_id)
                          VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18,
-                                 ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, ?27, ?28)",
+                                 ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, ?27, ?28, ?29)",
                         params![
                             e.tenant, e.event_id, e.kind, e.source_id, e.boot_id, e.seq, e.observed_ns,
                             e.clock_domain, e.uncertainty_ms, ingested_ns, e.site, e.robot, e.task_id, e.task_type,
                             e.episode_id, e.action_id, e.goal_id, e.trace_id, e.manifest, e.reported, e.verified,
-                            e.severity, e.category, e.code, e.component, e.provenance, e.content_hash, e.body
+                            e.severity, e.category, e.code, e.component, e.provenance, e.content_hash, e.body, e.scenario_id
                         ],
                     )?;
                     IngestStatus::Accepted

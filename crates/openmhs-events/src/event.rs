@@ -58,6 +58,8 @@ pub struct Event {
     pub robot: String,
     pub task_id: Option<String>,
     pub task_type: Option<String>,
+    /// What is being attempted under which conditions; attempts that share it are replicates, not independent trials.
+    pub scenario_id: Option<String>,
     pub episode_id: Option<String>,
     pub action_id: Option<String>,
     pub goal_id: Option<String>,
@@ -329,6 +331,7 @@ impl Event {
             robot: required(v, &["scope", "robot"])?,
             task_id: text(v, &["subject", "task_id"])?,
             task_type: text(v, &["subject", "task_type"])?,
+            scenario_id: text(v, &["subject", "scenario_id"])?,
             episode_id: text(v, &["subject", "episode_id"])?,
             action_id: text(v, &["subject", "action_id"])?,
             goal_id: text(v, &["subject", "goal_id"])?,

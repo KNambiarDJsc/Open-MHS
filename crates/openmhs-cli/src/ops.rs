@@ -245,6 +245,14 @@ fn print_detail(d: &IncidentDetail) {
             .uncertainty_ms
             .map(|u| format!(" ±{u} ms"))
             .unwrap_or_default();
+        let concurrent = if m.concurrent_with.is_empty() {
+            String::new()
+        } else {
+            format!(
+                "  concurrent with {} other event(s)",
+                m.concurrent_with.len()
+            )
+        };
         let mut what = Vec::new();
         if let Some(r) = &m.reported {
             what.push(format!("reported {r}"));
@@ -259,7 +267,7 @@ fn print_detail(d: &IncidentDetail) {
             what.push(format!("goal {}", &g[..g.len().min(8)]));
         }
         println!(
-            "  {time}{unc}  {:<20} {:<32} {} ({})",
+            "  {time}{unc}  {:<20} {:<32} {} ({}){concurrent}",
             m.kind,
             what.join("  "),
             m.basis,
@@ -316,6 +324,7 @@ pub fn compare(
     b: &str,
     verified: bool,
     no_strata: bool,
+    per_attempt: bool,
     margin: f64,
 ) -> u8 {
     let outcome = if verified {
@@ -325,6 +334,7 @@ pub fn compare(
     };
     let mut spec = CompareSpec::new(task_type, a, b, outcome);
     spec.by_site = !no_strata;
+    spec.by_scenario = !per_attempt;
     spec.margin = margin;
     let c = match open(store).and_then(|s| s.compare(&spec).map_err(|e| e.to_string())) {
         Ok(c) => c,
@@ -344,13 +354,14 @@ pub fn compare(
         c.rules_version
     );
     println!(
-        "        attempts  ok   failed  unknown  failure rate (95% CI)        unknowns as ok / as failed"
+        "        counted as    n    ok  failed  unknown  failure rate (95% CI)        unknowns as ok / as failed"
     );
     for (name, arm) in [("a", &c.a), ("b", &c.b)] {
         println!(
-            "{name} {:<6} {:>6} {:>5} {:>7} {:>8}  {:<8} ({:<13})       {}",
+            "{name} {:<6} {:<10} {:>4} {:>5} {:>7} {:>8}  {:<8} ({:<13})       {}",
             arm.selector,
-            arm.attempts,
+            arm.unit,
+            arm.succeeded + arm.failed + arm.unknown,
             arm.succeeded,
             arm.failed,
             arm.unknown,
@@ -376,6 +387,14 @@ pub fn compare(
             lo * 100.0,
             hi * 100.0
         );
+    }
+    for (name, arm) in [("a", &c.a), ("b", &c.b)] {
+        if let Some((median, p90, n)) = arm.duration_s {
+            println!(
+                "duration {name}: median {median:.1} s, 90th percentile {p90:.1} s over {n} attempts ({} attempts, {} scenarios)",
+                arm.attempts, arm.scenarios
+            );
+        }
     }
     if c.strata.len() > 1 {
         for s in &c.strata {

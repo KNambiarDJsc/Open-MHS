@@ -34,29 +34,35 @@ Each timeline joins the action and task events by task id, the verdict by the RO
 time window, and links the bag cut to the incident's window. Odometry verdicts (component `base`) join drive tasks only,
 by window, never lift tasks.
 
-**Release comparison, lift, `engine-bullet` → `tol-0.01`:**
+**Release comparison, lift, `engine-bullet` → `tol-0.01`.** The 30 attempts per release are 10 scenarios (the task
+list's ten lift goals) run three times each, so the tool counts 10 scenarios per release, not 30 trials:
 
-| Outcome used | A failures | B failures | Difference (95 % CI) | Verdict |
+| Outcome used | A failed | B failed | Difference (95 % CI) | Verdict |
 |---|---|---|---|---|
-| Reported by the action | 0 / 30 | 0 / 30 | +0.0 (−11.4 to +11.4) | `insufficient_evidence` (no failures to compare) |
-| Verified (RFC 0004) | 15 / 30 | 0 / 30 | −50.0 points (−66.8 to −29.7) | `improvement` |
+| Reported by the action | 0 / 10 | 0 / 10 | +0.0 (−27.8 to +27.8) | `insufficient_evidence` (no failures; 10 scenarios) |
+| Verified (RFC 0004) | 5 / 10 | 0 / 10 | −50.0 points (−76.3 to −11.7) | `insufficient_evidence`: fewer than 30 scenarios per arm |
 
-A release dashboard built on action status would have seen no change. The fix only shows in verified outcomes. That
-is the case for keeping the two apart (ADR-0033) in one picture.
+`--per-attempt` counts every attempt and gives the earlier, overconfident picture (15/30 against 0/30, −50 points,
+−66.8 to −29.7, "improvement"), with the unit shown as `attempt`. The honest reading: the point estimate is large and
+the interval excludes zero, but ten scenarios are too few for the tool to call it, and three deterministic replays add
+no information beyond the first.
+
+A release dashboard built on the action's own status would have seen no change at all. The fix only shows in verified
+outcomes. That is the case for keeping the two apart (ADR-0033).
 
 What the B runs also showed:
 
 - With a tolerance, the controller waited for the lift: L06 reported success after 4.5 s instead of 2.0 s, L07 after
-  12.8 s instead of 8.0. Release B trades time for correctness, and the comparison above does not measure time yet.
+  12.8 s instead of 8.0. The comparison now reports task duration per arm: median 3.0 s for A and 4.0 s for B, 90th
+  percentile 4.1 s and 5.1 s. Release B trades time for correctness.
 - B's errors at the reported success were 9.2 to 9.9 mm, just inside the verifier's 10 mm contract, because the
   controller declares success as soon as the lift is within its own 10 mm tolerance, while still moving. A 5 mm
   contract would fail most of them.
 
 ## Limits, stated plainly
 
-- **The 30 attempts per release are not 30 independent trials.** They are the same 10 goals in three runs of a
-  deterministic simulation; the effective sample is closer to 10. The tool cannot tell repeated scenarios from new
-  ones yet. Follow-up: a scenario id in the envelope and a clustering warning (issue 26 below).
+- **Replicates are not trials.** The importer tags each goal with a scenario id (`lift/L03` in every run), and the
+  tool counts scenarios when attempts repeat them (ADR-0032). Without scenario ids it cannot tell, and says nothing.
 - Simulation time restarts at zero in each run, so each run is its own simulated robot and clock domain; times print
   as 1970 dates.
 - The "verified" outcome comes from Gazebo's own poses: independent of the controllers, not of the simulator.
@@ -65,12 +71,13 @@ What the B runs also showed:
 
 ## Follow-up issues
 
+Done after the first review round (this branch): scenario ids with scenario-level counting (26), duration in
+comparisons (27), concurrent events marked on timelines (28).
+
 | # | Title | Why |
 |---|---|---|
-| 26 | Scenario ids and a replicate-clustering warning in comparisons | The A/B above overstates its sample |
-| 27 | Duration and time-to-success in comparisons | Release B is slower; the comparison should say so |
-| 28 | Mark concurrent timeline events (overlapping uncertainty) instead of a strict order | The verdict and the action end are 40 ms apart with ±50 ms uncertainty |
 | 29 | Demo 2 on LeRobot once installed; Isaac Lab-Arena results import | The chosen users run learned policies |
+| 30 | Pair attempts across arms by scenario (a paired comparison) | Matched scenarios give much tighter intervals than two independent samples |
 
 ## Reproduce
 

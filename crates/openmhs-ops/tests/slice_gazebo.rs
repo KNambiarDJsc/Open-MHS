@@ -216,14 +216,8 @@ fn ab() -> Store {
 #[test]
 fn the_reported_status_cannot_see_the_fix_the_verified_outcome_can() {
     let store = ab();
-    let reported = store
-        .compare(&CompareSpec::new(
-            "lift",
-            "engine-bullet",
-            "tol-0.01",
-            OutcomeKind::Reported,
-        ))
-        .unwrap();
+    let mut spec = CompareSpec::new("lift", "engine-bullet", "tol-0.01", OutcomeKind::Reported);
+    let reported = store.compare(&spec).unwrap();
     assert_eq!(
         reported.a.manifests.len(),
         1,
@@ -242,7 +236,57 @@ fn the_reported_status_cannot_see_the_fix_the_verified_outcome_can() {
         "no failures to compare"
     );
 
-    let verified = store
+    // The 30 attempts are 10 scenarios run three times each. By default they are counted as 10 scenarios.
+    spec.outcome = OutcomeKind::Verified;
+    let verified = store.compare(&spec).unwrap();
+    assert_eq!(verified.a.unit, "scenario");
+    assert_eq!((verified.a.scenarios, verified.b.scenarios), (10, 10));
+    assert_eq!(
+        (verified.a.attempt_outcomes.1, verified.a.attempts),
+        (15, 30)
+    );
+    assert_eq!((verified.a.failed, verified.a.succeeded), (5, 5));
+    assert_eq!((verified.b.failed, verified.b.succeeded), (0, 10));
+    assert_eq!(
+        verified.verdict,
+        openmhs_ops::Verdict::InsufficientEvidence,
+        "{:?}",
+        verified.reasons
+    );
+    assert!(
+        verified.reasons[0].contains("scenarios"),
+        "{:?}",
+        verified.reasons
+    );
+    assert!(
+        verified
+            .warnings
+            .iter()
+            .any(|w| w.contains("repeat scenarios")),
+        "{:?}",
+        verified.warnings
+    );
+
+    // Counting every attempt gives the earlier, overconfident answer: replicates passed off as independent trials.
+    spec.by_scenario = false;
+    let per_attempt = store.compare(&spec).unwrap();
+    assert_eq!(per_attempt.a.unit, "attempt");
+    assert_eq!((per_attempt.a.failed, per_attempt.a.attempts), (15, 30));
+    assert_eq!((per_attempt.b.failed, per_attempt.b.attempts), (0, 30));
+    assert_eq!(
+        per_attempt.verdict,
+        openmhs_ops::Verdict::Improvement,
+        "{:?}",
+        per_attempt.reasons
+    );
+    let (d, _, hi) = per_attempt.difference.unwrap();
+    assert!((d + 0.5).abs() < 1e-9 && hi < -0.01);
+}
+
+#[test]
+fn release_b_takes_longer_and_the_comparison_says_so() {
+    let store = ab();
+    let c = store
         .compare(&CompareSpec::new(
             "lift",
             "engine-bullet",
@@ -250,14 +294,53 @@ fn the_reported_status_cannot_see_the_fix_the_verified_outcome_can() {
             OutcomeKind::Verified,
         ))
         .unwrap();
-    assert_eq!((verified.a.failed, verified.a.attempts), (15, 30));
-    assert_eq!((verified.b.failed, verified.b.attempts), (0, 30));
-    assert_eq!(
-        verified.verdict,
-        openmhs_ops::Verdict::Improvement,
-        "{:?}",
-        verified.reasons
+    let (median_a, _, n_a) = c.a.duration_s.unwrap();
+    let (median_b, p90_b, n_b) = c.b.duration_s.unwrap();
+    assert_eq!((n_a, n_b), (30, 30));
+    assert!(median_b >= median_a, "{median_a} vs {median_b}");
+    assert!(
+        p90_b > 4.0,
+        "the slowest B goals waited for the lift: {p90_b}"
     );
-    let (d, _, hi) = verified.difference.unwrap();
-    assert!((d + 0.5).abs() < 1e-9 && hi < -0.01);
+}
+
+#[test]
+fn events_whose_order_is_not_known_are_marked_concurrent() {
+    let store = loaded();
+    let inc = store
+        .incidents(None, Some("lift"), 100)
+        .unwrap()
+        .into_iter()
+        .find(|i| i.task_id == "bullet1/L03")
+        .unwrap();
+    let d = store.incident(&inc.incident_id).unwrap().unwrap();
+    // action.ended and task.ended carry the same time and ±50 ms: nothing says which came first.
+    let ended = d.members.iter().find(|m| m.kind == "action.ended").unwrap();
+    assert!(
+        ended
+            .concurrent_with
+            .iter()
+            .any(|id| id.ends_with("/task.ended")),
+        "{:?}",
+        ended.concurrent_with
+    );
+    // The verdict is 40 ms from the action's end, and both are uncertain by about 50 ms: concurrent too.
+    let verdict = d
+        .members
+        .iter()
+        .find(|m| m.kind == "outcome.verified")
+        .unwrap();
+    assert!(
+        verdict
+            .concurrent_with
+            .iter()
+            .any(|id| id.ends_with("/action.ended"))
+    );
+    // The deployment event is 19 seconds earlier: ordered.
+    let deployment = d
+        .members
+        .iter()
+        .find(|m| m.kind == "deployment.applied")
+        .unwrap();
+    assert!(deployment.concurrent_with.is_empty());
 }

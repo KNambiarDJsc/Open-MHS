@@ -143,7 +143,7 @@ def import_run(run: Path) -> list[dict[str, Any]]:
         kind = i.get("kind")
         tid = i.get("task")
         if kind == "lift":
-            subject = {"task_id": f"{run.name}/{tid}", "task_type": "lift"}
+            subject = {"task_id": f"{run.name}/{tid}", "task_type": "lift", "scenario_id": f"lift/{tid}"}
             attrs = {"component": "lift"}
             r.event(f"{tid}/task.started", "task.started", i["sent_sim"], subject=subject, attributes=attrs,
                     deployment={"manifest": md}, source="driver", provenance="reported",
@@ -170,7 +170,7 @@ def import_run(run: Path) -> list[dict[str, Any]]:
             r.event(f"{tid}/task.ended", "task.ended", i.get("result_sim"), subject=subject, attributes=attrs,
                     outcome=outcome, source="driver", provenance="reported", uncertainty=DRIVER_UNCERTAINTY_MS)
         elif kind == "base":
-            subject = {"task_id": f"{run.name}/{tid}", "task_type": "drive"}
+            subject = {"task_id": f"{run.name}/{tid}", "task_type": "drive", "scenario_id": f"drive/{tid}"}
             attrs = {"component": "base"}
             command = {"vx": i["vx"], "wz": i["wz"], "duration_s": i["duration_s"]}
             r.event(f"{tid}/task.started", "task.started", i["start_sim"], subject=subject, attributes=attrs,

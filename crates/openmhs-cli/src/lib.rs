@@ -943,6 +943,9 @@ enum OpsCmd {
         /// Pool all sites instead of stratifying by site.
         #[arg(long)]
         no_strata: bool,
+        /// Count every attempt even when attempts repeat a scenario (replicates then look like independent trials).
+        #[arg(long)]
+        per_attempt: bool,
         /// Smallest change in failure rate (a fraction) that counts as a regression or an improvement.
         #[arg(long, default_value_t = 0.01)]
         margin: f64,
@@ -1961,9 +1964,18 @@ async fn run(cli: Cli) -> u8 {
                     b,
                     verified,
                     no_strata,
+                    per_attempt,
                     margin,
                 } => ops::compare(
-                    json, &store, &task_type, &a, &b, verified, no_strata, margin,
+                    json,
+                    &store,
+                    &task_type,
+                    &a,
+                    &b,
+                    verified,
+                    no_strata,
+                    per_attempt,
+                    margin,
                 ),
             };
         }

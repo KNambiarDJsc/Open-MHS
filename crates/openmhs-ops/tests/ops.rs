@@ -491,3 +491,52 @@ fn an_edited_migration_is_noticed() {
     drop(Store::open(&other).unwrap());
     assert!(Store::open(&other).is_ok());
 }
+
+#[test]
+fn a_store_from_the_previous_schema_version_upgrades_in_place_and_keeps_its_events() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("ops.sqlite");
+    // Build a version-1 store by hand, exactly as the previous release would have left it.
+    {
+        let conn = rusqlite::Connection::open(&path).unwrap();
+        let sql = include_str!("../src/migrations/0001_init.sql");
+        conn.execute_batch(sql).unwrap();
+        conn.execute_batch(
+            "CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY, checksum TEXT NOT NULL, applied_ns INTEGER NOT NULL)",
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO schema_migrations VALUES (1, ?1, 0)",
+            [openmhs_events::sha256_digest(&sql.replace('\r', ""))],
+        )
+        .unwrap();
+        conn.pragma_update(None, "user_version", 1).unwrap();
+        let body =
+            r#"{"schema":"openmhs.event/0.1","subject":{"scenario_id":"s-1","task_id":"t"}}"#;
+        conn.execute(
+            "INSERT INTO events (tenant, event_id, type, source_id, clock_domain, ingested_ns, robot, provenance,
+                 content_hash, body) VALUES ('lab', 'old', 'task.started', 's', 'c', 1, 'r', 'observed', 'sha256:x', ?1)",
+            [body],
+        )
+        .unwrap();
+    }
+    let store = Store::open(&path).unwrap();
+    let conn = rusqlite::Connection::open(&path).unwrap();
+    let version: i64 = conn
+        .query_row("PRAGMA user_version", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(version, 2);
+    let scenario: Option<String> = conn
+        .query_row(
+            "SELECT scenario_id FROM events WHERE event_id = 'old'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(
+        scenario.as_deref(),
+        Some("s-1"),
+        "the new column is filled from the stored body"
+    );
+    assert!(store.counts().unwrap().contains(&("events".into(), 1)));
+}
