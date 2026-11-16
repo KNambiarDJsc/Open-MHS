@@ -17,14 +17,22 @@
    unknown), say so in a warning, and apply the sample-size rules to scenarios. `--per-attempt` gives the other count
    and labels it. Without scenario ids the tool cannot tell replicates from independent trials and says nothing: this
    is a known limit.
-5. Every rate carries a **Wilson 95 % interval**; a difference between two releases carries a **Newcombe interval**.
+5. **Paired comparison (`--paired`).** When both releases attempted the same scenarios, each scenario can be compared with
+   itself: the scenarios are matched by `subject.scenario_id`, each is judged in each arm as in rule 4, and the table of
+   (fails in both, only in a, only in b, in neither) gives McNemar's exact two-sided test over the scenarios that differ
+   and Newcombe's paired interval (method 10: the two Wilson intervals combined through the correlation the pairs show)
+   for the difference. When the same scenarios fail in both arms the interval is narrower than treating the arms as
+   independent samples; when they do not overlap it is the same. Scenarios present in only one arm, or without a known
+   outcome in one of them, are named and left out; a paired comparison is not stratified by site. The sample-size rules
+   apply to matched pairs.
+6. Every rate carries a **Wilson 95 % interval**; a difference between two releases carries a **Newcombe interval**.
    A Beta-Binomial posterior probability of regression may be shown alongside, labelled as such.
-6. A result is `insufficient_evidence` when either arm has fewer than 30 attempts or fewer than 5 expected failures,
+7. A result is `insufficient_evidence` when either arm has fewer than 30 attempts or fewer than 5 expected failures,
    or the interval of the difference spans both "no change" and the configured regression margin.
-7. Comparisons are **stratified** by site and task type by default (Cochran-Mantel-Haenszel pooled estimate when
+8. Comparisons are **stratified** by site and task type by default (Cochran-Mantel-Haenszel pooled estimate when
    strata are compatible), and report the strata mix, because a rollout that reached the easy site first is the most
    common confounder.
-8. A continuously refreshed comparison is labelled as such; automated "regression" flags use a pre-declared margin and
+9. A continuously refreshed comparison is labelled as such; automated "regression" flags use a pre-declared margin and
    minimum sample, and say that repeated looks inflate false alarms (always-valid methods are deferred).
 
 ## Alternatives considered

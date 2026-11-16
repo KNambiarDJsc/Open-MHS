@@ -16,8 +16,8 @@ mod store;
 
 pub use derive::{RULES_VERSION, RebuildReport};
 pub use query::{
-    Arm, CompareSpec, Comparison, IncidentDetail, IncidentSummary, Member, OutcomeKind, Stratum,
-    Verdict,
+    Arm, CompareSpec, Comparison, IncidentDetail, IncidentSummary, Member, OutcomeKind, Paired,
+    Stratum, Verdict,
 };
 pub use store::{IngestResult, IngestStatus, Store};
 

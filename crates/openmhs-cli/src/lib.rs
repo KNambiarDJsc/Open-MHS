@@ -946,6 +946,14 @@ enum OpsCmd {
         /// Count every attempt even when attempts repeat a scenario (replicates then look like independent trials).
         #[arg(long)]
         per_attempt: bool,
+        /// Match scenarios across the two releases and compare each scenario with itself (McNemar's exact test and a
+        /// paired interval). Needs scenario ids on the attempts, and the same scenarios in both releases.
+        #[arg(long)]
+        paired: bool,
+        /// Fewest scenarios or attempts with a known outcome, per arm (or matched pairs), before any verdict but
+        /// `InsufficientEvidence`.
+        #[arg(long, default_value_t = 30)]
+        min_known: u64,
         /// Smallest change in failure rate (a fraction) that counts as a regression or an improvement.
         #[arg(long, default_value_t = 0.01)]
         margin: f64,
@@ -1965,6 +1973,8 @@ async fn run(cli: Cli) -> u8 {
                     verified,
                     no_strata,
                     per_attempt,
+                    paired,
+                    min_known,
                     margin,
                 } => ops::compare(
                     json,
@@ -1975,6 +1985,8 @@ async fn run(cli: Cli) -> u8 {
                     verified,
                     no_strata,
                     per_attempt,
+                    paired,
+                    min_known,
                     margin,
                 ),
             };

@@ -61,6 +61,83 @@ pub fn mantel_haenszel_rd(strata: &[StratumCounts]) -> Option<(f64, f64, f64)> {
     Some((d, d - Z95 * se, d + Z95 * se))
 }
 
+/// Paired outcomes of one failure/success question asked twice about the same scenarios.
+///
+/// `a` and `b` are the arms; `both` fail in both, `only_a` fail in `a` alone, `only_b` in `b` alone, `neither` in neither.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PairedCounts {
+    pub both: u64,
+    pub only_a: u64,
+    pub only_b: u64,
+    pub neither: u64,
+}
+
+impl PairedCounts {
+    pub fn pairs(&self) -> u64 {
+        self.both + self.only_a + self.only_b + self.neither
+    }
+}
+
+/// Difference `p_b - p_a` of two correlated failure rates, with Newcombe's hybrid score interval for paired proportions
+/// (method 10: the two Wilson intervals, combined through the correlation the pairs show). With no correlation it is
+/// the unpaired [`newcombe`] interval. `None` when there are no pairs.
+pub fn newcombe_paired(c: PairedCounts) -> Option<(f64, f64, f64)> {
+    let n = c.pairs();
+    if n == 0 {
+        return None;
+    }
+    let (a, b, cc, d) = (
+        c.both as f64,
+        c.only_b as f64,
+        c.only_a as f64,
+        c.neither as f64,
+    );
+    let nf = n as f64;
+    let (p1, p2) = ((a + b) / nf, (a + cc) / nf);
+    let (l1, u1) = wilson(c.both + c.only_b, n)?;
+    let (l2, u2) = wilson(c.both + c.only_a, n)?;
+    let big_a = (a + b) * (cc + d) * (a + cc) * (b + d);
+    let big_b = a * d - b * cc;
+    let adjusted = if big_b > nf / 2.0 {
+        big_b - nf / 2.0
+    } else if big_b >= 0.0 {
+        0.0
+    } else {
+        big_b
+    };
+    let phi = if big_a > 0.0 {
+        adjusted / big_a.sqrt()
+    } else {
+        0.0
+    };
+    let diff = p1 - p2;
+    let lower = diff
+        - ((p1 - l1).powi(2) - 2.0 * phi * (p1 - l1) * (u2 - p2) + (u2 - p2).powi(2))
+            .max(0.0)
+            .sqrt();
+    let upper = diff
+        + ((u1 - p1).powi(2) - 2.0 * phi * (u1 - p1) * (p2 - l2) + (p2 - l2).powi(2))
+            .max(0.0)
+            .sqrt();
+    Some((diff, lower.max(-1.0), upper.min(1.0)))
+}
+
+/// Exact two-sided McNemar test: under "no difference" the pairs that differ split evenly. `None` without discordant pairs.
+pub fn mcnemar_exact(only_a: u64, only_b: u64) -> Option<f64> {
+    let m = only_a + only_b;
+    if m == 0 {
+        return None;
+    }
+    let k = only_a.min(only_b);
+    let mut term = 0.5_f64.powi(i32::try_from(m).unwrap_or(i32::MAX));
+    let mut tail = 0.0;
+    for i in 0..=k {
+        tail += term;
+        term *= (m - i) as f64 / (i + 1) as f64;
+    }
+    Some((2.0 * tail).min(1.0))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -131,5 +208,104 @@ mod tests {
             pooled > 0.05,
             "pooled data shows a false 5 point regression: {pooled}"
         );
+    }
+
+    #[test]
+    fn mcnemar_matches_hand_computed_values() {
+        // m = 10 discordant pairs: P(0 of 10) = 1/1024; P(<= 2 of 10) = 56/1024.
+        assert!(close(
+            mcnemar_exact(0, 10).unwrap_or_default(),
+            2.0 / 1024.0
+        ));
+        assert!(close(
+            mcnemar_exact(2, 8).unwrap_or_default(),
+            112.0 / 1024.0
+        ));
+        assert!(close(mcnemar_exact(5, 5).unwrap_or_default(), 1.0));
+        assert_eq!(mcnemar_exact(0, 0), None);
+        // 5 discordant pairs all one way: 2 / 32.
+        assert!(close(mcnemar_exact(5, 0).unwrap_or_default(), 0.0625));
+    }
+
+    #[test]
+    fn with_no_correlation_the_paired_interval_is_the_unpaired_one() {
+        // Independence: a*d == b*c gives B = 0, so phi = 0.
+        let c = PairedCounts {
+            both: 4,
+            only_a: 16,
+            only_b: 16,
+            neither: 64,
+        };
+        let (d, lo, hi) = newcombe_paired(c).unwrap_or_default();
+        let (ud, ulo, uhi) = newcombe(20, 100, 20, 100).unwrap_or_default();
+        assert!(
+            close(d, ud) && close(lo, ulo) && close(hi, uhi),
+            "{lo} {hi} vs {ulo} {uhi}"
+        );
+    }
+
+    #[test]
+    fn pairing_narrows_the_interval_when_the_arms_agree_scenario_by_scenario() {
+        // The arms fail on mostly the same scenarios: strongly correlated.
+        let paired = PairedCounts {
+            both: 18,
+            only_a: 7,
+            only_b: 2,
+            neither: 73,
+        };
+        let (d, lo, hi) = newcombe_paired(paired).unwrap_or_default();
+        let (ud, ulo, uhi) = newcombe(25, 100, 20, 100).unwrap_or_default();
+        assert!(close(d, ud), "same point estimate");
+        assert!(
+            hi - lo < uhi - ulo,
+            "paired {lo}..{hi} is narrower than unpaired {ulo}..{uhi}"
+        );
+    }
+
+    /// Coverage by simulation: draw correlated pairs from a known joint distribution many times; the 95 % interval should
+    /// contain the true difference close to 95 % of the time. Deterministic (a fixed linear congruential generator).
+    #[test]
+    fn the_paired_interval_covers_the_true_difference_about_95_percent_of_the_time() {
+        let mut state: u64 = 0x2545_F491_4F6C_DD1D;
+        let mut next = move || {
+            state = state
+                .wrapping_mul(6_364_136_223_846_793_005)
+                .wrapping_add(1_442_695_040_888_963_407);
+            ((state >> 11) as f64) / ((1u64 << 53) as f64)
+        };
+        // Joint: both fail 0.20, only a fails 0.10, only b fails 0.05, neither 0.65. True p_b - p_a = -0.05.
+        let (pb, pa_only, pb_only) = (0.20, 0.10, 0.05);
+        let truth = pb_only - pa_only;
+        for n in [30u64, 60] {
+            let (mut covered, trials) = (0u32, 2000u32);
+            for _ in 0..trials {
+                let mut c = PairedCounts {
+                    both: 0,
+                    only_a: 0,
+                    only_b: 0,
+                    neither: 0,
+                };
+                for _ in 0..n {
+                    let u = next();
+                    if u < pb {
+                        c.both += 1
+                    } else if u < pb + pa_only {
+                        c.only_a += 1
+                    } else if u < pb + pa_only + pb_only {
+                        c.only_b += 1
+                    } else {
+                        c.neither += 1
+                    }
+                }
+                if let Some((_, lo, hi)) = newcombe_paired(c)
+                    && lo <= truth
+                    && truth <= hi
+                {
+                    covered += 1
+                }
+            }
+            let rate = f64::from(covered) / f64::from(trials);
+            assert!((0.92..=0.985).contains(&rate), "n = {n}: coverage {rate}");
+        }
     }
 }

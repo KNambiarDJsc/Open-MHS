@@ -8,7 +8,10 @@ use serde::Serialize;
 use serde_json::Value;
 
 use crate::derive::{RULES_VERSION, WINDOW_AFTER_NS, WINDOW_BEFORE_NS};
-use crate::stats::{StratumCounts, mantel_haenszel_rd, newcombe, wilson};
+use crate::stats::{
+    PairedCounts, StratumCounts, mantel_haenszel_rd, mcnemar_exact, newcombe, newcombe_paired,
+    wilson,
+};
 use crate::{OpsError, Store};
 
 #[derive(Debug, Clone, Serialize)]
@@ -353,6 +356,9 @@ pub struct CompareSpec {
     pub min_failures: u64,
     /// Count scenarios, not attempts, when attempts repeat a scenario (`subject.scenario_id`). Default on.
     pub by_scenario: bool,
+    /// Match scenarios across the two arms and compare each scenario with itself (McNemar's exact test, Newcombe's
+    /// paired interval). Needs `subject.scenario_id` on the attempts, and the same scenarios in both arms.
+    pub paired: bool,
 }
 
 impl CompareSpec {
@@ -367,6 +373,7 @@ impl CompareSpec {
             min_known: 30,
             min_failures: 5,
             by_scenario: true,
+            paired: false,
         }
     }
 }
@@ -427,6 +434,25 @@ pub enum Verdict {
     InsufficientEvidence,
 }
 
+/// Scenarios present in both arms, compared with themselves.
+#[derive(Debug, Clone, Serialize)]
+pub struct Paired {
+    /// Scenarios with a known outcome in both arms (the 2 x 2 table below sums to this).
+    pub pairs: u64,
+    pub both_fail: u64,
+    pub a_only_fails: u64,
+    pub b_only_fails: u64,
+    pub both_ok: u64,
+    /// Scenarios in both arms where either arm has no known outcome.
+    pub unknown_pairs: u64,
+    pub unmatched_a: u64,
+    pub unmatched_b: u64,
+    /// b - a in failure rate, Newcombe's paired interval: (estimate, low, high).
+    pub difference: Option<(f64, f64, f64)>,
+    /// Exact two-sided McNemar p-value over the scenarios that differ; none when no scenario differs.
+    pub mcnemar_p: Option<f64>,
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct Comparison {
     pub task_type: String,
@@ -439,10 +465,83 @@ pub struct Comparison {
     /// The difference with unknowns counted against b and for a, then the reverse.
     pub unknown_bounds: Option<(f64, f64)>,
     pub strata: Vec<Stratum>,
+    pub paired: Option<Paired>,
     pub verdict: Verdict,
     pub reasons: Vec<String>,
     pub warnings: Vec<String>,
     pub rules_version: &'static str,
+}
+
+/// One scenario's outcome in one arm: the majority of its attempts, a tie being unknown. Attempts without a scenario id
+/// cannot be matched across arms and are left out.
+fn scenario_outcomes(rows: &[Row]) -> BTreeMap<&str, &'static str> {
+    let mut counts: BTreeMap<&str, (u64, u64, u64)> = BTreeMap::new();
+    for r in rows {
+        let Some(sc) = r.scenario.as_deref() else {
+            continue;
+        };
+        let e = counts.entry(sc).or_default();
+        match r.class {
+            "success" => e.0 += 1,
+            "failure" => e.1 += 1,
+            "unknown" => e.2 += 1,
+            _ => {}
+        }
+    }
+    counts
+        .into_iter()
+        .map(|(k, (ok, failed, unknown))| {
+            let class = if failed > ok + unknown {
+                "failure"
+            } else if ok > failed + unknown {
+                "success"
+            } else {
+                "unknown"
+            };
+            (k, class)
+        })
+        .collect()
+}
+
+fn paired_comparison(rows_a: &[Row], rows_b: &[Row]) -> Paired {
+    let (a, b) = (scenario_outcomes(rows_a), scenario_outcomes(rows_b));
+    let mut p = Paired {
+        pairs: 0,
+        both_fail: 0,
+        a_only_fails: 0,
+        b_only_fails: 0,
+        both_ok: 0,
+        unknown_pairs: 0,
+        unmatched_a: 0,
+        unmatched_b: 0,
+        difference: None,
+        mcnemar_p: None,
+    };
+    for (k, oa) in &a {
+        match b.get(k) {
+            None => p.unmatched_a += 1,
+            Some(&ob) if *oa == "unknown" || ob == "unknown" => p.unknown_pairs += 1,
+            Some(&ob) => {
+                p.pairs += 1;
+                match (*oa == "failure", ob == "failure") {
+                    (true, true) => p.both_fail += 1,
+                    (true, false) => p.a_only_fails += 1,
+                    (false, true) => p.b_only_fails += 1,
+                    (false, false) => p.both_ok += 1,
+                }
+            }
+        }
+    }
+    p.unmatched_b = b.keys().filter(|k| !a.contains_key(*k)).count() as u64;
+    let counts = PairedCounts {
+        both: p.both_fail,
+        only_a: p.a_only_fails,
+        only_b: p.b_only_fails,
+        neither: p.both_ok,
+    };
+    p.difference = newcombe_paired(counts);
+    p.mcnemar_p = mcnemar_exact(p.a_only_fails, p.b_only_fails);
+    p
 }
 
 /// Per site: (failures, attempts with a known outcome).
@@ -734,6 +833,36 @@ impl Store {
         } else {
             (plain, "newcombe")
         };
+        let paired = spec.paired.then(|| paired_comparison(&rows_a, &rows_b));
+        let (difference, method) = match &paired {
+            Some(p) => (p.difference, "newcombe_paired"),
+            None => (difference, method),
+        };
+        if let Some(p) = &paired {
+            if p.unmatched_a + p.unmatched_b > 0 {
+                warnings.push(format!(
+                    "{} scenarios appear only in a and {} only in b: they are left out of the paired comparison",
+                    p.unmatched_a, p.unmatched_b
+                ));
+            }
+            if p.unknown_pairs > 0 {
+                warnings.push(format!(
+                    "{} scenarios have no known outcome in one of the arms and are left out of the pairs",
+                    p.unknown_pairs
+                ));
+            }
+            if stratified {
+                warnings.push("a paired comparison is not stratified by site".into());
+            }
+        }
+        let (n_a_eff, n_b_eff, failures_eff) = match &paired {
+            Some(p) => (
+                p.pairs,
+                p.pairs,
+                2 * p.both_fail + p.a_only_fails + p.b_only_fails,
+            ),
+            None => (na, nb, ka + kb),
+        };
         if stratified
             && let (Some(p), Some(s)) = (plain, difference)
             && (p.0 - s.0).abs() > spec.margin
@@ -753,17 +882,22 @@ impl Store {
             })
         };
 
-        let verdict = if na < spec.min_known || nb < spec.min_known {
-            reasons.push(format!(
-                "fewer than {} {}s with a known outcome in an arm (a {na}, b {nb})",
-                spec.min_known, a.unit
-            ));
+        let verdict = if n_a_eff < spec.min_known || n_b_eff < spec.min_known {
+            reasons.push(match &paired {
+                Some(p) => format!(
+                    "fewer than {} matched scenario pairs with a known outcome ({})",
+                    spec.min_known, p.pairs
+                ),
+                None => format!(
+                    "fewer than {} {}s with a known outcome in an arm (a {na}, b {nb})",
+                    spec.min_known, a.unit
+                ),
+            });
             Verdict::InsufficientEvidence
-        } else if ka + kb < spec.min_failures {
+        } else if failures_eff < spec.min_failures {
             reasons.push(format!(
-                "fewer than {} failures in both arms together ({})",
-                spec.min_failures,
-                ka + kb
+                "fewer than {} failures in both arms together ({failures_eff})",
+                spec.min_failures
             ));
             Verdict::InsufficientEvidence
         } else {
@@ -812,6 +946,7 @@ impl Store {
             difference_method: method,
             unknown_bounds,
             strata,
+            paired,
             verdict,
             reasons,
             warnings,

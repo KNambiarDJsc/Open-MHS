@@ -23,6 +23,15 @@ and the entry will say so under **Changed** or **Removed**.
   A second experiment checks 124 reported-successful goals against motion capture
   ([results](research/outcome-verifier/ros2-evaluation/RESULTS_CORESENSE.md)).
 
+- **Paired release comparison.** `openmhs ops compare --paired` matches scenarios across two releases (same seeds, same
+  fixtures) and compares each scenario with itself: McNemar's exact test and Newcombe's paired interval, validated by a
+  coverage simulation, with scenarios present in only one arm named and left out
+  ([ADR-0032](docs/adr/0032-release-comparison-statistics.md)). `ops compare` also takes `--min-known` and says when its
+  incident list is cut to the newest five.
+- **Policy rollout importer and a sampler comparison (simulation).** `python -m openmhs.importers.policy_rollouts` imports
+  closed-loop policy rollouts as a manifest per arm and a task attempt per episode, with the seed as the scenario.
+  `research/outcome-verifier/policy-demo/` holds the pre-registered plan, the runner and the results of a DDPM-100 against
+  DDIM-10 comparison of a pretrained PushT diffusion policy: `insufficient_evidence` at 20 scenarios.
 - **Stale evidence rule** ([RFC 0004](docs/rfcs/0004-outcome-contracts-and-evidence.md), rule 8). An evidence item may set
   `max_unchanged_ms`; a record whose value has been identical for longer is rejected as `evidence.stale`, however fresh
   its timestamp. Opt-in. Found on real drone flights, where three of eight landings had a frozen motion-capture pose

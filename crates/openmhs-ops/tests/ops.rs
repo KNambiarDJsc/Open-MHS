@@ -540,3 +540,87 @@ fn a_store_from_the_previous_schema_version_upgrades_in_place_and_keeps_its_even
     );
     assert!(store.counts().unwrap().contains(&("events".into(), 1)));
 }
+
+/// 40 scenarios, each attempted once under release `v1` and once under `v2`. `v1` fails on the first 12; `v2` fails on
+/// the first 3 of those. Every scenario is the same situation in both releases.
+fn paired_fleet() -> Vec<Value> {
+    let m1 = manifest("p1", "v1");
+    let m2 = manifest("p2", "v2");
+    let (d1, d2) = (digest(&m1), digest(&m2));
+    let mut out = vec![m1, m2];
+    for (release, d, fails) in [("v1", &d1, 12usize), ("v2", &d2, 3usize)] {
+        for i in 0..40usize {
+            let id = format!("{release}-{i}");
+            let reported = if i < fails { "failed" } else { "succeeded" };
+            let t = (i as i64) * 10 * S + if release == "v2" { 100_000 * S } else { 0 };
+            for (n, kind) in ["task.started", "task.ended"].iter().enumerate() {
+                let mut e = ev(Ev {
+                    id: format!("{id}-{n}"),
+                    kind,
+                    t: t + (n as i64) * S,
+                    robot: "r-1",
+                    site: "east",
+                    task: Some(id.clone()),
+                    task_type: Some("pick"),
+                    manifest: (n == 0).then(|| d.clone()),
+                    reported: (n == 1).then_some(reported),
+                    ..Default::default()
+                });
+                e["subject"]["scenario_id"] = json!(format!("scenario-{i:02}"));
+                out.push(e);
+            }
+        }
+    }
+    out
+}
+
+#[test]
+fn a_paired_comparison_is_tighter_than_two_independent_samples_and_names_who_differs() {
+    let store = loaded(&paired_fleet());
+    let mut spec = CompareSpec::new("pick", "v1", "v2", OutcomeKind::Reported);
+    let unpaired = store.compare(&spec).unwrap();
+    spec.paired = true;
+    let paired = store.compare(&spec).unwrap();
+    let p = paired.paired.as_ref().unwrap();
+    assert_eq!(
+        (
+            p.pairs,
+            p.both_fail,
+            p.a_only_fails,
+            p.b_only_fails,
+            p.both_ok
+        ),
+        (40, 3, 9, 0, 28)
+    );
+    assert!((p.mcnemar_p.unwrap() - 2.0 * 0.5_f64.powi(9)).abs() < 1e-12);
+    let (d, lo, hi) = paired.difference.unwrap();
+    assert!((d + 0.225).abs() < 1e-12);
+    let (_, ulo, uhi) = unpaired.difference.unwrap();
+    assert!(
+        hi - lo < uhi - ulo,
+        "paired {lo}..{hi}, unpaired {ulo}..{uhi}"
+    );
+    assert_eq!(paired.verdict, Verdict::Improvement, "{:?}", paired.reasons);
+}
+
+#[test]
+fn scenarios_missing_from_one_arm_are_named_and_left_out_of_the_pairs() {
+    let mut records = paired_fleet();
+    // Drop scenario 39 from v2.
+    records.retain(|r| {
+        r["event_id"]
+            .as_str()
+            .is_none_or(|id| !id.starts_with("v2-39-"))
+    });
+    let store = loaded(&records);
+    let mut spec = CompareSpec::new("pick", "v1", "v2", OutcomeKind::Reported);
+    spec.paired = true;
+    let c = store.compare(&spec).unwrap();
+    let p = c.paired.as_ref().unwrap();
+    assert_eq!((p.pairs, p.unmatched_a, p.unmatched_b), (39, 1, 0));
+    assert!(
+        c.warnings.iter().any(|w| w.contains("only in a")),
+        "{:?}",
+        c.warnings
+    );
+}

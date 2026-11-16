@@ -325,6 +325,8 @@ pub fn compare(
     verified: bool,
     no_strata: bool,
     per_attempt: bool,
+    paired: bool,
+    min_known: u64,
     margin: f64,
 ) -> u8 {
     let outcome = if verified {
@@ -335,6 +337,8 @@ pub fn compare(
     let mut spec = CompareSpec::new(task_type, a, b, outcome);
     spec.by_site = !no_strata;
     spec.by_scenario = !per_attempt;
+    spec.paired = paired;
+    spec.min_known = min_known;
     spec.margin = margin;
     let c = match open(store).and_then(|s| s.compare(&spec).map_err(|e| e.to_string())) {
         Ok(c) => c,
@@ -381,6 +385,22 @@ pub fn compare(
             c.difference_method
         );
     }
+    if let Some(p) = &c.paired {
+        println!(
+            "paired by scenario: {} pairs; both fail {}, only a fails {}, only b fails {}, neither {}; \
+             McNemar exact p = {}; left out: {} unknown, {} only in a, {} only in b",
+            p.pairs,
+            p.both_fail,
+            p.a_only_fails,
+            p.b_only_fails,
+            p.both_ok,
+            p.mcnemar_p
+                .map_or_else(|| "n/a".into(), |x| format!("{x:.4}")),
+            p.unknown_pairs,
+            p.unmatched_a,
+            p.unmatched_b
+        );
+    }
     if let Some((lo, hi)) = c.unknown_bounds {
         println!(
             "  with unknowns counted both ways: {:+.1} to {:+.1} points",
@@ -410,7 +430,13 @@ pub fn compare(
     }
     for (name, arm) in [("a", &c.a), ("b", &c.b)] {
         if !arm.incidents.is_empty() {
-            println!("incidents in {name}: {}", arm.incidents.join(" "));
+            // The query returns at most the newest five; say so, so a short list is not read as a complete one.
+            let note = if arm.incidents.len() >= 5 {
+                " (newest 5; `ops incidents` lists them all)"
+            } else {
+                ""
+            };
+            println!("incidents in {name}{note}: {}", arm.incidents.join(" "));
         }
     }
     exit::OK

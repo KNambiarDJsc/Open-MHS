@@ -77,7 +77,7 @@ comparisons (27), concurrent events marked on timelines (28).
 | # | Title | Why |
 |---|---|---|
 | 29 | Demo 2 on LeRobot once installed; Isaac Lab-Arena results import | The chosen users run learned policies |
-| 30 | Pair attempts across arms by scenario (a paired comparison) | Matched scenarios give much tighter intervals than two independent samples |
+| 30 | ~~Pair attempts across arms by scenario~~ (done: `ops compare --paired`, 2026-11-16) | Matched scenarios give a tighter interval only when the same scenarios fail in both arms; see the policy comparison below |
 
 ## Real flights (2026-11-16)
 
@@ -96,6 +96,23 @@ one with an induced panel failure, one with a panel and a drone failure. **The f
   and every drone landed; cancellation alone is not a failure, so no incident opens for it.
 - The same flights checked against motion capture are in
   [RESULTS_CORESENSE.md](../../../research/outcome-verifier/ros2-evaluation/RESULTS_CORESENSE.md).
+
+## A learned policy under two samplers (2026-11-16, simulation)
+
+A pretrained LeRobot diffusion policy on PushT, two releases that differ only in the sampler (DDPM with 100 steps as
+published, DDIM with 10), the same 20 starting states. **Simulation only**: no robot, no human. Plan committed before the
+run; results and the predictions that held and did not are in
+[RESULTS.md](../../../research/outcome-verifier/policy-demo/RESULTS.md).
+
+- 15 of 20 scenarios succeeded under the published sampler (inside the pre-registered window around the published
+  figure), 12 of 20 under the 10-step sampler. `ops compare --paired`: difference +15.0 points, 95 % interval -13.4 to
+  +40.4, McNemar exact p = 0.51, **`insufficient_evidence`** (20 matched pairs, 30 required). The minimum was not lowered.
+- The faster sampler was about 6.5 times quicker per episode (wall clock, shared machine).
+- **Pairing did not narrow the interval**: the two arms' failures overlapped no more than chance (2 scenarios against 2.0
+  expected), so the paired and unpaired intervals are identical. The tighter-interval case needs the same scenarios to fail
+  in both arms; this run does not show that they do.
+- Found gaps: the comparison's duration is simulated time, so the compute cost that separates the releases is not in the
+  report; incidents carry no failure shape (near miss against no movement).
 
 ## Reproduce
 

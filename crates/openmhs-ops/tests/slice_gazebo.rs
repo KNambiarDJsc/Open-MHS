@@ -344,3 +344,41 @@ fn events_whose_order_is_not_known_are_marked_concurrent() {
         .unwrap();
     assert!(deployment.concurrent_with.is_empty());
 }
+
+#[test]
+fn pairing_by_scenario_matches_each_lift_goal_with_itself() {
+    let store = ab();
+    let mut spec = CompareSpec::new("lift", "engine-bullet", "tol-0.01", OutcomeKind::Verified);
+    spec.paired = true;
+    let c = store.compare(&spec).unwrap();
+    let p = c.paired.as_ref().unwrap();
+    // The ten lift goals appear in both releases. Five failed under A and none under B.
+    assert_eq!(
+        (p.pairs, p.unmatched_a, p.unmatched_b, p.unknown_pairs),
+        (10, 0, 0, 0)
+    );
+    assert_eq!(
+        (p.both_fail, p.a_only_fails, p.b_only_fails, p.both_ok),
+        (0, 5, 0, 5)
+    );
+    // Five discordant pairs, all one way: exact two-sided p = 2 / 2^5.
+    assert!((p.mcnemar_p.unwrap() - 0.0625).abs() < 1e-12);
+    assert_eq!(c.difference_method, "newcombe_paired");
+    let (d, lo, hi) = c.difference.unwrap();
+    assert!((d + 0.5).abs() < 1e-12);
+    // Here B never fails, so no scenario fails under both and the pairs carry no correlation: the paired interval is the
+    // unpaired one, never wider. (The synthetic fleet in tests/ops.rs shows the narrowing when failures overlap.)
+    spec.paired = false;
+    let (_, ulo, uhi) = store.compare(&spec).unwrap().difference.unwrap();
+    assert!(
+        hi - lo <= uhi - ulo + 1e-12,
+        "paired {lo}..{hi}, unpaired {ulo}..{uhi}"
+    );
+    // Ten pairs are still too few to call it, said plainly.
+    assert_eq!(c.verdict, openmhs_ops::Verdict::InsufficientEvidence);
+    assert!(
+        c.reasons[0].contains("matched scenario pairs"),
+        "{:?}",
+        c.reasons
+    );
+}
