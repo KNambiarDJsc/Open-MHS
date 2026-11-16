@@ -27,3 +27,20 @@ verified outcomes is itself an incident trigger.
 
 - The outcome verifier (RFC 0004) becomes a producer of `outcome.verified` events, not a separate product.
 - Most teams will have only reported outcomes at first; the product shows that plainly instead of hiding it.
+
+## Amendment, 2026-11-16: where the thresholds of a verdict come from
+
+A verdict is judged against thresholds, and a threshold is a property of the deployment, not of the verifier. The
+deployment declares the thresholds of its behaviors in its manifest, as a `config` component named
+`behavior_thresholds`, with a `basis` that says where each number comes from and says "assumption" when it was not read
+from the deployment itself. The producer that verifies reads them from there; they are not constants of the checking
+code. Two consequences:
+
+- A different threshold is a different manifest, therefore a different release. Re-judging the same flights at another
+  tolerance cannot be mistaken for the first judgement, and a comparison between the two says exactly what changed.
+- Verification happens where the evidence is, in the producer (an importer, a gateway), because the store never
+  fetches artifacts (RFC 0005, section 4). The store receives verdicts as `outcome.verified` events joined to their goals
+  by id, with the contract id.
+
+The first use is the CoreSense flights (`coresense_aerostack2 --verify`): the go-to threshold is the Aerostack2 default,
+an assumption about flights whose own configuration is not published, and the manifest says so.

@@ -97,6 +97,19 @@ one with an induced panel failure, one with a panel and a drone failure. **The f
   and every drone landed; cancellation alone is not a failure, so no incident opens for it.
 - The same flights checked against motion capture are in
   [RESULTS_CORESENSE.md](../../../research/outcome-verifier/ros2-evaluation/RESULTS_CORESENSE.md).
+- **Verified outcomes in the incident layer** (`--verify`, 2026-11-16). The importer can run the deterministic verifier on
+  every succeeded Takeoff, GoTo and Land (`coresense_verify.py`, the code the evaluation used, which reproduces the
+  published 124 claims and 496 fault trials exactly) and emit the verdicts as `outcome.verified` events joined to their
+  goals by id. The thresholds are declared in the manifest, with their basis ([ADR-0033](../../adr/0033-outcome-provenance.md),
+  amendment), so the verified import is a different release (`aerostack2-unversioned+thresholds`). Verdicts: GoTo 4
+  satisfied, 7 unknown, 96 violated; Takeoff 9 satisfied; Land 6 satisfied, 2 violated. **Incidents go from 1 to 9**: eight
+  missions that reported success now carry `reported_verified_disagree`, and the failed one `verified_violated` as well.
+  Read this carefully. The GoTo threshold (0.20 m) is an *assumption* (the flights' configuration is not published), the
+  claim is the success status at its instant, and the evaluation found the drones reach the waypoint to a median of 2.3 cm
+  half a second later: the behavior reports success early, relative to that threshold. That is a real property of these
+  flights and not a fault of the drones' landing; and an incident per mission is coarse (every long mission has some
+  violated goal), so a rate of violated goals would say more than an incident count. The aggregation was not changed to
+  make the result look better or worse.
 
 ## A learned policy under two samplers (2026-11-16, simulation)
 
@@ -134,6 +147,7 @@ The real flights (after downloading and unpacking the three archives):
 ```sh
 python -m openmhs.importers.coresense_aerostack2 BAGS/rosbag2_real_paths_2_OK_no_failure \
     BAGS/rosbag2_real_paths_2_OK_panel_failure BAGS/rosbag2_real_paths_2_OK_double_failure --out flights.jsonl
+# add --verify (needs OPENMHS_BIN) to check every succeeded goal against motion capture
 ../target/debug/openmhs ops ingest flights.jsonl
 ../target/debug/openmhs ops incidents
 ```

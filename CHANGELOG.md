@@ -23,6 +23,13 @@ and the entry will say so under **Changed** or **Removed**.
   A second experiment checks 124 reported-successful goals against motion capture
   ([results](research/outcome-verifier/ros2-evaluation/RESULTS_CORESENSE.md)).
 
+- **Verified outcomes in the incident layer, for real flights.** `python -m openmhs.importers.coresense_aerostack2 --verify`
+  runs the deterministic verifier on every succeeded Takeoff, GoTo and Land and emits `outcome.verified` events joined to
+  their goals. The thresholds come from the manifest (a `behavior_thresholds` component with its basis; a different
+  assumption is a different release), not from constants in the checking code
+  ([ADR-0033](docs/adr/0033-outcome-provenance.md), amendment). The evaluation's claim extraction moved to
+  `python/openmhs/importers/coresense_verify.py`, shared with the research scripts, whose published results it
+  reproduces exactly. Without `--verify` the import is unchanged.
 - **Wall-clock cost in release comparisons.** Events may carry `cost.wall_s` (RFC 0005), a task attempt keeps it
   (migration 0003, filled by the next rebuild), and `ops compare` prints wall time per arm beside the duration, which in a
   simulation is simulated time. The policy rollout importer emits it. **Fix:** the median and 90th percentile of an even

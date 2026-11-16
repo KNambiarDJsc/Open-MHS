@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import os
+import shutil
 import sqlite3
 import struct
 import sys
@@ -38,6 +40,14 @@ def enc_string(text: str) -> bytes:
     return b"\x00\x01\x00\x00" + struct.pack("<I", len(body)) + body
 
 
+def enc_pose(x: float, y: float, z: float) -> bytes:
+    """geometry_msgs/PoseStamped, little-endian CDR: stamp, empty frame id, position, identity orientation."""
+    out = bytearray(b"\x00\x01\x00\x00") + struct.pack("<iI", 1, 0) + struct.pack("<I", 1) + b"\x00"
+    out += b"\x00" * ((-(len(out) - 4)) % 8)
+    out += struct.pack("<7d", x, y, z, 0.0, 0.0, 0.0, 1.0)
+    return bytes(out)
+
+
 def uuid(n: int) -> bytes:
     return bytes([n]) * 16
 
@@ -70,6 +80,14 @@ def make_bag(root: Path, name: str, drones: dict[str, dict]) -> Path:
         t = topic(f"/{drone}/kb/add_fact", STRING_TYPE)
         for at, text in spec.get("facts", []):
             rows.append((t, T0 + int(at * S), enc_string(text)))
+        if "poses" in spec:
+            t = topic(f"/{drone}/self_localization/pose", "geometry_msgs/msg/PoseStamped")
+            for at, x, y, z in spec["poses"]:
+                rows.append((t, T0 + int(at * S), enc_pose(x, y, z)))
+        if "mission_status" in spec:
+            t = topic(f"/{drone}/mission_status", STRING_TYPE)
+            for at, doc in spec["mission_status"]:
+                rows.append((t, T0 + int(at * S), enc_string(json.dumps(doc))))
     for n, (t, ts, data) in enumerate(sorted(rows, key=lambda r: r[1]), 1):
         con.execute("insert into messages values (?, ?, ?, ?)", (n, t, ts, data))
     con.commit()
@@ -196,6 +214,107 @@ class RealFlights(unittest.TestCase):
             ended = [e for e in self.events(condition) if e["type"] == "task.ended"]
             self.assertEqual(len(ended), 3)
             self.assertEqual(sum(e["outcome"]["reported"]["value"] == "failed" for e in ended), failed, condition)
+
+
+def flight_pose(t: float) -> tuple[float, float, float]:
+    """Where the drone is at t seconds: hovering at 1.5 m, at waypoint wp_0 (3, 1) from 16 s, 0.5 m past waypoint wp_1
+    (5, 1) from 19 s, on the ground from 31 s."""
+    if t < 16:
+        return 0.0, 0.0, 1.5
+    if t < 19:
+        return 3.0, 1.0, 1.5
+    if t < 31:
+        return 5.5, 1.0, 1.5
+    return 5.5, 1.0, 0.05
+
+
+def verified_flight(**override) -> dict:
+    spec = {
+        "goals": {
+            "Takeoff": [(1, [(10, EXECUTING), (14, SUCCEEDED)])],
+            "GoTo": [(2, [(15, EXECUTING), (17, SUCCEEDED)]), (3, [(18, EXECUTING), (20, SUCCEEDED)])],
+            "Land": [(4, [(30, EXECUTING), (36, SUCCEEDED)])],
+        },
+        "facts": [(1, 'wp_0 xCoord "3.0"'), (1, 'wp_0 yCoord "1.0"'), (1, 'wp_1 xCoord "5.0"'), (1, 'wp_1 yCoord "1.0"'),
+                  (15.05, "goto_1 to wp_0"), (18.05, "goto_2 to wp_1")],
+        "poses": [(k / 100, *flight_pose(k / 100)) for k in range(800, 4200)],
+    }
+    spec.update(override)
+    return {"drone0": spec}
+
+
+HAVE_BINARY = bool(os.environ.get("OPENMHS_BIN") or shutil.which("openmhs"))
+
+
+@unittest.skipUnless(HAVE_BINARY, "needs the openmhs binary (OPENMHS_BIN)")
+class Verified(unittest.TestCase):
+    """``--verify``: each succeeded Takeoff, GoTo and Land is checked against the motion-capture pose."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+
+    def import_(self, spec: dict, verify: bool = True, name: str = "rosbag2_real_paths_2_OK_no_failure"):
+        bag = make_bag(self.root, name, spec)
+        records = imp.import_bag(bag, verify=verify)
+        return records, [r for r in records if r.get("schema", "").startswith("openmhs.event/")]
+
+    def test_each_succeeded_goal_gets_a_verdict_joined_to_it_by_goal_id(self):
+        _, events = self.import_(verified_flight())
+        verdicts = [e for e in events if e["type"] == "outcome.verified"]
+        by_goal = {e["subject"]["goal_id"]: e["outcome"]["verified"]["value"] for e in verdicts}
+        self.assertEqual(len(verdicts), 4)
+        self.assertEqual(len(by_goal), 4, "one verdict per goal, each under its own goal id")
+        order = [e["outcome"]["verified"]["value"] for e in sorted(verdicts, key=lambda e: e["time"]["observed"])]
+        self.assertEqual(order, ["satisfied", "satisfied", "violated", "satisfied"],
+                         "takeoff at 1.5 m, arrived at wp_0, 0.5 m past wp_1, on the ground")
+        self.assertTrue(all("task_id" not in e["subject"] for e in verdicts), "joined by goal id, not by owning the task")
+        self.assertEqual({e["outcome"]["verified"]["contract"] for e in verdicts},
+                         {"takeoff-at-height", "goto-arrived-at-waypoint", "land-on-ground"})
+
+    def test_the_thresholds_are_in_the_manifest_and_make_a_different_release(self):
+        plain, _ = self.import_(verified_flight(), verify=False, name="rosbag2_real_paths_2_OK_a")
+        verified, events = self.import_(verified_flight(), verify=True, name="rosbag2_real_paths_2_OK_b")
+        self.assertFalse([e for e in plain if e.get("type") == "outcome.verified"], "off unless asked for")
+        m_plain = next(r for r in plain if r.get("schema", "").startswith("openmhs.deployment/"))
+        m_ver = next(r for r in verified if r.get("schema", "").startswith("openmhs.deployment/"))
+        th = next(c for c in m_ver["components"] if c["name"] == "behavior_thresholds")
+        self.assertEqual((th["go_to_xy_m"], th["takeoff_height_m"], th["land_z_max_m"]), (0.2, 1.5, 0.15))
+        self.assertIn("assumption", th["basis"], "the source of the GoTo number says it is assumed")
+        self.assertNotEqual(imp.digest(m_plain), imp.digest(m_ver))
+        self.assertEqual(m_ver["labels"]["release"], "aerostack2-unversioned+thresholds")
+        started = next(e for e in events if e["type"] == "task.started")
+        self.assertEqual(started["deployment"]["manifest"], imp.digest(m_ver))
+
+    def test_a_wider_declared_threshold_changes_the_verdict_not_the_code(self):
+        from openmhs.importers import coresense_verify as cv
+
+        claim = {"behavior": "GoTo", "goal": "g", "drone": "drone0", "target": {"x": 5.0, "y": 1.0}}
+        tight = cv.contract(claim, {**cv.DEFAULT_THRESHOLDS})
+        loose = cv.contract(claim, {**cv.DEFAULT_THRESHOLDS, "go_to_xy_m": 0.6})
+        self.assertAlmostEqual(tight["conditions"][0]["max"]["value"], 5.2)
+        self.assertAlmostEqual(loose["conditions"][0]["max"]["value"], 5.6, msg="the same 0.5 m miss now fits")
+
+    def test_a_manifest_without_the_thresholds_cannot_be_verified_against(self):
+        from openmhs.importers import coresense_verify as cv
+
+        with self.assertRaisesRegex(ValueError, "no behavior_thresholds"):
+            cv.thresholds_from({"components": []})
+        partial = {"components": [{"kind": "config", "name": "behavior_thresholds", "go_to_xy_m": 0.2}]}
+        with self.assertRaisesRegex(ValueError, "does not declare"):
+            cv.thresholds_from(partial)
+
+    def test_a_flight_that_asked_for_another_takeoff_height_is_refused(self):
+        spec = verified_flight(mission_status=[(9, {"current_item": {"behavior": "takeoff", "args": {"height": 2.0}}})])
+        with self.assertRaisesRegex(ValueError, "takeoff heights"):
+            self.import_(spec)
+
+    def test_a_goto_without_a_waypoint_is_left_out_not_guessed(self):
+        spec = verified_flight(facts=[(1, 'wp_0 xCoord "3.0"')])  # no yCoord, no goto link
+        _, events = self.import_(spec)
+        goals = {e["subject"]["goal_id"] for e in events if e["type"] == "outcome.verified"}
+        self.assertEqual(len(goals), 2, "only the takeoff and the landing")
 
 
 if __name__ == "__main__":

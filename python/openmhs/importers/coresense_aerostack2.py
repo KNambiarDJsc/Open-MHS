@@ -16,6 +16,12 @@ What becomes what:
 - the swarm's own knowledge base (``/droneN/kb/add_fact``, ``std_msgs/String``): ``<drone> droneStatus failed`` becomes a
   ``fault.raised`` event and ``<drone> auctionStatus started|completed`` a ``marker`` (only from that drone's own
   stream, so one fact is one event);
+- with ``--verify``: every ``Takeoff``, ``GoTo`` and ``Land`` goal that reached ``SUCCEEDED`` is also checked against
+  the motion-capture pose by the deterministic verifier (RFC 0004, ``coresense_verify.py``, needs the ``openmhs``
+  binary) and becomes an ``outcome.verified`` event joined to its goal by id. The thresholds the verdicts are judged
+  against are declared in the manifest (a ``behavior_thresholds`` config component, with where each number comes from),
+  so a different assumption is a different release. Without ``--verify`` the output is unchanged and carries no
+  verified outcome;
 - a mission's reported outcome is ``failed`` when the swarm reported its drone failed, otherwise the terminal status of
   its landing goal (``SUCCEEDED`` → succeeded, ``CANCELED`` → canceled, none → unknown);
 - one **deployment manifest** shared by all bags (the software is the same; the dataset does not publish a revision, and
@@ -57,6 +63,9 @@ def digest(value: Any) -> str:
     return "sha256:" + hashlib.sha256(canonical(value).encode("utf-8")).hexdigest()
 
 
+VERIFIED = {"SATISFIED": "satisfied", "VIOLATED": "violated", "UNKNOWN": "unknown"}
+
+
 def rfc(ns: int) -> str:
     import datetime as dt
 
@@ -78,18 +87,24 @@ def condition_of(bag: Path) -> str:
     return m.group(1) if m else "unknown"
 
 
-def manifest(bag: Path) -> dict[str, Any]:
-    """What ran, as far as the dataset says. The software revision is not published, and that is recorded."""
+def manifest(bag: Path, thresholds: dict[str, Any] | None = None) -> dict[str, Any]:
+    """What ran, as far as the dataset says. The software revision is not published, and that is recorded.
+
+    ``thresholds`` (only with verification on) are the behavior thresholds this import asserts for the deployment and
+    judges the flights against; they are part of the manifest, so a different assumption is a different release."""
     paths = re.search(r"real_(paths_\d+)", bag.name)
+    components = [
+        {"kind": "software", "name": "aerostack2", "vcs": "git", "repository": REPOSITORY,
+         "revision": "not published by the dataset"},
+        {"kind": "hardware", "name": "crazyflie-swarm", "drones": 3, "localisation": "OptiTrack motion capture"},
+        {"kind": "config", "name": "mission-paths", "paths": paths.group(1) if paths else "unknown"},
+    ]
+    if thresholds is not None:
+        components.append({"kind": "config", "name": "behavior_thresholds", **thresholds})
     return {
         "schema": "openmhs.deployment/0.1",
-        "components": [
-            {"kind": "software", "name": "aerostack2", "vcs": "git", "repository": REPOSITORY,
-             "revision": "not published by the dataset"},
-            {"kind": "hardware", "name": "crazyflie-swarm", "drones": 3, "localisation": "OptiTrack motion capture"},
-            {"kind": "config", "name": "mission-paths", "paths": paths.group(1) if paths else "unknown"},
-        ],
-        "labels": {"release": "aerostack2-unversioned"},
+        "components": components,
+        "labels": {"release": "aerostack2-unversioned" + ("+thresholds" if thresholds is not None else "")},
     }
 
 
@@ -137,19 +152,31 @@ def facts(bag: Bag, drone: str) -> list[tuple[int, str]]:
     return out
 
 
-def import_bag(path: Path) -> list[dict[str, Any]]:
-    """Every record for one bag directory. The bag is opened read-only and closed before returning."""
+def import_bag(path: Path, verify: bool = False) -> list[dict[str, Any]]:
+    """Every record for one bag directory. The bag is opened read-only and closed before returning.
+
+    ``verify`` adds the declared thresholds to the manifest and an ``outcome.verified`` event for every succeeded
+    Takeoff, GoTo and Land goal (needs the ``openmhs`` binary)."""
     bag = Bag(path)
     try:
-        return _import(bag, path)
+        return _import(bag, path, verify)
     finally:
         bag.con.close()
 
 
-def _import(bag: Bag, path: Path) -> list[dict[str, Any]]:
+def _import(bag: Bag, path: Path, verify: bool = False) -> list[dict[str, Any]]:
     cond = condition_of(path)
     name = path.name
-    m = manifest(path)
+    verdicts: dict[str, list[dict[str, Any]]] = {}
+    if verify:
+        from . import coresense_verify as cv
+
+        m = manifest(path, dict(cv.DEFAULT_THRESHOLDS))
+        found, _skipped = cv.verify_bag(bag, cond, cv.thresholds_from(m))
+        for v in found:
+            verdicts.setdefault(v["claim"]["drone"], []).append(v)
+    else:
+        m = manifest(path)
     md = digest(m)
     ext = {"coresense": {"bag": name, "condition": cond, "failures_induced_by_experimenters": cond != "no_failure",
                          "clock": "recorder receipt time; one host clock assumed"}}
@@ -208,6 +235,14 @@ def _import(bag: Bag, path: Path) -> list[dict[str, Any]]:
                           outcome={"reported": {"value": TERMINAL[g["status"]], "source": "ros2.action_status"}},
                           ext={**ext, "ros2": {"action": f"/{drone}/{behavior}Behavior", "status": g["status"]}})
 
+        for v in verdicts.get(drone, []):
+            c = v["claim"]
+            key = f"{drone}/{c['behavior']}/{c['goal'].replace('-', '')[:12]}"
+            event(f"{key}/outcome.verified", "outcome.verified", c["t"], drone, subject={"goal_id": c["goal"]},
+                  attributes={"component": c["behavior"].lower()},
+                  outcome={"verified": {"value": VERIFIED[v["verdict"]], "contract": v["contract"]}},
+                  ext={**ext, "verifier": {"reasons": v["reasons"], "reference": "mocap pose, which also feeds the controller"}})
+
         for ts, line in kb:
             if line == f"{drone} auctionStatus started" or line == f"{drone} auctionStatus completed":
                 event(f"{drone}/auction/{ts}", "marker", ts, drone, subject=subject,
@@ -234,10 +269,13 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("bags", nargs="+", type=Path)
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--verify", action="store_true",
+                    help="also check each succeeded Takeoff/GoTo/Land against motion capture (needs the openmhs binary); "
+                         "adds the declared behavior thresholds to the manifest")
     args = ap.parse_args()
     lines: list[str] = []
     for bag in args.bags:
-        lines.extend(canonical(r) for r in import_bag(bag))
+        lines.extend(canonical(r) for r in import_bag(bag, args.verify))
     args.out.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print(f"{len(lines)} records from {len(args.bags)} bags -> {args.out}", file=sys.stderr)
     return 0
