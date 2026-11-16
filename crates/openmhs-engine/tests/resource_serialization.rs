@@ -62,7 +62,9 @@ impl HardwareAdapter for CountingPsu {
     ) -> Result<ExecuteReport, AdapterError> {
         let running = self.counters.running.fetch_add(1, Ordering::SeqCst) + 1;
         self.counters.peak.fetch_max(running, Ordering::SeqCst);
-        tokio::time::sleep(Duration::from_millis(30)).await;
+        // Longer than the 100 ms deadline in the unknown-outcome test below, and with room for a loaded CI runner to stall
+        // before dispatch (a 30 ms delay against a 10 ms deadline expired the command on macOS instead).
+        tokio::time::sleep(Duration::from_millis(300)).await;
         let result = self.inner.execute(command, progress).await;
         self.counters.running.fetch_sub(1, Ordering::SeqCst);
         result
@@ -179,7 +181,7 @@ async fn an_unknown_outcome_holds_the_shared_resource_until_resolved() {
         "target": {"device": FIRST, "capability": SETPOINT},
         "operation": "write",
         "value": volts(1.0),
-        "deadline_ms": 10
+        "deadline_ms": 100
     });
     let uncertain = engine.submit(&agent, &slow_request).await.unwrap();
     assert_eq!(uncertain.state, CommandState::UnknownOutcome);
