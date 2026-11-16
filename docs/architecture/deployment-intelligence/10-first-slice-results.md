@@ -66,8 +66,8 @@ What the B runs also showed:
 - Simulation time restarts at zero in each run, so each run is its own simulated robot and clock domain; times print
   as 1970 dates.
 - The "verified" outcome comes from Gazebo's own poses: independent of the controllers, not of the simulator.
-- Demo 2 (LeRobot policy recovery and checkpoint comparison) is not built: the approved install has not completed over
-  a connection measured at about 40 KB/s.
+- Demo 2 was built later (see "A learned policy under two samplers" below): a sampler comparison on one checkpoint. Not
+  done: recovery from a failed episode, and a comparison of two different checkpoints.
 
 ## Follow-up issues
 
@@ -76,7 +76,7 @@ comparisons (27), concurrent events marked on timelines (28).
 
 | # | Title | Why |
 |---|---|---|
-| 29 | Demo 2 on LeRobot once installed; Isaac Lab-Arena results import | The chosen users run learned policies |
+| 29 | ~~Demo 2 on LeRobot~~ (done, sampler comparison); Isaac Lab-Arena results import | The chosen users run learned policies |
 | 30 | ~~Pair attempts across arms by scenario~~ (done: `ops compare --paired`, 2026-11-16) | Matched scenarios give a tighter interval only when the same scenarios fail in both arms; see the policy comparison below |
 
 ## Real flights (2026-11-16)
