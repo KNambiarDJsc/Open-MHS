@@ -35,6 +35,9 @@ XY_TOL_M = 0.20
 TAKEOFF_Z_M, TAKEOFF_TOL_M = 1.5, 0.25
 LAND_Z_MAX_M = 0.15
 WINDOW_MS = 50
+# Set by --max-unchanged-ms (a post-hoc variant, not the planned run): the pose items then declare that a motion-capture
+# pose repeating one value for longer than this is stale.
+STALE_MS: int | None = None
 FAULTS = ["wrong_frame", "other_clock", "reference_gap", "other_attempt"]
 FAULT_KIND = {"wrong_frame": "values (xy) or metadata (z)", "other_clock": "values", "reference_gap": "availability",
               "other_attempt": "metadata"}
@@ -119,6 +122,8 @@ def box(v: float, tol: float) -> dict:
 
 def contract(c: dict) -> dict:
     item = {"kind": "independent_sensor", "device": "mocap-localization", "frame": "earth", "bound": False}
+    if STALE_MS is not None:
+        item["max_unchanged_ms"] = STALE_MS
     base = {"version": "0.1", "binding": {"attempt": c["goal"]},
             "timing": {"anchor": "claim", "default_window_ms": [-WINDOW_MS, WINDOW_MS]}}
     claim = {"signal": f"claim.{c['behavior'].lower()}_done", "kind": "controller", "device": c["drone"]}
@@ -235,7 +240,11 @@ def main() -> int:
     ap.add_argument("--bags", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--faults", action="store_true")
+    ap.add_argument("--max-unchanged-ms", type=int, default=None,
+                    help="post-hoc variant: pose items reject a value repeated longer than this (evidence.stale)")
     args = ap.parse_args()
+    global STALE_MS
+    STALE_MS = args.max_unchanged_ms
     args.out.mkdir(parents=True, exist_ok=True)
     work = args.out / "work"
     work.mkdir(exist_ok=True)

@@ -115,6 +115,9 @@ Records from OpenMHS itself come from an audit export (`openmhs audit export`): 
 
 - `evidence` names each item the contract needs: its signal, its source kind, optionally a device, a window, and
   required calibrations.
+- An item may set `max_unchanged_ms`, for a sensor that must show some variation (a motion-capture pose, a noisy
+  measurement): a record whose value has been identical for longer than that is stale, however fresh its timestamp
+  (`evidence.stale`, rule 8). Opt-in, because a setpoint or a settled simulator legitimately repeats itself.
 - `binding` lists `refs` every record must carry with these values. A record with a different value, or none,
   is not evidence for this attempt. An item with `"bound": false` is exempt: a device's own reading does not know
   which attempt it belongs to, so its device and window identify it instead.
@@ -145,7 +148,12 @@ and discards one when, in this order:
 7. a required calibration has no record for its device, or is not valid at the record's time
    (`calibration.missing`, `calibration.expired`, `calibration.not_yet_valid`).
 
-The anchor itself passes rules 1 to 5 and 7. If no record survives for the anchor, the window is undefined and
+8. the item sets `max_unchanged_ms` and the record's value has been unchanged for longer (`evidence.stale`). Records are
+   taken in source-time order; a run is a stretch of consecutive records holding an equal value, and a record's
+   unchanged time is its time minus the start of its run. The run is measured over the records the verifier is
+   given, so evidence trimmed to a window should keep enough history before it.
+
+The anchor itself passes rules 1 to 5, 7 and 8 (8 only if it opts in). If no record survives for the anchor, the window is undefined and
 every other item is undetermined (`timing.anchor_missing`).
 
 Each condition is then evaluated on **every** surviving record for its item. If they all hold, it is true; if
@@ -174,6 +182,11 @@ failed and uncertain.
 - **Evidence is only as good as its source.** The verifier checks consistency, time, identity, quality and
   calibration validity. It cannot tell a sensor that lies from one that does not, or a simulator from a device
   if the record says otherwise.
+- **A stale sensor is only caught if the contract says it must vary.** A reading repeated with a fresh timestamp passes
+  rules 1 to 7. Rule 8 catches a long enough repeat for an item that opts in; it cannot catch a freeze that begins at
+  the claim, a stale value that is still changing, or a sensor that legitimately holds its value. On real motion-capture
+  data (RESULTS_CORESENSE.md) it was added after seeing three frozen landings, so its limit was chosen after the fact;
+  the results report how many claims each limit rejects rather than one value.
 - **Agreement is required, not averaged.** Two valid readings that disagree give `UNKNOWN`. A noisy sensor
   will therefore produce `UNKNOWN` more often; tolerances belong in the condition.
 - **No causal reasoning yet.** `relations` are recorded, not used. The window and binding do the work.

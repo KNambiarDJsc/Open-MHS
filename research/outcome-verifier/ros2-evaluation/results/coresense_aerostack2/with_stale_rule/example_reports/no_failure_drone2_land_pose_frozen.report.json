@@ -1,0 +1,5815 @@
+{
+  "conditions": [
+    {
+      "evidence": "z",
+      "index": 0,
+      "name": "z at most 0.15 m",
+      "observed": [],
+      "op": "le",
+      "reason": {
+        "code": "evidence.rejected",
+        "detail": "480 record(s) considered, none passed the rules: see items.z",
+        "item": "z"
+      },
+      "records": [],
+      "result": "UNDETERMINED"
+    }
+  ],
+  "contract": {
+    "name": "land-on-ground",
+    "sha256": "e987a1e94ce3645434ead8bf349614bd643c66068ea1693d36e87187682e4d5c",
+    "version": "0.1"
+  },
+  "evidence": {
+    "records": 481,
+    "sha256": "797bbfc2a9bf2ea220783eac77f408036d3e3cd4f37215965141429e22732d5b"
+  },
+  "items": {
+    "claim": {
+      "accepted": [
+        "claim-no_failure/drone2/Land/6623c25ab749"
+      ],
+      "anchor": true,
+      "provenance": [
+        "device"
+      ],
+      "rejected": []
+    },
+    "z": {
+      "accepted": [],
+      "anchor": false,
+      "provenance": [],
+      "rejected": [
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 201 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7770:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 209 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7771:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 217 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7772:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 226 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7773:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 234 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7774:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 242 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7775:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 251 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7776:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 259 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7777:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 267 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7778:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 275 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7779:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 284 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7780:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 292 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7781:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 301 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7782:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 309 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7783:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 317 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7784:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 326 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7785:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 334 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7786:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 343 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7787:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 351 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7788:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 359 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7789:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 367 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7790:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 376 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7791:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 384 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7792:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 392 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7793:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 401 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7794:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 409 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7795:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 417 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7796:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 425 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7797:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 435 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7798:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 442 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7799:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 451 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7800:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 459 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7801:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 468 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7802:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 476 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7803:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 484 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7804:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 492 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7805:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 501 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7806:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 509 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7807:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 518 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7808:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 526 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7809:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 534 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7810:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 543 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7811:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 551 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7812:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 559 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7813:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 567 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7814:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 576 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7815:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 584 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7816:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 593 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7817:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 601 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7818:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 609 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7819:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 617 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7820:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 626 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7821:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 634 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7822:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 642 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7823:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 651 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7824:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 659 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7825:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 667 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7826:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 676 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7827:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 684 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7828:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 692 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7829:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 701 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7830:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 709 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7831:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 717 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7832:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 725 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7833:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 734 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7834:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 743 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7835:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 751 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7836:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 759 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7837:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 767 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7838:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 776 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7839:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 784 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7840:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 793 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7841:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 801 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7842:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 809 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7843:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 817 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7844:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 826 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7845:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 834 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7846:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 842 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7847:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 851 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7848:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 859 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7849:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 868 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7850:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 875 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7851:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 884 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7852:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 892 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7853:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 901 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7854:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 909 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7855:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 918 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7856:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 925 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7857:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 934 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7858:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 942 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7859:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 951 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7860:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 960 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7861:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 968 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7862:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 976 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7863:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 984 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7864:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 992 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7865:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1001 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7866:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1009 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7867:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1017 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7868:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1026 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7869:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1034 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7870:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1042 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7871:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1051 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7872:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1059 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7873:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1068 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7874:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1075 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7875:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1084 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7876:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1092 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7877:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1101 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7878:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1109 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7879:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1117 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7880:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1126 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7881:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1134 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7882:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1143 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7883:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1151 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7884:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1159 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7885:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1167 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7886:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1175 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7887:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1184 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7888:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1192 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7889:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1201 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7890:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1209 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7891:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1217 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7892:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1226 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7893:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1234 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7894:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1243 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7895:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1251 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7896:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1259 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7897:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1267 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7898:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1276 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7899:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1284 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7900:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1292 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7901:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1301 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7902:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1309 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7903:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1318 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7904:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1325 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7905:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1334 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7906:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1343 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7907:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1351 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7908:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1359 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7909:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1367 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7910:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1376 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7911:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1384 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7912:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1393 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7913:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1401 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7914:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1409 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7915:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1417 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7916:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1426 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7917:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1434 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7918:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1442 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7919:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1451 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7920:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1459 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7921:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1467 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7922:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1475 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7923:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1484 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7924:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1492 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7925:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1501 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7926:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1509 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7927:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1518 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7928:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1526 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7929:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1534 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7930:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1543 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7931:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1550 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7932:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1559 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7933:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1567 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7934:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1576 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7935:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1584 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7936:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1592 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7937:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1600 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7938:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1609 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7939:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1617 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7940:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1626 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7941:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1634 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7942:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1643 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7943:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1651 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7944:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1659 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7945:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1668 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7946:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1675 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7947:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1684 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7948:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1692 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7949:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1701 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7950:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1709 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7951:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1717 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7952:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1725 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7953:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1734 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7954:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1742 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7955:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1751 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7956:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1759 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7957:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1768 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7958:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1776 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7959:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1784 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7960:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1792 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7961:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1800 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7962:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1810 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7963:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1817 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7964:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1826 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7965:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1834 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7966:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1842 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7967:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1851 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7968:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1859 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7969:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1867 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7970:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1876 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7971:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1884 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7972:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1892 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7973:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1901 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7974:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1909 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7975:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1917 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7976:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1926 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7977:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1934 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7978:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1942 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7979:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1950 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7980:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1960 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7981:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1967 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7982:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1976 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7983:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1984 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7984:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 1993 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7985:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2000 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7986:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2009 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7987:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2017 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7988:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2026 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7989:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2034 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7990:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2043 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7991:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2050 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7992:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2059 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7993:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2067 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7994:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2075 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7995:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2084 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7996:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2092 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7997:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2100 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7998:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2109 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#7999:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2118 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8000:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2125 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8001:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2134 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8002:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2142 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8003:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2150 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8004:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2159 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8005:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2167 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8006:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2176 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8007:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2184 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8008:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2193 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8009:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2201 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8010:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2209 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8011:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2217 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8012:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2226 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8013:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2234 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8014:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2242 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8015:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2250 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8016:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2259 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8017:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2267 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8018:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2275 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8019:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2284 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8020:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2293 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8021:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2301 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8022:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2309 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8023:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2317 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8024:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2325 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8025:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2334 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8026:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2342 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8027:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2351 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8028:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2359 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8029:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2367 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8030:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2376 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8031:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2384 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8032:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2393 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8033:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2401 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8034:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2409 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8035:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2417 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8036:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2426 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8037:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2434 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8038:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2442 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8039:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2450 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8040:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2459 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8041:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2467 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8042:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2476 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8043:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2484 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8044:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2492 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8045:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2501 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8046:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2509 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8047:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2518 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8048:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2526 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8049:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2534 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8050:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2542 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8051:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2551 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8052:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2559 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8053:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2567 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8054:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2576 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8055:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2584 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8056:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2593 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8057:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2600 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8058:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2609 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8059:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2617 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8060:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2626 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8061:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2634 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8062:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2642 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8063:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2651 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8064:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2659 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8065:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2667 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8066:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2676 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8067:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2685 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8068:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2692 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8069:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2701 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8070:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2709 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8071:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2717 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8072:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2725 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8073:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2734 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8074:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2742 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8075:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2751 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8076:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2759 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8077:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2767 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8078:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2776 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8079:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2784 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8080:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2792 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8081:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2800 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8082:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2809 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8083:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2817 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8084:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2826 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8085:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2834 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8086:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2842 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8087:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2850 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8088:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2859 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8089:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2867 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8090:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2876 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8091:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2884 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8092:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2892 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8093:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2901 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8094:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2909 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8095:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2918 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8096:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2926 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8097:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2934 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8098:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2942 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8099:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2950 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8100:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2958 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8101:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2967 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8102:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2975 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8103:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2984 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8104:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 2992 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8105:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3001 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8106:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3009 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8107:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3017 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8108:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3026 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8109:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3034 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8110:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3043 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8111:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3050 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8112:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3059 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8113:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3067 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8114:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3076 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8115:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3084 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8116:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3092 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8117:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3101 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8118:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3109 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8119:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3117 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8120:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3126 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8121:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3134 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8122:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3142 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8123:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3150 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8124:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3159 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8125:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3167 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8126:pose.z"
+        },
+        {
+          "code": "evidence.stale",
+          "detail": "the value has been unchanged for 3176 ms, and the contract allows 200 ms",
+          "item": "z",
+          "record": "pose#8127:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1992 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7648:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1984 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7649:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1975 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7650:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1967 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7651:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1959 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7652:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1950 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7653:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1942 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7654:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1934 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7655:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1924 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7656:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1917 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7657:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1908 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7658:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1901 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7659:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1892 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7660:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1884 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7661:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1875 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7662:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1867 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7663:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1859 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7664:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1850 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7665:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1842 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7666:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1833 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7667:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1826 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7668:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1817 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7669:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1809 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7670:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1800 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7671:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1792 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7672:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1783 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7673:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1775 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7674:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1767 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7675:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1759 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7676:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1750 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7677:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1741 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7678:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1734 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7679:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1725 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7680:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1717 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7681:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1708 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7682:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1701 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7683:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1692 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7684:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1684 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7685:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1675 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7686:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1667 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7687:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1659 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7688:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1650 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7689:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1642 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7690:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1633 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7691:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1625 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7692:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1617 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7693:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1609 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7694:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1600 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7695:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1592 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7696:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1583 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7697:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1576 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7698:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1567 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7699:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1559 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7700:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1550 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7701:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1541 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7702:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1533 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7703:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1525 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7704:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1517 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7705:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1508 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7706:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1501 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7707:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1492 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7708:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1484 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7709:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1475 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7710:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1467 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7711:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1459 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7712:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1450 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7713:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1442 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7714:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1433 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7715:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1425 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7716:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1417 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7717:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1409 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7718:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1400 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7719:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1392 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7720:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1383 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7721:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1375 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7722:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1367 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7723:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1359 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7724:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1350 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7725:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1341 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7726:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1334 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7727:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1325 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7728:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1317 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7729:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1308 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7730:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1301 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7731:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1292 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7732:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1284 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7733:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1275 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7734:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1267 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7735:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1258 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7736:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1250 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7737:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1242 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7738:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1233 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7739:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1225 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7740:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1217 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7741:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1208 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7742:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1200 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7743:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1192 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7744:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1184 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7745:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1176 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7746:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1167 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7747:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1159 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7748:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1150 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7749:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1142 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7750:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1134 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7751:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1125 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7752:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1117 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7753:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1108 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7754:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1100 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7755:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1092 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7756:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1084 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7757:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1075 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7758:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1067 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7759:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1058 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7760:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1051 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7761:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1042 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7762:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1034 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7763:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1026 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7764:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1017 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7765:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1009 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7766:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1000 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7767:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-992 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7768:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-984 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#7769:pose.z"
+        }
+      ]
+    }
+  },
+  "reasons": [
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1992 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7648:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1984 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7649:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1975 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7650:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1967 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7651:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1959 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7652:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1950 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7653:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1942 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7654:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1934 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7655:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1924 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7656:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1917 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7657:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1908 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7658:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1901 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7659:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1892 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7660:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1884 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7661:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1875 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7662:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1867 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7663:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1859 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7664:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1850 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7665:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1842 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7666:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1833 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7667:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1826 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7668:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1817 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7669:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1809 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7670:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1800 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7671:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1792 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7672:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1783 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7673:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1775 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7674:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1767 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7675:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1759 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7676:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1750 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7677:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1741 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7678:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1734 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7679:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1725 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7680:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1717 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7681:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1708 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7682:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1701 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7683:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1692 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7684:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1684 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7685:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1675 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7686:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1667 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7687:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1659 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7688:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1650 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7689:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1642 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7690:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1633 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7691:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1625 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7692:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1617 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7693:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1609 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7694:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1600 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7695:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1592 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7696:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1583 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7697:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1576 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7698:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1567 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7699:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1559 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7700:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1550 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7701:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1541 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7702:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1533 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7703:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1525 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7704:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1517 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7705:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1508 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7706:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1501 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7707:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1492 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7708:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1484 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7709:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1475 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7710:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1467 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7711:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1459 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7712:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1450 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7713:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1442 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7714:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1433 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7715:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1425 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7716:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1417 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7717:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1409 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7718:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1400 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7719:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1392 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7720:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1383 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7721:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1375 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7722:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1367 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7723:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1359 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7724:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1350 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7725:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1341 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7726:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1334 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7727:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1325 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7728:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1317 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7729:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1308 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7730:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1301 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7731:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1292 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7732:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1284 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7733:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1275 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7734:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1267 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7735:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1258 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7736:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1250 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7737:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1242 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7738:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1233 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7739:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1225 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7740:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1217 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7741:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1208 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7742:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1200 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7743:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1192 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7744:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1184 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7745:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1176 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7746:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1167 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7747:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1159 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7748:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1150 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7749:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1142 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7750:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1134 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7751:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1125 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7752:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1117 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7753:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1108 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7754:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1100 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7755:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1092 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7756:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1084 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7757:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1075 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7758:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1067 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7759:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1058 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7760:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1051 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7761:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1042 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7762:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1034 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7763:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1026 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7764:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1017 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7765:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1009 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7766:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-1000 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7767:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-992 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7768:pose.z"
+    },
+    {
+      "code": "evidence.outside_window",
+      "detail": "-984 ms from the anchor, the window is [-50, 50] ms",
+      "item": "z",
+      "record": "pose#7769:pose.z"
+    },
+    {
+      "code": "evidence.rejected",
+      "detail": "480 record(s) considered, none passed the rules: see items.z",
+      "item": "z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 201 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7770:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 209 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7771:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 217 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7772:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 226 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7773:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 234 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7774:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 242 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7775:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 251 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7776:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 259 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7777:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 267 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7778:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 275 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7779:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 284 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7780:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 292 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7781:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 301 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7782:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 309 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7783:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 317 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7784:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 326 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7785:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 334 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7786:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 343 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7787:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 351 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7788:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 359 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7789:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 367 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7790:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 376 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7791:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 384 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7792:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 392 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7793:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 401 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7794:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 409 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7795:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 417 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7796:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 425 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7797:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 435 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7798:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 442 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7799:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 451 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7800:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 459 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7801:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 468 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7802:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 476 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7803:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 484 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7804:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 492 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7805:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 501 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7806:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 509 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7807:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 518 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7808:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 526 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7809:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 534 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7810:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 543 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7811:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 551 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7812:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 559 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7813:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 567 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7814:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 576 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7815:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 584 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7816:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 593 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7817:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 601 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7818:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 609 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7819:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 617 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7820:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 626 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7821:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 634 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7822:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 642 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7823:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 651 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7824:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 659 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7825:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 667 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7826:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 676 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7827:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 684 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7828:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 692 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7829:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 701 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7830:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 709 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7831:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 717 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7832:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 725 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7833:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 734 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7834:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 743 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7835:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 751 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7836:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 759 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7837:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 767 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7838:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 776 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7839:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 784 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7840:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 793 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7841:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 801 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7842:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 809 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7843:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 817 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7844:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 826 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7845:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 834 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7846:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 842 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7847:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 851 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7848:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 859 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7849:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 868 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7850:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 875 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7851:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 884 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7852:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 892 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7853:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 901 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7854:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 909 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7855:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 918 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7856:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 925 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7857:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 934 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7858:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 942 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7859:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 951 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7860:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 960 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7861:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 968 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7862:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 976 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7863:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 984 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7864:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 992 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7865:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1001 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7866:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1009 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7867:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1017 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7868:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1026 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7869:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1034 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7870:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1042 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7871:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1051 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7872:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1059 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7873:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1068 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7874:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1075 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7875:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1084 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7876:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1092 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7877:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1101 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7878:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1109 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7879:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1117 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7880:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1126 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7881:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1134 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7882:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1143 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7883:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1151 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7884:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1159 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7885:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1167 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7886:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1175 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7887:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1184 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7888:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1192 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7889:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1201 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7890:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1209 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7891:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1217 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7892:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1226 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7893:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1234 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7894:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1243 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7895:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1251 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7896:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1259 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7897:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1267 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7898:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1276 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7899:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1284 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7900:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1292 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7901:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1301 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7902:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1309 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7903:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1318 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7904:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1325 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7905:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1334 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7906:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1343 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7907:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1351 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7908:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1359 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7909:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1367 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7910:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1376 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7911:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1384 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7912:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1393 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7913:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1401 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7914:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1409 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7915:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1417 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7916:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1426 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7917:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1434 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7918:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1442 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7919:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1451 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7920:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1459 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7921:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1467 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7922:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1475 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7923:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1484 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7924:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1492 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7925:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1501 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7926:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1509 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7927:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1518 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7928:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1526 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7929:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1534 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7930:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1543 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7931:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1550 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7932:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1559 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7933:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1567 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7934:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1576 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7935:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1584 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7936:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1592 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7937:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1600 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7938:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1609 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7939:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1617 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7940:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1626 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7941:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1634 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7942:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1643 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7943:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1651 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7944:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1659 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7945:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1668 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7946:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1675 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7947:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1684 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7948:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1692 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7949:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1701 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7950:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1709 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7951:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1717 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7952:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1725 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7953:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1734 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7954:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1742 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7955:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1751 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7956:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1759 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7957:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1768 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7958:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1776 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7959:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1784 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7960:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1792 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7961:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1800 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7962:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1810 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7963:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1817 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7964:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1826 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7965:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1834 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7966:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1842 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7967:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1851 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7968:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1859 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7969:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1867 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7970:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1876 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7971:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1884 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7972:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1892 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7973:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1901 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7974:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1909 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7975:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1917 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7976:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1926 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7977:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1934 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7978:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1942 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7979:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1950 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7980:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1960 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7981:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1967 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7982:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1976 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7983:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1984 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7984:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 1993 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7985:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2000 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7986:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2009 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7987:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2017 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7988:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2026 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7989:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2034 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7990:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2043 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7991:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2050 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7992:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2059 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7993:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2067 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7994:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2075 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7995:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2084 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7996:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2092 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7997:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2100 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7998:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2109 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#7999:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2118 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8000:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2125 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8001:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2134 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8002:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2142 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8003:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2150 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8004:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2159 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8005:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2167 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8006:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2176 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8007:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2184 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8008:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2193 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8009:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2201 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8010:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2209 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8011:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2217 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8012:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2226 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8013:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2234 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8014:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2242 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8015:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2250 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8016:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2259 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8017:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2267 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8018:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2275 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8019:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2284 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8020:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2293 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8021:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2301 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8022:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2309 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8023:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2317 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8024:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2325 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8025:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2334 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8026:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2342 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8027:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2351 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8028:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2359 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8029:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2367 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8030:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2376 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8031:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2384 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8032:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2393 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8033:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2401 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8034:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2409 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8035:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2417 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8036:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2426 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8037:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2434 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8038:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2442 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8039:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2450 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8040:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2459 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8041:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2467 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8042:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2476 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8043:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2484 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8044:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2492 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8045:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2501 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8046:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2509 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8047:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2518 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8048:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2526 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8049:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2534 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8050:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2542 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8051:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2551 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8052:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2559 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8053:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2567 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8054:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2576 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8055:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2584 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8056:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2593 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8057:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2600 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8058:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2609 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8059:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2617 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8060:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2626 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8061:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2634 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8062:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2642 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8063:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2651 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8064:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2659 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8065:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2667 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8066:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2676 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8067:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2685 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8068:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2692 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8069:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2701 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8070:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2709 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8071:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2717 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8072:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2725 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8073:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2734 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8074:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2742 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8075:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2751 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8076:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2759 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8077:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2767 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8078:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2776 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8079:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2784 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8080:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2792 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8081:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2800 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8082:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2809 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8083:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2817 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8084:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2826 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8085:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2834 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8086:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2842 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8087:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2850 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8088:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2859 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8089:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2867 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8090:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2876 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8091:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2884 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8092:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2892 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8093:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2901 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8094:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2909 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8095:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2918 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8096:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2926 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8097:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2934 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8098:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2942 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8099:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2950 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8100:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2958 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8101:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2967 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8102:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2975 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8103:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2984 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8104:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 2992 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8105:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3001 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8106:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3009 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8107:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3017 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8108:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3026 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8109:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3034 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8110:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3043 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8111:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3050 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8112:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3059 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8113:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3067 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8114:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3076 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8115:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3084 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8116:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3092 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8117:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3101 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8118:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3109 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8119:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3117 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8120:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3126 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8121:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3134 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8122:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3142 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8123:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3150 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8124:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3159 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8125:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3167 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8126:pose.z"
+    },
+    {
+      "code": "evidence.stale",
+      "detail": "the value has been unchanged for 3176 ms, and the contract allows 200 ms",
+      "item": "z",
+      "record": "pose#8127:pose.z"
+    }
+  ],
+  "verdict": "UNKNOWN",
+  "verifier": "openmhs-outcome 0.1.0"
+}

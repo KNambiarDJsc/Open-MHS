@@ -123,5 +123,79 @@
    ],
    "seconds_after": 14.8
   }
- ]
+ ],
+ "staleness": {
+  "claims": 124,
+  "unchanged_at_claim_ms": {
+   "median": 0.0,
+   "p90": 0.0,
+   "max": 1225.3
+  },
+  "claims_rejected_by_limit_ms": {
+   "50": {
+    "claims_rejected": 5,
+    "by_behavior": {
+     "GoTo": 0,
+     "Takeoff": 0,
+     "Land": 5
+    }
+   },
+   "100": {
+    "claims_rejected": 4,
+    "by_behavior": {
+     "GoTo": 0,
+     "Takeoff": 0,
+     "Land": 4
+    }
+   },
+   "150": {
+    "claims_rejected": 3,
+    "by_behavior": {
+     "GoTo": 0,
+     "Takeoff": 0,
+     "Land": 3
+    }
+   },
+   "200": {
+    "claims_rejected": 3,
+    "by_behavior": {
+     "GoTo": 0,
+     "Takeoff": 0,
+     "Land": 3
+    }
+   },
+   "300": {
+    "claims_rejected": 3,
+    "by_behavior": {
+     "GoTo": 0,
+     "Takeoff": 0,
+     "Land": 3
+    }
+   },
+   "400": {
+    "claims_rejected": 2,
+    "by_behavior": {
+     "GoTo": 0,
+     "Takeoff": 0,
+     "Land": 2
+    }
+   },
+   "600": {
+    "claims_rejected": 2,
+    "by_behavior": {
+     "GoTo": 0,
+     "Takeoff": 0,
+     "Land": 2
+    }
+   },
+   "1000": {
+    "claims_rejected": 2,
+    "by_behavior": {
+     "GoTo": 0,
+     "Takeoff": 0,
+     "Land": 2
+    }
+   }
+  }
+ }
 }

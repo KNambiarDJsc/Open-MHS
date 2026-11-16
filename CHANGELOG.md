@@ -23,6 +23,11 @@ and the entry will say so under **Changed** or **Removed**.
   A second experiment checks 124 reported-successful goals against motion capture
   ([results](research/outcome-verifier/ros2-evaluation/RESULTS_CORESENSE.md)).
 
+- **Stale evidence rule** ([RFC 0004](docs/rfcs/0004-outcome-contracts-and-evidence.md), rule 8). An evidence item may set
+  `max_unchanged_ms`; a record whose value has been identical for longer is rejected as `evidence.stale`, however fresh
+  its timestamp. Opt-in. Found on real drone flights, where three of eight landings had a frozen motion-capture pose
+  ([results](research/outcome-verifier/ros2-evaluation/RESULTS_CORESENSE.md)).
+
 ### Security
 
 - `rmcp` 3.5.1 → 3.7.0 (RUSTSEC-2026-0457, -0461, -0462) and `rusqlite` 0.40 → 0.41, bundling SQLite 3.54

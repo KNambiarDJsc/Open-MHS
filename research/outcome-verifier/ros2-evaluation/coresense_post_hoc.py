@@ -7,7 +7,10 @@ after the landings showed a constant height. It does not change any verdict of t
 
 1. GoTo: is the distance at SUCCEEDED a fixed offset, or is the drone still approaching when success is declared?
 2. Landings: what does the pose feed do after the landing goal succeeds? A pose that repeats one value for seconds while
-   its header stamp advances is a stale reference with a fresh stamp, which no rule can detect.
+   its header stamp advances is a stale reference with a fresh stamp, which no timestamp rule can detect.
+3. Staleness sensitivity: for each claim, how long had each pose signal been unchanged at the claim (the longest within
+   the +-50 ms window)? How many claims would an opt-in `max_unchanged_ms` of T reject, for a range of T? This is how the
+   post-hoc rule's limit should be judged: by the trade-off, not by one value.
 """
 
 from __future__ import annotations
@@ -90,13 +93,48 @@ def landings(bags: Path) -> list[dict]:
     return out
 
 
+def staleness(bags: Path) -> dict:
+    limits = [50, 100, 150, 200, 300, 400, 600, 1000]
+    per_claim = []
+    for bagdir in sorted(bags.glob("rosbag2_real_paths_2_OK_*")):
+        bag = imp.Bag(bagdir)
+        try:
+            poses = {d: co.load_poses(bag, d) for d in bag.drones()}
+            claims, _ = co.claims_for(bag, imp.condition_of(bagdir), poses, co.waypoints(bag))
+        finally:
+            bag.con.close()
+        for c in claims:
+            ps = poses[c["drone"]]
+            times = [p[0] for p in ps]
+            lo = bisect.bisect_left(times, c["t"] - 2_000_000_000)
+            hi = bisect.bisect_right(times, c["t"] + 2_000_000_000)
+            worst = 0.0
+            for _signal, axis in co.signals(c):
+                start = None
+                last = None
+                for p in ps[lo:hi]:
+                    if last is None or p[axis] != last:
+                        start, last = p[0], p[axis]
+                    if abs(p[0] - c["t"]) <= co.WINDOW_MS * 1_000_000:
+                        worst = max(worst, (p[0] - start) / 1e6)
+            per_claim.append({"behavior": c["behavior"], "unchanged_ms": round(worst, 1)})
+    table = {}
+    for t in limits:
+        flagged = [x for x in per_claim if x["unchanged_ms"] > t]
+        table[str(t)] = {"claims_rejected": len(flagged),
+                         "by_behavior": {b: sum(x["behavior"] == b for x in flagged) for b in ("GoTo", "Takeoff", "Land")}}
+    values = sorted(x["unchanged_ms"] for x in per_claim)
+    return {"claims": len(per_claim), "unchanged_at_claim_ms": {"median": values[len(values) // 2], "p90": values[int(0.9 * len(values))],
+                                                              "max": values[-1]}, "claims_rejected_by_limit_ms": table}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--bags", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
     args = ap.parse_args()
     result = {"note": "post-hoc and exploratory; not part of the plan", "goto": goto(args.bags),
-              "landings": landings(args.bags)}
+              "landings": landings(args.bags), "staleness": staleness(args.bags)}
     args.out.write_text(json.dumps(result, indent=1) + "\n", encoding="utf-8", newline="\n")
     print(json.dumps(result, indent=1))
     return 0

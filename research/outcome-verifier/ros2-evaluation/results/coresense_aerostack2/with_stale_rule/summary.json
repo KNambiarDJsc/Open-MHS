@@ -1,0 +1,29 @@
+{
+ "takeoff_heights_in_mission_items": {
+  "double_failure": [
+   1.5
+  ],
+  "no_failure": [
+   1.5
+  ],
+  "panel_failure": [
+   1.5
+  ]
+ },
+ "skipped": {
+  "double_failure": {
+   "no_waypoint": 0
+  },
+  "no_failure": {
+   "no_waypoint": 0
+  },
+  "panel_failure": {
+   "no_waypoint": 0
+  }
+ },
+ "determinism_checked": 13,
+ "determinism_identical": true,
+ "fault_trials": 496,
+ "claims": 124,
+ "verify_seconds_median": 0.112
+}

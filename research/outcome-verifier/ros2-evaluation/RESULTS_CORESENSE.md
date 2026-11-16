@@ -72,9 +72,38 @@ before the run, and it stays: **no verdict was changed afterwards.**
   `drone1` in the third repeated one single pose for 2.1 s, 14.8 s and 1.5 s while the header stamp kept advancing (250,
   1,779 and 182 samples, 1 distinct pose each). Two of them held a height of 0.262 m and 0.408 m, which is where the
   verifier said `VIOLATED`; the third held 0.044 m and the verifier said `SATISFIED`. **None of the three verdicts is
-  evidence about the landing.** A stale value with a fresh stamp passes every rule in RFC 0004, as the plan said it would;
-  this is the first time it happened on real data. Whether those drones sat at that height or the tracking was lost cannot
+  evidence about the landing.** A stale value with a fresh stamp passes every timestamp rule in RFC 0004, as the plan
+  said it would; this is the first time it happened on real data. A post-hoc rule below addresses it. Whether those drones sat at that height or the tracking was lost cannot
   be told from the pose alone. The other five landings are live feeds, all within 0.04 to 0.09 m of the floor.
+
+## Post-hoc rule: stale evidence (added after seeing the frozen landings)
+
+RFC 0004 gained an opt-in rule: an item may set `max_unchanged_ms`, and a record whose value has been identical for
+longer is rejected as `evidence.stale` ([RFC 0004](../../../docs/rfcs/0004-outcome-contracts-and-evidence.md), rule 8). It
+was designed **after** the planned run, from this data, so its limit is not pre-registered and this section is separate:
+nothing above changed. Rerun with the pose items set to 200 ms
+([with_stale_rule/](results/coresense_aerostack2/with_stale_rule/)):
+
+- **Three verdicts changed, to `UNKNOWN`, and nothing else.** The two frozen `drone2` landings (`VIOLATED` before) and
+  `no_failure/drone1` (`SATISFIED` before). Of the 124 claims, 121 are unchanged. No false `SATISFIED`; the 496 injected
+  faults still all gave `UNKNOWN`.
+- **`no_failure/drone1` is a catch, not a false alarm.** Its pose was held identical in x, y and z for 459 ms around the
+  claim (340 ms old at the claim), not frozen for seconds: a tracking dropout where the last pose is repeated. Real noise
+  makes live samples differ; whole-pose repeats of 125 to 480 ms occur even in flying feeds.
+- **`double_failure/drone1`, frozen for 1.6 s from 0.11 s before the claim, is *not* caught**: the value was 110 ms old at
+  the claim, under the 200 ms limit. A freeze that starts at the claim cannot be seen at the claim.
+- **The limit is a trade-off, shown not chosen:** [post_hoc.json](results/coresense_aerostack2/post_hoc.json) counts the
+  claims each limit would reject. The median unchanged time at a claim is 0 ms, and **no `GoTo` or `Takeoff` claim is
+  rejected at any limit from 50 ms to 1,000 ms**. Only landings are, from 2 (400 ms and above) to 5 (50 ms):
+
+  | `max_unchanged_ms` | 50 | 100 | 150 to 300 | 400 to 1000 |
+  |---|---|---|---|---|
+  | Claims rejected (all landings) | 5 | 4 | 3 | 2 |
+
+  Two landings, frozen for more than a second, are rejected at every limit. The rest depends on how much dropout you
+  accept, which is a property of the sensor and not something this data can decide.
+- **Still not solved:** the three landings' verdicts, before the rule, rested on stale values; after it, the evidence is
+  not trusted, which is the honest state. Whether the drones were on the floor is unknown.
 
 ## Injected faults (496 trials, all injected; none happened in the flights)
 

@@ -304,3 +304,142 @@ fn when_the_anchor_is_discarded_the_report_says_why() {
     assert!(codes.contains(&"timing.anchor_missing"), "{codes:?}");
     assert!(codes.contains(&"calibration.expired"), "{codes:?}");
 }
+
+/// A sensor sampled every 10 ms for `n` samples from `start_ms`, holding `value` until `flip_at` (sample index), then
+/// a different one, with fresh timestamps throughout.
+fn feed(start_ms: u32, n: u32, flip_at: u32) -> Vec<serde_json::Value> {
+    (0..n)
+        .map(|i| {
+            let at = format!(
+                "2026-11-10T09:00:{:02}.{:03}Z",
+                (start_ms + i * 10) / 1000,
+                (start_ms + i * 10) % 1000
+            );
+            let value = if i < flip_at { 1 } else { 2 };
+            rec(&format!("s{i:03}"), "s", "device_state", json!(value), &at)
+        })
+        .collect()
+}
+
+#[test]
+fn a_value_repeated_for_longer_than_the_item_allows_is_stale_however_fresh_its_timestamp() {
+    // The sensor reads 1 for 600 ms, and the claim comes at the end of that stretch.
+    let mut c = base();
+    c["timing"]["default_window_ms"] = json!([-50, 50]);
+    c["evidence"]["s"]["bound"] = json!(false);
+    let anchor = rec(
+        "a1",
+        "act",
+        "controller",
+        json!("OK"),
+        "2026-11-10T09:00:00.550Z",
+    );
+    let mut all = feed(0, 61, u32::MAX);
+    all.push(anchor.clone());
+
+    // Without the opt-in the repeated value satisfies the contract.
+    let plain = verify(&contract(c.clone()), &records(&all)).unwrap();
+    assert_eq!(plain.verdict, Verdict::Satisfied);
+
+    // With it, the same evidence is not evidence.
+    c["evidence"]["s"]["max_unchanged_ms"] = json!(200);
+    let report = verify(&contract(c), &records(&all)).unwrap();
+    assert_eq!(report.verdict, Verdict::Unknown);
+    let stale: Vec<_> = report.items["s"]
+        .rejected
+        .iter()
+        .filter(|r| r.code == "evidence.stale")
+        .collect();
+    // Samples at 210 ms and later are more than 200 ms into the run: 21 to 60, forty records.
+    assert_eq!(stale.len(), 40);
+    assert!(
+        stale[0].detail.contains("unchanged for"),
+        "{}",
+        stale[0].detail
+    );
+    assert!(report.items["s"].accepted.is_empty());
+}
+
+#[test]
+fn a_live_sensor_whose_value_changes_is_never_stale() {
+    // Changes every 100 ms: no run reaches 200 ms.
+    let mut c = base();
+    c["timing"]["default_window_ms"] = json!([-50, 50]);
+    c["evidence"]["s"]["bound"] = json!(false);
+    c["evidence"]["s"]["max_unchanged_ms"] = json!(200);
+    c["conditions"] = json!([{ "evidence": "s", "op": "ge", "value": 1 }]);
+    let mut all: Vec<_> = (0..40u32)
+        .map(|i| {
+            let ms = i * 25;
+            let at = format!("2026-11-10T09:00:00.{ms:03}Z");
+            rec(
+                &format!("s{i:03}"),
+                "s",
+                "device_state",
+                json!(1 + (i / 4) % 2),
+                &at,
+            )
+        })
+        .collect();
+    all.push(rec(
+        "a1",
+        "act",
+        "controller",
+        json!("OK"),
+        "2026-11-10T09:00:00.500Z",
+    ));
+    let report = verify(&contract(c), &records(&all)).unwrap();
+    assert_eq!(
+        report.verdict,
+        Verdict::Satisfied,
+        "{:?}",
+        report.items["s"].rejected
+    );
+    assert!(
+        report.items["s"]
+            .rejected
+            .iter()
+            .all(|r| r.code != "evidence.stale")
+    );
+}
+
+#[test]
+fn staleness_is_judged_where_the_value_last_changed_not_from_the_start_of_the_evidence() {
+    // 1 for 300 ms, then 2 for 300 ms: at the claim (t = 550) the run of 2 is 250 ms old, and the window (500 to 600 ms)
+    // holds records 200 to 300 ms into it.
+    let mut c = base();
+    c["timing"]["default_window_ms"] = json!([-50, 50]);
+    c["evidence"]["s"]["bound"] = json!(false);
+    c["conditions"] = json!([{ "evidence": "s", "op": "ge", "value": 1 }]);
+    let mut all = feed(0, 61, 30);
+    all.push(rec(
+        "a1",
+        "act",
+        "controller",
+        json!("OK"),
+        "2026-11-10T09:00:00.550Z",
+    ));
+    c["evidence"]["s"]["max_unchanged_ms"] = json!(400);
+    assert_eq!(
+        verify(&contract(c.clone()), &records(&all))
+            .unwrap()
+            .verdict,
+        Verdict::Satisfied
+    );
+    c["evidence"]["s"]["max_unchanged_ms"] = json!(100);
+    assert_eq!(
+        verify(&contract(c), &records(&all)).unwrap().verdict,
+        Verdict::Unknown
+    );
+}
+
+#[test]
+fn a_zero_staleness_limit_is_a_contract_error() {
+    let mut c = base();
+    c["evidence"]["s"]["max_unchanged_ms"] = json!(0);
+    let err = serde_json::from_value::<openmhs_outcome::Contract>(c)
+        .unwrap()
+        .check()
+        .unwrap_err();
+    assert!(err.to_string().contains("max_unchanged_ms"), "{err}");
+}

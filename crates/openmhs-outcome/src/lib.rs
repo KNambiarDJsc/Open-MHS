@@ -179,6 +179,12 @@ pub struct Item {
     /// evidence for this item: nothing is transformed on the verifier's behalf.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub frame: Option<String>,
+    /// For a sensor that must show some variation (a motion-capture pose, a noisy measurement): the longest, in
+    /// milliseconds, that the same value may be repeated. A record whose value has been identical for longer is
+    /// stale, however fresh its timestamp (`evidence.stale`). Opt-in: a setpoint or a settled simulator
+    /// legitimately repeats itself.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_unchanged_ms: Option<u64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -253,6 +259,11 @@ impl Contract {
             }
         }
         for (name, item) in &self.evidence {
+            if item.max_unchanged_ms == Some(0) {
+                return bad(format!(
+                    "evidence '{name}' has max_unchanged_ms 0, which would reject every record"
+                ));
+            }
             if item.window_ms.is_some() && self.timing.is_none() {
                 return bad(format!(
                     "evidence '{name}' has a window but the contract has no timing.anchor"
@@ -767,6 +778,41 @@ fn evaluate(c: &Condition, value: &Value) -> Result<bool, (&'static str, String)
 }
 
 /// Check `records` against `contract` (RFC 0004, "The rules, in order").
+/// Rule 8 (opt-in): records of one item whose value has been repeated for longer than `max_unchanged_ms`, with how long.
+///
+/// Records are taken in source-time order (ties by id). A run is a stretch of consecutive records holding an equal
+/// value; a record's unchanged time is its time minus the start of its run. Records with no usable time are skipped
+/// here and are dealt with by the time rules. The run is measured over the records the verifier is given, so a caller
+/// that trims the evidence must keep enough history before the window.
+fn stale_records<'a>(
+    candidates: &[&'a Record],
+    times: &BTreeMap<&str, Result<Option<Timed>, String>>,
+    max_unchanged_ms: u64,
+) -> BTreeMap<&'a str, i64> {
+    let mut timed_records: Vec<(i64, &Record)> = candidates
+        .iter()
+        .filter_map(|r| match times.get(r.id.as_str()) {
+            Some(Ok(Some(t))) => Some((t.at, *r)),
+            _ => None,
+        })
+        .collect();
+    timed_records.sort_by(|a, b| a.0.cmp(&b.0).then_with(|| a.1.id.cmp(&b.1.id)));
+    let mut stale = BTreeMap::new();
+    let mut run: Option<(i64, &Value)> = None;
+    for (at, r) in timed_records {
+        let start = match run {
+            Some((start, value)) if value == &r.value => start,
+            _ => at,
+        };
+        run = Some((start, &r.value));
+        let unchanged = at - start;
+        if unchanged > i64::try_from(max_unchanged_ms).unwrap_or(i64::MAX) {
+            stale.insert(r.id.as_str(), unchanged);
+        }
+    }
+    stale
+}
+
 pub fn verify(contract: &Contract, records: &[Record]) -> Result<Report, InputError> {
     contract.check()?;
     let mut ids = BTreeSet::new();
@@ -807,7 +853,12 @@ pub fn verify(contract: &Contract, records: &[Record]) -> Result<Report, InputEr
 
     let first_pass = |name: &str, item: &Item, report: &mut ItemReport| -> Vec<&Record> {
         let mut kept = Vec::new();
-        for r in ctx.candidates(item, &sorted) {
+        let candidates = ctx.candidates(item, &sorted);
+        let stale = item
+            .max_unchanged_ms
+            .map(|max| stale_records(&candidates, &times, max))
+            .unwrap_or_default();
+        for r in candidates {
             let t = match times.get(r.id.as_str()) {
                 Some(Ok(t)) => t.as_ref(),
                 Some(Err(e)) => {
@@ -819,7 +870,18 @@ pub fn verify(contract: &Contract, records: &[Record]) -> Result<Report, InputEr
                 None => None,
             };
             match ctx.check(name, item, r, t) {
-                Fate::Accepted => kept.push(r),
+                Fate::Accepted => match stale.get(r.id.as_str()) {
+                    Some(unchanged_ms) => report.rejected.push(reason(
+                        "evidence.stale",
+                        name,
+                        Some(&r.id),
+                        format!(
+                            "the value has been unchanged for {unchanged_ms} ms, and the contract allows {} ms",
+                            item.max_unchanged_ms.unwrap_or_default()
+                        ),
+                    )),
+                    None => kept.push(r),
+                },
                 Fate::Rejected(why) => report.rejected.push(why),
             }
         }
