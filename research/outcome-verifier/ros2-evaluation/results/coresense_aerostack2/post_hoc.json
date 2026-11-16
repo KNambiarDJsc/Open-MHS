@@ -1,0 +1,127 @@
+{
+ "note": "post-hoc and exploratory; not part of the plan",
+ "goto": {
+  "goals": 107,
+  "error_vector_mean_m": [
+   0.087,
+   0.022
+  ],
+  "error_vector_sd_m": [
+   0.134,
+   0.203
+  ],
+  "distance_at_succeeded_m": {
+   "median": 0.264,
+   "p90": 0.279,
+   "max": 0.287
+  },
+  "distance_half_second_later_m": {
+   "median": 0.12,
+   "max": 0.446
+  },
+  "closest_approach_within_2s_m": {
+   "median": 0.023,
+   "p90": 0.046,
+   "max": 0.153
+  },
+  "goals_at_or_beyond_0.25m_when_succeeded": 92
+ },
+ "landings": [
+  {
+   "flight": "double_failure",
+   "drone": "drone1",
+   "samples_after": 182,
+   "distinct_poses_after": 1,
+   "header_stamp_advances": 181,
+   "z_after_m": [
+    0.044,
+    0.044
+   ],
+   "seconds_after": 1.5
+  },
+  {
+   "flight": "double_failure",
+   "drone": "drone2",
+   "samples_after": 2122,
+   "distinct_poses_after": 2122,
+   "header_stamp_advances": 2121,
+   "z_after_m": [
+    0.024,
+    0.053
+   ],
+   "seconds_after": 17.7
+  },
+  {
+   "flight": "no_failure",
+   "drone": "drone0",
+   "samples_after": 421,
+   "distinct_poses_after": 421,
+   "header_stamp_advances": 420,
+   "z_after_m": [
+    0.024,
+    0.04
+   ],
+   "seconds_after": 3.5
+  },
+  {
+   "flight": "no_failure",
+   "drone": "drone1",
+   "samples_after": 466,
+   "distinct_poses_after": 451,
+   "header_stamp_advances": 465,
+   "z_after_m": [
+    0.04,
+    0.092
+   ],
+   "seconds_after": 3.9
+  },
+  {
+   "flight": "no_failure",
+   "drone": "drone2",
+   "samples_after": 250,
+   "distinct_poses_after": 1,
+   "header_stamp_advances": 249,
+   "z_after_m": [
+    0.262,
+    0.262
+   ],
+   "seconds_after": 2.1
+  },
+  {
+   "flight": "panel_failure",
+   "drone": "drone0",
+   "samples_after": 747,
+   "distinct_poses_after": 747,
+   "header_stamp_advances": 746,
+   "z_after_m": [
+    0.026,
+    0.049
+   ],
+   "seconds_after": 6.2
+  },
+  {
+   "flight": "panel_failure",
+   "drone": "drone1",
+   "samples_after": 93,
+   "distinct_poses_after": 89,
+   "header_stamp_advances": 92,
+   "z_after_m": [
+    0.043,
+    0.082
+   ],
+   "seconds_after": 0.8
+  },
+  {
+   "flight": "panel_failure",
+   "drone": "drone2",
+   "samples_after": 1779,
+   "distinct_poses_after": 1,
+   "header_stamp_advances": 1778,
+   "z_after_m": [
+    0.408,
+    0.408
+   ],
+   "seconds_after": 14.8
+  }
+ ]
+}

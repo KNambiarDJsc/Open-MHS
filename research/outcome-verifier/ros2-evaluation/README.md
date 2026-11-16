@@ -3,7 +3,7 @@
 Can OpenMHS tell whether a robot actually got where it believes it got, from recorded ROS 2 evidence, when its own belief
 is wrong or the evidence is incomplete? And does that tell you more than a short script?
 
-**Two experiments.**
+**Three experiments.**
 
 1. **A real recording** (Málaga 2009, a real vehicle, replayed offline): the robot's own position belief was wrong 222
    times in 232, and the verifier caught every one, as did a reasonable script. Under injected faults that change the
@@ -15,7 +15,16 @@ is wrong or the evidence is incomplete? And does that tell you more than a short
    (for the lift) all caught it. The verifier added something only when the "ground truth" was secretly the robot's own
    odometry. See [RESULTS_GAZEBO.md](RESULTS_GAZEBO.md).
 
-**Nothing here was run on physical hardware. The recording is replayed, not live; the simulation is a simulation.**
+3. **Real drone flights** (CoreSense, three Crazyflie drones under motion capture, replayed offline): 124 goals that
+   reported `SUCCEEDED`, checked against the measured position. At the planned 0.20 m tolerance, 96 of 107 `GoTo`
+   successes did not hold at the moment of the status, though the drones arrived within centimetres a moment later: the
+   status meant something looser than the contract. Three of eight landings had a frozen pose feed with fresh stamps,
+   which no rule can catch. The verifier made no false `SATISFIED` claim, and the script made one under injected faults.
+   My own prediction that most would be `SATISFIED` was wrong, and the tolerance was not changed to fix it. See
+   [RESULTS_CORESENSE.md](RESULTS_CORESENSE.md).
+
+**The Málaga data is a real vehicle, the Gazebo runs are simulation, and the CoreSense flights are real drones whose
+failures were induced by the experimenters. All three are replayed, none is live. None is a field deployment.**
 
 ## What is here
 
@@ -25,6 +34,9 @@ is wrong or the evidence is incomplete? And does that tell you more than a short
 | [EVALUATION.md](EVALUATION.md) | The plan, committed before the run |
 | [RESULTS.md](RESULTS.md) | What happened, and what it does and does not show |
 | [EVALUATION_GAZEBO.md](EVALUATION_GAZEBO.md), [RESULTS_GAZEBO.md](RESULTS_GAZEBO.md) | The Gazebo experiment's plan (committed first) and results |
+| [EVALUATION_CORESENSE.md](EVALUATION_CORESENSE.md), [RESULTS_CORESENSE.md](RESULTS_CORESENSE.md) | The real-flight experiment's plan (committed first) and results |
+| `coresense_outcomes.py`, `coresense_tables.py`, `coresense_post_hoc.py` | The real-flight check, its tables, and the labelled post-hoc analysis |
+| `results/coresense_aerostack2/` | Claims, faults, tables, post-hoc numbers, example contracts, evidence and reports |
 | `gazebo/` | Recording harness for the simulation: `run_experiment.sh`, the task driver (simulation only), Gazebo pose republisher |
 | `gazebo_outcomes.py`, `gazebo_tables.py` | The Gazebo experiment's claims, contracts, labels, baselines, faults, and tables |
 | `mappings/gazebo_openamr.json` | The simulation bag's mapping, with the status-time assumption stated |

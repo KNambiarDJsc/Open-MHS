@@ -17,6 +17,12 @@ and the entry will say so under **Changed** or **Removed**.
   `insufficient_evidence` answer). CLI `openmhs ops ingest | rebuild | status | incidents | show | compare`. Python
   importer `openmhs.importers.openamr_gazebo`. Simulation only so far.
 
+- **Real flights.** `openmhs.importers.coresense_aerostack2` imports rosbag2 SQLite recordings of an Aerostack2 drone swarm
+  (CoreSense dataset, three real flights with induced failures), using a standard-library CDR decoder
+  (`openmhs.importers.cdr`) tested against the reference encoder. The layer finds the one drone the swarm reported failed.
+  A second experiment checks 124 reported-successful goals against motion capture
+  ([results](research/outcome-verifier/ros2-evaluation/RESULTS_CORESENSE.md)).
+
 ### Security
 
 - `rmcp` 3.5.1 → 3.7.0 (RUSTSEC-2026-0457, -0461, -0462) and `rusqlite` 0.40 → 0.41, bundling SQLite 3.54

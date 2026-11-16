@@ -86,7 +86,7 @@ the next 90 days as a test of whether anyone outside the project wants this, wit
 | H, I. Roadmap and issue breakdown | [07-roadmap-and-issues.md](07-roadmap-and-issues.md) |
 | J. First vertical slice, demos | [08-vertical-slice-and-demos.md](08-vertical-slice-and-demos.md) |
 | Critical review, product and business | [09-critical-review.md](09-critical-review.md) |
-| First slice: what was built and measured | [10-first-slice-results.md](10-first-slice-results.md) |
+| First slice: what was built and measured, including the first real recording | [10-first-slice-results.md](10-first-slice-results.md) |
 
 ## Tests run with this audit (2026-11-15, Windows 11)
 

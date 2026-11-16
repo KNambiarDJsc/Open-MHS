@@ -1,0 +1,2581 @@
+{
+  "conditions": [
+    {
+      "evidence": "z",
+      "index": 0,
+      "name": "z at most 0.15 m",
+      "observed": [
+        {
+          "unit": "m",
+          "value": 0.044156547635793686
+        },
+        {
+          "unit": "m",
+          "value": 0.044156547635793686
+        },
+        {
+          "unit": "m",
+          "value": 0.044156547635793686
+        },
+        {
+          "unit": "m",
+          "value": 0.044156547635793686
+        },
+        {
+          "unit": "m",
+          "value": 0.044156547635793686
+        },
+        {
+          "unit": "m",
+          "value": 0.044156547635793686
+        },
+        {
+          "unit": "m",
+          "value": 0.044156547635793686
+        },
+        {
+          "unit": "m",
+          "value": 0.044156547635793686
+        },
+        {
+          "unit": "m",
+          "value": 0.044156547635793686
+        },
+        {
+          "unit": "m",
+          "value": 0.044156547635793686
+        },
+        {
+          "unit": "m",
+          "value": 0.044156547635793686
+        },
+        {
+          "unit": "m",
+          "value": 0.044156547635793686
+        }
+      ],
+      "op": "le",
+      "records": [
+        "pose#15981:pose.z",
+        "pose#15982:pose.z",
+        "pose#15983:pose.z",
+        "pose#15984:pose.z",
+        "pose#15985:pose.z",
+        "pose#15986:pose.z",
+        "pose#15987:pose.z",
+        "pose#15988:pose.z",
+        "pose#15989:pose.z",
+        "pose#15990:pose.z",
+        "pose#15991:pose.z",
+        "pose#15992:pose.z"
+      ],
+      "result": "TRUE"
+    }
+  ],
+  "contract": {
+    "name": "land-on-ground",
+    "sha256": "c125dd9ecfdaff2db7c9bab0d87c52d5c93c51b4418c5f68b94134de0889dc66",
+    "version": "0.1"
+  },
+  "evidence": {
+    "records": 423,
+    "sha256": "31a3e20e80b08af14a0b8ea02c4f835310f88b151253154c40728eb34fcd7a0c"
+  },
+  "items": {
+    "claim": {
+      "accepted": [
+        "claim-double_failure/drone1/Land/81cbebfa671a"
+      ],
+      "anchor": true,
+      "provenance": [
+        "device"
+      ],
+      "rejected": []
+    },
+    "z": {
+      "accepted": [
+        "pose#15981:pose.z",
+        "pose#15982:pose.z",
+        "pose#15983:pose.z",
+        "pose#15984:pose.z",
+        "pose#15985:pose.z",
+        "pose#15986:pose.z",
+        "pose#15987:pose.z",
+        "pose#15988:pose.z",
+        "pose#15989:pose.z",
+        "pose#15990:pose.z",
+        "pose#15991:pose.z",
+        "pose#15992:pose.z"
+      ],
+      "anchor": false,
+      "provenance": [
+        "device"
+      ],
+      "rejected": [
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1998 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15747:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1990 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15748:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1982 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15749:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1973 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15750:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1965 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15751:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1957 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15752:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1949 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15753:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1940 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15754:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1932 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15755:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1924 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15756:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1915 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15757:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1907 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15758:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1898 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15759:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1890 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15760:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1882 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15761:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1873 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15762:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1865 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15763:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1857 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15764:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1849 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15765:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1840 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15766:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1832 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15767:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1823 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15768:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1815 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15769:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1807 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15770:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1799 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15771:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1790 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15772:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1782 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15773:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1774 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15774:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1766 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15775:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1757 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15776:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1749 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15777:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1740 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15778:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1732 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15779:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1724 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15780:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1715 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15781:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1707 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15782:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1698 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15783:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1690 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15784:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1682 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15785:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1673 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15786:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1665 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15787:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1657 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15788:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1648 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15789:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1640 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15790:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1632 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15791:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1623 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15792:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1615 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15793:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1607 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15794:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1598 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15795:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1590 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15796:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1582 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15797:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1573 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15798:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1565 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15799:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1557 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15800:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1549 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15801:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1540 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15802:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1532 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15803:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1524 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15804:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1515 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15805:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1507 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15806:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1498 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15807:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1484 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15808:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1476 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15809:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1474 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15810:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1464 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15811:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1457 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15812:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1448 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15813:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1440 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15814:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1432 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15815:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1423 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15816:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1415 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15817:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1407 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15818:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1399 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15819:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1390 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15820:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1382 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15821:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1374 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15822:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1365 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15823:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1357 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15824:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1348 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15825:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1340 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15826:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1332 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15827:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1324 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15828:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1315 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15829:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1307 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15830:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1298 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15831:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1290 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15832:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1282 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15833:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1274 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15834:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1265 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15835:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1257 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15836:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1248 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15837:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1240 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15838:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1232 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15839:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1223 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15840:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1215 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15841:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1207 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15842:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1198 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15843:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1190 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15844:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1182 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15845:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1173 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15846:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1165 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15847:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1157 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15848:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1148 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15849:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1140 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15850:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1132 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15851:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1124 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15852:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1115 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15853:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1107 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15854:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1098 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15855:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1090 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15856:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1082 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15857:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1073 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15858:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1065 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15859:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1057 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15860:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1048 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15861:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1040 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15862:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1031 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15863:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1023 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15864:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1015 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15865:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-1006 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15866:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-999 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15867:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-990 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15868:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-982 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15869:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-974 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15870:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-965 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15871:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-957 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15872:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-948 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15873:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-940 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15874:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-932 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15875:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-923 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15876:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-915 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15877:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-907 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15878:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-898 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15879:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-890 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15880:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-882 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15881:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-874 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15882:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-865 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15883:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-857 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15884:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-848 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15885:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-840 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15886:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-832 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15887:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-824 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15888:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-815 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15889:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-807 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15890:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-798 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15891:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-790 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15892:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-782 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15893:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-774 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15894:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-765 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15895:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-757 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15896:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-749 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15897:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-740 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15898:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-732 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15899:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-724 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15900:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-715 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15901:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-707 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15902:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-698 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15903:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-690 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15904:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-682 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15905:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-674 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15906:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-665 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15907:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-656 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15908:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-649 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15909:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-640 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15910:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-632 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15911:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-624 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15912:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-615 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15913:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-607 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15914:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-598 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15915:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-590 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15916:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-582 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15917:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-573 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15918:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-565 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15919:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-557 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15920:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-549 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15921:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-540 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15922:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-531 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15923:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-523 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15924:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-515 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15925:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-507 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15926:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-498 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15927:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-490 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15928:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-481 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15929:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-474 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15930:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-465 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15931:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-457 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15932:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-449 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15933:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-440 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15934:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-432 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15935:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-423 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15936:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-415 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15937:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-407 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15938:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-399 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15939:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-390 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15940:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-382 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15941:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-373 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15942:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-365 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15943:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-357 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15944:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-348 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15945:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-340 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15946:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-332 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15947:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-324 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15948:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-315 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15949:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-307 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15950:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-298 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15951:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-290 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15952:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-282 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15953:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-274 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15954:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-265 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15955:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-257 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15956:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-249 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15957:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-240 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15958:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-232 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15959:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-224 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15960:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-215 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15961:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-206 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15962:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-198 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15963:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-190 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15964:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-182 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15965:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-173 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15966:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-165 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15967:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-157 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15968:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-148 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15969:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-140 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15970:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-132 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15971:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-123 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15972:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-115 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15973:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-107 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15974:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-98 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15975:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-91 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15976:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-82 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15977:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-74 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15978:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-65 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15979:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "-57 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15980:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "52 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15993:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "60 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15994:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "68 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15995:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "76 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15996:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "85 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15997:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "93 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15998:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "102 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#15999:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "110 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16000:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "118 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16001:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "126 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16002:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "135 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16003:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "143 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16004:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "152 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16005:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "160 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16006:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "168 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16007:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "177 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16008:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "185 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16009:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "193 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16010:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "201 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16011:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "210 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16012:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "218 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16013:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "227 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16014:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "235 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16015:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "244 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16016:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "251 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16017:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "260 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16018:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "268 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16019:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "277 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16020:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "285 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16021:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "293 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16022:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "301 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16023:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "310 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16024:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "318 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16025:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "327 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16026:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "335 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16027:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "343 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16028:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "352 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16029:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "360 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16030:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "368 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16031:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "377 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16032:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "385 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16033:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "394 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16034:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "401 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16035:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "410 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16036:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "419 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16037:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "427 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16038:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "435 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16039:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "443 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16040:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "451 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16041:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "460 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16042:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "468 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16043:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "477 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16044:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "485 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16045:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "493 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16046:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "501 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16047:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "510 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16048:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "518 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16049:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "526 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16050:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "535 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16051:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "543 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16052:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "551 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16053:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "560 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16054:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "568 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16055:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "577 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16056:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "585 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16057:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "593 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16058:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "601 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16059:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "610 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16060:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "618 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16061:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "627 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16062:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "635 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16063:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "643 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16064:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "652 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16065:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "660 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16066:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "668 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16067:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "677 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16068:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "685 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16069:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "693 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16070:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "702 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16071:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "710 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16072:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "718 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16073:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "726 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16074:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "735 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16075:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "743 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16076:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "751 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16077:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "760 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16078:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "768 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16079:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "777 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16080:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "785 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16081:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "793 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16082:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "802 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16083:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "810 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16084:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "818 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16085:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "827 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16086:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "835 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16087:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "843 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16088:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "851 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16089:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "860 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16090:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "868 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16091:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "877 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16092:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "885 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16093:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "893 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16094:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "902 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16095:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "910 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16096:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "918 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16097:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "927 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16098:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "935 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16099:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "943 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16100:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "951 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16101:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "960 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16102:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "968 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16103:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "977 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16104:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "985 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16105:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "994 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16106:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1002 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16107:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1010 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16108:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1018 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16109:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1027 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16110:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1035 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16111:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1043 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16112:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1052 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16113:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1060 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16114:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1069 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16115:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1077 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16116:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1085 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16117:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1093 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16118:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1102 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16119:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1110 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16120:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1118 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16121:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1126 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16122:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1135 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16123:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1143 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16124:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1151 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16125:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1160 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16126:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1168 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16127:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1177 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16128:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1185 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16129:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1194 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16130:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1201 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16131:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1210 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16132:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1218 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16133:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1227 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16134:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1235 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16135:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1243 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16136:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1251 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16137:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1260 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16138:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1268 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16139:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1277 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16140:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1286 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16141:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1293 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16142:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1302 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16143:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1310 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16144:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1319 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16145:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1327 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16146:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1335 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16147:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1343 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16148:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1351 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16149:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1360 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16150:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1368 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16151:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1377 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16152:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1385 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16153:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1394 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16154:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1402 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16155:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1410 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16156:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1418 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16157:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1426 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16158:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1435 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16159:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1443 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16160:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1452 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16161:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1460 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16162:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1468 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16163:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1476 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16164:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1485 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16165:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1493 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16166:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1502 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16167:pose.z"
+        },
+        {
+          "code": "evidence.outside_window",
+          "detail": "1510 ms from the anchor, the window is [-50, 50] ms",
+          "item": "z",
+          "record": "pose#16168:pose.z"
+        }
+      ]
+    }
+  },
+  "reasons": [],
+  "verdict": "SATISFIED",
+  "verifier": "openmhs-outcome 0.1.0"
+}

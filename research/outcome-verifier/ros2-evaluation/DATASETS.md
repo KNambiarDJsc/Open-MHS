@@ -7,12 +7,16 @@ graph. A CSV or hand-written JSON is not counted, and neither are this repositor
 
 | Source | ROS 2? | Real or simulated | Size | Licence | Task outcome checkable? | Used |
 |---|---|---|---|---|---|---|
+| [CoreSense Inspection Testbed ROSbag Dataset](https://zenodo.org/records/23243295) | Yes: rosbag2 **SQLite** (`.db3`), recorded 2026-10-07 | **Real drones**: three Crazyflies, Aerostack2, OptiTrack motion capture. Failures induced by the experimenters | 478 MB in three archives (smallest 53 MB) | CC BY 4.0 | **Yes**: per-goal `_action/status` for takeoff, go-to, landing and auctions, a mission-status string, knowledge-base facts, and motion-capture pose. No software revision or configuration published | **Yes** (found 2026-11-16): see RESULTS_CORESENSE.md |
 | [Málaga 2009 Robotic Dataset Collection](https://zenodo.org/records/24021075), `parking_0L` | Yes: MCAP, converted in 2026 from the 2008 rawlog (`rawlog2rosbag`, `mrpt_ros_bridge`) | Real vehicle | 780 MB (smallest of six; 21.7 GB in all) | CC BY 4.0 | Only a position belief: no goal, action or status topic. RTK ground truth, consumer GPS, three RTK receivers, IMU, lasers, cameras | **Yes** |
 | [turtlebot3_datasets](https://github.com/guilhermelawless/turtlebot3_datasets) | **No**: ROS 1 `.bag` | Real TurtleBot3 Waffle Pi, motion-capture ground truth on `/tf` | Not stated | GPL-3.0 | Odometry against mocap; no task. The author notes a fixed stamp synchronisation issue | No: ROS 1 |
 | [Autoware sample rosbag](https://autowarefoundation.github.io/autoware-documentation/main/demos/rosbag-replay-simulation/) | Yes (SQLite) | Real vehicle | Not stated (gigabytes likely) | "© 2020 Tier IV"; no open licence found | Localisation replay; no task outcome | No: licence unclear, size |
 | [IEEE DataPort rosbag2_2024_07_19](https://ieee-dataport.org/documents/rosbag220240719110137-dataset) | Yes (MCAP) | Autonomous vehicle | Not checked | Requires login | Odometry, no ground truth noted | No |
 | [JKK Research dataset 02](https://jkk-research.github.io/dataset/jkk_dataset_02/) | Yes (MCAP) | Vehicle | Not checked | Not checked | Not a robot task | No |
 | `rosbag2_storage_mcap_testdata` ([index.ros.org](https://index.ros.org/p/rosbag2_storage_mcap_testdata/)) | Yes | Test fixtures | Small | Apache-2.0 | No robot | No |
+
+**Update 2026-11-16:** the CoreSense dataset above is such a recording for drones (goals, their status, and a pose to check
+them against). The note below is what the first search found, and stands for navigation and manipulation.
 
 **Not found:** a public ROS 2 recording of a robot task (navigation goal, manipulation) that contains the goal, the action
 status and an independent measurement of the outcome. Nav2 forum posts describe the status topic

@@ -79,6 +79,24 @@ comparisons (27), concurrent events marked on timelines (28).
 | 29 | Demo 2 on LeRobot once installed; Isaac Lab-Arena results import | The chosen users run learned policies |
 | 30 | Pair attempts across arms by scenario (a paired comparison) | Matched scenarios give much tighter intervals than two independent samples |
 
+## Real flights (2026-11-16)
+
+The first non-simulated recording: three Crazyflie drones under motion capture, from the CoreSense dataset
+([Zenodo 10.5281/zenodo.23243295](https://doi.org/10.5281/zenodo.23243295), CC BY 4.0). Three flights, one with no failure,
+one with an induced panel failure, one with a panel and a drone failure. **The failures were induced by the experimenters.**
+
+- The bags are rosbag2 SQLite, which the MCAP bridge cannot read. `python/openmhs/importers/cdr.py` decodes the three
+  standard messages needed (checked against the reference encoder) and `coresense_aerostack2.py` imports them: one mission
+  task per drone, every goal as an action keyed by its UUID, the swarm's own failure report as a fault, auctions as markers,
+  one manifest for all flights (the dataset publishes no software revision, and the manifest says so).
+- **Result:** 9 missions, 8 succeeded, 1 failed. Goal outcomes: 41 succeeded in the clean flight; 45 succeeded and 3 canceled
+  with the panel failure; 47 and 6 with the double failure. **One incident**: `drone0` in the double-failure flight. Its timeline
+  shows the swarm reporting `droneStatus failed` inside a go-to goal, and that goal `CANCELED` about 3.8 s later; auction markers
+  follow, and the swarm's knowledge base (not imported as events) shows the failed drone's waypoints handed to the other two. The panel-failure flight cancelled goals on all three drones
+  and every drone landed; cancellation alone is not a failure, so no incident opens for it.
+- The same flights checked against motion capture are in
+  [RESULTS_CORESENSE.md](../../../research/outcome-verifier/ros2-evaluation/RESULTS_CORESENSE.md).
+
 ## Reproduce
 
 ```sh
@@ -90,4 +108,13 @@ export OPENMHS_OPS_STORE=ops.sqlite
 ../target/debug/openmhs ops ingest events.jsonl
 ../target/debug/openmhs ops incidents --task-type lift
 ../target/debug/openmhs ops compare --task-type lift --a engine-bullet --b tol-0.01 --verified
+```
+
+The real flights (after downloading and unpacking the three archives):
+
+```sh
+python -m openmhs.importers.coresense_aerostack2 BAGS/rosbag2_real_paths_2_OK_no_failure \
+    BAGS/rosbag2_real_paths_2_OK_panel_failure BAGS/rosbag2_real_paths_2_OK_double_failure --out flights.jsonl
+../target/debug/openmhs ops ingest flights.jsonl
+../target/debug/openmhs ops incidents
 ```
