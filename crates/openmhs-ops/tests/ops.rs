@@ -525,7 +525,7 @@ fn a_store_from_the_previous_schema_version_upgrades_in_place_and_keeps_its_even
     let version: i64 = conn
         .query_row("PRAGMA user_version", [], |r| r.get(0))
         .unwrap();
-    assert_eq!(version, 2);
+    assert_eq!(version, 3);
     let scenario: Option<String> = conn
         .query_row(
             "SELECT scenario_id FROM events WHERE event_id = 'old'",
@@ -623,4 +623,48 @@ fn scenarios_missing_from_one_arm_are_named_and_left_out_of_the_pairs() {
         "{:?}",
         c.warnings
     );
+}
+
+#[test]
+fn the_wall_clock_cost_of_each_arm_is_reported_beside_the_simulated_duration() {
+    // v1 attempts report 100 + i seconds of compute, v2 attempts 20 + i; the events' own clock says 1 s for all of them.
+    let mut records = paired_fleet();
+    for r in &mut records {
+        if r["type"] == "task.ended" {
+            let id = r["subject"]["task_id"].as_str().unwrap().to_owned();
+            let (release, i) = id.split_once('-').unwrap();
+            let i: f64 = i.parse().unwrap();
+            let base = if release == "v1" { 100.0 } else { 20.0 };
+            r["cost"] = json!({"wall_s": base + i});
+        }
+    }
+    let store = loaded(&records);
+    let c = store
+        .compare(&CompareSpec::new("pick", "v1", "v2", OutcomeKind::Reported))
+        .unwrap();
+    // 40 attempts per arm, wall time 100..139 and 20..59: the median is the mean of the 20th and 21st values, and the
+    // 90th percentile sits 35.1 ranks up.
+    let close = |got: Option<(f64, f64, u64)>, want: (f64, f64, u64)| {
+        let g = got.unwrap();
+        assert!(
+            (g.0 - want.0).abs() < 1e-9 && (g.1 - want.1).abs() < 1e-9 && g.2 == want.2,
+            "{g:?} != {want:?}"
+        );
+    };
+    close(c.a.wall_s, (119.5, 135.1, 40));
+    close(c.b.wall_s, (39.5, 55.1, 40));
+    assert_eq!(
+        c.a.duration_s.map(|d| d.0),
+        Some(1.0),
+        "the simulated duration is a different thing"
+    );
+}
+
+#[test]
+fn an_arm_whose_producer_reports_no_wall_time_shows_none_not_zero() {
+    let store = loaded(&paired_fleet());
+    let c = store
+        .compare(&CompareSpec::new("pick", "v1", "v2", OutcomeKind::Reported))
+        .unwrap();
+    assert_eq!((c.a.wall_s, c.b.wall_s), (None, None));
 }

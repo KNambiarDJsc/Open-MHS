@@ -81,6 +81,17 @@ impl PairedCounts {
 /// Difference `p_b - p_a` of two correlated failure rates, with Newcombe's hybrid score interval for paired proportions
 /// (method 10: the two Wilson intervals, combined through the correlation the pairs show). With no correlation it is
 /// the unpaired [`newcombe`] interval. `None` when there are no pairs.
+/// The `q` quantile of values already sorted ascending, by linear interpolation between the two nearest ranks (the
+/// common default: the median of an even count is the mean of the two middle values). `None` when empty.
+pub fn quantile(sorted: &[f64], q: f64) -> Option<f64> {
+    if sorted.is_empty() || !(0.0..=1.0).contains(&q) {
+        return None;
+    }
+    let pos = (sorted.len() - 1) as f64 * q;
+    let (lo, hi) = (pos.floor() as usize, pos.ceil() as usize);
+    Some(sorted[lo] + (pos - lo as f64) * (sorted[hi] - sorted[lo]))
+}
+
 pub fn newcombe_paired(c: PairedCounts) -> Option<(f64, f64, f64)> {
     let n = c.pairs();
     if n == 0 {
@@ -208,6 +219,20 @@ mod tests {
             pooled > 0.05,
             "pooled data shows a false 5 point regression: {pooled}"
         );
+    }
+
+    #[test]
+    fn quantiles_interpolate_and_the_median_of_an_even_count_is_the_mean_of_the_middle_two() {
+        assert_eq!(quantile(&[], 0.5), None);
+        assert_eq!(quantile(&[7.0], 0.9), Some(7.0));
+        assert_eq!(quantile(&[1.0, 2.0, 3.0], 0.5), Some(2.0));
+        assert_eq!(quantile(&[1.0, 2.0, 3.0, 4.0], 0.5), Some(2.5));
+        // 0.9 of ten values sits 8.1 ranks up: 9 + 0.1 * (10 - 9).
+        let ten: Vec<f64> = (1..=10).map(f64::from).collect();
+        assert!((quantile(&ten, 0.9).unwrap() - 9.1).abs() < 1e-12);
+        assert_eq!(quantile(&ten, 0.0), Some(1.0));
+        assert_eq!(quantile(&ten, 1.0), Some(10.0));
+        assert_eq!(quantile(&ten, 1.5), None);
     }
 
     #[test]

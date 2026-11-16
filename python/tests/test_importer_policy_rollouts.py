@@ -50,6 +50,7 @@ class PolicyRolloutTests(unittest.TestCase):
         self.assertEqual([e["subject"]["scenario_id"] for e in ended], ["pusht/seed-1000", "pusht/seed-1001", "pusht/seed-1002"])
         self.assertEqual([e["outcome"]["reported"]["value"] for e in ended], ["succeeded", "failed", "succeeded"])
         self.assertEqual(ended[1]["outcome"]["reported"]["source"], "gym_pusht.is_success")
+        self.assertEqual([e["cost"]["wall_s"] for e in ended], [12.5, 12.5, 12.5], "the compute time is recorded apart from the simulated clock")
         self.assertEqual({e["subject"]["task_type"] for e in ev if "subject" in e}, {"pusht"})
 
     def test_the_same_seed_has_the_same_scenario_in_every_arm_and_a_different_task(self):

@@ -10,7 +10,7 @@ use serde_json::Value;
 use crate::derive::{RULES_VERSION, WINDOW_AFTER_NS, WINDOW_BEFORE_NS};
 use crate::stats::{
     PairedCounts, StratumCounts, mantel_haenszel_rd, mcnemar_exact, newcombe, newcombe_paired,
-    wilson,
+    quantile, wilson,
 };
 use crate::{OpsError, Store};
 
@@ -403,6 +403,17 @@ pub struct Arm {
     pub incidents: Vec<String>,
     /// Seconds from task start to task end over attempts with both: (median, 90th percentile, n).
     pub duration_s: Option<(f64, f64, u64)>,
+    /// Wall-clock seconds the executing system reported spending per attempt (`cost.wall_s`): (median, 90th percentile, n).
+    /// Unlike `duration_s` this is real compute time even when the events' own clock is simulated; it is comparable
+    /// across arms only on the same hardware and load, which the producer, not the store, knows.
+    pub wall_s: Option<(f64, f64, u64)>,
+}
+
+/// (median, 90th percentile, n) of a set of values, interpolated (see `stats::quantile`).
+fn summarize(mut values: Vec<f64>) -> Option<(f64, f64, u64)> {
+    values.sort_unstable_by(f64::total_cmp);
+    let n = values.len() as u64;
+    Some((quantile(&values, 0.5)?, quantile(&values, 0.9)?, n))
 }
 
 /// One attempt as read for a comparison.
@@ -412,6 +423,7 @@ struct Row {
     unit_key: String,
     scenario: Option<String>,
     duration_ns: Option<i64>,
+    wall_s: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -586,7 +598,7 @@ impl Store {
         let mut rows = Vec::new();
         for digest in &manifests {
             let mut stmt = self.conn.prepare(
-                "SELECT site, reported, verified, scenario_id, task_id, started_ns, ended_ns FROM task_attempts
+                "SELECT site, reported, verified, scenario_id, task_id, started_ns, ended_ns, wall_s FROM task_attempts
                  WHERE task_type = ?1 AND manifest = ?2 ORDER BY task_id",
             )?;
             type Raw = (
@@ -597,6 +609,7 @@ impl Store {
                 String,
                 Option<i64>,
                 Option<i64>,
+                Option<f64>,
             );
             let raw: Vec<Raw> = stmt
                 .query_map(params![spec.task_type, digest], |r| {
@@ -608,10 +621,11 @@ impl Store {
                         r.get(4)?,
                         r.get(5)?,
                         r.get(6)?,
+                        r.get(7)?,
                     ))
                 })?
                 .collect::<Result<_, _>>()?;
-            for (site, reported, verified, scenario, task_id, started, ended) in raw {
+            for (site, reported, verified, scenario, task_id, started, ended, wall_s) in raw {
                 let class = match spec.outcome {
                     OutcomeKind::Reported => match reported.as_deref() {
                         Some("succeeded") => "success",
@@ -636,6 +650,7 @@ impl Store {
                         (Some(s), Some(e)) if e >= s => Some(e - s),
                         _ => None,
                     },
+                    wall_s,
                 });
             }
             let mut stmt = self.conn.prepare(
@@ -654,6 +669,7 @@ impl Store {
     fn tally(arm: &mut Arm, rows: &[Row], by_scenario: bool) -> SiteCounts {
         let mut by_site: SiteCounts = BTreeMap::new();
         let mut durations: Vec<i64> = Vec::new();
+        let mut walls: Vec<f64> = Vec::new();
         // unit key -> (site, successes, failures, unknowns)
         let mut units: BTreeMap<&str, (String, u64, u64, u64)> = BTreeMap::new();
         let mut scenarios: BTreeSet<&str> = BTreeSet::new();
@@ -662,6 +678,9 @@ impl Store {
             *arm.sites.entry(r.site.clone()).or_default() += 1;
             if let Some(d) = r.duration_ns {
                 durations.push(d);
+            }
+            if let Some(w) = r.wall_s {
+                walls.push(w);
             }
             if let Some(sc) = &r.scenario {
                 scenarios.insert(sc);
@@ -731,14 +750,8 @@ impl Store {
                 (arm.failed + arm.unknown) as f64 / all as f64,
             ));
         }
-        if !durations.is_empty() {
-            durations.sort_unstable();
-            let at = |q: f64| {
-                let i = ((durations.len() - 1) as f64 * q).round() as usize;
-                durations[i] as f64 / 1e9
-            };
-            arm.duration_s = Some((at(0.5), at(0.9), durations.len() as u64));
-        }
+        arm.duration_s = summarize(durations.iter().map(|d| *d as f64 / 1e9).collect());
+        arm.wall_s = summarize(walls);
         by_site
     }
 

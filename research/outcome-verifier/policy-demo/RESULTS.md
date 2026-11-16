@@ -74,10 +74,12 @@ incidents that can be listed as a selection for evaluation or training, and an i
 
 Gaps found while doing this, not fixed here:
 
-- **Duration is simulated time, not compute.** The comparison reports episode duration as steps divided by 10 fps (median
-  20.5 s against 25.6 s, both capped at 30 s by the step limit). The wall-clock cost that distinguishes the arms (6.5×) is in
-  the events' `ext` (`wall_seconds`) but nothing in the comparison reads it, so the main trade-off of this change is
-  invisible in the report.
+- **Duration is simulated time, not compute (fixed afterwards).** The comparison reports episode duration as steps divided by
+  10 fps (median 18.6 s against 23.2 s, both capped at 30 s by the step limit), so the wall-clock cost that distinguishes
+  the arms was invisible in the report. Events can now carry `cost.wall_s`, the importer emits it, and `ops compare` prints
+  it: re-importing the same results gives a median wall time of 741.8 s for `ddpm-100` and 127.7 s for `ddim-10` (a
+  factor of 5.8), the same figures as computed directly from the result files. These are the producer's own timings on a
+  shared machine, as noted under prediction 4.
 - `ops compare` listed at most five incidents per arm without saying so; it now says "newest 5" when the list is cut
   (one-line change in this commit).
 - The failure's *shape* (nearly there, did not move) is in `ext` but incidents carry only `reported_failed`; there is
@@ -96,6 +98,11 @@ about one.
   measured under shared load they were about 14 and 2 minutes.
 - Four processes were run at a time, not eight: eight exhausted memory in the first launch, so the first attempt was stopped
   and relaunched with the shard layout in `run_arms.sh`. No episode from the failed launch was used.
+- **A quantile bug in the tool, found here.** The first comparison output quoted medians of 20.5 s and 25.6 s for the
+  simulated durations, and the first wall-time output 800.6 s and 142.8 s against 742 s and 128 s computed from the files:
+  for an even count the tool took the upper of the two middle values. Fixed (interpolated quantiles) before this page was
+  finalised; every figure above is from the fixed tool. The same bug had affected the duration figures in the Gazebo
+  write-up, corrected there.
 
 ## Next, if wanted
 

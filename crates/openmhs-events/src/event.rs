@@ -60,6 +60,9 @@ pub struct Event {
     pub task_type: Option<String>,
     /// What is being attempted under which conditions; attempts that share it are replicates, not independent trials.
     pub scenario_id: Option<String>,
+    /// Wall-clock seconds the executing system spent on this task (`cost.wall_s`). Distinct from the event's own
+    /// time, which may be simulated, replayed or imported.
+    pub wall_s: Option<f64>,
     pub episode_id: Option<String>,
     pub action_id: Option<String>,
     pub goal_id: Option<String>,
@@ -261,6 +264,19 @@ impl Event {
             ));
         }
 
+        let wall_s = match at(v, &["cost", "wall_s"]) {
+            None => None,
+            Some(w) => match w.as_f64() {
+                Some(x) if x.is_finite() && x >= 0.0 => Some(x),
+                _ => {
+                    return Err(RecordError::new(
+                        "event.field",
+                        "`cost.wall_s` must be a non-negative number of seconds",
+                    ));
+                }
+            },
+        };
+
         let mut evidence = Vec::new();
         if let Some(items) = at(v, &["evidence"]) {
             let items = items
@@ -332,6 +348,7 @@ impl Event {
             task_id: text(v, &["subject", "task_id"])?,
             task_type: text(v, &["subject", "task_type"])?,
             scenario_id: text(v, &["subject", "scenario_id"])?,
+            wall_s,
             episode_id: text(v, &["subject", "episode_id"])?,
             action_id: text(v, &["subject", "action_id"])?,
             goal_id: text(v, &["subject", "goal_id"])?,
@@ -484,6 +501,14 @@ mod tests {
                 Box::new(|v: &mut Value| v["schema"] = json!("openmhs.event/1.0")),
             ),
             (
+                "event.field",
+                Box::new(|v: &mut Value| v["cost"] = json!({"wall_s": -3})),
+            ),
+            (
+                "event.field",
+                Box::new(|v: &mut Value| v["cost"] = json!({"wall_s": "fast"})),
+            ),
+            (
                 "event.too_large",
                 Box::new(|v: &mut Value| v["ext"] = json!({"x": "a".repeat(40_000)})),
             ),
@@ -496,6 +521,16 @@ mod tests {
                 Ok(_) => panic!("accepted {v}"),
             }
         }
+    }
+
+    #[test]
+    fn the_wall_clock_cost_of_a_task_is_read() {
+        let mut v = minimal();
+        assert_eq!(Event::parse(&v).unwrap().wall_s, None);
+        v["cost"] = json!({"wall_s": 812.5});
+        assert_eq!(Event::parse(&v).unwrap().wall_s, Some(812.5));
+        v["cost"] = json!({"wall_s": 0});
+        assert_eq!(Event::parse(&v).unwrap().wall_s, Some(0.0));
     }
 
     #[test]

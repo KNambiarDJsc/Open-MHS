@@ -84,6 +84,7 @@ source-specific extensions.
 | `subject.*` | no | Any of task, episode, action, goal ids. Absent ids are absent, never guessed |
 | `subject.task_type` | no | The producer's name for the kind of task (`pick`, `dock`, `navigate`). Release statistics group by it; without it, attempts fall in one `untyped` group |
 | `subject.scenario_id` | no | What is attempted under which conditions (a task-list entry, an evaluation seed, a fixture). Attempts that share one are **replicates**: release comparisons count scenarios, not attempts, when attempts repeat a scenario (ADR-0032). Added in 0.1 during the first slice |
+| `cost.wall_s` | no | Wall-clock seconds the executing system spent on the task, on any event of the task (the largest is used). Distinct from `time`, which may be simulated, replayed or imported: a simulation that runs 300 steps at 10 fps records 30 s of its own time and may have spent 800 s computing them. Non-negative number; anything else is refused. Comparable between releases only on the same hardware and load. Added in 0.1 during the policy demo |
 | `trace` | no | W3C trace context when the producer has one |
 | `deployment.manifest` | no | Digest of the manifest active at `time.observed`, if the producer knows it. Otherwise derived from rollouts (§3) and marked inferred |
 | `outcome.reported`, `.verified`, `.annotated` | no | ADR-0033 |
@@ -211,7 +212,7 @@ CREATE TABLE artifacts (tenant TEXT, artifact_id TEXT, uri TEXT NOT NULL, media_
   start_ns INTEGER, end_ns INTEGER, robot TEXT, body TEXT NOT NULL, PRIMARY KEY (tenant, artifact_id));
 
 -- Derived, rebuildable from events (versioned by rule set):
-CREATE TABLE task_attempts (tenant TEXT, task_id TEXT, robot TEXT, task_type TEXT, scenario_id TEXT, manifest TEXT,
+CREATE TABLE task_attempts (tenant TEXT, task_id TEXT, robot TEXT, task_type TEXT, scenario_id TEXT, wall_s REAL, manifest TEXT,
   started_ns INTEGER, ended_ns INTEGER, reported TEXT, verified TEXT, interventions INTEGER,
   rules_version TEXT NOT NULL, PRIMARY KEY (tenant, task_id, robot, started_ns));
 CREATE TABLE incidents (tenant TEXT, incident_id TEXT, rules_version TEXT NOT NULL, fingerprint TEXT,

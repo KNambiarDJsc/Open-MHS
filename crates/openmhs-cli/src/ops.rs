@@ -425,6 +425,14 @@ pub fn compare(
         }
     }
     println!("verdict: {:?}  ({})", c.verdict, c.reasons.join("; "));
+    for (name, arm) in [("a", &c.a), ("b", &c.b)] {
+        if let Some((median, p90, n)) = arm.wall_s {
+            println!(
+                "wall time {name}: median {median:.1} s, 90th percentile {p90:.1} s over {n} attempts, as reported by the \
+                 producer (comparable only on the same hardware and load)"
+            );
+        }
+    }
     for w in &c.warnings {
         println!("warning: {w}");
     }

@@ -15,7 +15,9 @@ SIMULATION. There is no robot and no human. What becomes what:
 - the episode's outcome is what the harness reported (``gym_pusht`` success: covered area over 95 %). The policy makes no
   claim of its own, so this is ``outcome.reported`` with its source named;
 - an ``episode.started`` / ``episode.ended`` pair per attempt, with the model and sampler recorded in ``ext``;
-- the results file as an **artifact** by reference.
+- the results file as an **artifact** by reference;
+- the wall-clock time of the episode as `cost.wall_s` on the task end: the events' own clock is simulated (steps at
+  10 fps), so this is the only record of what the attempt cost to compute.
 
 Not done, on purpose: no intervention events (nobody took over), no action chunks, no rewards per step.
 """
@@ -131,7 +133,8 @@ def import_arm(files: list[Path], model_revision: str, lerobot: str) -> list[dic
         outcome = {"reported": {"value": "succeeded" if ep["success"] else "failed", "source": "gym_pusht.is_success",
                                 "detail_code": "coverage>0.95" if ep["success"] else f"max_reward_{ep['max_reward']}"}}
         event(f"{seed}/episode.ended", "episode.ended", end, subject=subject, outcome=outcome, ext=ext)
-        event(f"{seed}/task.ended", "task.ended", end, subject=subject, outcome=outcome, ext=ext)
+        event(f"{seed}/task.ended", "task.ended", end, subject=subject, outcome=outcome, ext=ext,
+              cost={"wall_s": ep["seconds"]})
     return out
 
 

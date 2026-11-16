@@ -23,6 +23,11 @@ and the entry will say so under **Changed** or **Removed**.
   A second experiment checks 124 reported-successful goals against motion capture
   ([results](research/outcome-verifier/ros2-evaluation/RESULTS_CORESENSE.md)).
 
+- **Wall-clock cost in release comparisons.** Events may carry `cost.wall_s` (RFC 0005), a task attempt keeps it
+  (migration 0003, filled by the next rebuild), and `ops compare` prints wall time per arm beside the duration, which in a
+  simulation is simulated time. The policy rollout importer emits it. **Fix:** the median and 90th percentile of an even
+  count took the upper middle value; they are now interpolated (the median is the mean of the two middle values). Figures
+  that had been written down from the old output are corrected in the first-slice results.
 - **Paired release comparison.** `openmhs ops compare --paired` matches scenarios across two releases (same seeds, same
   fixtures) and compares each scenario with itself: McNemar's exact test and Newcombe's paired interval, validated by a
   coverage simulation, with scenarios present in only one arm named and left out

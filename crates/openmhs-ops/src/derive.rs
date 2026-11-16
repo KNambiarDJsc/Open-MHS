@@ -68,6 +68,7 @@ struct Attempt {
     clock_domain: Option<String>,
     component: Option<String>,
     scenario_id: Option<String>,
+    wall_s: Option<f64>,
 }
 
 fn aggregate_verdicts(verdicts: &[String]) -> Option<String> {
@@ -115,12 +116,12 @@ impl Store {
             tx.execute(
                 "INSERT INTO task_attempts (tenant, robot, task_id, task_type, site, manifest, manifest_basis,
                      started_ns, ended_ns, reported, verified, interventions, close_reason, rules_version,
-                     scenario_id)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)",
+                     scenario_id, wall_s)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)",
                 params![
                     a.tenant, a.robot, a.task_id, a.task_type, a.site, a.manifest, a.manifest_basis, a.started_ns,
                     a.ended_ns, a.reported, a.verified, a.interventions as i64, a.close_reason, RULES_VERSION,
-                    a.scenario_id
+                    a.scenario_id, a.wall_s
                 ],
             )?;
             incident(&tx, a, &mut report)?;
@@ -302,6 +303,21 @@ fn task_attempts(tx: &Transaction<'_>) -> Result<Vec<Attempt>, OpsError> {
             .push((verified.unwrap_or_default(), event_id));
     }
 
+    // The wall-clock cost of an attempt is the largest `cost.wall_s` any of its events reports (the producer may put it
+    // on the end event, the episode event, or both).
+    let mut wall: BTreeMap<(String, String, String), f64> = BTreeMap::new();
+    let mut stmt = tx.prepare(
+        "SELECT tenant, robot, task_id, json_extract(body, '$.cost.wall_s') FROM events
+         WHERE task_id IS NOT NULL AND json_extract(body, '$.cost.wall_s') IS NOT NULL",
+    )?;
+    let costs: Vec<(String, String, String, f64)> = stmt
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)))?
+        .collect::<Result<_, _>>()?;
+    for (tenant, robot, task_id, w) in costs {
+        let slot = wall.entry((tenant, robot, task_id)).or_insert(w);
+        *slot = slot.max(w);
+    }
+
     let mut out = Vec::with_capacity(aggs.len());
     for ((tenant, robot, task_id), mut agg) in aggs {
         for goal in &agg.goals {
@@ -364,6 +380,9 @@ fn task_attempts(tx: &Transaction<'_>) -> Result<Vec<Attempt>, OpsError> {
             clock_domain: agg.clock_domain,
             component: agg.component,
             scenario_id: agg.scenario,
+            wall_s: wall
+                .get(&(tenant.clone(), robot.clone(), task_id.clone()))
+                .copied(),
             tenant,
             robot,
             task_id,

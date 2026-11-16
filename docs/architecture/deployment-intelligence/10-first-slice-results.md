@@ -53,8 +53,9 @@ outcomes. That is the case for keeping the two apart (ADR-0033).
 What the B runs also showed:
 
 - With a tolerance, the controller waited for the lift: L06 reported success after 4.5 s instead of 2.0 s, L07 after
-  12.8 s instead of 8.0. The comparison now reports task duration per arm: median 3.0 s for A and 4.0 s for B, 90th
-  percentile 4.1 s and 5.1 s. Release B trades time for correctness.
+  12.8 s instead of 8.0. The comparison now reports task duration per arm: median 2.5 s for A and 3.5 s for B, 90th
+  percentile 4.5 s and 5.9 s (these figures were first written down with a quantile that took the upper of the two middle
+  values for an even count; the tool now interpolates). Release B trades time for correctness.
 - B's errors at the reported success were 9.2 to 9.9 mm, just inside the verifier's 10 mm contract, because the
   controller declares success as soon as the lift is within its own 10 mm tolerance, while still moving. A 5 mm
   contract would fail most of them.
@@ -111,8 +112,9 @@ run; results and the predictions that held and did not are in
 - **Pairing did not narrow the interval**: the two arms' failures overlapped no more than chance (2 scenarios against 2.0
   expected), so the paired and unpaired intervals are identical. The tighter-interval case needs the same scenarios to fail
   in both arms; this run does not show that they do.
-- Found gaps: the comparison's duration is simulated time, so the compute cost that separates the releases is not in the
-  report; incidents carry no failure shape (near miss against no movement).
+- Found gaps: the comparison's duration was simulated time, so the compute cost that separates the releases was not in
+  the report (closed the same day: events can carry `cost.wall_s`, and `ops compare` prints wall time per arm, here a
+  median of 742 s against 128 s); incidents carry no failure shape (near miss against no movement).
 
 ## Reproduce
 
