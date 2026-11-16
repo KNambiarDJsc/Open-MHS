@@ -407,6 +407,10 @@ pub struct Arm {
     /// Unlike `duration_s` this is real compute time even when the events' own clock is simulated; it is comparable
     /// across arms only on the same hardware and load, which the producer, not the store, knows.
     pub wall_s: Option<(f64, f64, u64)>,
+    /// Verified verdicts on the goals (sub-tasks) of this arm's attempts, per goal component:
+    /// (satisfied, violated, unknown). Counted per goal, descriptively: goals of one attempt share its conditions, so
+    /// they are not independent and no interval is computed from them.
+    pub goal_verdicts: BTreeMap<String, (u64, u64, u64)>,
 }
 
 /// (median, 90th percentile, n) of a set of values, interpolated (see `stats::quantile`).
@@ -652,6 +656,31 @@ impl Store {
                     },
                     wall_s,
                 });
+            }
+            // Verdicts that name only a goal belong to the attempt that owns the goal (id_match on goal_id).
+            let mut stmt = self.conn.prepare(
+                "SELECT COALESCE(v.component, '(unspecified)'), v.verified, COUNT(DISTINCT v.event_id)
+                 FROM events v
+                 WHERE v.type = 'outcome.verified' AND v.task_id IS NULL AND v.goal_id IS NOT NULL
+                   AND EXISTS (SELECT 1 FROM events g
+                               JOIN task_attempts t ON t.tenant = g.tenant AND t.robot = g.robot AND t.task_id = g.task_id
+                               WHERE g.tenant = v.tenant AND g.robot = v.robot AND g.goal_id = v.goal_id
+                                 AND g.task_id IS NOT NULL AND t.task_type = ?1 AND t.manifest = ?2)
+                 GROUP BY 1, 2",
+            )?;
+            let found: Vec<(String, Option<String>, i64)> = stmt
+                .query_map(params![spec.task_type, digest], |r| {
+                    Ok((r.get(0)?, r.get(1)?, r.get(2)?))
+                })?
+                .collect::<Result<_, _>>()?;
+            for (component, verdict, n) in found {
+                let n = n as u64;
+                let e = arm.goal_verdicts.entry(component).or_default();
+                match verdict.as_deref() {
+                    Some("satisfied") => e.0 += n,
+                    Some("violated") => e.1 += n,
+                    _ => e.2 += n,
+                }
             }
             let mut stmt = self.conn.prepare(
                 "SELECT incident_id FROM incidents WHERE task_type = ?1 AND manifest = ?2

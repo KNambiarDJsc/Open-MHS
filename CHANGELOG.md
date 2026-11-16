@@ -30,6 +30,10 @@ and the entry will say so under **Changed** or **Removed**.
   ([ADR-0033](docs/adr/0033-outcome-provenance.md), amendment). The evaluation's claim extraction moved to
   `python/openmhs/importers/coresense_verify.py`, shared with the research scripts, whose published results it
   reproduces exactly. Without `--verify` the import is unchanged.
+- **Verified goals per behavior in release comparisons.** `ops compare` lists, per arm, how many goals of each behavior
+  (`goto`, `takeoff`, `land`, …) were verified satisfied, violated or unknown. They are counted per goal and carry no
+  interval, because the goals of one attempt share its conditions and are not independent; the verdict of the comparison
+  is unchanged. For the CoreSense flights this puts the 96 violated GoTo goals beside the 9 incidents they produce.
 - **Wall-clock cost in release comparisons.** Events may carry `cost.wall_s` (RFC 0005), a task attempt keeps it
   (migration 0003, filled by the next rebuild), and `ops compare` prints wall time per arm beside the duration, which in a
   simulation is simulated time. The policy rollout importer emits it. **Fix:** the median and 90th percentile of an even

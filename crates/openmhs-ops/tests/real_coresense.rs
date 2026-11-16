@@ -9,7 +9,7 @@
 
 use std::collections::BTreeMap;
 
-use openmhs_ops::{IngestStatus, Store};
+use openmhs_ops::{CompareSpec, IngestStatus, OutcomeKind, Store};
 use serde_json::Value;
 
 fn records() -> Vec<Value> {
@@ -316,4 +316,38 @@ fn importing_the_verified_flights_twice_changes_nothing() {
     assert!(again.iter().all(|r| r.status == IngestStatus::Duplicate));
     store.rebuild().unwrap();
     assert_eq!(store.counts().unwrap(), before);
+}
+
+#[test]
+fn a_comparison_counts_the_verified_goals_per_behavior_and_gives_no_interval_for_them() {
+    let store = loaded_verified();
+    let release = "aerostack2-unversioned+thresholds";
+    let c = store
+        .compare(&CompareSpec::new(
+            "coverage_mission",
+            release,
+            release,
+            OutcomeKind::Reported,
+        ))
+        .unwrap();
+    let g = &c.a.goal_verdicts;
+    // The tally of the evaluation: GoTo 4 satisfied / 96 violated / 7 unknown, Takeoff 9 satisfied, Land 6 / 2.
+    assert_eq!(g.get("goto"), Some(&(4, 96, 7)), "{g:?}");
+    assert_eq!(g.get("takeoff"), Some(&(9, 0, 0)), "{g:?}");
+    assert_eq!(g.get("land"), Some(&(6, 2, 0)), "{g:?}");
+    assert_eq!(c.a.goal_verdicts, c.b.goal_verdicts);
+}
+
+#[test]
+fn an_arm_without_verified_goals_reports_none() {
+    let store = loaded();
+    let c = store
+        .compare(&CompareSpec::new(
+            "coverage_mission",
+            "aerostack2-unversioned",
+            "aerostack2-unversioned",
+            OutcomeKind::Reported,
+        ))
+        .unwrap();
+    assert!(c.a.goal_verdicts.is_empty());
 }

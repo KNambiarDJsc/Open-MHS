@@ -433,6 +433,19 @@ pub fn compare(
             );
         }
     }
+    for (name, arm) in [("a", &c.a), ("b", &c.b)] {
+        if !arm.goal_verdicts.is_empty() {
+            let parts: Vec<String> = arm
+                .goal_verdicts
+                .iter()
+                .map(|(k, (s, v, u))| format!("{k} {s} satisfied / {v} violated / {u} unknown"))
+                .collect();
+            println!(
+                "verified goals in {name} (counted per goal, no interval: the goals of one attempt are not independent): {}",
+                parts.join("; ")
+            );
+        }
+    }
     for w in &c.warnings {
         println!("warning: {w}");
     }
