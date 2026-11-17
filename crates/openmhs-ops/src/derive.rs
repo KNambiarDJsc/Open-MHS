@@ -6,11 +6,11 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use openmhs_events::sha256_digest;
+use openmhs_events::{parse_conditions, sha256_digest};
 use rusqlite::{OptionalExtension, Transaction, params};
 use serde::Serialize;
 
-use crate::{OpsError, Store};
+use crate::{OpsError, Store, shape};
 
 /// Version of the correlation rules. Every derived row carries it.
 pub const RULES_VERSION: &str = "corr-1";
@@ -509,10 +509,18 @@ fn incident(tx: &Transaction<'_>, a: &Attempt, report: &mut RebuildReport) -> Re
     let key = format!("{}|{}|{}|{}", a.tenant, RULES_VERSION, a.robot, a.task_id);
     let digest = sha256_digest(&key);
     let incident_id = format!("INC-{}", &digest["sha256:".len().."sha256:".len() + 12]);
+    let shape = shape::compute(
+        &shape::TaskIn {
+            task_type: &a.task_type,
+            started_ns: a.started_ns,
+            ended_ns: a.ended_ns,
+        },
+        &shape_members(tx, &a.tenant, &members)?,
+    );
     tx.execute(
         "INSERT INTO incidents (tenant, incident_id, rules_version, robot, site, task_id, task_type, opened_ns,
-             closed_ns, triggers, fingerprint, reported, verified, manifest)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
+             closed_ns, triggers, fingerprint, reported, verified, manifest, shape, shape_signature)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)",
         params![
             a.tenant,
             incident_id,
@@ -527,7 +535,9 @@ fn incident(tx: &Transaction<'_>, a: &Attempt, report: &mut RebuildReport) -> Re
             fingerprint,
             a.reported,
             a.verified,
-            a.manifest
+            a.manifest,
+            serde_json::to_string(&shape)?,
+            shape.signature
         ],
     )?;
     for (event_id, (basis, detail)) in &members {
@@ -539,4 +549,50 @@ fn incident(tx: &Transaction<'_>, a: &Attempt, report: &mut RebuildReport) -> Re
     report.incidents += 1;
     report.members += members.len();
     Ok(())
+}
+
+/// The members of one incident as the shape reads them: typed columns, and a verdict's conditions from its body.
+fn shape_members(
+    tx: &Transaction<'_>,
+    tenant: &str,
+    members: &BTreeMap<String, (&'static str, String)>,
+) -> Result<Vec<shape::MemberIn>, OpsError> {
+    let mut stmt = tx.prepare(
+        "SELECT type, observed_ns, uncertainty_ms, clock_domain, component, goal_id, action_id, reported, verified,
+                code, category, json_extract(body, '$.outcome.verified.contract'),
+                CASE WHEN type = 'outcome.verified' THEN body END
+         FROM events WHERE tenant = ?1 AND event_id = ?2",
+    )?;
+    let mut out = Vec::with_capacity(members.len());
+    for (event_id, (basis, _)) in members {
+        let row = stmt
+            .query_row(params![tenant, event_id], |r| {
+                let body: Option<String> = r.get(12)?;
+                Ok(shape::MemberIn {
+                    event_id: event_id.clone(),
+                    kind: r.get(0)?,
+                    basis: (*basis).to_owned(),
+                    observed_ns: r.get(1)?,
+                    uncertainty_ms: r.get(2)?,
+                    clock_domain: r.get(3)?,
+                    component: r.get(4)?,
+                    goal_id: r.get(5)?,
+                    action_id: r.get(6)?,
+                    reported: r.get(7)?,
+                    verified: r.get(8)?,
+                    code: r.get(9)?,
+                    category: r.get(10)?,
+                    contract: r.get(11)?,
+                    // Checked at ingestion. A body stored before conditions were checked and now refused counts as a
+                    // verdict without measured values, which the shape states.
+                    conditions: body
+                        .and_then(|b| serde_json::from_str::<serde_json::Value>(&b).ok())
+                        .and_then(|v| parse_conditions(&v).ok())
+                        .unwrap_or_default(),
+                })
+            })
+            .optional()?;
+        out.extend(row);
+    }
+    Ok(out)
 }

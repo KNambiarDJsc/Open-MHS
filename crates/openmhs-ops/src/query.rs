@@ -8,6 +8,7 @@ use serde::Serialize;
 use serde_json::Value;
 
 use crate::derive::{RULES_VERSION, WINDOW_AFTER_NS, WINDOW_BEFORE_NS};
+use crate::shape::Shape;
 use crate::stats::{
     PairedCounts, StratumCounts, mantel_haenszel_rd, mcnemar_exact, newcombe, newcombe_paired,
     quantile, wilson,
@@ -31,6 +32,23 @@ pub struct IncidentSummary {
     pub members: i64,
     pub status: String,
     pub owner: Option<String>,
+    /// The shape's one-sentence headline and its signature (ADR-0035).
+    pub headline: Option<String>,
+    pub signature: Option<String>,
+}
+
+/// Incidents that share a shape signature, counted per release. Counts, not rates: how often a release ran is in
+/// `ops compare`, not here.
+#[derive(Debug, Clone, Serialize)]
+pub struct Recurrence {
+    pub signature: String,
+    /// Incidents with this signature, this one included.
+    pub incidents: u64,
+    pub first_seen: String,
+    pub first_seen_ns: Option<i64>,
+    pub first_release: Option<String>,
+    /// Release label, else the manifest digest's first 12 hex digits, else `(no manifest)`.
+    pub per_release: BTreeMap<String, u64>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -82,6 +100,9 @@ pub struct IncidentDetail {
     pub artifacts: Vec<ArtifactLink>,
     pub similar: Vec<String>,
     pub rules_version: &'static str,
+    /// How it went wrong, from typed fields only (ADR-0035). Absent for an incident derived before the shape rules.
+    pub shape: Option<Shape>,
+    pub recurrence: Option<Recurrence>,
 }
 
 fn summary_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<IncidentSummary> {
@@ -104,13 +125,15 @@ fn summary_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<IncidentSummary> {
             .get::<_, Option<String>>(13)?
             .unwrap_or_else(|| "open".into()),
         owner: r.get(14)?,
+        headline: r.get(15)?,
+        signature: r.get(16)?,
     })
 }
 
 const SUMMARY_SQL: &str = "SELECT i.incident_id, i.robot, i.site, i.task_id, i.task_type, i.opened_ns, i.fingerprint,
         i.reported, i.verified, i.triggers, i.manifest, m.release,
         (SELECT COUNT(*) FROM incident_members im WHERE im.tenant = i.tenant AND im.incident_id = i.incident_id),
-        s.status, s.owner
+        s.status, s.owner, json_extract(i.shape, '$.headline'), i.shape_signature
     FROM incidents i
     LEFT JOIN manifests m ON m.digest = i.manifest
     LEFT JOIN incident_state s ON s.tenant = i.tenant AND s.incident_id = i.incident_id";
@@ -237,6 +260,19 @@ impl Store {
             })?
             .collect::<Result<Vec<String>, _>>()?;
 
+        let shape: Option<Shape> = self
+            .conn
+            .query_row(
+                "SELECT shape FROM incidents WHERE tenant = ?1 AND incident_id = ?2",
+                params![tenant, incident_id],
+                |r| r.get::<_, Option<String>>(0),
+            )?
+            .and_then(|s| serde_json::from_str(&s).ok());
+        let recurrence = match &summary.signature {
+            Some(sig) => self.recurrence(&tenant, sig)?,
+            None => None,
+        };
+
         Ok(Some(IncidentDetail {
             summary,
             members,
@@ -245,6 +281,44 @@ impl Store {
             artifacts,
             similar,
             rules_version: RULES_VERSION,
+            shape,
+            recurrence,
+        }))
+    }
+
+    fn recurrence(&self, tenant: &str, signature: &str) -> Result<Option<Recurrence>, OpsError> {
+        let mut stmt = self.conn.prepare(
+            "SELECT i.incident_id, i.opened_ns, i.manifest, m.release FROM incidents i
+             LEFT JOIN manifests m ON m.digest = i.manifest
+             WHERE i.tenant = ?1 AND i.shape_signature = ?2
+             ORDER BY i.opened_ns IS NULL, i.opened_ns, i.incident_id",
+        )?;
+        type Row = (String, Option<i64>, Option<String>, Option<String>);
+        let rows: Vec<Row> = stmt
+            .query_map(params![tenant, signature], |r| {
+                Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?))
+            })?
+            .collect::<Result<_, _>>()?;
+        let label = |manifest: &Option<String>, release: &Option<String>| match (release, manifest)
+        {
+            (Some(r), _) => r.clone(),
+            (None, Some(d)) => d.trim_start_matches("sha256:").chars().take(12).collect(),
+            (None, None) => "(no manifest)".to_owned(),
+        };
+        let Some((first, first_ns, first_manifest, first_release)) = rows.first().cloned() else {
+            return Ok(None);
+        };
+        let mut per_release: BTreeMap<String, u64> = BTreeMap::new();
+        for (_, _, manifest, release) in &rows {
+            *per_release.entry(label(manifest, release)).or_default() += 1;
+        }
+        Ok(Some(Recurrence {
+            signature: signature.to_owned(),
+            incidents: rows.len() as u64,
+            first_seen: first,
+            first_seen_ns: first_ns,
+            first_release: Some(label(&first_manifest, &first_release)),
+            per_release,
         }))
     }
 

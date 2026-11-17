@@ -100,3 +100,17 @@ the events can place.
 - Producers that want misses measured must carry the verifier's conditions on the verdict. Events grow by the observed
   values (bounded by the 64 KiB event limit).
 - The shape is only as precise as the clocks: the "first" point is withheld when the clocks cannot order it.
+
+## First run, 2026-11-17 (recorded after the rules, not used to change them)
+
+On the three CoreSense flights (`--verify`, assumed 0.20 m GoTo threshold) every one of the nine incidents first goes
+wrong at a GoTo goal reported succeeded, in a known order, 22 to 46 % into the mission. Each violated GoTo missed one
+axis, never both (35 on x, 61 on y), by at least 0.7 mm to 7.3 cm beyond the threshold at the instant of the success
+report; the two landings reported done were 11 and 26 cm above the 0.15 m limit. On the drone the swarm reported
+failed, the fault comes 22.3 s after the first miss.
+
+One limit of `shape-1` showed: the signature keys on the first point's failing condition, so one pattern (success
+reported before the threshold is reached) appears as two signatures, by which axis missed first (5 and 4 incidents).
+That is left as found; a signature that groups by contract instead would be a new rule version, decided on more than
+one dataset.
+

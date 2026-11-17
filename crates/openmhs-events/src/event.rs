@@ -3,6 +3,7 @@
 use serde_json::Value;
 
 use crate::canonical::{canonical_json, sha256_digest};
+use crate::conditions::{VerifiedCondition, parse_conditions};
 use crate::error::RecordError;
 use crate::time_fmt::parse_rfc3339_ns;
 use crate::{MAX_EVENT_BYTES, MAX_EXT_BYTES, check_major};
@@ -70,6 +71,9 @@ pub struct Event {
     pub manifest: Option<String>,
     pub reported: Option<String>,
     pub verified: Option<String>,
+    /// The verdict's conditions as the verifier judged them (`outcome.verified.conditions`, ADR-0035); empty when
+    /// the producer sent none.
+    pub conditions: Vec<VerifiedCondition>,
     pub annotated: Option<String>,
     pub severity: Option<String>,
     pub category: Option<String>,
@@ -356,6 +360,7 @@ impl Event {
             manifest,
             reported: outcome(v, "reported", Some(REPORTED))?,
             verified: outcome(v, "verified", Some(VERIFIED))?,
+            conditions: parse_conditions(v)?,
             annotated: outcome(v, "annotated", None)?,
             severity: one_of(
                 text(v, &["attributes", "severity"])?,
@@ -554,5 +559,20 @@ mod tests {
         assert_eq!(e.verified.as_deref(), Some("violated"));
         assert_eq!(e.evidence.len(), 1);
         assert!(e.evidence[0].start_ns < e.evidence[0].end_ns);
+        assert!(e.conditions.is_empty());
+    }
+
+    #[test]
+    fn a_verdict_carries_its_conditions_and_a_contradiction_is_refused() {
+        let mut v = minimal();
+        v["type"] = json!("outcome.verified");
+        v["outcome"] = json!({"verified": {"value": "violated", "contract": "land-on-ground", "conditions": [
+            {"name": "z at most 0.15 m", "evidence": "z", "op": "le", "value": {"value": 0.15, "unit": "m"},
+             "result": "false", "observed": [{"value": 0.4, "unit": "m"}]}]}});
+        let e = Event::parse(&v).unwrap_or_else(|err| panic!("{err}"));
+        assert_eq!(e.conditions.len(), 1);
+        assert!(e.conditions[0].miss().is_some());
+        v["outcome"]["verified"]["value"] = json!("satisfied");
+        assert_eq!(Event::parse(&v).unwrap_err().code, "event.value");
     }
 }

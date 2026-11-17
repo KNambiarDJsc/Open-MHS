@@ -30,6 +30,14 @@ and the entry will say so under **Changed** or **Removed**.
   ([ADR-0033](docs/adr/0033-outcome-provenance.md), amendment). The evaluation's claim extraction moved to
   `python/openmhs/importers/coresense_verify.py`, shared with the research scripts, whose published results it
   reproduces exactly. Without `--verify` the import is unchanged.
+- **The shape of a failure** ([ADR-0035](docs/adr/0035-failure-shape.md), rules `shape-1`). Every incident now says how
+  it went wrong, computed from typed fields only, with no language model and no text matching: the points where
+  something did not go as reported, in time order with their place in the task (withheld when clocks cannot order
+  them), goal verdicts per component, by how much each failing condition missed, goals reported succeeded and
+  verified violated, and a signature counted per release. `ops incidents` prints its headline; `ops show` the
+  whole shape. Events gain an optional `outcome.verified.conditions` (RFC 0005), the verifier's own bounds, results
+  and observed values, checked against the verdict; the CoreSense importer fills it. Store migration 0004 (filled by
+  the next rebuild). The headline has no causal word, and a test enforces it.
 - **Verified goals per behavior in release comparisons.** `ops compare` lists, per arm, how many goals of each behavior
   (`goto`, `takeoff`, `land`, …) were verified satisfied, violated or unknown. They are counted per goal and carry no
   interval, because the goals of one attempt share its conditions and are not independent; the verdict of the comparison

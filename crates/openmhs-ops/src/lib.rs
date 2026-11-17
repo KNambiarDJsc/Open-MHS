@@ -11,14 +11,16 @@
 
 mod derive;
 mod query;
+pub mod shape;
 pub mod stats;
 mod store;
 
 pub use derive::{RULES_VERSION, RebuildReport};
 pub use query::{
     Arm, CompareSpec, Comparison, IncidentDetail, IncidentSummary, Member, OutcomeKind, Paired,
-    Stratum, Verdict,
+    Recurrence, Stratum, Verdict,
 };
+pub use shape::{SHAPE_RULES, Shape};
 pub use store::{IngestResult, IngestStatus, Store};
 
 #[derive(Debug, thiserror::Error)]

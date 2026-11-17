@@ -240,7 +240,8 @@ def _import(bag: Bag, path: Path, verify: bool = False) -> list[dict[str, Any]]:
             key = f"{drone}/{c['behavior']}/{c['goal'].replace('-', '')[:12]}"
             event(f"{key}/outcome.verified", "outcome.verified", c["t"], drone, subject={"goal_id": c["goal"]},
                   attributes={"component": c["behavior"].lower()},
-                  outcome={"verified": {"value": VERIFIED[v["verdict"]], "contract": v["contract"]}},
+                  outcome={"verified": {"value": VERIFIED[v["verdict"]], "contract": v["contract"],
+                                        "conditions": v["conditions"]}},
                   ext={**ext, "verifier": {"reasons": v["reasons"], "reference": "mocap pose, which also feeds the controller"}})
 
         for ts, line in kb:

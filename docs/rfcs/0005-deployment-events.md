@@ -88,6 +88,7 @@ source-specific extensions.
 | `trace` | no | W3C trace context when the producer has one |
 | `deployment.manifest` | no | Digest of the manifest active at `time.observed`, if the producer knows it. Otherwise derived from rollouts (§3) and marked inferred |
 | `outcome.reported`, `.verified`, `.annotated` | no | ADR-0033 |
+| `outcome.verified.conditions` | no | The verdict's conditions as the RFC 0004 verifier judged them: per condition `name`, `evidence`, `op`, its bounds (`min`, `max`, `value`, `values`, as in the contract), `result` (`true`, `false`, `undetermined`) and the `observed` values of the records used. Copied from the verifier's report by the producer, never recomputed. Refused when malformed, empty, or in contradiction with the verdict (any `false` is `violated`; otherwise any `undetermined` is `unknown`; all `true` is `satisfied`). Read by the failure shape ([ADR-0035](../adr/0035-failure-shape.md)). Added in 0.1 with the shape |
 | `evidence[]` | no | Artifact references with time range and topics/streams |
 | `relations[]` | no | Typed edges (§1.3) |
 | `provenance` | yes | `observed` (measured or emitted by the system itself), `reported` (relayed by another system), `imported` (reconstructed from a recording), `operator`, `generated` (by a model) |
@@ -217,7 +218,9 @@ CREATE TABLE task_attempts (tenant TEXT, task_id TEXT, robot TEXT, task_type TEX
   rules_version TEXT NOT NULL, PRIMARY KEY (tenant, task_id, robot, started_ns));
 CREATE TABLE incidents (tenant TEXT, incident_id TEXT, rules_version TEXT NOT NULL, fingerprint TEXT,
   robot TEXT, task_id TEXT, task_type TEXT, opened_ns INTEGER, closed_ns INTEGER, triggers TEXT,
-  reported TEXT, verified TEXT, manifest TEXT, PRIMARY KEY (tenant, incident_id));
+  reported TEXT, verified TEXT, manifest TEXT,
+  shape TEXT, shape_signature TEXT,             -- ADR-0035, rules shape-1: JSON, and its recurrence key
+  PRIMARY KEY (tenant, incident_id));
 -- Human state, never rebuilt:
 CREATE TABLE incident_state (tenant TEXT, incident_id TEXT, owner TEXT, status TEXT, updated_ns INTEGER,
   PRIMARY KEY (tenant, incident_id));

@@ -273,6 +273,23 @@ class Verified(unittest.TestCase):
         self.assertEqual({e["outcome"]["verified"]["contract"] for e in verdicts},
                          {"takeoff-at-height", "goto-arrived-at-waypoint", "land-on-ground"})
 
+    def test_a_verdict_carries_the_values_it_was_judged_on(self):
+        _, events = self.import_(verified_flight())
+        violated = [e for e in events
+                    if e["type"] == "outcome.verified" and e["outcome"]["verified"]["value"] == "violated"]
+        self.assertEqual(len(violated), 1)
+        conditions = {c["evidence"]: c for c in violated[0]["outcome"]["verified"]["conditions"]}
+        x, y = conditions["x"], conditions["y"]
+        self.assertEqual((x["result"], y["result"]), ("false", "true"), "0.5 m past wp_1 in x, on the line in y")
+        self.assertEqual(x["op"], "between")
+        self.assertAlmostEqual(x["min"]["value"], 4.8)
+        self.assertAlmostEqual(x["max"]["value"], 5.2)
+        self.assertTrue(x["observed"], "the records the verifier used")
+        self.assertTrue(all(abs(o["value"] - 5.5) < 1e-9 and o["unit"] == "m" for o in x["observed"]))
+        satisfied = [e for e in events
+                     if e["type"] == "outcome.verified" and e["outcome"]["verified"]["value"] == "satisfied"]
+        self.assertTrue(all(c["result"] == "true" for e in satisfied for c in e["outcome"]["verified"]["conditions"]))
+
     def test_the_thresholds_are_in_the_manifest_and_make_a_different_release(self):
         plain, _ = self.import_(verified_flight(), verify=False, name="rosbag2_real_paths_2_OK_a")
         verified, events = self.import_(verified_flight(), verify=True, name="rosbag2_real_paths_2_OK_b")

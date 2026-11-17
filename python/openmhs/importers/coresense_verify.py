@@ -174,7 +174,24 @@ def run_verifier(contract_obj: dict, records: list[dict], work: Path, name: str)
     if p.returncode not in (0, 3, 4):
         raise RuntimeError(f"the verifier failed on {name} (exit {p.returncode}): {p.stderr.strip()}")
     report = json.loads(p.stdout)
-    return {"verdict": report["verdict"], "reasons": sorted({r["code"] for r in report["reasons"]}), "report": p.stdout}
+    return {"verdict": report["verdict"], "reasons": sorted({r["code"] for r in report["reasons"]}), "report": p.stdout,
+            "conditions": conditions_of(contract_obj, report)}
+
+
+def conditions_of(contract_obj: dict, report: dict) -> list[dict]:
+    """Each condition as the verifier judged it, for ``outcome.verified.conditions`` (RFC 0005, ADR-0035): the bounds
+    from the contract, the result and the values of the records the verifier used, copied, never recomputed."""
+    out = []
+    for cr in report["conditions"]:
+        planned = contract_obj["conditions"][cr["index"]]
+        c = {"evidence": cr["evidence"], "op": cr["op"], "result": cr["result"].lower(), "observed": cr["observed"]}
+        if cr.get("name"):
+            c["name"] = cr["name"]
+        for k in ("min", "max", "value", "values"):
+            if k in planned:
+                c[k] = planned[k]
+        out.append(c)
+    return out
 
 
 def thresholds_from(manifest: dict) -> dict[str, Any]:
@@ -206,5 +223,5 @@ def verify_bag(bag: imp.Bag, short: str, th: dict[str, Any]) -> tuple[list[dict]
         for c in claims:
             v = run_verifier(contract(c, th), evidence_records(c, poses[c["drone"]]), work, "claim")
             verdicts.append({"claim": c, "verdict": v["verdict"], "reasons": v["reasons"],
-                             "contract": contract(c, th)["contract"]})
+                             "contract": contract(c, th)["contract"], "conditions": v["conditions"]})
     return verdicts, skipped

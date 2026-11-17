@@ -5,12 +5,14 @@
 //! gateway domain, so any program that emits events can use it.
 
 mod canonical;
+mod conditions;
 mod error;
 mod event;
 mod manifest;
 mod time_fmt;
 
 pub use canonical::{canonical_json, sha256_digest};
+pub use conditions::{Miss, Side, VerifiedCondition, parse_conditions, quantity};
 pub use error::RecordError;
 pub use event::{Artifact, Event, EvidenceRef, Relation};
 pub use manifest::{ComponentChange, Manifest, diff};

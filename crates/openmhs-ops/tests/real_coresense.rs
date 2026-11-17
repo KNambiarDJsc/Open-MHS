@@ -351,3 +351,158 @@ fn an_arm_without_verified_goals_reports_none() {
         .unwrap();
     assert!(c.a.goal_verdicts.is_empty());
 }
+
+// ------------------------------------------------------------------------------- the shape (ADR-0035, shape-1)
+
+fn shapes(store: &Store) -> Vec<(openmhs_ops::IncidentSummary, openmhs_ops::Shape)> {
+    store
+        .incidents(None, None, 100)
+        .unwrap()
+        .into_iter()
+        .map(|i| {
+            let d = store.incident(&i.incident_id).unwrap().unwrap();
+            (i, d.shape.expect("every incident has a shape"))
+        })
+        .collect()
+}
+
+#[test]
+fn the_shapes_add_up_to_the_evaluations_tally() {
+    let all = shapes(&loaded_verified());
+    assert_eq!(all.len(), 9);
+    let mut per: BTreeMap<String, (u64, u64, u64)> = BTreeMap::new();
+    for (_, sh) in &all {
+        for (c, n) in &sh.goals.per_component {
+            let e = per.entry(c.clone()).or_default();
+            *e = (e.0 + n.satisfied, e.1 + n.violated, e.2 + n.unknown);
+        }
+    }
+    assert_eq!(per.get("goto"), Some(&(4, 96, 7)));
+    assert_eq!(per.get("takeoff"), Some(&(9, 0, 0)));
+    assert_eq!(per.get("land"), Some(&(6, 2, 0)));
+    let disagree: u64 = all
+        .iter()
+        .map(|(_, sh)| sh.disagreements.reported_succeeded_verified_violated)
+        .sum();
+    assert_eq!(
+        disagree, 98,
+        "every violated goal had reported succeeded: 96 GoTo, 2 Land"
+    );
+}
+
+#[test]
+fn every_flight_first_misses_a_waypoint_by_centimetres_and_the_order_is_known() {
+    let all = shapes(&loaded_verified());
+    let mut by_axis: BTreeMap<String, (u64, f64)> = BTreeMap::new();
+    for (_, sh) in &all {
+        let first = &sh.points[0];
+        assert_eq!(
+            (first.kind.as_str(), first.component.as_deref()),
+            ("verified_violated", Some("goto"))
+        );
+        assert!(
+            sh.first_unordered_with.is_empty(),
+            "one recorder clock, distinct instants"
+        );
+        for p in &sh.points {
+            for m in &p.misses {
+                if p.component.as_deref() == Some("goto") {
+                    assert_eq!(m.unit.as_deref(), Some("m"));
+                    let axis = m.condition.split(' ').next().unwrap().to_owned();
+                    let e = by_axis.entry(axis).or_default();
+                    e.0 += 1;
+                    e.1 = e.1.max(m.at_least.unwrap());
+                }
+            }
+        }
+    }
+    // Each violated GoTo failed one axis, never both. Against the ASSUMED 0.20 m threshold, at the instant of the
+    // success report, by at most 7.3 cm: the early report the evaluation found, measured goal by goal.
+    assert_eq!(by_axis["x"].0 + by_axis["y"].0, 96);
+    assert_eq!((by_axis["x"].0, by_axis["y"].0), (35, 61));
+    assert!(by_axis.values().all(|(_, max)| *max < 0.074), "{by_axis:?}");
+}
+
+#[test]
+fn the_failed_drones_shape_places_the_fault_after_the_first_miss() {
+    let all = shapes(&loaded_verified());
+    let (_, sh) = all
+        .iter()
+        .find(|(i, _)| i.reported.as_deref() == Some("failed"))
+        .unwrap();
+    assert_eq!(
+        sh.headline,
+        "first at 17.5 s (39 % of the task): goto goal verified violated (3 of 8 verified goals), y within 0.20 m: \
+         above the bound by at least 0.039 m; violated goals: goto 6 of 7, takeoff 0 of 1; fault drone_status_failed \
+         (mission) 22.3 s after the first point; 6 goal(s) reported succeeded and verified violated"
+    );
+    let kinds: Vec<&str> = sh.points.iter().map(|p| p.kind.as_str()).collect();
+    assert!(
+        kinds.contains(&"action_canceled")
+            && kinds.contains(&"fault")
+            && kinds.contains(&"task_failed")
+    );
+}
+
+#[test]
+fn the_landings_reported_done_were_above_the_ground_limit() {
+    let all = shapes(&loaded_verified());
+    let land: Vec<&openmhs_ops::shape::MissSummary> = all
+        .iter()
+        .flat_map(|(_, sh)| sh.misses.iter())
+        .filter(|m| m.contract.as_deref() == Some("land-on-ground"))
+        .collect();
+    assert_eq!(land.len(), 2);
+    assert!(
+        land.iter()
+            .all(|m| m.above == 1 && m.unit.as_deref() == Some("m"))
+    );
+}
+
+#[test]
+fn headlines_have_no_causal_word_and_the_signature_splits_by_axis() {
+    let all = shapes(&loaded_verified());
+    for (_, sh) in &all {
+        let h = sh.headline.to_lowercase();
+        for w in [
+            "because",
+            "cause",
+            "due to",
+            "led to",
+            "root",
+            "therefore",
+            "resulted",
+        ] {
+            assert!(!h.contains(w), "{w:?} in {h}");
+        }
+    }
+    // shape-1 keys the signature on the first point's failing condition, so one pattern (early success reports)
+    // appears as two signatures, by which axis missed first. Recorded as found; a change belongs in a new rule version.
+    let mut sigs: BTreeMap<String, u64> = BTreeMap::new();
+    for (i, _) in &all {
+        *sigs.entry(i.signature.clone().unwrap()).or_default() += 1;
+    }
+    assert_eq!(
+        sigs,
+        BTreeMap::from([
+            (
+                "coverage_mission/verified_violated/goto/goto-arrived-at-waypoint:x".to_owned(),
+                4
+            ),
+            (
+                "coverage_mission/verified_violated/goto/goto-arrived-at-waypoint:y".to_owned(),
+                5
+            ),
+        ])
+    );
+}
+
+#[test]
+fn flights_imported_without_verification_have_shapes_without_measured_misses() {
+    let all = shapes(&loaded());
+    assert_eq!(all.len(), 1, "only the drone that reported failure");
+    let sh = &all[0].1;
+    assert!(sh.misses.is_empty());
+    assert_eq!(sh.goals.verified, 0);
+    assert_eq!(sh.points[0].kind, "action_canceled", "{:?}", sh.points);
+}

@@ -180,6 +180,9 @@ pub fn incidents(
                     i.robot,
                     i.release.as_deref().unwrap_or("-"),
                 );
+                if let Some(h) = &i.headline {
+                    println!("    {h}");
+                }
             }
             exit::OK
         }
@@ -231,6 +234,7 @@ fn print_detail(d: &IncidentDetail) {
         }
         None => println!("no earlier success of this task type on this robot"),
     }
+    print_shape(d);
     println!(
         "timeline ({} events, rules {}):",
         d.members.len(),
@@ -288,6 +292,101 @@ fn print_detail(d: &IncidentDetail) {
             "same fingerprint ({}): {} other incidents",
             s.fingerprint,
             d.similar.len()
+        );
+    }
+}
+
+/// How it went wrong (ADR-0035): computed from typed fields; temporal and structural words only, no cause.
+fn print_shape(d: &IncidentDetail) {
+    let Some(sh) = &d.shape else {
+        println!("shape: not derived (rebuild the store to derive it)");
+        return;
+    };
+    println!("shape ({}): {}", sh.rules, sh.headline);
+    const SHOWN: usize = 8;
+    for p in sh.points.iter().take(SHOWN) {
+        let when = match (p.offset_s, p.fraction) {
+            (Some(o), Some(f)) => format!("{o:>8.1} s {:>4.0} %", f * 100.0),
+            (Some(o), None) => format!("{o:>8.1} s       "),
+            _ => "      (no time)  ".to_owned(),
+        };
+        let mut what = vec![p.kind.clone()];
+        if let Some(c) = &p.component {
+            what.push(c.clone());
+        }
+        if let Some(c) = &p.code {
+            what.push(c.clone());
+        }
+        for m in &p.misses {
+            what.push(match (m.side.as_deref(), m.at_least) {
+                (Some(side), Some(x)) => format!(
+                    "[{}: {side} by at least {x:.3}{}]",
+                    m.condition,
+                    m.unit
+                        .as_deref()
+                        .map(|u| format!(" {u}"))
+                        .unwrap_or_default()
+                ),
+                _ => format!("[{}: not met]", m.condition),
+            });
+        }
+        let basis = if p.basis == "window" {
+            "  (joined by window)"
+        } else {
+            ""
+        };
+        println!("  {when}  {}{basis}", what.join("  "));
+    }
+    if sh.points.len() > SHOWN {
+        println!(
+            "  ... {} more point(s); --json lists them all",
+            sh.points.len() - SHOWN
+        );
+    }
+    for m in &sh.misses {
+        let sides = format!(
+            "{} above, {} below{}",
+            m.above,
+            m.below,
+            if m.both_sides > 0 {
+                format!(", {} on both sides", m.both_sides)
+            } else {
+                String::new()
+            }
+        );
+        match m.at_least {
+            Some((lo, mid, hi)) => println!(
+                "  missed {} in {} goal(s) ({sides}): by at least {lo:.3} / {mid:.3} / {hi:.3}{} (min / median / max over {} measured)",
+                m.condition,
+                m.goals,
+                m.unit
+                    .as_deref()
+                    .map(|u| format!(" {u}"))
+                    .unwrap_or_default(),
+                m.measured
+            ),
+            None => println!(
+                "  missed {} in {} goal(s) ({sides}); no distance measured",
+                m.condition, m.goals
+            ),
+        }
+    }
+    for n in &sh.notes {
+        println!("  note: {n}");
+    }
+    if let Some(r) = &d.recurrence {
+        let per: Vec<String> = r
+            .per_release
+            .iter()
+            .map(|(rel, n)| format!("{rel} {n}"))
+            .collect();
+        println!(
+            "  same shape ({}): {} incident(s), first {} on {}; per release: {} (counts, not rates: see `ops compare`)",
+            r.signature,
+            r.incidents,
+            r.first_seen,
+            r.first_release.as_deref().unwrap_or("-"),
+            per.join(", ")
         );
     }
 }

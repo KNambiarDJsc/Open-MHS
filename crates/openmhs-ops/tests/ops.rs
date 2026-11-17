@@ -525,7 +525,7 @@ fn a_store_from_the_previous_schema_version_upgrades_in_place_and_keeps_its_even
     let version: i64 = conn
         .query_row("PRAGMA user_version", [], |r| r.get(0))
         .unwrap();
-    assert_eq!(version, 3);
+    assert_eq!(version, 4);
     let scenario: Option<String> = conn
         .query_row(
             "SELECT scenario_id FROM events WHERE event_id = 'old'",

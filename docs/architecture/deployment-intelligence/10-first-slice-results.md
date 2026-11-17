@@ -110,6 +110,15 @@ one with an induced panel failure, one with a panel and a drone failure. **The f
   flights and not a fault of the drones' landing; and an incident per mission is coarse (every long mission has some
   violated goal), so a rate of violated goals would say more than an incident count. The aggregation was not changed to
   make the result look better or worse.
+- **The shape of each failure** (2026-11-17, [ADR-0035](../../adr/0035-failure-shape.md), rules committed before this
+  run). The verdicts now carry the verifier's own values, so each incident says how it went wrong, from typed fields
+  only. On these flights: every incident first goes wrong at a GoTo goal reported succeeded, 22 to 46 % into the mission,
+  in an order the single recorder clock can establish. Each violated GoTo missed one axis, never both (35 on x, 61 on y),
+  by at least 0.7 mm to 7.3 cm beyond the assumed 0.20 m at the instant of the success report: the early report above,
+  now measured goal by goal. The two landings reported done were 11 and 26 cm above the 0.15 m limit. On the drone the
+  swarm reported failed, the first miss is at 17.5 s (39 %), a GoTo is canceled at 28.0 s and the fault comes 22.3 s after
+  the first miss. The shape names no cause. Its signature splits the early-report pattern in two by which axis missed
+  first (5 and 4 incidents), a limit of `shape-1` recorded in the ADR and left as found.
 
 ## A learned policy under two samplers (2026-11-16, simulation)
 
