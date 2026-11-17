@@ -20,6 +20,10 @@ ignore = [
     { id = "RUSTSEC-2026-0104", reason = "rustls-webpki 0.102 via rumqttc; not used for verification" },
     { id = "RUSTSEC-2026-0382", reason = "rustls-webpki 0.102 via rumqttc; 0.103.16, which verifies, is fixed" },
     { id = "RUSTSEC-2025-0134", reason = "rustls-pemfile via rumqttc, only for TlsConfiguration::Simple" },
+    # chrono, declared unmaintained (no vulnerability, no fixed version). OpenMHS does not depend on it: rmcp 3.10
+    # always enables schemars' `chrono04` feature, and schemars only derives JSON Schemas for chrono types, which no
+    # OpenMHS type uses. Remove when rmcp stops enabling it.
+    { id = "RUSTSEC-2026-0543", reason = "chrono unmaintained; only via rmcp -> schemars chrono04, no OpenMHS use" },
 ]
 
 [licenses]
