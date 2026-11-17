@@ -5,6 +5,7 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 
 use openmhs_events::format_ns;
+use openmhs_ops::shape::decimals;
 use openmhs_ops::{CompareSpec, IncidentDetail, IngestStatus, OutcomeKind, Store};
 use serde_json::Value;
 
@@ -318,16 +319,22 @@ fn print_shape(d: &IncidentDetail) {
             what.push(c.clone());
         }
         for m in &p.misses {
+            let source = if m.source == "reported" {
+                "reported "
+            } else {
+                ""
+            };
+            let n = m.at_least.map_or(3, decimals);
             what.push(match (m.side.as_deref(), m.at_least) {
                 (Some(side), Some(x)) => format!(
-                    "[{}: {side} by at least {x:.3}{}]",
+                    "[{source}{}: {side} by at least {x:.n$}{}]",
                     m.condition,
                     m.unit
                         .as_deref()
                         .map(|u| format!(" {u}"))
                         .unwrap_or_default()
                 ),
-                _ => format!("[{}: not met]", m.condition),
+                _ => format!("[{source}{}: not met]", m.condition),
             });
         }
         let basis = if p.basis == "window" {
@@ -354,19 +361,28 @@ fn print_shape(d: &IncidentDetail) {
                 String::new()
             }
         );
+        // A reporter's own measurement is never shown as a verified goal's (ADR-0036).
+        let (tag, of) = if m.source == "reported" {
+            (" (as reported)", "failed task(s) or action(s)")
+        } else {
+            ("", "goal(s)")
+        };
         match m.at_least {
-            Some((lo, mid, hi)) => println!(
-                "  missed {} in {} goal(s) ({sides}): by at least {lo:.3} / {mid:.3} / {hi:.3}{} (min / median / max over {} measured)",
-                m.condition,
-                m.goals,
-                m.unit
-                    .as_deref()
-                    .map(|u| format!(" {u}"))
-                    .unwrap_or_default(),
-                m.measured
-            ),
+            Some((lo, mid, hi)) => {
+                let n = decimals(lo);
+                println!(
+                    "  missed {}{tag} in {} {of} ({sides}): by at least {lo:.n$} / {mid:.n$} / {hi:.n$}{} (min / median / max over {} measured)",
+                    m.condition,
+                    m.goals,
+                    m.unit
+                        .as_deref()
+                        .map(|u| format!(" {u}"))
+                        .unwrap_or_default(),
+                    m.measured
+                );
+            }
             None => println!(
-                "  missed {} in {} goal(s) ({sides}); no distance measured",
+                "  missed {}{tag} in {} {of} ({sides}); no distance measured",
                 m.condition, m.goals
             ),
         }

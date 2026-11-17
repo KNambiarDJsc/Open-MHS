@@ -1,4 +1,5 @@
-//! The measured values behind a verdict: `outcome.verified.conditions` (RFC 0005, ADR-0035).
+//! The measured values behind a verdict, `outcome.verified.conditions` (RFC 0005, ADR-0035), and behind a reporter's
+//! own judgement, `outcome.reported.conditions` (ADR-0036), in the same form.
 //!
 //! A producer that ran the RFC 0004 verifier copies each condition of the contract, as judged, onto the
 //! `outcome.verified` event: the bounds, the result and the values the verifier used. With them a store can say by how
@@ -173,29 +174,73 @@ fn bad(message: impl Into<String>) -> RecordError {
 /// list that contradicts the verdict (RFC 0004: any `false` is `violated`; otherwise any `undetermined` is `unknown`;
 /// all `true` is `satisfied`).
 pub fn parse_conditions(event: &Value) -> Result<Vec<VerifiedCondition>, RecordError> {
+    let out = parse_list(event, "verified")?;
+    if out.is_empty() {
+        return Ok(out);
+    }
+    let verdict = outcome_value(event, "verified");
+    let implied = if out.iter().any(|c| c.result == "false") {
+        "violated"
+    } else if out.iter().any(|c| c.result == "undetermined") {
+        "unknown"
+    } else {
+        "satisfied"
+    };
+    if verdict != implied {
+        return Err(RecordError::new(
+            "event.value",
+            format!(
+                "`outcome.verified.value` is {verdict:?} but its conditions make it {implied:?} (RFC 0004)"
+            ),
+        ));
+    }
+    Ok(out)
+}
+
+/// Read `outcome.reported.conditions`: the values a reporter judged its own outcome on (ADR-0036), in the same form.
+/// A report of `succeeded` with a `false` condition is refused; a failed report may have every condition `true` (it
+/// can fail for a reason none of them covers).
+pub fn parse_reported_conditions(event: &Value) -> Result<Vec<VerifiedCondition>, RecordError> {
+    let out = parse_list(event, "reported")?;
+    if outcome_value(event, "reported") == "succeeded" && out.iter().any(|c| c.result == "false") {
+        return Err(RecordError::new(
+            "event.value",
+            "`outcome.reported.value` is \"succeeded\" but one of its conditions is false (ADR-0036)",
+        ));
+    }
+    Ok(out)
+}
+
+fn outcome_value<'a>(event: &'a Value, which: &str) -> &'a str {
+    event
+        .get("outcome")
+        .and_then(|o| o.get(which))
+        .and_then(|v| v.get("value"))
+        .and_then(Value::as_str)
+        .unwrap_or_default()
+}
+
+fn parse_list(event: &Value, which: &str) -> Result<Vec<VerifiedCondition>, RecordError> {
     let Some(list) = event
         .get("outcome")
-        .and_then(|o| o.get("verified"))
+        .and_then(|o| o.get(which))
         .and_then(|v| v.get("conditions"))
         .filter(|c| !c.is_null())
     else {
         return Ok(Vec::new());
     };
+    let field = format!("outcome.{which}.conditions");
     let items = list
         .as_array()
-        .ok_or_else(|| bad("`outcome.verified.conditions` must be an array"))?;
+        .ok_or_else(|| bad(format!("`{field}` must be an array")))?;
     if items.is_empty() {
-        return Err(bad(
-            "`outcome.verified.conditions` is empty; leave it out instead",
-        ));
+        return Err(bad(format!("`{field}` is empty; leave it out instead")));
     }
     let mut out = Vec::with_capacity(items.len());
     for (i, c) in items.iter().enumerate() {
-        let at = |k: &str| format!("`outcome.verified.conditions[{i}].{k}`");
+        let at = |k: &str| format!("`{field}[{i}].{k}`");
         if !c.is_object() {
-            return Err(bad(format!(
-                "`outcome.verified.conditions[{i}]` must be an object"
-            )));
+            return Err(bad(format!("`{field}[{i}]` must be an object")));
         }
         let string = |k: &str| -> Result<Option<String>, RecordError> {
             match c.get(k) {
@@ -252,9 +297,7 @@ pub fn parse_conditions(event: &Value) -> Result<Vec<VerifiedCondition>, RecordE
             _ => value.is_some(),
         };
         if !complete {
-            return Err(bad(format!(
-                "`outcome.verified.conditions[{i}]`: `{op}` is missing its bound"
-            )));
+            return Err(bad(format!("`{field}[{i}]`: `{op}` is missing its bound")));
         }
         let observed = match c.get("observed") {
             None | Some(Value::Null) => Vec::new(),
@@ -277,27 +320,6 @@ pub fn parse_conditions(event: &Value) -> Result<Vec<VerifiedCondition>, RecordE
             values,
             observed,
         });
-    }
-    let verdict = event
-        .get("outcome")
-        .and_then(|o| o.get("verified"))
-        .and_then(|v| v.get("value"))
-        .and_then(Value::as_str)
-        .unwrap_or_default();
-    let implied = if out.iter().any(|c| c.result == "false") {
-        "violated"
-    } else if out.iter().any(|c| c.result == "undetermined") {
-        "unknown"
-    } else {
-        "satisfied"
-    };
-    if verdict != implied {
-        return Err(RecordError::new(
-            "event.value",
-            format!(
-                "`outcome.verified.value` is {verdict:?} but its conditions make it {implied:?} (RFC 0004)"
-            ),
-        ));
     }
     Ok(out)
 }
@@ -383,6 +405,33 @@ mod tests {
             parse_conditions(&json!({"outcome": {"verified": {"value": "violated"}}}))
                 .unwrap()
                 .is_empty()
+        );
+    }
+
+    #[test]
+    fn a_report_carries_its_values_and_may_fail_with_all_conditions_true() {
+        let c = json!([{"name": "peak reward reaches 1", "evidence": "reward", "op": "ge", "value": 1.0,
+                        "result": "false", "observed": [0.0963]}]);
+        let failed = json!({"outcome": {"reported": {"value": "failed", "conditions": c}}});
+        let got = parse_reported_conditions(&failed).unwrap();
+        let miss = got[0].miss().unwrap();
+        assert!((miss.at_least - 0.9037).abs() < 1e-9);
+        assert_eq!((miss.side, miss.unit), (Some(Side::Below), None));
+        // a verdict's reader does not see a report's conditions
+        assert!(parse_conditions(&failed).unwrap().is_empty());
+        let held = json!([{"evidence": "reward", "op": "ge", "value": 1.0, "result": "true", "observed": [1.0]}]);
+        let timeout = json!({"outcome": {"reported": {"value": "timeout", "conditions": held}}});
+        assert_eq!(parse_reported_conditions(&timeout).unwrap().len(), 1);
+        let succeeded = json!({"outcome": {"reported": {"value": "succeeded", "conditions": c}}});
+        assert_eq!(
+            parse_reported_conditions(&succeeded).unwrap_err().code,
+            "event.value"
+        );
+        let empty = json!({"outcome": {"reported": {"value": "failed", "conditions": []}}});
+        let err = parse_reported_conditions(&empty).unwrap_err();
+        assert!(
+            err.to_string().contains("outcome.reported.conditions"),
+            "{err}"
         );
     }
 

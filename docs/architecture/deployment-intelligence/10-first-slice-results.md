@@ -134,9 +134,15 @@ run; results and the predictions that held and did not are in
 - **Pairing did not narrow the interval**: the two arms' failures overlapped no more than chance (2 scenarios against 2.0
   expected), so the paired and unpaired intervals are identical. The tighter-interval case needs the same scenarios to fail
   in both arms; this run does not show that they do.
+- **How far each failure got** (2026-11-17, [ADR-0036](../../adr/0036-reported-measurements.md), rules committed before
+  the run). The simulator's own measurement now travels with its reported outcome and the shape reads it, labelled
+  `reported`: 11 of the 13 failed episodes peaked within 0.04 of the success threshold's reward, one (`ddim-10`, seed
+  1014) 0.29 short, one (`ddpm-100`, seed 1001) 0.90 short, the block barely moved. Same signature for all 13; the
+  amount is what separates a near miss from no movement.
 - Found gaps: the comparison's duration was simulated time, so the compute cost that separates the releases was not in
   the report (closed the same day: events can carry `cost.wall_s`, and `ops compare` prints wall time per arm, here a
-  median of 742 s against 128 s); incidents carry no failure shape (near miss against no movement).
+  median of 742 s against 128 s); incidents carried no failure shape, near miss against no movement (closed the next
+  day, above).
 
 ## Reproduce
 

@@ -12,7 +12,9 @@ mod manifest;
 mod time_fmt;
 
 pub use canonical::{canonical_json, sha256_digest};
-pub use conditions::{Miss, Side, VerifiedCondition, parse_conditions, quantity};
+pub use conditions::{
+    Miss, Side, VerifiedCondition, parse_conditions, parse_reported_conditions, quantity,
+};
 pub use error::RecordError;
 pub use event::{Artifact, Event, EvidenceRef, Relation};
 pub use manifest::{ComponentChange, Manifest, diff};

@@ -3,7 +3,7 @@
 use serde_json::Value;
 
 use crate::canonical::{canonical_json, sha256_digest};
-use crate::conditions::{VerifiedCondition, parse_conditions};
+use crate::conditions::{VerifiedCondition, parse_conditions, parse_reported_conditions};
 use crate::error::RecordError;
 use crate::time_fmt::parse_rfc3339_ns;
 use crate::{MAX_EVENT_BYTES, MAX_EXT_BYTES, check_major};
@@ -74,6 +74,9 @@ pub struct Event {
     /// The verdict's conditions as the verifier judged them (`outcome.verified.conditions`, ADR-0035); empty when
     /// the producer sent none.
     pub conditions: Vec<VerifiedCondition>,
+    /// The values the reporter judged its own outcome on (`outcome.reported.conditions`, ADR-0036): a
+    /// self-judgement, never a verdict; empty when the producer sent none.
+    pub reported_conditions: Vec<VerifiedCondition>,
     pub annotated: Option<String>,
     pub severity: Option<String>,
     pub category: Option<String>,
@@ -361,6 +364,7 @@ impl Event {
             reported: outcome(v, "reported", Some(REPORTED))?,
             verified: outcome(v, "verified", Some(VERIFIED))?,
             conditions: parse_conditions(v)?,
+            reported_conditions: parse_reported_conditions(v)?,
             annotated: outcome(v, "annotated", None)?,
             severity: one_of(
                 text(v, &["attributes", "severity"])?,

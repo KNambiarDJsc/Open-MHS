@@ -6,7 +6,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use openmhs_events::{parse_conditions, sha256_digest};
+use openmhs_events::{parse_conditions, parse_reported_conditions, sha256_digest};
 use rusqlite::{OptionalExtension, Transaction, params};
 use serde::Serialize;
 
@@ -560,14 +560,17 @@ fn shape_members(
     let mut stmt = tx.prepare(
         "SELECT type, observed_ns, uncertainty_ms, clock_domain, component, goal_id, action_id, reported, verified,
                 code, category, json_extract(body, '$.outcome.verified.contract'),
-                CASE WHEN type = 'outcome.verified' THEN body END
+                CASE WHEN json_type(body, '$.outcome.verified.conditions') IS NOT NULL
+                       OR json_type(body, '$.outcome.reported.conditions') IS NOT NULL THEN body END
          FROM events WHERE tenant = ?1 AND event_id = ?2",
     )?;
     let mut out = Vec::with_capacity(members.len());
     for (event_id, (basis, _)) in members {
         let row = stmt
             .query_row(params![tenant, event_id], |r| {
-                let body: Option<String> = r.get(12)?;
+                let body: Option<serde_json::Value> = r
+                    .get::<_, Option<String>>(12)?
+                    .and_then(|b| serde_json::from_str(&b).ok());
                 Ok(shape::MemberIn {
                     event_id: event_id.clone(),
                     kind: r.get(0)?,
@@ -586,8 +589,12 @@ fn shape_members(
                     // Checked at ingestion. A body stored before conditions were checked and now refused counts as a
                     // verdict without measured values, which the shape states.
                     conditions: body
-                        .and_then(|b| serde_json::from_str::<serde_json::Value>(&b).ok())
-                        .and_then(|v| parse_conditions(&v).ok())
+                        .as_ref()
+                        .and_then(|v| parse_conditions(v).ok())
+                        .unwrap_or_default(),
+                    reported_conditions: body
+                        .as_ref()
+                        .and_then(|v| parse_reported_conditions(v).ok())
                         .unwrap_or_default(),
                 })
             })

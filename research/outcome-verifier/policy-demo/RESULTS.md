@@ -83,7 +83,12 @@ Gaps found while doing this, not fixed here:
 - `ops compare` listed at most five incidents per arm without saying so; it now says "newest 5" when the list is cut
   (one-line change in this commit).
 - The failure's *shape* (nearly there, did not move) is in `ext` but incidents carry only `reported_failed`; there is
-  nothing to group failures by.
+  nothing to group failures by. (Fixed afterwards, [ADR-0036](../../../docs/adr/0036-reported-measurements.md): the
+  importer copies each episode's peak reward and the simulator's success flag onto the reported outcome, and every
+  incident's shape says how far the episode fell short, labelled as the simulator's own report. Re-importing the same
+  results: eleven failures ended within 0.04 of the threshold (0.0003 to 0.0386), `ddim-10` seed 1014 at 0.29 and
+  `ddpm-100` seed 1001 at 0.90. All 13 share one signature, 8 under `ddim-10` and 5 under `ddpm-100`; the distance
+  separates them, not the signature.)
 
 ## Limits
 

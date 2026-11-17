@@ -220,7 +220,7 @@ CREATE TABLE task_attempts (tenant TEXT, task_id TEXT, robot TEXT, task_type TEX
 CREATE TABLE incidents (tenant TEXT, incident_id TEXT, rules_version TEXT NOT NULL, fingerprint TEXT,
   robot TEXT, task_id TEXT, task_type TEXT, opened_ns INTEGER, closed_ns INTEGER, triggers TEXT,
   reported TEXT, verified TEXT, manifest TEXT,
-  shape TEXT, shape_signature TEXT,             -- ADR-0035, rules shape-1: JSON, and its recurrence key
+  shape TEXT, shape_signature TEXT,             -- ADR-0035, rules shape-2 (ADR-0036): JSON, and its recurrence key
   PRIMARY KEY (tenant, incident_id));
 -- Human state, never rebuilt:
 CREATE TABLE incident_state (tenant TEXT, incident_id TEXT, owner TEXT, status TEXT, updated_ns INTEGER,

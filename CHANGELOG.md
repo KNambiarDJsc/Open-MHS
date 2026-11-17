@@ -30,6 +30,14 @@ and the entry will say so under **Changed** or **Removed**.
   ([ADR-0033](docs/adr/0033-outcome-provenance.md), amendment). The evaluation's claim extraction moved to
   `python/openmhs/importers/coresense_verify.py`, shared with the research scripts, whose published results it
   reproduces exactly. Without `--verify` the import is unchanged.
+- **A failure measured by its own reporter** ([ADR-0036](docs/adr/0036-reported-measurements.md), shape rules
+  `shape-2`). A reported outcome may carry `outcome.reported.conditions` (RFC 0005), the values its reporter judged it
+  on, in the form of a verdict's conditions; a report of `succeeded` with a false condition is refused. The failure
+  shape measures a failed task's or action's miss from them and labels it `reported` everywhere (headline, points,
+  summary, signature), never pooled with verified misses and never counted as a verdict. The policy importer fills it
+  with each episode's peak reward and the simulator's own success flag: the 13 failed PushT episodes now separate into
+  eleven that ended within 0.04 of the threshold, one at 0.29 and one at 0.90 (barely moved). Misses under 0.001 print
+  with enough decimals to show them.
 - **The shape of a failure** ([ADR-0035](docs/adr/0035-failure-shape.md), rules `shape-1`). Every incident now says how
   it went wrong, computed from typed fields only, with no language model and no text matching: the points where
   something did not go as reported, in time order with their place in the task (withheld when clocks cannot order

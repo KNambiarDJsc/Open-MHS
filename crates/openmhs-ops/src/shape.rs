@@ -1,8 +1,10 @@
-//! The shape of an incident (ADR-0035, rules `shape-1`): how it went wrong, computed from typed fields only.
+//! The shape of an incident (ADR-0035, rules `shape-2` from ADR-0036): how it went wrong, computed from typed fields
+//! only.
 //!
 //! Inputs are the incident's member events: their type, time, clock, component, ids, reported and verified values,
-//! attributes and the verdicts' conditions (`outcome.verified.conditions`). Never `ext`, never free text. The words
-//! of the headline are temporal and structural; nothing here says why (ADR-0030).
+//! attributes, the verdicts' conditions (`outcome.verified.conditions`) and the values a reporter judged its own failure
+//! on (`outcome.reported.conditions`), which stay labelled `reported`. Never `ext`, never free text. The words of the
+//! headline are temporal and structural; nothing here says why (ADR-0030).
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -12,20 +14,28 @@ use serde::{Deserialize, Serialize};
 use crate::stats::quantile;
 
 /// Version of the shape rules. Every stored shape carries it.
-pub const SHAPE_RULES: &str = "shape-1";
+pub const SHAPE_RULES: &str = "shape-2";
 
 const FAILED_ACTION: &[&str] = &["failed", "aborted", "timeout", "canceled"];
 const FAILED_TASK: &[&str] = &["failed", "aborted", "timeout"];
 
-/// A failing condition of one verdict, and by how much it missed when that can be measured.
+fn verified() -> String {
+    "verified".into()
+}
+
+/// A failing condition of one verdict, or of a reporter's own judgement, and by how much it missed when that can be
+/// measured.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ConditionMiss {
+    /// `verified` (a verdict's condition) or `reported` (the reporter's own, ADR-0036). Never pooled.
+    #[serde(default = "verified")]
+    pub source: String,
     pub contract: Option<String>,
     /// The condition's name in the contract, else `<evidence> <op>`.
     pub condition: String,
     /// `above`, `below` or `both`; absent when no distance applies (a category, mixed units, no observed value).
     pub side: Option<String>,
-    /// The smallest distance outside the bound over the records the verifier used.
+    /// The smallest distance outside the bound over the observed values.
     pub at_least: Option<f64>,
     pub unit: Option<String>,
 }
@@ -71,12 +81,15 @@ pub struct Goals {
     pub first_violated: Option<(u64, u64)>,
 }
 
-/// A failing condition summed over the incident's violated goals.
+/// A failing condition summed over the incident's violated goals (`verified`), or over its failed tasks and actions
+/// whose report carries the condition (`reported`).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MissSummary {
+    #[serde(default = "verified")]
+    pub source: String,
     pub contract: Option<String>,
     pub condition: String,
-    /// Violated goals that failed this condition.
+    /// Violated goals (`verified`) or failed tasks and actions (`reported`) that failed this condition.
     pub goals: u64,
     pub above: u64,
     pub below: u64,
@@ -132,6 +145,8 @@ pub(crate) struct MemberIn {
     pub category: Option<String>,
     pub contract: Option<String>,
     pub conditions: Vec<VerifiedCondition>,
+    /// `outcome.reported.conditions` (ADR-0036).
+    pub reported_conditions: Vec<VerifiedCondition>,
 }
 
 pub(crate) struct TaskIn<'a> {
@@ -170,9 +185,10 @@ fn unordered(a: &MemberIn, b: &MemberIn) -> bool {
     }
 }
 
-fn miss_of(contract: Option<&String>, c: &VerifiedCondition) -> ConditionMiss {
+fn miss_of(source: &str, contract: Option<&String>, c: &VerifiedCondition) -> ConditionMiss {
     let m = c.miss();
     ConditionMiss {
+        source: source.to_owned(),
         contract: contract.cloned(),
         condition: c.label(),
         side: m.as_ref().map(|m| {
@@ -202,11 +218,47 @@ fn point_kind(m: &MemberIn) -> Option<String> {
     }
 }
 
+/// Decimals to print a distance with: three, and more when needed for its first significant digit and one more, so a
+/// miss of a few millimetres or of 0.0003 never prints as zero.
+pub fn decimals(d: f64) -> usize {
+    if d > 0.0 && d < 0.001 {
+        ((-d.log10()).floor() as usize + 2).min(9)
+    } else {
+        3
+    }
+}
+
 fn amount(d: f64, unit: Option<&str>) -> String {
+    let n = decimals(d);
     match unit {
-        // Three decimals: a miss of a few millimetres must not print as zero.
-        Some(u) => format!("{d:.3} {u}"),
-        None => format!("{d:.3}"),
+        Some(u) => format!("{d:.n$} {u}"),
+        None => format!("{d:.n$}"),
+    }
+}
+
+fn miss_text(m: &ConditionMiss) -> String {
+    match (m.side.as_deref(), m.at_least) {
+        (Some("both"), Some(d)) => format!(
+            "{}: outside on both sides by at least {}",
+            m.condition,
+            amount(d, m.unit.as_deref())
+        ),
+        (Some(side), Some(d)) => format!(
+            "{}: {side} the bound by at least {}",
+            m.condition,
+            amount(d, m.unit.as_deref())
+        ),
+        _ => format!("{}: not met", m.condition),
+    }
+}
+
+/// A failed task's or action's own reported misses, said as the reporter's (ADR-0036).
+fn reported_detail(p: &Point) -> String {
+    let misses: Vec<String> = p.misses.iter().map(miss_text).collect();
+    if misses.is_empty() {
+        String::new()
+    } else {
+        format!(" (reported {})", misses.join(", reported "))
     }
 }
 
@@ -218,23 +270,7 @@ fn describe(p: &Point, goals: &Goals) -> String {
                 .first_violated
                 .map(|(k, n)| format!(" ({k} of {n} verified goals)"))
                 .unwrap_or_default();
-            let misses: Vec<String> = p
-                .misses
-                .iter()
-                .map(|m| match (m.side.as_deref(), m.at_least) {
-                    (Some("both"), Some(d)) => format!(
-                        "{}: outside on both sides by at least {}",
-                        m.condition,
-                        amount(d, m.unit.as_deref())
-                    ),
-                    (Some(side), Some(d)) => format!(
-                        "{}: {side} the bound by at least {}",
-                        m.condition,
-                        amount(d, m.unit.as_deref())
-                    ),
-                    _ => format!("{}: not met", m.condition),
-                })
-                .collect();
+            let misses: Vec<String> = p.misses.iter().map(miss_text).collect();
             let detail = if misses.is_empty() {
                 String::new()
             } else {
@@ -250,10 +286,14 @@ fn describe(p: &Point, goals: &Goals) -> String {
             "intervention {}",
             p.code.as_deref().unwrap_or("without a category")
         ),
-        k if k.starts_with("action_") => {
-            format!("{component} action ended {}", &k["action_".len()..])
+        k if k.starts_with("action_") => format!(
+            "{component} action ended {}{}",
+            &k["action_".len()..],
+            reported_detail(p)
+        ),
+        k if k.starts_with("task_") => {
+            format!("task ended {}{}", &k["task_".len()..], reported_detail(p))
         }
-        k if k.starts_with("task_") => format!("task ended {}", &k["task_".len()..]),
         k => k.to_owned(),
     }
 }
@@ -365,12 +405,22 @@ pub(crate) fn compute(task: &TaskIn<'_>, members: &[MemberIn]) -> Shape {
             _ => None,
         };
         let goal = m.goal_id.as_deref().unwrap_or_default();
-        let misses: Vec<ConditionMiss> = m
-            .conditions
-            .iter()
-            .filter(|c| c.result == "false")
-            .map(|c| miss_of(m.contract.as_ref(), c))
-            .collect();
+        // A verdict's misses are its verified conditions; a failed task's or action's are its reporter's own.
+        let misses: Vec<ConditionMiss> = if kind == "verified_violated" {
+            m.conditions
+                .iter()
+                .filter(|c| c.result == "false")
+                .map(|c| miss_of("verified", m.contract.as_ref(), c))
+                .collect()
+        } else if kind.starts_with("task_") || kind.starts_with("action_") {
+            m.reported_conditions
+                .iter()
+                .filter(|c| c.result == "false")
+                .map(|c| miss_of("reported", None, c))
+                .collect()
+        } else {
+            Vec::new()
+        };
         if kind == "verified_violated" && m.conditions.is_empty() {
             silent_verdicts += 1;
         }
@@ -411,28 +461,38 @@ pub(crate) fn compute(task: &TaskIn<'_>, members: &[MemberIn]) -> Shape {
         distances: Vec<f64>,
         units: BTreeSet<Option<String>>,
     }
-    let mut acc: BTreeMap<(Option<String>, String), Acc> = BTreeMap::new();
+    let mut acc: BTreeMap<(&str, Option<String>, String), Acc> = BTreeMap::new();
+    let mut add = |key: (&'static str, Option<String>, String), c: &VerifiedCondition| {
+        let a = acc.entry(key).or_default();
+        a.goals += 1;
+        if let Some(miss) = c.miss() {
+            match miss.side {
+                Some(Side::Above) => a.above += 1,
+                Some(Side::Below) => a.below += 1,
+                None => a.both += 1,
+            }
+            a.distances.push(miss.at_least);
+            a.units.insert(miss.unit);
+        }
+    };
     for m in verdict_of.values() {
         if m.verified.as_deref() != Some("violated") {
             continue;
         }
         for c in m.conditions.iter().filter(|c| c.result == "false") {
-            let a = acc.entry((m.contract.clone(), c.label())).or_default();
-            a.goals += 1;
-            if let Some(miss) = c.miss() {
-                match miss.side {
-                    Some(Side::Above) => a.above += 1,
-                    Some(Side::Below) => a.below += 1,
-                    None => a.both += 1,
-                }
-                a.distances.push(miss.at_least);
-                a.units.insert(miss.unit);
+            add(("verified", m.contract.clone(), c.label()), c);
+        }
+    }
+    for (p, m) in points.iter().zip(&point_members) {
+        if p.kind.starts_with("task_") || p.kind.starts_with("action_") {
+            for c in m.reported_conditions.iter().filter(|c| c.result == "false") {
+                add(("reported", None, c.label()), c);
             }
         }
     }
     let misses: Vec<MissSummary> = acc
         .into_iter()
-        .map(|((contract, condition), mut a)| {
+        .map(|((source, contract, condition), mut a)| {
             a.distances.sort_unstable_by(f64::total_cmp);
             let one_unit = a.units.len() == 1;
             let at_least = if one_unit {
@@ -448,6 +508,7 @@ pub(crate) fn compute(task: &TaskIn<'_>, members: &[MemberIn]) -> Shape {
                 None
             };
             MissSummary {
+                source: source.to_owned(),
                 contract,
                 condition,
                 goals: a.goals,
@@ -508,11 +569,15 @@ pub(crate) fn compute(task: &TaskIn<'_>, members: &[MemberIn]) -> Shape {
                 .iter()
                 .flat_map(|p| {
                     p.misses.iter().map(|m| {
-                        format!(
-                            "{}:{}",
-                            m.contract.as_deref().unwrap_or("-"),
-                            evidence_of(first, &m.condition)
-                        )
+                        if m.source == "reported" {
+                            format!("reported:{}", evidence_of(first, m))
+                        } else {
+                            format!(
+                                "{}:{}",
+                                m.contract.as_deref().unwrap_or("-"),
+                                evidence_of(first, m)
+                            )
+                        }
                     })
                 })
                 .collect();
@@ -550,13 +615,16 @@ pub(crate) fn compute(task: &TaskIn<'_>, members: &[MemberIn]) -> Shape {
     }
 }
 
-/// The evidence item behind a condition label of the first point (stable when the threshold in the name changes).
-fn evidence_of(first: &MemberIn, label: &str) -> String {
-    first
-        .conditions
-        .iter()
-        .find(|c| c.label() == label)
-        .map_or_else(|| label.to_owned(), |c| c.evidence.clone())
+/// The evidence item behind a miss of the first point (stable when the threshold in the name changes).
+fn evidence_of(first: &MemberIn, m: &ConditionMiss) -> String {
+    let list = if m.source == "reported" {
+        &first.reported_conditions
+    } else {
+        &first.conditions
+    };
+    list.iter()
+        .find(|c| c.label() == m.condition)
+        .map_or_else(|| m.condition.clone(), |c| c.evidence.clone())
 }
 
 fn headline(

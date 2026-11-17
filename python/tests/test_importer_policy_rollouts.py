@@ -53,6 +53,17 @@ class PolicyRolloutTests(unittest.TestCase):
         self.assertEqual([e["cost"]["wall_s"] for e in ended], [12.5, 12.5, 12.5], "the compute time is recorded apart from the simulated clock")
         self.assertEqual({e["subject"]["task_type"] for e in ev if "subject" in e}, {"pusht"})
 
+    def test_the_outcome_carries_the_value_the_harness_judged_on_and_its_own_flag(self):
+        failed = episode("ddpm-100", 1001, False)
+        failed["max_reward"] = 0.0963
+        write(self.dir / "ddpm-100.1000-1002.jsonl", [header("ddpm-100"), episode("ddpm-100", 1000, True), failed])
+        ended = [e for e in self.records() if e.get("type") == "task.ended"]
+        conds = [e["outcome"]["reported"]["conditions"] for e in ended]
+        self.assertEqual([c[0]["result"] for c in conds], ["true", "false"], "the harness's flag, copied")
+        self.assertEqual([c[0]["observed"] for c in conds], [[1.0], [0.0963]])
+        self.assertEqual({(c[0]["evidence"], c[0]["op"], c[0]["value"]) for c in conds}, {("reward", "ge", 1.0)})
+        self.assertNotIn("verified", ended[1]["outcome"], "a self-judgement is never a verdict")
+
     def test_the_same_seed_has_the_same_scenario_in_every_arm_and_a_different_task(self):
         write(self.dir / "ddpm-100.1000-1001.jsonl", [header("ddpm-100"), episode("ddpm-100", 1000, True)])
         write(self.dir / "ddim-10.1000-1001.jsonl", [header("ddim-10", noise_scheduler="DDIM", num_inference_steps=10), episode("ddim-10", 1000, False)])

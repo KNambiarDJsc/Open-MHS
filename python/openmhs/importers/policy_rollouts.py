@@ -14,6 +14,11 @@ SIMULATION. There is no robot and no human. What becomes what:
   starting position under every arm, which is what lets a comparison pair the arms;
 - the episode's outcome is what the harness reported (``gym_pusht`` success: covered area over 95 %). The policy makes no
   claim of its own, so this is ``outcome.reported`` with its source named;
+- the value the harness judged on, as ``outcome.reported.conditions`` (ADR-0036): the episode's peak reward against 1.
+  ``gym_pusht``'s reward is the covered area divided by 0.95, capped at 1, so a peak of 1 is the success threshold (the
+  flag needs strictly over 0.95; equality is the only case where the two differ). The condition's result is the
+  harness's own success flag, copied, never recomputed here. A self-judgement by the simulator, not a verification;
+
 - an ``episode.started`` / ``episode.ended`` pair per attempt, with the model and sampler recorded in ``ext``;
 - the results file as an **artifact** by reference;
 - the wall-clock time of the episode as `cost.wall_s` on the task end: the events' own clock is simulated (steps at
@@ -95,6 +100,13 @@ def manifest(header: dict[str, Any], model_revision: str, lerobot: str) -> dict[
     }
 
 
+def reward_condition(ep: dict[str, Any]) -> dict[str, Any]:
+    """What the harness judged the episode on (ADR-0036): its peak reward, against the reward at the success threshold.
+    The result is the harness's own success flag."""
+    return {"name": "peak reward reaches 1", "evidence": "reward", "op": "ge", "value": 1.0,
+            "result": "true" if ep["success"] else "false", "observed": [ep["max_reward"]]}
+
+
 def import_arm(files: list[Path], model_revision: str, lerobot: str) -> list[dict[str, Any]]:
     header, episodes = read_arm(files)
     arm = header["arm"]
@@ -131,7 +143,8 @@ def import_arm(files: list[Path], model_revision: str, lerobot: str) -> list[dic
         event(f"{seed}/task.started", "task.started", start, subject=subject, deployment={"manifest": md}, ext=ext)
         event(f"{seed}/episode.started", "episode.started", start, subject=subject, ext=ext)
         outcome = {"reported": {"value": "succeeded" if ep["success"] else "failed", "source": "gym_pusht.is_success",
-                                "detail_code": "coverage>0.95" if ep["success"] else f"max_reward_{ep['max_reward']}"}}
+                                "detail_code": "coverage>0.95" if ep["success"] else f"max_reward_{ep['max_reward']}",
+                                "conditions": [reward_condition(ep)]}}
         event(f"{seed}/episode.ended", "episode.ended", end, subject=subject, outcome=outcome, ext=ext)
         event(f"{seed}/task.ended", "task.ended", end, subject=subject, outcome=outcome, ext=ext,
               cost={"wall_s": ep["seconds"]})

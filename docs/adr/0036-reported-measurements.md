@@ -61,3 +61,16 @@ same signature and different distances are listed with their distances.
 - A simulated or self-judged failure can say by how much it failed, labelled as the system's own report.
 - Readers must keep the two sources apart; the output says which is which on every miss.
 - Every stored shape changes its `rules` field on rebuild.
+
+## First run, 2026-11-17 (recorded after the rules, not used to change them)
+
+On the policy demo's 40 episodes (importer fills each episode's peak reward against 1, with the simulator's own success
+flag as the result): the 13 failed episodes each carry one reported miss, below the bound, and no verdict. Eleven peaked
+within 0.04 of a reward of 1 (0.0003 to 0.0386), `ddim-10` seed 1014 at 0.29 short, `ddpm-100` seed 1001 at 0.90
+short. All 13 share the signature `pusht/task_failed/-/reported:reward` (8 under `ddim-10`, 5 under `ddpm-100`), as
+section 3 says they would: the distance, not the signature, separates a near miss from no movement.
+
+One formatting change was made after seeing the output, not a rule change: a miss of 0.0003 printed as "0.000", so a
+distance under 0.001 now prints with enough decimals for its first significant digit and one more ("0.00030"). On the
+CoreSense flights this is the only visible difference: one headline's first miss reads "0.00065 m" where it read
+"0.001 m". Otherwise only the `rules` field and the source on each miss changed.

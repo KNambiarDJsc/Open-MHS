@@ -1,4 +1,4 @@
-//! The shape of an incident (ADR-0035, rules shape-1), on events built by hand so every number is known.
+//! The shape of an incident (ADR-0035; rules shape-2, ADR-0036), on events built by hand so every number is known.
 
 #![allow(clippy::unwrap_used)]
 
@@ -206,7 +206,7 @@ fn the_first_miss_its_place_its_size_and_what_came_after() {
     }));
     let d = only(&load(&records));
     let sh = d.shape.unwrap();
-    assert_eq!(sh.rules, "shape-1");
+    assert_eq!(sh.rules, "shape-2");
 
     let kinds: Vec<&str> = sh.points.iter().map(|p| p.kind.as_str()).collect();
     assert_eq!(kinds, ["verified_violated", "fault", "verified_violated"]);
@@ -447,4 +447,88 @@ fn the_shape_is_rebuilt_the_same_whatever_the_order_of_arrival() {
     records.reverse();
     let b = only(&load(&records)).shape.unwrap();
     assert_eq!(a, b);
+}
+
+/// A failed task's own report, with the value it judged on (ADR-0036).
+fn reported_failed_with(observed: f64) -> Value {
+    json!({"reported": {"value": "failed", "conditions": [
+        {"name": "coverage over 0.95", "evidence": "coverage", "op": "gt", "value": 0.95, "result": "false",
+         "observed": [observed]}]}})
+}
+
+#[test]
+fn a_reported_miss_is_measured_and_said_to_be_the_reporters_own() {
+    let mut records = task("t1", 100 * S, &[]);
+    let end = records.last_mut().unwrap();
+    end["outcome"] = reported_failed_with(0.9);
+    let sh = only(&load(&records)).shape.unwrap();
+    assert_eq!(sh.points.len(), 1);
+    let miss = &sh.points[0].misses[0];
+    assert_eq!(miss.source, "reported");
+    assert_eq!(miss.contract, None);
+    assert_eq!(miss.side.as_deref(), Some("below"));
+    assert!((miss.at_least.unwrap() - 0.05).abs() < 1e-9);
+    assert_eq!(
+        sh.headline,
+        "first at 10.0 s (100 % of the task): task ended failed (reported coverage over 0.95: below the bound by at least 0.050)"
+    );
+    assert_eq!(sh.signature, "pick/task_failed/-/reported:coverage");
+    assert_eq!(sh.misses.len(), 1);
+    assert_eq!(
+        (sh.misses[0].source.as_str(), sh.misses[0].goals),
+        ("reported", 1)
+    );
+    // a self-judgement is not a verdict: no goals, no spread, no disagreement
+    assert_eq!((sh.goals.verified, sh.goals.spread.as_str()), (0, "none"));
+    assert_eq!(sh.disagreements.reported_succeeded_verified_violated, 0);
+    no_causal_word(&sh.headline);
+}
+
+#[test]
+fn reported_and_verified_misses_are_never_pooled() {
+    let mut records = task("t1", 100 * S, &[("g1", 3, "violated", &[5.5])]);
+    records.last_mut().unwrap()["outcome"] = reported_failed_with(0.9);
+    let sh = only(&load(&records)).shape.unwrap();
+    let kinds: Vec<&str> = sh.points.iter().map(|p| p.kind.as_str()).collect();
+    assert_eq!(kinds, ["verified_violated", "task_failed"]);
+    assert_eq!(sh.points[0].misses[0].source, "verified");
+    assert_eq!(sh.points[1].misses[0].source, "reported");
+    let sources: Vec<(&str, u64)> = sh
+        .misses
+        .iter()
+        .map(|m| (m.source.as_str(), m.goals))
+        .collect();
+    assert_eq!(sources, [("reported", 1), ("verified", 1)]);
+    assert_eq!((sh.goals.verified, sh.goals.violated), (1, 1));
+    assert_eq!(
+        sh.signature, "pick/verified_violated/goto/place-at-target:x",
+        "a shape-1 signature where the first point is a verdict"
+    );
+}
+
+#[test]
+fn a_tiny_miss_never_prints_as_zero() {
+    let mut records = task("t1", 100 * S, &[]);
+    records.last_mut().unwrap()["outcome"] = reported_failed_with(0.9497);
+    let sh = only(&load(&records)).shape.unwrap();
+    assert!(
+        sh.headline
+            .ends_with("below the bound by at least 0.00030)"),
+        "{}",
+        sh.headline
+    );
+}
+
+#[test]
+fn a_success_reported_with_a_failing_condition_is_refused() {
+    let mut records = task("t1", 100 * S, &[]);
+    let mut outcome = reported_failed_with(0.9);
+    outcome["reported"]["value"] = json!("succeeded");
+    records.last_mut().unwrap()["outcome"] = outcome;
+    let mut store = Store::open_in_memory().unwrap();
+    let results = store.ingest(&records, 1).unwrap();
+    assert!(
+        format!("{:?}", results.last().unwrap().status).contains("Rejected"),
+        "{results:?}"
+    );
 }
