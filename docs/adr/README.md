@@ -37,6 +37,7 @@
 | [0033](0033-outcome-provenance.md) | Outcomes say who says so: reported, verified, unknown, never merged | Accepted |
 | [0034](0034-ops-crates-and-languages.md) | Two new Rust crates and a Python importer; no services directory until Stage 2 | Accepted |
 | [0035](0035-failure-shape.md) | The shape of a failure is computed from typed fields, never from text | Accepted |
+| [0036](0036-reported-measurements.md) | A reported outcome may carry the values it was judged on (shape rules `shape-2`) | Accepted |
 
 Format: Context → Decision → Alternatives considered → Consequences. Supersede an
 ADR with a new one rather than rewriting history.
